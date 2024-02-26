@@ -1,0 +1,46 @@
+---
+import MotionH1 from './React/MotionH1';
+import MotionShortDescription from './React/MotionShortDescription';
+import MotionStack from './React/MotionStack';
+import MotionButtons from './React/MotionButtons';
+import StyledHero from './StyledHero.astro';
+import ArrowRight from './icons/ArrowRight';
+import MotionArrow from './React/MotionArrow';
+---
+
+<StyledHero>
+  <div
+    class='flex flex-col w-fit h-fit col-span-6 2xl:col-span-12 bg-gradient-to-tr'
+  >
+    <!-- <h1
+      class='font-black text-3xl sm:text-4xl md:text-5xl xl:text-6xl 2xl:text-7xl max-md:text-center bg-gradient-to-tr from-neutral-200 to-neutral-600 bg-clip-text text-transparent'
+    >
+    </h1> -->
+    <MotionH1 client:load />
+    <div class='flex gap-2 mt-6'>
+      <MotionStack client:load />
+    </div>
+    <MotionShortDescription client:load />
+
+    <MotionButtons client:load />
+  </div>
+  <MotionArrow client:load>
+    <ArrowRight
+      className='text-neutral-500 rotate-90 scale-110 animate-pulse'
+    />
+  </MotionArrow>
+</StyledHero>
+
+<script>
+  let scrollHook = document.getElementById('scroll-hook');
+
+  function hideHook() {
+    if (window.scrollY >= 300) {
+      scrollHook?.classList.add('hidden');
+      console.log('aaaaaaaaa');
+      window.removeEventListener('scroll', hideHook);
+    }
+  }
+
+  window.addEventListener('scroll', hideHook);
+</script>

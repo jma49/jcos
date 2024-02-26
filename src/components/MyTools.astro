@@ -1,0 +1,84 @@
+---
+import StyledSection from './StyledSection.astro';
+import SectionTitle from './SectionTitle.astro';
+import VisualStudioCode from './icons/VisualStudioCode';
+import Terminal from './icons/Terminal';
+import GoogleFont from './icons/GoogleFont';
+import OperaGX from './icons/OperaGX';
+import Theme from './icons/Theme';
+---
+
+<StyledSection>
+  <SectionTitle>
+    Unleash Your Coding Superpowers: Discover the Tools Behind the Magic!
+  </SectionTitle>
+
+  <div
+    class='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 place-content-center items-center gap-10 lg:gap-20 mt-20 mx-autow-full pb-20'
+  >
+    <a
+      target='_blank'
+      href='https://code.visualstudio.com'
+      class='flex flex-col gap-4 group place-content-center items-center'
+    >
+      <VisualStudioCode />
+      <p
+        class='text-neutral-500 group-hover:text-red-500 transition-colors ease-in-out font-bold text-lg'
+      >
+        VS Code
+      </p>
+    </a>
+    <a
+      target='_blank'
+      href='https://ohmyposh.dev'
+      class='flex flex-col gap-4 group place-content-center items-center'
+    >
+      <Terminal />
+      <p
+        class='text-neutral-500 group-hover:text-red-500 transition-colors ease-in-out font-bold text-lg'
+      >
+        Oh My Posh
+      </p>
+    </a>
+    <a
+      target='_blank'
+      href='https://www.opera.com/es/gx'
+      class='flex flex-col gap-4 group place-content-center items-center'
+    >
+      <OperaGX />
+      <p
+        class='text-neutral-500 group-hover:text-red-500 transition-colors ease-in-out font-bold text-lg'
+      >
+        OperaGX
+      </p>
+    </a>
+
+    <a
+      target='_blank'
+      href='https://fonts.google.com'
+      class='flex flex-col gap-4 group place-content-center items-center'
+    >
+      <GoogleFont />
+      <p
+        class='text-neutral-500 group-hover:text-red-500 transition-colors ease-in-out font-bold text-lg'
+      >
+        Fira Code
+      </p>
+    </a>
+    <a
+      target='_blank'
+      href='https://marketplace.visualstudio.com/items?itemName=zhuangtongfa.Material-theme'
+      class='flex flex-col gap-4 group place-content-center items-center'
+    >
+      <Theme />
+      <p
+        class='text-neutral-500 group-hover:text-red-500 transition-colors ease-in-out font-bold text-lg'
+      >
+        One Dark Pro
+      </p>
+    </a>
+  </div>
+  <SectionTitle>
+    My web development quest is full of exciting updates. Stay tuned for more!
+  </SectionTitle>
+</StyledSection>

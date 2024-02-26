@@ -1,0 +1,14 @@
+---
+type Props = {
+  id?: string;
+};
+
+const { id } = Astro.props;
+---
+
+<h1
+  id={id}
+  class='font-bold text-4xl bg-gradient-to-tr from-red-500 via-red-500 to-orange-500 bg-clip-text text-transparent w-full text-center py-2 max-w-sm md:max-w-lg relative'
+>
+  <slot />
+</h1>

@@ -1,51 +1,72 @@
 ---
+import Meta from '../components/Meta.astro';
+import OpenGraphFacebook from '../components/OpenGraphFacebook.astro';
+import TwitterCard from '../components/TwitterCard.astro';
+import NavBar from '../components/NavBar.astro';
+import Footer from '../components/Footer.astro';
+import LoadingScreen from '../components/LoadingScreen.astro';
+
 interface Props {
-	title: string;
+  title: string;
 }
 
 const { title } = Astro.props;
 ---
 
 <!doctype html>
-<html lang="en">
-	<head>
-		<meta charset="UTF-8" />
-		<meta name="description" content="Astro description" />
-		<meta name="viewport" content="width=device-width" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="generator" content={Astro.generator} />
-		<title>{title}</title>
-	</head>
-	<body>
-		<slot />
-	</body>
+<html lang='en' class='scroll-smooth'>
+  <head>
+    <title>{title}</title>
+    <Meta />
+    <OpenGraphFacebook />
+    <TwitterCard />
+    <meta name="google-site-verification" content="HhawtBpenGliesOLyFP46TlYilTGbHHQIcUnLtvQp4w" />
+
+    <!-- Scripts -->
+
+    <script>
+      function getReady() {
+        let body = document.getElementsByTagName('body');
+        body[0].classList.remove('hidden');
+        let loading_screen = document.getElementById('loading_screen');
+        loading_screen?.classList.add('hidden');
+      }
+
+      window.onload = () => getReady();
+    </script>
+
+    <link rel='preconnect' href='https://fonts.googleapis.com' />
+    <link rel='preconnect' href='https://fonts.gstatic.com' crossorigin />
+    <link
+      href='https://fonts.googleapis.com/css2?family=Fira+Sans:ital,wght@0,400;1,600;1,700&display=swap'
+      rel='stylesheet'
+    />
+  </head>
+  <LoadingScreen />
+  <body class='hidden'>
+    <NavBar />
+    <slot />
+    <Footer />
+  </body>
+
+  <style is:global>
+    html {
+      font-family: 'Fira Sans', system-ui, sans-serif;
+      background: #050505;
+      background-size: 224px;
+      color: rgb(204, 210, 213);
+    }
+
+    code {
+      font-family:
+        Menlo,
+        Monaco,
+        Lucida Console,
+        Liberation Mono,
+        DejaVu Sans Mono,
+        Bitstream Vera Sans Mono,
+        Courier New,
+        monospace;
+    }
+  </style>
 </html>
-<style is:global>
-	:root {
-		--accent: 136, 58, 234;
-		--accent-light: 224, 204, 250;
-		--accent-dark: 49, 10, 101;
-		--accent-gradient: linear-gradient(
-			45deg,
-			rgb(var(--accent)),
-			rgb(var(--accent-light)) 30%,
-			white 60%
-		);
-	}
-	html {
-		font-family: system-ui, sans-serif;
-		background: #13151a;
-		background-size: 224px;
-	}
-	code {
-		font-family:
-			Menlo,
-			Monaco,
-			Lucida Console,
-			Liberation Mono,
-			DejaVu Sans Mono,
-			Bitstream Vera Sans Mono,
-			Courier New,
-			monospace;
-	}
-</style>

@@ -1,0 +1,83 @@
+---
+import ProjectCard from './React/ProjectCard';
+import SectionTitle from './SectionTitle.astro';
+import StyledSection from './StyledSection.astro';
+import animecu from '../assets/images/animecu.webp';
+import samu from '../assets/images/samu.webp';
+import bazar from '../assets/images/bazar.webp';
+import bill from '../assets/images/bill.webp';
+---
+
+<StyledSection>
+  <SectionTitle>Explore My Showcase</SectionTitle>
+  <div class='mt-10 grid lg:grid-cols-2 lg:mx-20 gap-10'>
+    <!-- <ProjectCard
+      client:load
+      title='AnimeCu'
+      index={0}
+      link={{
+        live: 'https://animecu.netlify.app/',
+        github: 'https://github.com/cmollinea/AnimeCu'
+      }}
+      image={animecu}
+      stackIndex={[6, 5, 3]}
+    >
+      AnimeCu is created as a result of my journey learning NextJS and
+      TypeScript. Using the API provided by JikanMoe, I create a modern
+      interface where users can discover and search for anime and manga
+      information using advanced filters. As an added bonus, each anime includes
+      its trailer.
+    </ProjectCard>
+    <ProjectCard
+      index={1}
+      client:load
+      title='Samu LLanes Website'
+      link={{
+        live: 'https://samullanes.com/',
+        github: 'https://github.com/cmollinea/samu-llanes-portafolio'
+      }}
+      image={samu}
+      stackIndex={[7, 4, 5, 3]}
+    >
+      I created this customized website as a freelancer job for a skilled
+      photographer based in Havana, Cuba. I used Astro as the main technology
+      and integrated React for interactions. I optimized its SEO considering
+      best practices and used Framer Motion to add subtle animations for a
+      modern touch.
+    </ProjectCard>
+    <ProjectCard
+      index={2}
+      client:load
+      title='Cuban Bazar'
+      link={{
+        live: 'https://cuban-bazar.vercel.app',
+        github: 'https://github.com/cmollinea/bazar-online'
+      }}
+      image={bazar}
+      stackIndex={[6, 5, 3]}
+    >
+      This project was created with NextJS as a result of a technical test
+      launched by Mercado Libre. I used NextUI as a component library due to its
+      easy integration with Tailwind CSS. I used route handler to simulate my
+      own API with mocked JSON data. Additionally, I used Zustand to include a
+      'shopping cart' feature with local storage persistence.
+    </ProjectCard>
+    <ProjectCard
+      index={3}
+      client:load
+      title='Electric Bill Calculator'
+      link={{
+        live: 'https://cuban-electric-bill.vercel.app',
+        github: 'https://github.com/cmollinea/cuban-electric-bill'
+      }}
+      image={bill}
+      stackIndex={[4, 5, 2]}
+    >
+      It is among my early projects on my self-taught progress. It uses React
+      with Tailwind CSS and was born out of the idea that although there are
+      mobile apps that calculate your electricity consumption, why occupy
+      storage space when you can have it at your disposal through a web page? It
+      utilizes React Hook Form to achieve proper user inputs.
+    </ProjectCard> -->
+  </div>
+</StyledSection>
