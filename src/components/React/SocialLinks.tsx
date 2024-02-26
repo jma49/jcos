@@ -27,7 +27,7 @@ const socialIcons = [
 const socialLinks = [
   'https://www.linkedin.com/in/jincheng-ma-iit',
   'https://github.com/jma49/',
-  'https://twitter.com/proc4stinator',
+  'https://twitter.com/MaJonson357019',
   'https://t.me/jma49',
   'https://discord.gg/pb4jAxXA'
 ];

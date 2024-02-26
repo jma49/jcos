@@ -1,4 +1,4 @@
-function TailwndCss() {
+function TailwindCss() {
   return (
     <svg
       role='img'
@@ -11,4 +11,4 @@ function TailwndCss() {
     </svg>
   );
 }
-export default TailwndCss;
+export default TailwindCss;

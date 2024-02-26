@@ -8,7 +8,7 @@ function MotionH1() {
         {...config}
         className='font-black text-6xl md:text-7xl 2xl:text-8xl bg-gradient-to-tr from-neutral-200 to-neutral-600 bg-clip-text text-transparent'
       >
-        Software Developer~
+        Software Developer 
       </motion.h1>
       <motion.small
         {...config}

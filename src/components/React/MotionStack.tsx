@@ -10,9 +10,11 @@ import Next from '../icons/Next';
 import MongoDB from '../icons/MongoDB';
 import Kafka from '../icons/Kafka';
 import React from '../icons/React';
-import TailwndCss from '../icons/TailwndCss';
+import TailwindCss from '../icons/TailwindCss';
 import PostgresSQL from '../icons/PostgreSQL';
 import RabbitMQ from '../icons/RabbitMQ';
+import Firebase from '../icons/Firebase';
+import Aws from '../icons/Aws';
 
 export const stack = [
   <Spring />,
@@ -23,8 +25,10 @@ export const stack = [
   <MongoDB />,
   <PostgresSQL />,
   <ElasticSearch />,
+  <Firebase />,
+  <Aws />,
   <React />,
-  <TailwndCss />,
+  <TailwindCss />,
   <Next />,
   <Astro />,
   <Git />
