@@ -1,0 +1,83 @@
+---
+import SectionHeading from './SectionHeading.astro';
+import Plus from './icons/Plus.astro';
+import { content, type Lang } from '../i18n/content';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = content[lang];
+const isZh = lang === 'zh';
+---
+
+<section id="work" class="shell scroll-mt-24 pt-14 sm:pt-20">
+  <SectionHeading index="01" title={t.work.title} subtitle={t.work.subtitle} />
+
+  <ol class="mt-14">
+    {
+      t.jobs.map((job, i) => (
+        <li class="reveal relative border-l border-line pb-14 pl-7 last:border-transparent last:pb-0 sm:pl-10">
+          {/* Timeline node — filled for the most recent role. */}
+          <span
+            class:list={[
+              'absolute -left-[4.5px] top-1.5 size-2 rounded-full ring-4 ring-bg',
+              i === 0 ? 'bg-accent' : 'bg-line'
+            ]}
+          />
+
+          <div class="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between sm:gap-6">
+            <h3 class="text-lg font-semibold tracking-tight">{job.company}</h3>
+            <span class="label shrink-0 tracking-[0.08em]">{job.period}</span>
+          </div>
+
+          <p class="mt-1 text-sm text-dim">
+            {job.role}
+            <span class="px-2 text-line">/</span>
+            <span class="text-faint">{job.location}</span>
+          </p>
+
+          <p
+            class:list={[
+              'mt-4 max-w-[56ch] text-ink/90',
+              isZh ? 'text-[0.9375rem] leading-[1.8]' : 'text-[0.9375rem] leading-relaxed'
+            ]}
+          >
+            {job.summary}
+          </p>
+
+          <ul class="mt-5 flex flex-wrap gap-1.5">
+            {job.tags.map((tag) => (
+              <li class="rounded-md border border-line-soft bg-surface px-2.5 py-1 font-mono text-[0.6875rem] text-dim">
+                {tag}
+              </li>
+            ))}
+          </ul>
+
+          <details class="group mt-6" open={i === 0}>
+            <summary class="inline-flex cursor-pointer list-none items-center gap-2 text-xs font-medium text-faint transition-colors hover:text-accent-soft [&::-webkit-details-marker]:hidden">
+              <Plus class="size-3.5 transition-transform duration-300 group-open:rotate-45" />
+              {t.work.details}
+            </summary>
+            <ul class="mt-5 max-w-[64ch] space-y-4">
+              {job.bullets.map((bullet) => (
+                <li
+                  class:list={[
+                    'relative pl-5 text-dim',
+                    isZh
+                      ? 'text-[0.875rem] leading-[1.85]'
+                      : 'text-[0.875rem] leading-[1.75]'
+                  ]}
+                >
+                  <span class="absolute left-0 top-[0.78em] h-px w-2.5 bg-line" />
+                  {bullet}
+                </li>
+              ))}
+            </ul>
+          </details>
+        </li>
+      ))
+    }
+  </ol>
+</section>
