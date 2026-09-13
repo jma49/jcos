@@ -1,0 +1,20 @@
+---
+import Hero from './Hero.astro';
+import Experience from './Experience.astro';
+import Skills from './Skills.astro';
+import About from './About.astro';
+import Contact from './Contact.astro';
+import type { Lang } from '../i18n/content';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+---
+
+<Hero lang={lang} />
+<Experience lang={lang} />
+<Skills lang={lang} />
+<About lang={lang} />
+<Contact lang={lang} />

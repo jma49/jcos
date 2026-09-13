@@ -1,49 +1,117 @@
 ---
-import MotionH1 from "./React/MotionH1";
-import MotionShortDescription from "./React/MotionShortDescription";
-import MotionStack from "./React/MotionStack";
-import MotionButtons from "./React/MotionButtons";
-import StyledHero from "./StyledHero.astro";
-import ArrowRight from "./icons/ArrowRight";
-import MotionArrow from "./React/MotionArrow";
-import MotionButtonsResume from "./React/MotionButtonsResume";
+import { content, profile, type Lang } from '../i18n/content';
+import ArrowDownRight from './icons/ArrowDownRight.astro';
+import Download from './icons/Download.astro';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = content[lang];
+const isZh = lang === 'zh';
 ---
 
-<StyledHero>
-  <div
-    class="flex flex-col w-fit h-fit col-span-6 2xl:col-span-12 bg-gradient-to-tr"
-  >
-    <!-- <h1
-      class='font-black text-3xl sm:text-4xl md:text-5xl xl:text-6xl 2xl:text-7xl max-md:text-center bg-gradient-to-tr from-neutral-200 to-neutral-600 bg-clip-text text-transparent'
+<section class="relative overflow-hidden">
+  <!-- Ambient backdrop: a single accent glow over a grid that fades out downward. -->
+  <div aria-hidden="true" class="pointer-events-none absolute inset-0 -z-10">
+    <div
+      class="absolute inset-0"
+      style="background-image:linear-gradient(to right,#ffffff0d 1px,transparent 1px),linear-gradient(to bottom,#ffffff0d 1px,transparent 1px);background-size:72px 72px;mask-image:radial-gradient(ellipse 90% 60% at 50% 0%,#000 40%,transparent 100%)"
     >
-    </h1> -->
-    <MotionH1 client:load />
-    <div class="flex gap-2 mt-2">
-      <MotionStack client:load />
     </div>
-    <MotionShortDescription client:load />
-    <div class="flex gap-6 mt-4">
-      <MotionButtons client:load />
-      <MotionButtonsResume client:load />
+    <div
+      class="absolute -top-40 left-1/2 h-[34rem] w-[60rem] -translate-x-1/2 rounded-full opacity-45 blur-[110px]"
+      style="background:radial-gradient(closest-side,#8b80f9,transparent)"
+    >
     </div>
   </div>
-  <MotionArrow client:load>
-    <ArrowRight
-      className="text-neutral-500 rotate-90 scale-110 animate-pulse"
-    />
-  </MotionArrow>
-</StyledHero>
 
-<script>
-  let scrollHook = document.getElementById("scroll-hook");
+  <div class="shell pt-20 pb-10 sm:pt-28 sm:pb-14">
+    <div class="reveal">
+      <span
+        class="inline-flex items-center gap-2 rounded-full border border-line bg-surface/80 px-3 py-1.5 text-xs text-dim"
+      >
+        <span class="relative flex size-1.5">
+          <span
+            class="absolute inline-flex size-full animate-ping rounded-full bg-accent opacity-70"
+          ></span>
+          <span class="relative inline-flex size-1.5 rounded-full bg-accent"
+          ></span>
+        </span>
+        {t.hero.status}
+      </span>
+    </div>
 
-  function hideHook() {
-    if (window.scrollY >= 300) {
-      scrollHook?.classList.add("hidden");
-      console.log("aaaaaaaaa");
-      window.removeEventListener("scroll", hideHook);
-    }
-  }
+    <h1
+      class:list={[
+        'reveal mt-7 max-w-4xl font-bold text-balance',
+        isZh
+          ? 'text-[2.1rem] leading-[1.28] tracking-[-0.01em] sm:text-5xl lg:text-[3.35rem]'
+          : 'text-[2.35rem] leading-[1.06] tracking-[-0.035em] sm:text-5xl lg:text-[3.9rem]'
+      ]}
+      style="transition-delay:60ms"
+    >
+      {
+        t.hero.headline.map((chunk) => (
+          <span class="inline-block">{chunk}</span>
+        ))
+      }
+    </h1>
 
-  window.addEventListener("scroll", hideHook);
-</script>
+    <p
+      class:list={[
+        'reveal mt-6 max-w-2xl text-dim',
+        isZh ? 'text-[0.975rem] leading-[1.85]' : 'text-base leading-relaxed sm:text-[1.0625rem]'
+      ]}
+      style="transition-delay:120ms"
+    >
+      {t.hero.lede}
+    </p>
+
+    <div
+      class="reveal mt-9 flex flex-wrap items-center gap-3"
+      style="transition-delay:180ms"
+    >
+      <a
+        href="#work"
+        class="group inline-flex items-center gap-2 rounded-lg bg-ink px-5 py-2.5 text-sm font-semibold text-bg transition-opacity hover:opacity-85"
+      >
+        {t.hero.ctaPrimary}
+        <ArrowDownRight
+          class="size-4 transition-transform group-hover:translate-x-0.5 group-hover:translate-y-0.5"
+        />
+      </a>
+      <a
+        href={profile.resume}
+        target="_blank"
+        rel="noopener"
+        class="inline-flex items-center gap-2 rounded-lg border border-line bg-surface px-5 py-2.5 text-sm font-medium text-ink transition-colors hover:border-accent/50 hover:bg-raised"
+      >
+        <Download class="size-4 text-dim" />
+        {t.hero.ctaSecondary}
+      </a>
+      <span class="label ml-1 hidden sm:inline">{t.hero.location}</span>
+    </div>
+  </div>
+
+  <!-- Headline numbers, pulled from the work below so the page states its case early. -->
+  <div class="shell">
+    <dl
+      class="hairline grid grid-cols-2 gap-x-6 gap-y-8 py-9 lg:grid-cols-4 lg:gap-x-10"
+    >
+      {
+        t.stats.map((stat, i) => (
+          <div class="reveal" style={`transition-delay:${i * 70}ms`}>
+            <dt class="font-mono text-3xl font-medium tracking-tight text-ink sm:text-4xl">
+              {stat.value}
+            </dt>
+            <dd class="mt-2 max-w-[18rem] text-[0.8125rem] leading-relaxed text-faint">
+              {stat.label}
+            </dd>
+          </div>
+        ))
+      }
+    </dl>
+  </div>
+</section>

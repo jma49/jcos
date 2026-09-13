@@ -1,0 +1,42 @@
+---
+import SectionHeading from './SectionHeading.astro';
+import { content, type Lang } from '../i18n/content';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = content[lang];
+---
+
+<section id="skills" class="shell scroll-mt-24 pt-24 sm:pt-32">
+  <SectionHeading
+    index="02"
+    title={t.skills.title}
+    subtitle={t.skills.subtitle}
+  />
+
+  <div class="mt-12">
+    {
+      t.skills.groups.map((group, i) => (
+        <div
+          class:list={[
+            'reveal grid gap-4 py-7 sm:grid-cols-[11rem_1fr] sm:gap-8',
+            i > 0 && 'hairline'
+          ]}
+          style={`transition-delay:${i * 60}ms`}
+        >
+          <h3 class="label pt-1 leading-relaxed">{group.name}</h3>
+          <ul class="flex flex-wrap gap-2">
+            {group.items.map((item) => (
+              <li class="rounded-lg border border-line-soft bg-surface px-3 py-1.5 text-[0.8125rem] text-dim transition-colors hover:border-accent/40 hover:text-ink">
+                {item}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))
+    }
+  </div>
+</section>

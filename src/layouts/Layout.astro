@@ -1,72 +1,100 @@
 ---
-import Meta from '../components/Meta.astro';
-import OpenGraphFacebook from '../components/OpenGraphFacebook.astro';
-import TwitterCard from '../components/TwitterCard.astro';
-import NavBar from '../components/NavBar.astro';
+import '../styles/global.css';
+import Nav from '../components/Nav.astro';
 import Footer from '../components/Footer.astro';
-import LoadingScreen from '../components/LoadingScreen.astro';
+import { content, profile, type Lang } from '../i18n/content';
 
 interface Props {
-  title: string;
+  lang: Lang;
 }
 
-const { title } = Astro.props;
+const { lang } = Astro.props;
+const t = content[lang];
+const canonical = new URL(lang === 'zh' ? '/zh/' : '/', Astro.site);
+const ogImage = new URL('/og.png', Astro.site);
 ---
 
 <!doctype html>
-<html lang='en' class='scroll-smooth'>
+<html lang={t.htmlLang}>
   <head>
-    <title>{title}</title>
-    <Meta />
-    <OpenGraphFacebook />
-    <TwitterCard />
-    <meta name="google-site-verification" content="HhawtBpenGliesOLyFP46TlYilTGbHHQIcUnLtvQp4w" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
 
-    <!-- Scripts -->
+    <title>{t.meta.title}</title>
+    <meta name="description" content={t.meta.description} />
+    <meta name="author" content={profile.name[lang]} />
+    <link rel="canonical" href={canonical} />
+    <link rel="alternate" hreflang="en" href={new URL('/', Astro.site)} />
+    <link rel="alternate" hreflang="zh" href={new URL('/zh/', Astro.site)} />
 
-    <script>
-      function getReady() {
-        let body = document.getElementsByTagName('body');
-        body[0].classList.remove('hidden');
-        let loading_screen = document.getElementById('loading_screen');
-        loading_screen?.classList.add('hidden');
-      }
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={t.meta.title} />
+    <meta property="og:description" content={t.meta.description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={t.meta.title} />
+    <meta property="og:locale" content={lang === 'zh' ? 'zh_CN' : 'en_US'} />
 
-      window.onload = () => getReady();
-    </script>
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={t.meta.title} />
+    <meta name="twitter:description" content={t.meta.description} />
+    <meta name="twitter:image" content={ogImage} />
 
-    <link rel='preconnect' href='https://fonts.googleapis.com' />
-    <link rel='preconnect' href='https://fonts.gstatic.com' crossorigin />
+    <meta name="theme-color" content="#08090a" />
+    <link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48" />
+    <link rel="icon" href="/favicon-32x32.png" type="image/png" sizes="32x32" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta
+      name="google-site-verification"
+      content="HhawtBpenGliesOLyFP46TlYilTGbHHQIcUnLtvQp4w"
+    />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href='https://fonts.googleapis.com/css2?family=Fira+Sans:ital,wght@0,400;1,600;1,700&display=swap'
-      rel='stylesheet'
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
     />
   </head>
-  <LoadingScreen />
-  <body class='hidden'>
-    <NavBar />
-    <slot />
-    <Footer />
+
+  <body>
+    <a
+      href="#main"
+      class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-100 focus:rounded-md focus:bg-raised focus:px-4 focus:py-2 focus:text-sm"
+      >Skip to content</a
+    >
+    <Nav lang={lang} />
+    <main id="main">
+      <slot />
+    </main>
+    <Footer lang={lang} />
+
+    <script>
+      // Reveal-on-scroll: elements tagged `.reveal` fade up once, then are dropped
+      // from the observer. Anything already in view on load resolves immediately.
+      const items = document.querySelectorAll<HTMLElement>('.reveal');
+      const reduced = window.matchMedia(
+        '(prefers-reduced-motion: reduce)'
+      ).matches;
+
+      if (reduced || !('IntersectionObserver' in window)) {
+        items.forEach((el) => el.classList.add('is-visible'));
+      } else {
+        const observer = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (!entry.isIntersecting) return;
+              entry.target.classList.add('is-visible');
+              observer.unobserve(entry.target);
+            });
+          },
+          { rootMargin: '0px 0px -8% 0px', threshold: 0.08 }
+        );
+        items.forEach((el) => observer.observe(el));
+      }
+    </script>
   </body>
-
-  <style is:global>
-    html {
-      font-family: 'Fira Sans', system-ui, sans-serif;
-      background: #050505;
-      background-size: 224px;
-      color: rgb(204, 210, 213);
-    }
-
-    code {
-      font-family:
-        Menlo,
-        Monaco,
-        Lucida Console,
-        Liberation Mono,
-        DejaVu Sans Mono,
-        Bitstream Vera Sans Mono,
-        Courier New,
-        monospace;
-    }
-  </style>
 </html>

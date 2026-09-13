@@ -1,24 +1,76 @@
 ---
-import SectionTitle from './SectionTitle.astro';
-import StyledSection from './StyledSection.astro';
-import SocialLinks from './React/SocialLinks';
-import Form from './React/Form';
+import CopyEmail from './react/CopyEmail';
+import Github from './icons/Github.astro';
+import Linkedin from './icons/Linkedin.astro';
+import Download from './icons/Download.astro';
+import ArrowUpRight from './icons/ArrowUpRight.astro';
+import { content, profile, type Lang } from '../i18n/content';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = content[lang];
+
+const links = [
+  { href: profile.github, label: t.contact.githubLabel, icon: 'github' },
+  { href: profile.linkedin, label: t.contact.linkedinLabel, icon: 'linkedin' },
+  { href: profile.resume, label: t.contact.resumeLabel, icon: 'download' }
+];
 ---
 
-<StyledSection>
-  <SectionTitle id='social'>
-    Follow me on my social media! Let's connect and stay in touch!
-  </SectionTitle>
-  <div class='grid gap-2 mt-10 w-full place-items-center mx-4 pb-10'>
-    <SocialLinks client:load />
-  </div>
-
-  <p
-    id='direct_message'
-    class='bg-gradient-to-tr from-red-500 via-red-500 to-orange-500 bg-clip-text text-transparent w-full font-bold max-w-2xl text-center mt-4'
+<section id="contact" class="shell scroll-mt-24 pt-24 sm:pt-32">
+  <div
+    class="reveal relative overflow-hidden rounded-2xl border border-line bg-surface px-6 py-12 sm:px-12 sm:py-16"
   >
-    Also you can send me a direct message and get a cool toast!
-  </p>
+    <div
+      aria-hidden="true"
+      class="pointer-events-none absolute -top-32 -right-24 size-[26rem] rounded-full opacity-25 blur-[100px]"
+      style="background:radial-gradient(closest-side,#8b80f9,transparent)"
+    >
+    </div>
 
-  <Form client:load />
-</StyledSection>
+    <h2 class="text-2xl font-semibold tracking-tight sm:text-3xl">
+      {t.contact.title}
+    </h2>
+    <p class="mt-4 max-w-xl text-sm leading-relaxed text-dim">
+      {t.contact.lede}
+    </p>
+
+    <div class="mt-9 flex flex-wrap items-center gap-3">
+      <a
+        href={`mailto:${profile.email}`}
+        class="font-mono text-base text-ink underline decoration-line underline-offset-[6px] transition-colors hover:decoration-accent sm:text-lg"
+        >{profile.email}</a
+      >
+      <CopyEmail
+        client:visible
+        email={profile.email}
+        copyLabel={t.contact.copy}
+        copiedLabel={t.contact.copied}
+      />
+    </div>
+
+    <ul class="mt-10 flex flex-wrap gap-3">
+      {
+        links.map((link) => (
+          <li>
+            <a
+              href={link.href}
+              target="_blank"
+              rel="noopener"
+              class="group inline-flex items-center gap-2 rounded-lg border border-line bg-raised px-4 py-2.5 text-sm text-dim transition-colors hover:border-accent/50 hover:text-ink"
+            >
+              {link.icon === 'github' && <Github class="size-4" />}
+              {link.icon === 'linkedin' && <Linkedin class="size-4" />}
+              {link.icon === 'download' && <Download class="size-4" />}
+              {link.label}
+              <ArrowUpRight class="size-3.5 text-faint transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>
