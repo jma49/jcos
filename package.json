@@ -2,6 +2,9 @@
   "name": "jincheng-portfolio",
   "type": "module",
   "version": "1.0.0",
+  "engines": {
+    "node": ">=20.3.0"
+  },
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
