@@ -19,7 +19,7 @@ export const content = {
     meta: {
       title: 'Jincheng Ma — Software Engineer',
       description:
-        'Jincheng Ma is a software engineer in San Jose. Previously at TikTok (Trust & Safety) and INFI.US.'
+        'Jincheng Ma is a software engineer in the Bay Area who builds developer tooling and brings AI agents into code review, testing and release.'
     },
     ui: {
       switchTo: '中文',
@@ -37,15 +37,16 @@ export const content = {
       short: 'Default',
       long: 'Long',
       shortParagraphs: [
-        "I'm a software engineer in San Jose. Most recently I was on TikTok's Trust & Safety team, working on test automation and release quality. I also built an LLM code review tool that runs in CI across 30+ internal repositories.",
-        "Before that I was at INFI.US in Chicago, building internal data-quality tooling, and finished my master's at Illinois Tech. I'm currently looking for software engineering roles.",
+        "I'm a software engineer in the Bay Area. I build developer tooling, and I'm good at bringing AI agents into each stage of quality control: requirements, test design, code review and release.",
+        "Most recently I was at TikTok, where I built a multi-agent code review system that runs in CI across 30+ repositories, and a pipeline that turns product requirements into test cases and automation scripts. Before that I built an internal data-quality platform at INFI.US in Chicago, and got my master's at Illinois Tech. I'm currently looking for software engineering roles.",
         'Outside of work I boulder, currently at V6, and take photos. Some of my photos are on [Unsplash](https://unsplash.com/@jincheng_1999).'
       ],
       longParagraphs: [
-        "I'm a software engineer in San Jose. Most recently I was a Software Engineer in Test on TikTok's Trust & Safety team.",
-        'Most of that job was testing: backend API, integration and E2E suites that run as release gates in CI, plus using production metrics and on-call data to decide what to cover next. Over the year, P0/P1 regression automation went from 80% to 96%, and production issues dropped by about 30%.',
-        'I also built the LLM code review tool the team uses in CI. It runs a few reviewers in parallel on each merge request and merges their findings into one review. Most of the work was making it cheap and predictable enough to run on every merge request: smaller context, fallbacks between models, timeouts, and tracking cost per review.',
-        'Before TikTok I spent six months at INFI.US in Chicago on internal data-quality tooling and Playwright tests. I finished my M.S. at Illinois Tech in 2024.',
+        "I'm a software engineer in the Bay Area. Most recently I was at TikTok, working on developer tools and agent infrastructure.",
+        'Most of my work sits in two places: putting AI agents to use at each stage of quality control, from requirements and test design to code review and release, and building the tools that make a team faster.',
+        'My main project at TikTok was a multi-agent code review system in CI. Each merge request gets several specialist reviewers running in parallel, and a coordinator merges their findings into one review and blocks the merge on critical issues. Most of the effort went into making it cheap and predictable enough to run on every merge request: a smaller shared context, fallbacks between models, timeouts, and tracking the cost of each review.',
+        'I also built a pipeline that turns PRDs into test cases and then into automation scripts, and the CI release gates those scripts run in. Over the year, P0/P1 regression automation went from 80% to 96%.',
+        'Before TikTok I spent six months at INFI.US in Chicago, where I built an internal data-quality platform on my own, from product design to deployment and operations. I finished my M.S. at Illinois Tech in 2024.',
         "I'm currently looking for software engineering roles. Outside of work I boulder (currently V6), take photos, some of which are on [Unsplash](https://unsplash.com/@jincheng_1999), and follow the markets."
       ]
     },
@@ -55,17 +56,18 @@ export const content = {
     jobs: [
       {
         company: 'TikTok',
-        role: 'Software Engineer in Test, Trust & Safety',
+        role: 'Software Engineer in Test, Developer Tools & Agent Infrastructure',
         location: 'San Jose, CA',
         period: 'Jul 2025 – Sep 2026',
         summary:
-          'Test automation and release quality for Trust & Safety products, and an LLM code review tool used across 30+ repositories.',
+          'Brought AI agents into code review and test design, and built the CI gates and developer tooling around them for 30+ repositories.',
         bullets: [
-          'Owned test automation for Trust & Safety products: backend API and integration tests, and frontend E2E suites, run as release gates in CI/CD. P0/P1 regression automation went from 80.21% to 95.82%.',
-          'Used production metrics and on-call trends to decide where to add tests and monitoring. Production issues dropped by 30%, and inspection stability went from 93.94% to 99.99%.',
-          'Mapped testing gaps across regions in app code, runtime config, middleware and third-party dependencies. Found 19 region-specific scenarios and 60 config sets, and covered them with config diff and snapshot checks, API/RPC assertions, and targeted E2E tests.',
-          'Built an LLM code review tool that runs in CI on every merge request across 30+ internal repositories. A coordinator runs 7 reviewers in parallel (security, performance, code quality, docs, release, internal standards), merges and de-duplicates their findings, and blocks the merge on critical issues.',
-          'Kept it affordable and stable: the number of reviewers and the model tier depend on diff size and sensitive paths, reviewers share one cached context file instead of each getting a copy (token spend down 30%+), and each run has timeouts, model fallbacks, and input sanitization against prompt injection.'
+          'Built a multi-agent code review system that runs in CI on every merge request across 30+ internal repositories. A coordinator runs 7 specialist reviewers in parallel (security, performance, code quality, docs, release, internal standards), merges and de-duplicates their findings, and blocks the merge on critical issues. Review turnaround dropped by about 50%, and it has caught 100+ issues rated P2 or higher.',
+          'Kept it cheap and reliable enough to run on every merge request: the number of reviewers and the model tier scale with diff size and sensitive paths, reviewers share one cached context instead of each getting a copy (token spend down 30%+), and each run has per-model fallbacks, timeouts, and input sanitization against prompt injection. Per-review token and cost tracking made it possible to compare models on quality, latency and cost.',
+          'Built an AI pipeline that goes from PRD to test cases to automation scripts, raising test-case writing efficiency by 60% and cutting script development time by 70%.',
+          'Wired backend API, integration and E2E suites for Trust & Safety products into CI/CD as release gates. P0/P1 regression automation went from 80.21% to 95.82%.',
+          'Used production metrics and on-call trends to guide reliability work. Production issues dropped by 30%, and inspection stability went from 93.94% to 99.99%.',
+          'Compared deployments across regions in app code, runtime config, middleware and third-party dependencies, found 19 region-specific scenarios and 60 config sets, and turned them into layered CI checks to catch config drift early.'
         ]
       },
       {
@@ -73,7 +75,7 @@ export const content = {
         role: 'Software Engineer in Test',
         location: 'Chicago, IL',
         period: 'Jan 2025 – Jun 2025',
-        summary: 'Internal data-quality tooling and the E2E tests used for releases.',
+        summary: 'Built an internal data-quality platform end to end, plus the E2E tests used for releases.',
         bullets: [
           'Built an internal tool (Next.js, TypeScript) that runs 150+ scheduled SQL checks a day over 50+ tables in several databases, shows the results on a dashboard, and posts anomalies to team channels through webhooks.',
           'Set up a Playwright E2E framework and Android test flows in CI/CD for regression testing of core flows.'
@@ -95,6 +97,10 @@ export const content = {
     skills: {
       title: 'Skills',
       groups: [
+        {
+          name: 'AI agents',
+          items: ['Multi-agent systems', 'Agent orchestration', 'MCP', 'LLM evaluation', 'Claude Code', 'Cursor']
+        },
         { name: 'Languages', items: ['Go', 'Python', 'TypeScript', 'Java', 'SQL'] },
         {
           name: 'Backend',
@@ -108,10 +114,6 @@ export const content = {
           name: 'Infrastructure',
           items: ['Docker', 'Kubernetes', 'AWS', 'GCP', 'GitHub Actions', 'GitLab CI']
         },
-        {
-          name: 'LLM tooling',
-          items: ['LLM APIs', 'Multi-agent workflows', 'MCP', 'LLM evaluation']
-        }
       ]
     },
     education: {
@@ -148,7 +150,7 @@ export const content = {
     meta: {
       title: '马锦程 — 软件工程师',
       description:
-        '马锦程，湾区软件工程师，曾在 TikTok 信任与安全团队和 INFI.US 工作。'
+        '马锦程，湾区软件工程师，做研发效能工具，擅长把 AI Agent 用到需求、测试、代码评审和发布等质量环节。'
     },
     ui: {
       switchTo: 'EN',
@@ -165,15 +167,16 @@ export const content = {
       short: '简短',
       long: '完整',
       shortParagraphs: [
-        '我叫马锦程，在湾区做软件工程师。上一份工作在 TikTok 信任与安全团队，主要负责测试自动化，给产品发布把关；另外写了一套 LLM 代码评审工具，接进了 30 多个内部仓库的 CI。',
-        '再往前，我在芝加哥的 INFI.US 做内部数据平台，硕士也是在芝加哥的伊利诺伊理工读的。现在正在找新的软件工程师工作。',
+        '我叫马锦程，在湾区做软件工程师。我擅长把 AI Agent 用到质量管控的各个环节，从需求、用例设计到代码评审和发布；也做研发效能工具。',
+        '上一份工作在 TikTok，我做了一套在 CI 里运行的多 Agent 代码评审系统，接进了 30 多个内部仓库；还搭了一条从 PRD 生成测试用例、再生成自动化脚本的流水线。再往前，我在芝加哥的 INFI.US 独立做了内部数据质量平台，硕士是在伊利诺伊理工读的。现在正在找新的软件工程师工作。',
         '工作之外，我是个抱石爱好者，目前在爬 V6；也爱拍照，一些作品放在 [Unsplash](https://unsplash.com/@jincheng_1999) 上。'
       ],
       longParagraphs: [
-        '我叫马锦程，在湾区做软件工程师，上一份工作是 TikTok 信任与安全团队的测试开发工程师。',
-        '在 TikTok 的主要工作是测试：后端接口、集成和 E2E 测试，都接在 CI 里当发布卡点。测试往哪补，基本看线上指标和 On-call 记录来定。一年下来，P0/P1 回归自动化率从 80% 提到了 96%，线上问题少了三成左右。',
-        '我还给团队写了一套 LLM 代码评审工具：每个合并请求会同时跑几个评审，最后汇总成一份意见。最花时间的是让它便宜、稳定到每个合并请求都能跑：压缩上下文、模型互为备份、设置超时，再把每次评审的成本算清楚。',
-        '来 TikTok 之前，我在芝加哥的 INFI.US 待了半年，一个人把内部数据质量平台从零做了出来，也写了 Playwright 测试。2024 年从伊利诺伊理工硕士毕业。',
+        '我叫马锦程，在湾区做软件工程师。上一份工作在 TikTok，做研发工具和 Agent 基础设施。',
+        '我的工作主要是两件事：一是把 AI Agent 用到研发流程的各个质量环节，比如需求、用例设计、代码评审和发布；二是做让团队效率更高的研发工具。',
+        '在 TikTok 最主要的项目是 CI 里的多 Agent 代码评审系统。每个合并请求会同时跑几个不同方向的评审，由协调器汇总成一份结论，遇到严重问题直接拦下合并。最花时间的是让它便宜、稳定到每个合并请求都能跑：共享并压缩上下文、模型互为备份、设置超时，再把每次评审的成本算清楚。',
+        '我还搭了一条从 PRD 生成测试用例、再生成自动化脚本的流水线，以及这些脚本所在的 CI 发布卡点。一年下来，P0/P1 回归自动化率从 80% 提到了 96%。',
+        '来 TikTok 之前，我在芝加哥的 INFI.US 待了半年，一个人把内部数据质量平台从产品设计一路做到上线运维。2024 年从伊利诺伊理工硕士毕业。',
         '现在正在找新的软件工程师工作。平时是个抱石爱好者，目前在爬 V6；也爱拍照，一些作品放在 [Unsplash](https://unsplash.com/@jincheng_1999) 上；另外会关注股市。'
       ]
     },
@@ -183,17 +186,18 @@ export const content = {
     jobs: [
       {
         company: 'TikTok',
-        role: '测试开发工程师 · 信任与安全',
+        role: '测试开发工程师 · 研发工具与 Agent 基础设施',
         location: '美国加州 · 圣何塞',
         period: '2025.07 – 2026.09',
         summary:
-          '给信任与安全产品做测试自动化、把关发布质量，另外写了一套覆盖 30 多个仓库的 LLM 代码评审工具。',
+          '把 AI Agent 用到代码评审和用例设计上，并搭建配套的 CI 卡点和研发工具，覆盖 30 多个仓库。',
         bullets: [
-          '负责信任与安全产品的测试自动化，包括后端接口、集成测试和前端 E2E，全部接入 CI/CD 作为发布卡点。P0/P1 回归自动化率从 80.21% 提升到 95.82%。',
-          '依据线上指标和 On-call 趋势决定测试和监控往哪补，线上问题减少 30%，巡检稳定性从 93.94% 提升到 99.99%。',
-          '排查不同区域部署之间的测试盲区，范围包括应用代码、运行时配置、中间件和第三方依赖。梳理出 19 类区域特有场景和 60 组配置，再用配置 diff 与快照检查、API/RPC 断言和针对性的 E2E 测试逐一覆盖。',
-          '写了一套在 CI 里运行的 LLM 代码评审工具，覆盖 30 多个内部仓库的全部合并请求。由一个协调器同时调起 7 个评审，分别看安全、性能、代码质量、文档、发布和内部规范，汇总去重后给出一份结论；遇到严重问题直接拦下合并。',
-          '在成本和稳定性上，按 diff 大小和敏感路径决定开几个评审、用哪档模型；几个评审共用一份缓存好的上下文，不再各拷一份，Token 开销降了 30% 以上；每次运行都设了超时和模型降级，并过滤输入以防提示注入。'
+          '做了一套在 CI 里运行的多 Agent 代码评审系统，覆盖 30 多个内部仓库的全部合并请求。由一个协调器同时调起 7 个评审，分别看安全、性能、代码质量、文档、发布和内部规范，汇总去重后给出一份结论，遇到严重问题直接拦下合并。评审周期缩短约 50%，累计发现 100 多个 P2 及以上问题。',
+          '让它便宜、稳定到每个合并请求都能跑：按 diff 大小和敏感路径决定开几个评审、用哪档模型；几个评审共用一份缓存好的上下文，不再各拷一份，Token 开销降了 30% 以上；每次运行都有按模型的降级链路、超时和防提示注入的输入过滤。再按任务统计 Token 和成本，用来比较不同模型的质量、延迟和花费。',
+          '搭了一条 AI 用例生成流水线，从 PRD 到测试用例再到自动化脚本，用例编写效率提升 60%，脚本开发用时减少 70%。',
+          '把信任与安全产品的后端接口、集成和 E2E 测试接入 CI/CD 发布卡点，P0/P1 回归自动化率从 80.21% 提升到 95.82%。',
+          '依据线上指标和 On-call 趋势推动可靠性治理，线上问题减少 30%，巡检稳定性从 93.94% 提升到 99.99%。',
+          '对比美国与非美国数据中心的部署差异，范围包括应用代码、运行时配置、中间件和第三方依赖。梳理出 19 类区域特有场景和 60 组配置，转成分层的 CI 校验，尽早发现跨区域的配置漂移。'
         ]
       },
       {
@@ -201,7 +205,7 @@ export const content = {
         role: '软件工程师',
         location: '美国伊利诺伊州 · 芝加哥',
         period: '2025.01 – 2025.06',
-        summary: '从零做了内部数据质量平台，也负责发布前的 E2E 测试。',
+        summary: '一个人把内部数据质量平台从零做到上线，也负责发布前的 E2E 测试。',
         bullets: [
           '用 Next.js 和 TypeScript 做了内部数据质量平台：每天定时对 50 多张表跑 150 多条 SQL 检查，结果汇总到看板上，发现异常就通过 Webhook 推送到团队频道。',
           '搭建 Playwright E2E 框架和 Android 端测试流程，接入 CI/CD，覆盖核心流程的回归。'
@@ -223,6 +227,10 @@ export const content = {
     skills: {
       title: '技能',
       groups: [
+        {
+          name: 'AI Agent',
+          items: ['多 Agent 系统', 'Agent 编排', 'MCP', 'LLM 评测', 'Claude Code', 'Cursor']
+        },
         { name: '语言', items: ['Go', 'Python', 'TypeScript', 'Java', 'SQL'] },
         {
           name: '后端',
@@ -236,7 +244,6 @@ export const content = {
           name: '基础设施',
           items: ['Docker', 'Kubernetes', 'AWS', 'GCP', 'GitHub Actions', 'GitLab CI']
         },
-        { name: 'LLM 工具', items: ['LLM API', '多 Agent 工作流', 'MCP', 'LLM 评测'] }
       ]
     },
     education: {
