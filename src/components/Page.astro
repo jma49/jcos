@@ -52,6 +52,7 @@ const links = [
         sizes="(min-width: 1100px) 1px, calc(100vw - 2.5rem)"
         class="w-full rounded-[10px] border border-line"
       />
+      <figcaption class="meta mt-2 text-[13px]">{t.ui.illustrationCredit}</figcaption>
     </figure>
 
     <div class="mt-14 space-y-14">
@@ -75,6 +76,8 @@ const links = [
         </ul>
       </section>
 
+      <Projects lang={lang} />
+
       <section aria-labelledby="links-heading">
         <h2 id="links-heading" class="heading mb-4">{t.links.title}</h2>
         <ul class="list-[square] space-y-1 pl-5 marker:text-faint">
@@ -97,26 +100,29 @@ const links = [
           }
         </ul>
       </section>
-
-      <Projects lang={lang} />
     </div>
 
     <Footer lang={lang} />
   </article>
 
   <aside
-    class="sticky top-[clamp(1.25rem,3.4vw,3.25rem)] hidden h-[calc(100svh-2*clamp(1.25rem,3.4vw,3.25rem))] min-h-[min(72svh,760px)] overflow-hidden rounded-[10px] border border-line bg-surface min-[1100px]:block"
+    class="sticky top-[clamp(1.25rem,3.4vw,3.25rem)] hidden h-[calc(100svh-2*clamp(1.25rem,3.4vw,3.25rem))] min-h-[min(72svh,760px)] flex-col min-[1100px]:flex"
   >
-    <!-- Cover-fit in a viewport-tall box, so the rendered width is ~1.5x the height. -->
-    <Picture
-      src={illustration}
-      alt={t.ui.illustrationAlt}
-      formats={['avif', 'webp']}
-      fallbackFormat="webp"
-      widths={[900, 1200, illustration.width]}
-      sizes="(min-width: 1100px) 150vh, 1px"
-      loading="eager"
-      class="absolute inset-0 size-full object-cover object-[62%_50%]"
-    />
+    <figure class="contents">
+      <div class="relative flex-1 overflow-hidden rounded-[10px] border border-line bg-surface">
+        <!-- Cover-fit in a viewport-tall box, so the rendered width is ~1.5x the height. -->
+        <Picture
+          src={illustration}
+          alt={t.ui.illustrationAlt}
+          formats={['avif', 'webp']}
+          fallbackFormat="webp"
+          widths={[900, 1200, illustration.width]}
+          sizes="(min-width: 1100px) 150vh, 1px"
+          loading="eager"
+          class="absolute inset-0 size-full object-cover object-[62%_50%]"
+        />
+      </div>
+      <figcaption class="meta mt-2 text-[13px]">{t.ui.illustrationCredit}</figcaption>
+    </figure>
   </aside>
 </div>

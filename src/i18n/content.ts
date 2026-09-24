@@ -29,7 +29,8 @@ export const content = {
       copy: 'Copy',
       copied: 'Copied',
       illustrationAlt:
-        'An illustration of the Golden Gate Bridge with the San Francisco skyline behind it and a sailboat on the bay.'
+        'An illustration of the Golden Gate Bridge with the San Francisco skyline behind it and a sailboat on the bay.',
+      illustrationCredit: 'Illustration redrawn with AI from a photo I took.'
     },
     role: 'Software Engineer',
     bio: {
@@ -167,7 +168,8 @@ export const content = {
       details: '展开',
       copy: '复制',
       copied: '已复制',
-      illustrationAlt: '金门大桥插画，背后是旧金山的城市天际线，海湾上有一艘帆船。'
+      illustrationAlt: '金门大桥插画，背后是旧金山的城市天际线，海湾上有一艘帆船。',
+      illustrationCredit: '插画由我拍摄的照片经 AI 重绘而成。'
     },
     role: '软件工程师',
     bio: {
