@@ -4,7 +4,7 @@ import Experience from './Experience.astro';
 import Skills from './Skills.astro';
 import Footer from './Footer.astro';
 import ThemeToggle from './ThemeToggle.astro';
-import CopyEmail from './react/CopyEmail';
+import CopyEmail from './CopyEmail.astro';
 import { content, profile, type Lang } from '../i18n/content';
 
 interface Props {
@@ -84,7 +84,6 @@ const links = [
           <li>
             <a href={`mailto:${profile.email}`} class="link">{profile.email}</a>
             <CopyEmail
-              client:visible
               email={profile.email}
               copyLabel={t.ui.copy}
               copiedLabel={t.ui.copied}
