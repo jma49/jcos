@@ -1,20 +1,121 @@
 ---
-import Hero from './Hero.astro';
+import Bio from './Bio.astro';
 import Experience from './Experience.astro';
 import Skills from './Skills.astro';
-import About from './About.astro';
-import Contact from './Contact.astro';
-import type { Lang } from '../i18n/content';
+import Footer from './Footer.astro';
+import ThemeToggle from './ThemeToggle.astro';
+import CopyEmail from './react/CopyEmail';
+import { content, profile, type Lang } from '../i18n/content';
 
 interface Props {
   lang: Lang;
 }
 
 const { lang } = Astro.props;
+const t = content[lang];
+const otherHref = lang === 'en' ? '/zh/' : '/';
+
+const links = [
+  { href: profile.github, label: t.links.github },
+  { href: profile.linkedin, label: t.links.linkedin },
+  { href: t.links.resumeHref, label: t.links.resume },
+  { href: profile.photography, label: t.links.photography }
+];
 ---
 
-<Hero lang={lang} />
-<Experience lang={lang} />
-<Skills lang={lang} />
-<About lang={lang} />
-<Contact lang={lang} />
+<!-- Wide screens: reading column on the left, illustration pinned on the right. -->
+<div
+  class="mx-auto grid max-w-[1500px] items-start gap-[clamp(2rem,3.6vw,3.75rem)] min-[1100px]:grid-cols-[minmax(0,1.75fr)_minmax(380px,1fr)]"
+>
+  <article class="mx-auto w-full max-w-[600px] min-w-0">
+    <header class="mb-8 flex items-baseline justify-between gap-4">
+      <h1
+        class="text-[clamp(2.2rem,3.5vw,2.65rem)] leading-[1.15] font-semibold tracking-[-0.02em] text-balance"
+      >
+        {profile.name[lang]}
+      </h1>
+      <div class="meta flex shrink-0 items-center gap-4">
+        <a
+          href={otherHref}
+          aria-label={t.ui.switchLabel}
+          class="transition-colors hover:text-ink">{t.ui.switchTo}</a
+        >
+        <ThemeToggle lang={lang} />
+      </div>
+    </header>
+
+    <Bio lang={lang} />
+
+    <figure class="mt-8 min-[1100px]:hidden">
+      <img
+        src="/golden-gate.webp"
+        alt={t.ui.illustrationAlt}
+        width="1537"
+        height="1023"
+        decoding="async"
+        class="w-full rounded-[10px] border border-line"
+      />
+    </figure>
+
+    <div class="mt-14 space-y-14">
+      <Experience lang={lang} />
+      <Skills lang={lang} />
+
+      <section aria-labelledby="education-heading">
+        <h2 id="education-heading" class="heading mb-4">{t.education.title}</h2>
+        <ul>
+          {
+            t.education.items.map((item) => (
+              <li class="grid items-baseline gap-x-5 border-b border-line py-2.5 sm:grid-cols-[minmax(0,1fr)_auto]">
+                <p>
+                  <span class="font-semibold">{item.school}</span>
+                  <span class="text-dim"> · {item.degree}</span>
+                </p>
+                <span class="meta">{item.period}</span>
+              </li>
+            ))
+          }
+        </ul>
+      </section>
+
+      <section aria-labelledby="links-heading">
+        <h2 id="links-heading" class="heading mb-4">{t.links.title}</h2>
+        <ul class="list-[square] space-y-1 pl-5 marker:text-faint">
+          <li>
+            <a href={`mailto:${profile.email}`} class="link">{profile.email}</a>
+            <CopyEmail
+              client:visible
+              email={profile.email}
+              copyLabel={t.ui.copy}
+              copiedLabel={t.ui.copied}
+            />
+          </li>
+          {
+            links.map((link) => (
+              <li>
+                <a href={link.href} target="_blank" rel="noopener" class="link">
+                  {link.label}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </section>
+    </div>
+
+    <Footer lang={lang} />
+  </article>
+
+  <aside
+    class="sticky top-[clamp(1.25rem,3.4vw,3.25rem)] hidden h-[calc(100svh-2*clamp(1.25rem,3.4vw,3.25rem))] min-h-[min(72svh,760px)] overflow-hidden rounded-[10px] border border-line bg-surface min-[1100px]:block"
+  >
+    <img
+      src="/golden-gate.webp"
+      alt={t.ui.illustrationAlt}
+      width="1537"
+      height="1023"
+      decoding="async"
+      class="absolute inset-0 size-full object-cover object-[62%_50%]"
+    />
+  </aside>
+</div>

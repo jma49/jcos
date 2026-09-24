@@ -1,0 +1,89 @@
+---
+import { content, type Lang } from '../i18n/content';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = content[lang];
+---
+
+  <button
+    type="button"
+    data-theme-toggle
+    aria-label={t.ui.theme}
+    title={t.ui.theme}
+    class="-m-1 grid size-7 cursor-pointer place-items-center rounded-full transition-colors hover:text-ink"
+  >
+    <!-- Sun in dark mode, moon in light mode: the icon shows where you'd go. -->
+    <svg
+      class="size-4 dark-only"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1.75"
+      stroke-linecap="round"
+      aria-hidden="true"
+    >
+      <circle cx="12" cy="12" r="4"></circle>
+      <path
+        d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"
+      ></path>
+    </svg>
+    <svg
+      class="size-4 light-only"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1.75"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z"></path>
+    </svg>
+  </button>
+
+<style>
+  .dark-only {
+    display: none;
+  }
+
+  :global(:root[data-theme='dark']) .dark-only {
+    display: block;
+  }
+
+  :global(:root[data-theme='dark']) .light-only {
+    display: none;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :global(:root:not([data-theme='light'])) .dark-only {
+      display: block;
+    }
+
+    :global(:root:not([data-theme='light'])) .light-only {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  const button = document.querySelector<HTMLButtonElement>('[data-theme-toggle]');
+
+  button?.addEventListener('click', () => {
+    const root = document.documentElement;
+    const current =
+      root.dataset.theme ??
+      (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    const next = current === 'dark' ? 'light' : 'dark';
+
+    root.dataset.theme = next;
+    try {
+      localStorage.setItem('theme', next);
+    } catch {
+      // Storage blocked — the choice still applies for this page view.
+    }
+  });
+</script>

@@ -32,7 +32,7 @@ function CopyEmail({ email, copyLabel, copiedLabel }: Props) {
       type='button'
       onClick={copy}
       aria-live='polite'
-      className='rounded-md border border-line px-2.5 py-1 font-mono text-[0.6875rem] text-faint transition-colors hover:border-accent/50 hover:text-accent-soft'
+      className='meta ml-2 cursor-pointer text-[13px] transition-colors hover:text-ink'
     >
       {copied ? copiedLabel : copyLabel}
     </button>

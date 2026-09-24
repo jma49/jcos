@@ -1,5 +1,4 @@
 ---
-import SectionHeading from './SectionHeading.astro';
 import { content, type Lang } from '../i18n/content';
 
 interface Props {
@@ -8,35 +7,20 @@ interface Props {
 
 const { lang } = Astro.props;
 const t = content[lang];
+const separator = lang === 'zh' ? '、' : ', ';
 ---
 
-<section id="skills" class="shell scroll-mt-24 pt-24 sm:pt-32">
-  <SectionHeading
-    index="02"
-    title={t.skills.title}
-    subtitle={t.skills.subtitle}
-  />
+<section aria-labelledby="skills-heading">
+  <h2 id="skills-heading" class="heading mb-4">{t.skills.title}</h2>
 
-  <div class="mt-12">
+  <dl>
     {
-      t.skills.groups.map((group, i) => (
-        <div
-          class:list={[
-            'reveal grid gap-4 py-7 sm:grid-cols-[11rem_1fr] sm:gap-8',
-            i > 0 && 'hairline'
-          ]}
-          style={`transition-delay:${i * 60}ms`}
-        >
-          <h3 class="label pt-1 leading-relaxed">{group.name}</h3>
-          <ul class="flex flex-wrap gap-2">
-            {group.items.map((item) => (
-              <li class="rounded-lg border border-line-soft bg-surface px-3 py-1.5 text-[0.8125rem] text-dim transition-colors hover:border-accent/40 hover:text-ink">
-                {item}
-              </li>
-            ))}
-          </ul>
+      t.skills.groups.map((group) => (
+        <div class="grid gap-x-5 border-b border-line py-2.5 sm:grid-cols-[9rem_minmax(0,1fr)]">
+          <dt class="font-semibold">{group.name}</dt>
+          <dd class="text-dim">{group.items.join(separator)}</dd>
         </div>
       ))
     }
-  </div>
+  </dl>
 </section>
