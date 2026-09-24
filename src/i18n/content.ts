@@ -7,7 +7,7 @@ export const profile = {
   handle: 'jma49',
   email: 'majincheng990128@gmail.com',
   github: 'https://github.com/jma49',
-  linkedin: 'https://www.linkedin.com/in/jinchengma',
+  linkedin: 'https://www.linkedin.com/in/jincheng-ma-professional',
   photography: 'https://unsplash.com/@jincheng_1999',
   location: { en: 'San Jose, California', zh: '美国加州 · 圣何塞' }
 };
