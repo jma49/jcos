@@ -29,7 +29,8 @@ export const content = {
       copy: 'Copy',
       copied: 'Copied',
       illustrationAlt:
-        'An illustration of the Golden Gate Bridge with the San Francisco skyline behind it and a sailboat on the bay.'
+        'An illustration of the Golden Gate Bridge with the San Francisco skyline behind it and a sailboat on the bay.',
+      illustrationCredit: 'Illustration redrawn with AI from a photo I took.'
     },
     role: 'Software Engineer',
     bio: {
@@ -49,6 +50,14 @@ export const content = {
         'Before TikTok I spent six months at INFI.US in Chicago, where I built an internal data-quality platform on my own, from product design to deployment and operations. I finished my M.S. at Illinois Tech in 2024.',
         "I'm currently looking for software engineering roles. Outside of work I boulder (currently V6), take photos, some of which are on [Unsplash](https://unsplash.com/@jincheng_1999), and follow the markets."
       ]
+    },
+    projects: {
+      title: 'Projects',
+      status: { live: 'Live', wip: 'In progress', archived: 'Archived' },
+      visit: 'Visit',
+      source: 'Source',
+      back: 'Back to home',
+      preview: 'Preview of'
     },
     work: {
       title: 'Experience'
@@ -159,7 +168,8 @@ export const content = {
       details: '展开',
       copy: '复制',
       copied: '已复制',
-      illustrationAlt: '金门大桥插画，背后是旧金山的城市天际线，海湾上有一艘帆船。'
+      illustrationAlt: '金门大桥插画，背后是旧金山的城市天际线，海湾上有一艘帆船。',
+      illustrationCredit: '插画由我拍摄的照片经 AI 重绘而成。'
     },
     role: '软件工程师',
     bio: {
@@ -179,6 +189,14 @@ export const content = {
         '来 TikTok 之前，我在芝加哥的 INFI.US 待了半年，一个人把内部数据质量平台从产品设计一路做到上线运维。2024 年从伊利诺伊理工硕士毕业。',
         '现在正在找新的软件工程师工作。平时是个抱石爱好者，目前在爬 V6；也爱拍照，一些作品放在 [Unsplash](https://unsplash.com/@jincheng_1999) 上；另外会关注股市。'
       ]
+    },
+    projects: {
+      title: '项目',
+      status: { live: '已上线', wip: '进行中', archived: '已归档' },
+      visit: '访问',
+      source: '源码',
+      back: '返回首页',
+      preview: '预览：'
     },
     work: {
       title: '工作经历'

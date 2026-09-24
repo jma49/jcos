@@ -1,0 +1,20 @@
+---
+import ThemeToggle from './ThemeToggle.astro';
+import { content, type Lang } from '../i18n/content';
+
+interface Props {
+  lang: Lang;
+  /** The same page in the other language. */
+  otherHref: string;
+}
+
+const { lang, otherHref } = Astro.props;
+const t = content[lang];
+---
+
+<div class="meta flex shrink-0 items-center gap-4">
+  <a href={otherHref} aria-label={t.ui.switchLabel} class="transition-colors hover:text-ink"
+    >{t.ui.switchTo}</a
+  >
+  <ThemeToggle lang={lang} />
+</div>

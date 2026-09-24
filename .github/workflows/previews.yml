@@ -1,0 +1,49 @@
+# Re-captures project preview images after every change to main and
+# commits them back when they differ. See scripts/capture-previews.mjs.
+name: Update project previews
+
+on:
+  push:
+    branches: [main]
+    # The bot's own commit only touches covers; don't react to it.
+    paths-ignore: ['src/content/projects/covers/**']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: previews
+  cancel-in-progress: true
+
+jobs:
+  capture:
+    # macOS ships the site's serif fonts (Iowan Old Style, Palatino), so the
+    # screenshot matches what Mac visitors see. Linux would fall back to
+    # DejaVu Serif.
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - run: npx playwright install chromium
+
+      - run: npm run preview:capture
+
+      - name: Commit changed previews
+        run: |
+          if [ -z "$(git status --porcelain -- src/content/projects/covers)" ]; then
+            echo "Previews are up to date."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
+          git add src/content/projects/covers
+          git commit -m "chore: update project previews"
+          git push
