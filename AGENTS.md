@@ -37,14 +37,22 @@ status: live           # live | wip | archived
 stack: [Go, TypeScript]
 repo: https://github.com/jma49/...   # optional
 demo: https://...                    # optional, a URL or a site path
-cover: ../covers/<slug>.png          # optional preview image, 16:10
+cover: ../covers/<slug>.jpg          # optional preview image, 16:10
+capture: /                           # optional page to screenshot into cover
 ---
 ```
 
-Put preview images in `src/content/projects/covers/`, shared by both
-languages. A 1920x1200 screenshot works well; Astro converts it to
-AVIF/WebP at the sizes each layout needs. Projects without a cover show
-their title on a plain tile.
+Preview images live in `src/content/projects/covers/`, shared by both
+languages; Astro converts them to AVIF/WebP at the sizes each layout
+needs. Projects without a cover show their title on a plain tile.
+
+Set `capture` (in one language's file) to have the cover generated: a
+site path like `/` is captured from the local build, a full URL from the
+live site. Run `npm run preview:capture` to update covers locally. The
+`Update project previews` workflow runs it on every push to `main`, on
+macOS so the serif fonts match, and commits covers whose pixels changed
+by more than 0.1%. Don't edit a captured cover by hand; it will be
+overwritten.
 
 The home page list, the pages at `/projects/<slug>/` and
 `/zh/projects/<slug>/`, the sitemap and `llms.txt` all update

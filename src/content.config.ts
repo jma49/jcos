@@ -14,7 +14,10 @@ const projects = defineCollection({
       repo: z.string().url().optional(),
       demo: z.string().optional(),
       // Preview image, relative to the Markdown file. 16:10 works best.
-      cover: image().optional()
+      cover: image().optional(),
+      // Page to screenshot into `cover` (a site path or a URL); see
+      // scripts/capture-previews.mjs.
+      capture: z.string().optional()
     })
 });
 

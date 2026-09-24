@@ -11,7 +11,8 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "check": "astro check"
+    "check": "astro check",
+    "preview:capture": "node scripts/capture-previews.mjs"
   },
   "dependencies": {
     "@astrojs/react": "^4.2.4",
@@ -26,6 +27,7 @@
     "@astrojs/check": "^0.9.10",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
+    "playwright": "^1.63.0",
     "typescript": "^5.9.3"
   },
   "allowScripts": {

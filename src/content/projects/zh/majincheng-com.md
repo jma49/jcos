@@ -5,7 +5,7 @@ date: 2026-09
 status: live
 stack: [Astro, TypeScript, Tailwind CSS, Vercel]
 repo: https://github.com/jma49/Jincheng-Protafolio
-cover: ../covers/majincheng-com.png
+cover: ../covers/majincheng-com.jpg
 demo: https://majincheng.com/zh/
 ---
 
