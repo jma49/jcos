@@ -4,11 +4,22 @@ import { content, profile, type Lang } from '../i18n/content';
 
 interface Props {
   lang: Lang;
+  /** Path below the language root, e.g. '/' or '/projects/foo/'. */
+  path?: string;
+  /** Page title and description; default to the home page's. */
+  title?: string;
+  description?: string;
+  /** Whether the page exists in the other language too. */
+  translated?: boolean;
 }
 
-const { lang } = Astro.props;
+const { lang, path = '/', translated = true } = Astro.props;
 const t = content[lang];
-const canonical = new URL(lang === 'zh' ? '/zh/' : '/', Astro.site);
+const title = Astro.props.title ?? t.meta.title;
+const description = Astro.props.description ?? t.meta.description;
+
+const localized = (l: Lang) => new URL((l === 'zh' ? '/zh' : '') + path, Astro.site);
+const canonical = localized(lang);
 const ogImage = new URL('/og.png', Astro.site);
 
 // Structured profile for search engines and AI crawlers.
@@ -33,26 +44,32 @@ const personLd = {
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="generator" content={Astro.generator} />
 
-    <title>{t.meta.title}</title>
-    <meta name="description" content={t.meta.description} />
+    <title>{title}</title>
+    <meta name="description" content={description} />
     <meta name="author" content={profile.name[lang]} />
     <link rel="canonical" href={canonical} />
-    <link rel="alternate" hreflang="en" href={new URL('/', Astro.site)} />
-    <link rel="alternate" hreflang="zh" href={new URL('/zh/', Astro.site)} />
+    {
+      translated && (
+        <>
+          <link rel="alternate" hreflang="en" href={localized('en')} />
+          <link rel="alternate" hreflang="zh" href={localized('zh')} />
+        </>
+      )
+    }
 
     <meta property="og:type" content="website" />
-    <meta property="og:title" content={t.meta.title} />
-    <meta property="og:description" content={t.meta.description} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
     <meta property="og:image" content={ogImage} />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content={t.meta.title} />
+    <meta property="og:image:alt" content={title} />
     <meta property="og:locale" content={lang === 'zh' ? 'zh_CN' : 'en_US'} />
 
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content={t.meta.title} />
-    <meta name="twitter:description" content={t.meta.description} />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImage} />
 
     <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />

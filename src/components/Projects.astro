@@ -1,0 +1,59 @@
+---
+import { content, type Lang } from '../i18n/content';
+import { formatMonth, getProjects, projectHref } from '../lib/projects';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = content[lang];
+const projects = await getProjects(lang);
+---
+
+{
+  projects.length > 0 && (
+    <section aria-labelledby="projects-heading">
+      <h2 id="projects-heading" class="heading mb-4">
+        {t.projects.title}
+      </h2>
+      <ul class="project-list">
+        {projects.map((project) => (
+          <li>
+            <a
+              href={projectHref(lang, project.slug)}
+              class="grid gap-x-5 border-b border-line py-3 sm:grid-cols-[minmax(0,1fr)_auto]"
+            >
+              <span>
+                <span class="font-semibold">{project.data.title}</span>
+                <span class="block text-dim">{project.data.description}</span>
+              </span>
+              <span class="meta whitespace-nowrap sm:pt-0.5">
+                {project.data.status === 'live'
+                  ? formatMonth(lang, project.data.date)
+                  : t.projects.status[project.data.status]}
+              </span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )
+}
+
+<style>
+  /* Dim the other rows while one is hovered, as on leerob.com. */
+  @media (hover: hover) and (pointer: fine) {
+    .project-list a {
+      transition: opacity 0.3s ease;
+    }
+
+    .project-list:hover a {
+      opacity: 0.7;
+    }
+
+    .project-list:hover a:hover {
+      opacity: 1;
+    }
+  }
+</style>

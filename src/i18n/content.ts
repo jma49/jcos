@@ -50,6 +50,13 @@ export const content = {
         "I'm currently looking for software engineering roles. Outside of work I boulder (currently V6), take photos, some of which are on [Unsplash](https://unsplash.com/@jincheng_1999), and follow the markets."
       ]
     },
+    projects: {
+      title: 'Projects',
+      status: { live: 'Live', wip: 'In progress', archived: 'Archived' },
+      visit: 'Visit',
+      source: 'Source',
+      back: 'Back to home'
+    },
     work: {
       title: 'Experience'
     },
@@ -179,6 +186,13 @@ export const content = {
         '来 TikTok 之前，我在芝加哥的 INFI.US 待了半年，一个人把内部数据质量平台从产品设计一路做到上线运维。2024 年从伊利诺伊理工硕士毕业。',
         '现在正在找新的软件工程师工作。平时是个抱石爱好者，目前在爬 V6；也爱拍照，一些作品放在 [Unsplash](https://unsplash.com/@jincheng_1999) 上；另外会关注股市。'
       ]
+    },
+    projects: {
+      title: '项目',
+      status: { live: '已上线', wip: '进行中', archived: '已归档' },
+      visit: '访问',
+      source: '源码',
+      back: '返回首页'
     },
     work: {
       title: '工作经历'

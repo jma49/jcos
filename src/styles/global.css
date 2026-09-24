@@ -105,6 +105,82 @@
     font-variant-numeric: lining-nums tabular-nums;
   }
 
+  /* Rendered Markdown in project pages. */
+  .prose > * + * {
+    margin-top: 1.25rem;
+  }
+
+  .prose h2 {
+    margin-top: 2.5rem;
+    font-size: 1.25rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    line-height: 1.4;
+  }
+
+  .prose h3 {
+    margin-top: 2rem;
+    font-weight: 600;
+  }
+
+  .prose ul,
+  .prose ol {
+    padding-left: 1.25rem;
+  }
+
+  .prose ul {
+    list-style: square;
+  }
+
+  .prose ol {
+    list-style: decimal;
+  }
+
+  .prose li + li {
+    margin-top: 0.35rem;
+  }
+
+  .prose li::marker {
+    color: var(--color-faint);
+  }
+
+  .prose a {
+    color: var(--color-faint);
+    text-decoration: underline;
+    text-decoration-color: color-mix(in srgb, var(--color-faint) 35%, transparent);
+    text-underline-offset: 0.18em;
+    transition: color 0.3s ease;
+  }
+
+  .prose a:hover {
+    color: var(--color-dim);
+  }
+
+  .prose code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.85em;
+  }
+
+  .prose pre {
+    overflow-x: auto;
+    border-radius: 0.45rem;
+    background: var(--color-surface);
+    padding: 1rem;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .prose img {
+    border-radius: 10px;
+    border: 1px solid var(--color-line);
+  }
+
+  .prose blockquote {
+    border-left: 2px solid var(--color-line);
+    padding-left: 1rem;
+    color: var(--color-dim);
+  }
+
   /* Disclosure triangle, rotated when open. */
   .disclosure > summary {
     display: flex;

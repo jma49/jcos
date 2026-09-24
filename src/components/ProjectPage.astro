@@ -1,0 +1,71 @@
+---
+import { render } from 'astro:content';
+import Layout from '../layouts/Layout.astro';
+import Footer from './Footer.astro';
+import SiteControls from './SiteControls.astro';
+import { content, profile, type Lang } from '../i18n/content';
+import { formatMonth, getProjects, projectHref, type Project } from '../lib/projects';
+
+interface Props {
+  lang: Lang;
+  project: Project;
+}
+
+const { lang, project } = Astro.props;
+const t = content[lang];
+const { Content } = await render(project);
+const { title, description, date, status, stack, repo, demo } = project.data;
+
+const other: Lang = lang === 'en' ? 'zh' : 'en';
+const translated = (await getProjects(other)).some((p) => p.slug === project.slug);
+const home = lang === 'zh' ? '/zh/' : '/';
+const otherHref = translated ? projectHref(other, project.slug) : other === 'zh' ? '/zh/' : '/';
+
+const meta = [formatMonth(lang, date), t.projects.status[status], stack.join(', ')].filter(Boolean);
+---
+
+<Layout
+  lang={lang}
+  path={`/projects/${project.slug}/`}
+  title={`${title} — ${profile.name[lang]}`}
+  description={description}
+  translated={translated}
+>
+  <article class="mx-auto w-full max-w-[600px] min-w-0">
+    <header class="meta mb-10 flex items-baseline justify-between gap-4">
+      <a href={home} aria-label={t.projects.back} class="transition-colors hover:text-ink">
+        ← {profile.name[lang]}
+      </a>
+      <SiteControls lang={lang} otherHref={otherHref} />
+    </header>
+
+    <h1 class="text-[2rem] leading-[1.2] font-semibold tracking-[-0.02em] text-balance">
+      {title}
+    </h1>
+    <p class="mt-3 text-dim">{description}</p>
+    <p class="meta mt-4">{meta.join(' · ')}</p>
+
+    {
+      (demo || repo) && (
+        <p class="mt-2 flex gap-4">
+          {demo && (
+            <a href={demo} target="_blank" rel="noopener" class="link">
+              {t.projects.visit}
+            </a>
+          )}
+          {repo && (
+            <a href={repo} target="_blank" rel="noopener" class="link">
+              {t.projects.source}
+            </a>
+          )}
+        </p>
+      )
+    }
+
+    <div class="prose mt-10 border-t border-line pt-8">
+      <Content />
+    </div>
+
+    <Footer lang={lang} />
+  </article>
+</Layout>
