@@ -5,6 +5,8 @@ import Skills from './Skills.astro';
 import Footer from './Footer.astro';
 import ThemeToggle from './ThemeToggle.astro';
 import CopyEmail from './CopyEmail.astro';
+import { Picture } from 'astro:assets';
+import illustration from '../assets/golden-gate.webp';
 import { content, profile, type Lang } from '../i18n/content';
 
 interface Props {
@@ -47,12 +49,13 @@ const links = [
     <Bio lang={lang} />
 
     <figure class="mt-8 min-[1100px]:hidden">
-      <img
-        src="/golden-gate.webp"
+      <Picture
+        src={illustration}
         alt={t.ui.illustrationAlt}
-        width="1537"
-        height="1023"
-        decoding="async"
+        formats={['avif', 'webp']}
+        fallbackFormat="webp"
+        widths={[480, 800, 1200]}
+        sizes="(min-width: 1100px) 1px, calc(100vw - 2.5rem)"
         class="w-full rounded-[10px] border border-line"
       />
     </figure>
@@ -108,12 +111,15 @@ const links = [
   <aside
     class="sticky top-[clamp(1.25rem,3.4vw,3.25rem)] hidden h-[calc(100svh-2*clamp(1.25rem,3.4vw,3.25rem))] min-h-[min(72svh,760px)] overflow-hidden rounded-[10px] border border-line bg-surface min-[1100px]:block"
   >
-    <img
-      src="/golden-gate.webp"
+    <!-- Cover-fit in a viewport-tall box, so the rendered width is ~1.5x the height. -->
+    <Picture
+      src={illustration}
       alt={t.ui.illustrationAlt}
-      width="1537"
-      height="1023"
-      decoding="async"
+      formats={['avif', 'webp']}
+      fallbackFormat="webp"
+      widths={[900, 1200, illustration.width]}
+      sizes="(min-width: 1100px) 150vh, 1px"
+      loading="eager"
       class="absolute inset-0 size-full object-cover object-[62%_50%]"
     />
   </aside>
