@@ -1,0 +1,72 @@
+---
+import Inline from './Inline.astro';
+import { content, type Lang } from '../i18n/content';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = content[lang];
+---
+
+<section aria-label={t.bio.label} data-bio>
+  <div class="meta mb-5 flex items-baseline justify-between border-b border-line pb-2">
+    <span>{t.bio.label}</span>
+    <div class="flex gap-4" role="group">
+      <button type="button" data-bio-option="short" aria-pressed="true" class="bio-option">
+        {t.bio.short}
+      </button>
+      <button type="button" data-bio-option="long" aria-pressed="false" class="bio-option">
+        {t.bio.long}
+      </button>
+    </div>
+  </div>
+
+  <div data-bio-panel="short">
+    {t.bio.shortParagraphs.map((paragraph) => <p class="mb-5"><Inline text={paragraph} /></p>)}
+  </div>
+  <div data-bio-panel="long" hidden>
+    {t.bio.longParagraphs.map((paragraph) => <p class="mb-5"><Inline text={paragraph} /></p>)}
+  </div>
+</section>
+
+<style>
+  .bio-option {
+    position: relative;
+    cursor: pointer;
+    color: inherit;
+    transition: color 0.2s ease;
+  }
+
+  .bio-option:hover,
+  .bio-option[aria-pressed='true'] {
+    color: var(--color-ink);
+  }
+
+  /* Underline the active option on the section rule. */
+  .bio-option[aria-pressed='true']::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: calc(-0.5rem - 1px);
+    height: 1px;
+    background: var(--color-ink);
+  }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-bio]').forEach((bio) => {
+    const buttons = bio.querySelectorAll<HTMLButtonElement>('[data-bio-option]');
+    const panels = bio.querySelectorAll<HTMLElement>('[data-bio-panel]');
+
+    buttons.forEach((button) => {
+      button.addEventListener('click', () => {
+        const choice = button.dataset.bioOption;
+        buttons.forEach((b) => b.setAttribute('aria-pressed', String(b === button)));
+        panels.forEach((panel) => (panel.hidden = panel.dataset.bioPanel !== choice));
+      });
+    });
+  });
+</script>

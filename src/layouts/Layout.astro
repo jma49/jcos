@@ -1,7 +1,5 @@
 ---
 import '../styles/global.css';
-import Nav from '../components/Nav.astro';
-import Footer from '../components/Footer.astro';
 import { content, profile, type Lang } from '../i18n/content';
 
 interface Props {
@@ -12,6 +10,20 @@ const { lang } = Astro.props;
 const t = content[lang];
 const canonical = new URL(lang === 'zh' ? '/zh/' : '/', Astro.site);
 const ogImage = new URL('/og.png', Astro.site);
+
+// Structured profile for search engines and AI crawlers.
+const personLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: profile.name.en,
+  alternateName: profile.name.zh,
+  jobTitle: content.en.role,
+  url: new URL('/', Astro.site).href,
+  image: new URL('/portrait.jpg', Astro.site).href,
+  email: `mailto:${profile.email}`,
+  address: { '@type': 'PostalAddress', addressLocality: 'San Jose', addressRegion: 'CA' },
+  sameAs: [profile.github, profile.linkedin, profile.photography]
+};
 ---
 
 <!doctype html>
@@ -43,7 +55,18 @@ const ogImage = new URL('/og.png', Astro.site);
     <meta name="twitter:description" content={t.meta.description} />
     <meta name="twitter:image" content={ogImage} />
 
-    <meta name="theme-color" content="#08090a" />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#1b1a19" media="(prefers-color-scheme: dark)" />
+
+    <!-- Apply the saved theme before first paint so there is no flash. -->
+    <script is:inline>
+      try {
+        const saved = localStorage.getItem('theme');
+        if (saved === 'light' || saved === 'dark') {
+          document.documentElement.dataset.theme = saved;
+        }
+      } catch {}
+    </script>
     <link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48" />
     <link rel="icon" href="/favicon-32x32.png" type="image/png" sizes="32x32" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
@@ -52,49 +75,25 @@ const ogImage = new URL('/og.png', Astro.site);
       content="HhawtBpenGliesOLyFP46TlYilTGbHHQIcUnLtvQp4w"
     />
 
+    <!-- Only needed where no local CJK serif (Songti SC) exists. -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600&display=swap"
       rel="stylesheet"
     />
+
+    <script is:inline type="application/ld+json" set:html={JSON.stringify(personLd)} />
   </head>
 
   <body>
     <a
       href="#main"
-      class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-100 focus:rounded-md focus:bg-raised focus:px-4 focus:py-2 focus:text-sm"
+      class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-100 focus:rounded-md focus:bg-surface focus:px-4 focus:py-2 focus:text-sm"
       >Skip to content</a
     >
-    <Nav lang={lang} />
-    <main id="main">
+    <main id="main" class="min-h-svh p-5 pt-10 sm:p-[clamp(1.25rem,3.4vw,3.25rem)]">
       <slot />
     </main>
-    <Footer lang={lang} />
-
-    <script>
-      // Reveal-on-scroll: elements tagged `.reveal` fade up once, then are dropped
-      // from the observer. Anything already in view on load resolves immediately.
-      const items = document.querySelectorAll<HTMLElement>('.reveal');
-      const reduced = window.matchMedia(
-        '(prefers-reduced-motion: reduce)'
-      ).matches;
-
-      if (reduced || !('IntersectionObserver' in window)) {
-        items.forEach((el) => el.classList.add('is-visible'));
-      } else {
-        const observer = new IntersectionObserver(
-          (entries) => {
-            entries.forEach((entry) => {
-              if (!entry.isIntersecting) return;
-              entry.target.classList.add('is-visible');
-              observer.unobserve(entry.target);
-            });
-          },
-          { rootMargin: '0px 0px -8% 0px', threshold: 0.08 }
-        );
-        items.forEach((el) => observer.observe(el));
-      }
-    </script>
   </body>
 </html>
