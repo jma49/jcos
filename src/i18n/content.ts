@@ -55,7 +55,8 @@ export const content = {
       status: { live: 'Live', wip: 'In progress', archived: 'Archived' },
       visit: 'Visit',
       source: 'Source',
-      back: 'Back to home'
+      back: 'Back to home',
+      preview: 'Preview of'
     },
     work: {
       title: 'Experience'
@@ -192,7 +193,8 @@ export const content = {
       status: { live: '已上线', wip: '进行中', archived: '已归档' },
       visit: '访问',
       source: '源码',
-      back: '返回首页'
+      back: '返回首页',
+      preview: '预览：'
     },
     work: {
       title: '工作经历'

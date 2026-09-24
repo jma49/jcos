@@ -37,8 +37,14 @@ status: live           # live | wip | archived
 stack: [Go, TypeScript]
 repo: https://github.com/jma49/...   # optional
 demo: https://...                    # optional, a URL or a site path
+cover: ../covers/<slug>.png          # optional preview image, 16:10
 ---
 ```
+
+Put preview images in `src/content/projects/covers/`, shared by both
+languages. A 1920x1200 screenshot works well; Astro converts it to
+AVIF/WebP at the sizes each layout needs. Projects without a cover show
+their title on a plain tile.
 
 The home page list, the pages at `/projects/<slug>/` and
 `/zh/projects/<slug>/`, the sitemap and `llms.txt` all update
