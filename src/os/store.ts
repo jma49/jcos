@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import type { AppId, Rect, WindowState } from './types';
 import type { Place } from './place';
 import type { Visitor } from './social';
+import type { AccentChoice } from './accent';
 
 export const MENU_BAR_HEIGHT = 22;
 export const DOCK_CLEARANCE = 78;
@@ -37,6 +38,8 @@ interface WindowStore {
   theme: 'light' | 'dark';
   appearance: Appearance;
   saver: SaverPrefs;
+  /** The accent colour: from the desktop picture, or a fixed one (see accent.ts). */
+  accent: AccentChoice;
   /** Applets installed from the Applet Store (see applets.ts). */
   applets: AppId[];
   /** Desktop icons the visitor has arranged; null for the default column. */
@@ -72,6 +75,7 @@ interface WindowStore {
   setSaver: (saver: Partial<SaverPrefs>) => void;
   setIconPositions: (positions: IconPositions | null) => void;
   setApplets: (applets: AppId[]) => void;
+  setAccent: (accent: AccentChoice) => void;
   setSound: (on: boolean) => void;
   setVolume: (volume: number) => void;
   setSpotlight: (open: boolean) => void;
@@ -90,6 +94,13 @@ const SAVER_KEY = 'os-screensaver';
 const SOUND_KEY = 'os-sound';
 const ICONS_KEY = 'os-icon-positions';
 const APPLETS_KEY = 'os-applets';
+const ACCENT_KEY = 'os-accent';
+const ACCENT_CHOICES: AccentChoice[] = ['auto', 'blue', 'graphite', 'green', 'orange', 'purple', 'red'];
+
+function savedAccent(): AccentChoice {
+  const saved = read(ACCENT_KEY) as AccentChoice | null;
+  return saved && ACCENT_CHOICES.includes(saved) ? saved : 'auto';
+}
 /** Applets everyone starts with. */
 const DEFAULT_APPLETS: AppId[] = ['minesweeper'];
 
@@ -182,6 +193,7 @@ export const useWindows = create<WindowStore>((set, get) => ({
   ...(typeof window === 'undefined' ? { soundOn: false, volume: 0.6 } : savedSound()),
   iconPositions: typeof window === 'undefined' ? null : savedIconPositions(),
   applets: typeof window === 'undefined' ? DEFAULT_APPLETS : savedApplets(),
+  accent: typeof window === 'undefined' ? 'auto' : savedAccent(),
   spotlightOpen: false,
   dashboardOpen: false,
   exposeOpen: false,
@@ -259,6 +271,10 @@ export const useWindows = create<WindowStore>((set, get) => ({
       else localStorage.removeItem(ICONS_KEY);
     } catch {}
     set({ iconPositions });
+  },
+  setAccent: (accent) => {
+    write(ACCENT_KEY, accent);
+    set({ accent });
   },
   setApplets: (applets) => {
     write(APPLETS_KEY, JSON.stringify(applets));

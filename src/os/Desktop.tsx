@@ -11,6 +11,7 @@ import { Sky, useSky } from './Sky';
 import { Presence } from './Presence';
 import { AppSwitcher } from './AppSwitcher';
 import { watchWindows } from './sound';
+import { ACCENTS, accentFromPicture, cachedAccent, DEFAULT_ACCENT } from './accent';
 import { OSDataContext } from './context';
 import { apps, launch, rectOf } from './registry';
 import { DiskIcon, DocumentIcon, PhotosIcon } from './icons';
@@ -260,6 +261,25 @@ export default function Desktop({ data }: { data: OSData }) {
   });
 
   useEffect(watchWindows, []);
+
+  // The accent colour follows the desktop picture unless a fixed one was chosen.
+  const accentChoice = useWindows((s) => s.accent);
+  useEffect(() => {
+    const el = root.current;
+    if (!el) return;
+    const apply = (color: string) => el.style.setProperty('--os-accent', color);
+    if (accentChoice !== 'auto') return apply(ACCENTS[accentChoice].color);
+    let live = true;
+    const known = cachedAccent(wallpaper);
+    if (known) return apply(known);
+    accentFromPicture(wallpaper).then(
+      (color) => live && apply(color),
+      () => live && apply(DEFAULT_ACCENT)
+    );
+    return () => {
+      live = false;
+    };
+  }, [accentChoice, wallpaper]);
 
   // Light or dark as the visitor chose; `system` follows the OS, `sun` the daylight where they are.
   const appearance = useWindows((s) => s.appearance);

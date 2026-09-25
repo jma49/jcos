@@ -36,6 +36,10 @@ readers, crawlers and visitors without JavaScript.
   screen saver, appearance (light, dark, automatic, or follow the sun
   where the visitor is) and place. Choices live in `localStorage`
   (`os-wallpaper`, `os-screensaver`, `theme`, `os-place`).
+- `src/os/accent.ts`: the accent colour. By default it's sampled from the
+  desktop picture (the most prominent colourful hue, at a readable
+  lightness); System Preferences can fix it instead. Everything blue in
+  `os.css` derives from `--os-accent` via `color-mix()`.
 - `src/os/place.ts`: where the visitor is. `api/geo.ts` (a Vercel
   Function) returns the city, coordinates and time zone Vercel derives
   from their IP address; the Weather widget's flip side lets them pick a
