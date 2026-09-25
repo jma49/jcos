@@ -1,5 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { PlaceSearch } from './PlaceSearch';
+import { getSocial, type Post } from './social';
+import { launch } from './registry';
 import { AnimatePresence, motion } from 'motion/react';
 import { useWindows } from './store';
 import { useOSData } from './context';
@@ -338,6 +340,40 @@ function GitHubWidget({ user }: { user: string }) {
   );
 }
 
+/** The newest Soapbox post, as a speech bubble. Hidden when there's none. */
+function SoapboxWidget() {
+  const [post, setPost] = useState<Post | null>(null);
+  useEffect(() => {
+    let live = true;
+    getSocial()
+      .then((social) => social?.listPosts())
+      .then((posts) => live && setPost(posts?.[0] ?? null))
+      .catch(() => {});
+    return () => {
+      live = false;
+    };
+  }, []);
+  if (!post) return null;
+
+  return (
+    <button
+      type="button"
+      className="os-widget os-widget-soapbox"
+      data-kind={post.kind}
+      onClick={() => {
+        useWindows.getState().setDashboard(false);
+        launch('soapbox');
+      }}
+      title="Open Soapbox"
+    >
+      <span className="os-widget-title">
+        {post.kind === 'rant' ? '🔥 Latest rant' : '📝 Latest from Soapbox'} · {ago(post.created_at)} ago
+      </span>
+      <span className="os-soapbox-bubble">{post.body.length > 180 ? `${post.body.slice(0, 180)}…` : post.body}</span>
+    </button>
+  );
+}
+
 function StickyWidget({ children }: { children: ReactNode }) {
   return <div className="os-widget os-widget-sticky">{children}</div>;
 }
@@ -361,6 +397,7 @@ export function Dashboard() {
     { key: 'weather', node: <WeatherWidget /> },
     { key: 'home', node: <HomeWidget email={data.email} /> },
     { key: 'github', node: <GitHubWidget user={githubUser} /> },
+    { key: 'soapbox', node: <SoapboxWidget /> },
     {
       key: 'sticky',
       node: (
