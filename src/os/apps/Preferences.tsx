@@ -6,6 +6,7 @@ import { choosePlace, clockTimeZone, HOME, placeLabel, usePlace, usesFahrenheit 
 import { PlaceSearch } from '../PlaceSearch';
 import { DriftingClock, SAVER_STYLES, Starfield } from '../Screensaver';
 import { play } from '../sound';
+import { ACCENTS, cachedAccent, type AccentChoice } from '../accent';
 
 // System Preferences, Tiger style: a toolbar of panes. Everything here is
 // remembered in this browser.
@@ -101,24 +102,70 @@ const APPEARANCES: { value: Appearance; name: string; blurb: string }[] = [
   { value: 'sun', name: 'Follow the sun', blurb: 'Light while the sun is up where you are, dark after sunset.' }
 ];
 
+function AccentPicker() {
+  const data = useOSData();
+  const accent = useWindows((s) => s.accent);
+  const setAccent = useWindows((s) => s.setAccent);
+  const wallpaper = useWindows((s) => s.wallpaper) ?? data.wallpaper;
+  const fromPicture = cachedAccent(wallpaper);
+  const choices: { value: AccentChoice; name: string; color: string }[] = [
+    {
+      value: 'auto',
+      name: 'From Desktop Picture',
+      color: fromPicture ?? 'conic-gradient(#e5484d, #ffc53d, #30a46c, #0090ff, #8e4ec6, #e5484d)'
+    },
+    ...Object.entries(ACCENTS).map(([value, a]) => ({ value: value as AccentChoice, name: a.name, color: a.color }))
+  ];
+  const current = choices.find((c) => c.value === accent);
+  return (
+    <section className="os-prefs-section">
+      <h3>Accent Color</h3>
+      <div className="os-prefs-swatches" role="radiogroup" aria-label="Accent color">
+        {choices.map((c) => (
+          <button
+            key={c.value}
+            type="button"
+            role="radio"
+            aria-checked={accent === c.value}
+            aria-label={c.name}
+            title={c.name}
+            data-auto={c.value === 'auto' || undefined}
+            style={{ background: c.color }}
+            onClick={() => setAccent(c.value)}
+          />
+        ))}
+        <span>{current?.name}</span>
+      </div>
+      <p className="os-prefs-note">
+        {accent === 'auto'
+          ? 'Selections, menus and buttons take their color from the desktop picture. Change the picture and they follow.'
+          : 'A fixed color, whatever the desktop picture.'}
+      </p>
+    </section>
+  );
+}
+
 function AppearancePane() {
   const appearance = useWindows((s) => s.appearance);
   const setAppearance = useWindows((s) => s.setAppearance);
   return (
-    <section className="os-prefs-section">
-      <h3>Appearance</h3>
-      <div className="os-prefs-radios" role="radiogroup" aria-label="Appearance">
-        {APPEARANCES.map((a) => (
-          <label key={a.value}>
-            <input type="radio" name="appearance" checked={appearance === a.value} onChange={() => setAppearance(a.value)} />
-            <span>
-              <strong>{a.name}</strong>
-              <small>{a.blurb}</small>
-            </span>
-          </label>
-        ))}
-      </div>
-    </section>
+    <>
+      <section className="os-prefs-section">
+        <h3>Appearance</h3>
+        <div className="os-prefs-radios" role="radiogroup" aria-label="Appearance">
+          {APPEARANCES.map((a) => (
+            <label key={a.value}>
+              <input type="radio" name="appearance" checked={appearance === a.value} onChange={() => setAppearance(a.value)} />
+              <span>
+                <strong>{a.name}</strong>
+                <small>{a.blurb}</small>
+              </span>
+            </label>
+          ))}
+        </div>
+      </section>
+      <AccentPicker />
+    </>
   );
 }
 

@@ -39,8 +39,15 @@
   --os-faint: #808080;
   --os-line: #c2c2c2;
   --os-line-soft: #dcdcdc;
-  --os-select: #3875d7;
-  --os-select-grad: linear-gradient(#6a9ae6, #3875d7);
+  --os-accent: #3875d7;
+  --os-select: var(--os-accent);
+  --os-select-grad: linear-gradient(color-mix(in srgb, var(--os-accent) 70%, white), var(--os-accent));
+  /* Aqua gel (default buttons, pressed segments, selected cells), all from the accent. */
+  --os-gel: linear-gradient(color-mix(in srgb, var(--os-accent) 30%, white), color-mix(in srgb, var(--os-accent) 75%, white) 45%, color-mix(in srgb, var(--os-accent) 100%, white) 50%, color-mix(in srgb, var(--os-accent) 55%, white));
+  --os-gel-pressed: linear-gradient(color-mix(in srgb, var(--os-accent) 25%, white), color-mix(in srgb, var(--os-accent) 48%, white) 50%, color-mix(in srgb, var(--os-accent) 62%, white) 50%, color-mix(in srgb, var(--os-accent) 33%, white));
+  --os-accent-rim: color-mix(in srgb, var(--os-accent) 55%, black);
+  --os-accent-shadow: color-mix(in srgb, color-mix(in srgb, var(--os-accent) 45%, black) 45%, transparent);
+  --os-focus: color-mix(in srgb, var(--os-accent) 55%, transparent);
   --os-title-top: #ebebeb;
   --os-title-bottom: #cbcbcb;
   --os-title-inactive-top: #f6f6f6;
@@ -91,6 +98,19 @@
   --os-metal: var(--os-metal-grain), linear-gradient(#5b5b5b, #474747 38%, #3d3d3d);
 }
 
+/* A registered colour, so a new accent fades in rather than snapping. */
+@property --os-accent {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #3875d7;
+}
+
+.os-root {
+  transition: --os-accent 0.8s ease;
+  /* Native checkboxes, radios and sliders follow the accent too. */
+  accent-color: var(--os-accent);
+}
+
 /* Zero-specificity resets, so every component class below wins. */
 :where(.os-root) button {
   font: inherit;
@@ -106,7 +126,7 @@
 }
 
 .os-root :focus-visible {
-  outline: 3px solid rgba(56, 117, 215, 0.55);
+  outline: 3px solid var(--os-focus);
   outline-offset: 1px;
 }
 
@@ -135,7 +155,7 @@
   border: 2px solid transparent;
   border-radius: 8px;
   background: linear-gradient(90deg, #3b7fe0, #8ec0f8 45%, #5f9ef0 55%, #3070d8) padding-box;
-  box-shadow: inset 0 0 0 1px rgba(0, 40, 120, 0.35);
+  box-shadow: inset 0 0 0 1px var(--os-accent-shadow);
 }
 
 .os-root ::-webkit-scrollbar-corner {
@@ -768,14 +788,14 @@
 }
 
 .os-root .os-button:active {
-  background: linear-gradient(#c9dcf5, #9cc0ee 50%, #7fa9e8 50%, #b8d3f6);
+  background: var(--os-gel-pressed);
 }
 
 .os-root .os-button-primary {
-  background: linear-gradient(#bfe0ff, #5ea8f7 45%, #2e86f0 50%, #8cc4ff);
-  box-shadow: inset 0 0 0 1px rgba(0, 45, 130, 0.55), 0 1px 1px rgba(0, 0, 0, 0.2);
+  background: var(--os-gel);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--os-accent-rim) 55%, transparent), 0 1px 1px rgba(0, 0, 0, 0.2);
   color: #fff;
-  text-shadow: 0 -1px 0 rgba(0, 40, 120, 0.4);
+  text-shadow: 0 -1px 0 var(--os-accent-shadow);
   animation: os-throb 1.6s ease-in-out infinite alternate;
 }
 
@@ -813,9 +833,9 @@
 }
 
 .os-segmented button[aria-pressed='true'] {
-  background: linear-gradient(#bfe0ff, #5ea8f7 45%, #2e86f0 50%, #8cc4ff);
+  background: var(--os-gel);
   color: #fff;
-  text-shadow: 0 -1px 0 rgba(0, 40, 120, 0.4);
+  text-shadow: 0 -1px 0 var(--os-accent-shadow);
 }
 
 .os-empty {
@@ -1115,8 +1135,8 @@
 }
 
 .os-sidebar button[aria-pressed='true'] {
-  background: linear-gradient(#6d9be2, #3570cc);
-  box-shadow: inset 0 1px 0 #83aaea;
+  background: var(--os-select-grad);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--os-accent) 60%, white);
   color: #fff;
   font-weight: 700;
 }
@@ -1186,7 +1206,7 @@
 }
 
 .os-finder-grid button[data-selected='true'] .os-finder-thumb {
-  box-shadow: 0 0 0 3px rgba(56, 117, 215, 0.6), 0 3px 8px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 0 0 3px var(--os-focus), 0 3px 8px rgba(0, 0, 0, 0.25);
 }
 
 .os-finder-grid button[data-selected='true'] .os-finder-name {
@@ -1452,7 +1472,7 @@
 
 .os-address:focus {
   outline: none;
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.35), 0 0 0 3px rgba(56, 117, 215, 0.55);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.35), 0 0 0 3px var(--os-focus);
 }
 
 /* Safari-era progress fill behind the address field. */
@@ -1462,7 +1482,7 @@
   right: 0;
   bottom: -1px;
   height: 2px;
-  background: #3875d7;
+  background: var(--os-accent);
   transform-origin: left;
   transform: scaleX(0);
   opacity: 0;
@@ -1788,7 +1808,7 @@
 }
 
 .os-sidebar-link:hover {
-  background: rgba(56, 117, 215, 0.12);
+  background: color-mix(in srgb, var(--os-accent) 12%, transparent);
 }
 
 .os-sidebar-link span {
@@ -2155,7 +2175,7 @@
 
 .os-calc-keys button:active,
 .os-calc-keys button[data-active] {
-  background: linear-gradient(#c9dcf5, #9cc0ee 50%, #7fa9e8 50%, #b8d3f6);
+  background: var(--os-gel-pressed);
   color: #fff;
 }
 
@@ -2278,7 +2298,7 @@
 }
 
 .os-mines-face:active {
-  background: linear-gradient(#c9dcf5, #9cc0ee 50%, #7fa9e8 50%, #b8d3f6);
+  background: var(--os-gel-pressed);
 }
 
 .os-mines-grid {
@@ -2296,8 +2316,8 @@
   width: 24px;
   height: 24px;
   padding: 0;
-  background: linear-gradient(#bfe0ff, #5ea8f7 45%, #2e86f0 50%, #8cc4ff);
-  box-shadow: inset 0 0 0 1px rgba(0, 45, 130, 0.35);
+  background: var(--os-gel);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--os-accent-rim) 35%, transparent);
   font: 700 14px/24px var(--os-ui);
   text-align: center;
   color: #111;
@@ -2498,8 +2518,8 @@
 }
 
 .os-soapbox-reactions button[data-mine] {
-  background: linear-gradient(#cfe6ff, #8cc4ff);
-  box-shadow: inset 0 0 0 1px rgba(0, 60, 150, 0.45);
+  background: linear-gradient(color-mix(in srgb, var(--os-accent) 25%, white), color-mix(in srgb, var(--os-accent) 55%, white));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--os-accent-rim) 45%, transparent);
   opacity: 1;
 }
 
@@ -2657,6 +2677,35 @@
   align-items: center;
   gap: 8px;
   font-size: 12px;
+}
+
+.os-prefs-swatches {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-size: 12px;
+}
+
+.os-prefs-swatches button {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.3), inset 0 6px 6px -3px rgba(255, 255, 255, 0.6);
+}
+
+.os-prefs-swatches button[aria-checked='true'] {
+  outline: 2px solid var(--os-ink);
+  outline-offset: 2px;
+}
+
+.os-prefs-swatches button[data-auto] {
+  margin-right: 6px;
+}
+
+.os-prefs-swatches span {
+  margin-left: 6px;
+  color: var(--os-dim);
 }
 
 .os-prefs-volume {
@@ -3216,11 +3265,11 @@
   padding: 10px 14px;
   border-radius: 16px;
   background: linear-gradient(#8fd0ff, #3a95ee 50%, #1b62c9);
-  box-shadow: inset 0 0 0 1px rgba(0, 40, 120, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--os-accent-rim) 50%, transparent), inset 0 1px 0 rgba(255, 255, 255, 0.6);
   font-size: 13px;
   line-height: 1.4;
   white-space: pre-wrap;
-  text-shadow: 0 -1px 0 rgba(0, 40, 120, 0.35);
+  text-shadow: 0 -1px 0 var(--os-accent-shadow);
 }
 
 .os-soapbox-bubble::after {
