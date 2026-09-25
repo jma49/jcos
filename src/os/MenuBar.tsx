@@ -7,6 +7,7 @@ import { OnlineStatus } from './Presence';
 import { NowPlaying } from './NowPlaying';
 import { clockTimeZone, HOME, sameTime } from './place';
 import { play } from './sound';
+import { useMusic } from './music';
 
 interface MenuItem {
   label: string;
@@ -52,6 +53,27 @@ export function MenuBar({ sky }: { sky: SkyState }) {
     };
   }, [openMenu]);
 
+  // The iPod and Karaoke add a Controls menu while they're in front.
+  const music = useMusic();
+  const player = focused?.app === 'ipod' || focused?.app === 'karaoke' ? focused.app : null;
+  const controls: MenuItem[] | null = player
+    ? [
+        { label: music.owner === player && music.playing ? 'Pause' : 'Play', shortcut: 'Space', action: () => music.toggle(player) },
+        { label: 'Next Song', shortcut: player === 'ipod' ? '→' : '↓', action: () => music.next(player) },
+        { label: 'Previous Song', shortcut: player === 'ipod' ? '←' : '↑', action: () => music.previous(player) },
+        { divider: true, label: '' },
+        { label: `${music.shuffle ? '✓ ' : ''}Shuffle`, action: () => music.setShuffle(!music.shuffle) },
+        ...(['off', 'one', 'all'] as const).map((r) => ({
+          label: `${music.repeat === r ? '✓ ' : ''}Repeat ${r === 'off' ? 'Off' : r === 'one' ? 'One' : 'All'}`,
+          action: () => music.setRepeat(r)
+        })),
+        { divider: true, label: '' },
+        player === 'ipod'
+          ? { label: 'Open Karaoke', action: () => launch('karaoke') }
+          : { label: 'Open iPod', action: () => launch('ipod') }
+      ]
+    : null;
+
   const menus: Record<string, MenuItem[]> = {
     '◐': [
       { label: `About ${data.name}`, action: () => launch('about') },
@@ -67,6 +89,7 @@ export function MenuBar({ sky }: { sky: SkyState }) {
       { divider: true, label: '' },
       { label: 'Close Window', shortcut: '⌥W', disabled: !focused, action: () => focused && close(focused.id) }
     ],
+    ...(controls ? { Controls: controls } : {}),
     View: [
       { label: 'Exposé', shortcut: 'F9', disabled: !focused, action: () => useWindows.getState().setExpose(true) },
       { label: 'Show Dashboard', action: () => useWindows.getState().setDashboard(true) },
