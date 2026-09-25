@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
+import { PlaceSearch } from './PlaceSearch';
 import { AnimatePresence, motion } from 'motion/react';
 import { useWindows } from './store';
 import { useOSData } from './context';
@@ -9,8 +10,6 @@ import {
   distanceKm,
   HOME,
   hoursAhead,
-  placeLabel,
-  searchPlaces,
   usePlace,
   wallClock,
   type Place,
@@ -135,27 +134,6 @@ function CalendarWidget() {
 
 /** The back of the Weather widget: pick a city, or go back to the IP location. */
 function PlacePicker({ place, onDone }: { place: Place | null; onDone: () => void }) {
-  const [query, setQuery] = useState('');
-  const [results, setResults] = useState<Place[] | 'error' | null>(null);
-  const field = useRef<HTMLInputElement>(null);
-
-  useEffect(() => field.current?.focus(), []);
-
-  useEffect(() => {
-    if (query.trim().length < 2) {
-      setResults(null);
-      return;
-    }
-    const abort = new AbortController();
-    const timer = setTimeout(() => {
-      searchPlaces(query, abort.signal).then(setResults, (e) => e.name !== 'AbortError' && setResults('error'));
-    }, 250);
-    return () => {
-      clearTimeout(timer);
-      abort.abort();
-    };
-  }, [query]);
-
   const pick = (next: Place | null) => {
     choosePlace(next);
     onDone();
@@ -166,34 +144,7 @@ function PlacePicker({ place, onDone }: { place: Place | null; onDone: () => voi
       <label className="os-weather-city" htmlFor="os-weather-search">
         Show weather for
       </label>
-      <input
-        id="os-weather-search"
-        ref={field}
-        type="search"
-        placeholder="City"
-        value={query}
-        autoComplete="off"
-        onChange={(e) => setQuery(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === 'Escape') {
-            e.stopPropagation();
-            onDone();
-          }
-          if (e.key === 'Enter' && Array.isArray(results) && results[0]) pick(results[0]);
-        }}
-      />
-      <ul>
-        {results === 'error' && <li className="os-weather-note">Search unavailable</li>}
-        {Array.isArray(results) && results.length === 0 && <li className="os-weather-note">No matches</li>}
-        {Array.isArray(results) &&
-          results.map((r) => (
-            <li key={`${r.latitude},${r.longitude}`}>
-              <button type="button" onClick={() => pick(r)}>
-                {placeLabel(r)}
-              </button>
-            </li>
-          ))}
-      </ul>
+      <PlaceSearch id="os-weather-search" onPick={pick} onCancel={onDone} />
       <div className="os-weather-actions">
         {place?.source === 'chosen' && (
           <button type="button" onClick={() => pick(null)}>

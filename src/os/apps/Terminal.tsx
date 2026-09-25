@@ -35,7 +35,7 @@ const COMMANDS: Record<string, string> = {
   exit: 'close this window'
 };
 
-const APP_TARGETS = ['about', 'resume', 'projects', 'photos', 'stickies', 'terminal', 'browser'] as const;
+const APP_TARGETS = ['about', 'resume', 'projects', 'photos', 'stickies', 'terminal', 'browser', 'preferences'] as const;
 
 function neofetch(data: OSData): ReactNode {
   const art = [

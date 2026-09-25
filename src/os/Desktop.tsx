@@ -80,7 +80,7 @@ function DesktopMenu({ at, onClose }: { at: { x: number; y: number }; onClose: (
   const custom = useWindows((s) => s.wallpaper);
   const s = useWindows.getState();
   const items: ContextMenuItem[] = [
-    { label: 'Change Desktop Background…', action: () => launch('photos') },
+    { label: 'Change Desktop Background…', action: () => launch('preferences', { props: { pane: 'desktop' } }) },
     { label: 'Use Default Desktop Picture', disabled: !custom, action: () => s.setWallpaper(null) },
     { divider: true, label: '' },
     { label: 'Exposé', shortcut: 'F9', action: () => s.setExpose(true) },
@@ -172,15 +172,22 @@ export default function Desktop({ data }: { data: OSData }) {
     }
   });
 
-  // Follow the saved site theme, then the system setting.
+  // Light or dark as the visitor chose; `system` follows the OS, `sun` the daylight where they are.
+  const appearance = useWindows((s) => s.appearance);
   useEffect(() => {
-    let saved: string | null = null;
-    try {
-      saved = localStorage.getItem('theme');
-    } catch {}
-    const dark = saved ? saved === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
-    useWindows.getState().setTheme(dark ? 'dark' : 'light');
-  }, []);
+    const { applyTheme } = useWindows.getState();
+    if (appearance === 'sun') {
+      applyTheme(sky.daylight ? 'light' : 'dark');
+    } else if (appearance === 'system') {
+      const query = matchMedia('(prefers-color-scheme: dark)');
+      const follow = () => applyTheme(query.matches ? 'dark' : 'light');
+      follow();
+      query.addEventListener('change', follow);
+      return () => query.removeEventListener('change', follow);
+    } else {
+      applyTheme(appearance);
+    }
+  }, [appearance, sky.daylight]);
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
@@ -296,7 +303,7 @@ export default function Desktop({ data }: { data: OSData }) {
   );
 }
 
-const DEEP_LINK_APPS: AppId[] = ['about', 'resume', 'projects', 'photos', 'stickies', 'terminal'];
+const DEEP_LINK_APPS: AppId[] = ['about', 'resume', 'projects', 'photos', 'stickies', 'terminal', 'preferences'];
 
 /** Handles links like /?open=resume or /?open=ocra. Returns whether it opened anything. */
 function openFromUrl(data: OSData): boolean {
