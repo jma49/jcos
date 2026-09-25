@@ -72,6 +72,11 @@ create table if not exists private.secrets (
   name text primary key,
   value text not null
 );
+-- Row-level security with no policies: even if the schema were ever
+-- exposed, visitors could read nothing. The trigger below runs as the
+-- table's owner, which RLS doesn't restrict.
+alter table private.secrets enable row level security;
+revoke all on private.secrets from public, anon, authenticated;
 insert into private.secrets (name, value)
 values ('visitor_salt', gen_random_uuid()::text || gen_random_uuid()::text)
 on conflict (name) do nothing;
