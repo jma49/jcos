@@ -37,6 +37,8 @@ interface WindowStore {
   theme: 'light' | 'dark';
   appearance: Appearance;
   saver: SaverPrefs;
+  /** Applets installed from the Applet Store (see applets.ts). */
+  applets: AppId[];
   /** Desktop icons the visitor has arranged; null for the default column. */
   iconPositions: IconPositions | null;
   /** Interface sounds (see sound.ts); off by default. */
@@ -61,6 +63,7 @@ interface WindowStore {
   minimize: (id: string) => void;
   toggleMaximize: (id: string) => void;
   setBounds: (id: string, bounds: Partial<Pick<WindowState, 'x' | 'y' | 'width' | 'height'>>) => void;
+  setTitle: (id: string, title: string) => void;
   /** Picks light or dark outright (and remembers it). */
   setTheme: (theme: 'light' | 'dark') => void;
   setAppearance: (appearance: Appearance) => void;
@@ -68,6 +71,7 @@ interface WindowStore {
   applyTheme: (theme: 'light' | 'dark') => void;
   setSaver: (saver: Partial<SaverPrefs>) => void;
   setIconPositions: (positions: IconPositions | null) => void;
+  setApplets: (applets: AppId[]) => void;
   setSound: (on: boolean) => void;
   setVolume: (volume: number) => void;
   setSpotlight: (open: boolean) => void;
@@ -85,6 +89,18 @@ const APPEARANCE_KEY = 'theme';
 const SAVER_KEY = 'os-screensaver';
 const SOUND_KEY = 'os-sound';
 const ICONS_KEY = 'os-icon-positions';
+const APPLETS_KEY = 'os-applets';
+/** Applets everyone starts with. */
+const DEFAULT_APPLETS: AppId[] = ['minesweeper'];
+
+function savedApplets(): AppId[] {
+  try {
+    const saved = JSON.parse(read(APPLETS_KEY) ?? 'null');
+    return Array.isArray(saved) ? saved : DEFAULT_APPLETS;
+  } catch {
+    return DEFAULT_APPLETS;
+  }
+}
 
 function savedIconPositions(): IconPositions | null {
   try {
@@ -165,6 +181,7 @@ export const useWindows = create<WindowStore>((set, get) => ({
   saver: typeof window === 'undefined' ? { style: 'photos', idle: 2 } : savedSaver(),
   ...(typeof window === 'undefined' ? { soundOn: false, volume: 0.6 } : savedSound()),
   iconPositions: typeof window === 'undefined' ? null : savedIconPositions(),
+  applets: typeof window === 'undefined' ? DEFAULT_APPLETS : savedApplets(),
   spotlightOpen: false,
   dashboardOpen: false,
   exposeOpen: false,
@@ -224,6 +241,9 @@ export const useWindows = create<WindowStore>((set, get) => ({
   setBounds: (id, bounds) =>
     set((s) => (s.windows[id] ? { windows: { ...s.windows, [id]: { ...s.windows[id], ...bounds } } } : s)),
 
+  setTitle: (id, title) =>
+    set((s) => (s.windows[id] && s.windows[id].title !== title ? { windows: { ...s.windows, [id]: { ...s.windows[id], title } } } : s)),
+
   setTheme: (theme) => {
     write(APPEARANCE_KEY, theme);
     set({ theme, appearance: theme });
@@ -239,6 +259,10 @@ export const useWindows = create<WindowStore>((set, get) => ({
       else localStorage.removeItem(ICONS_KEY);
     } catch {}
     set({ iconPositions });
+  },
+  setApplets: (applets) => {
+    write(APPLETS_KEY, JSON.stringify(applets));
+    set({ applets });
   },
   setSound: (soundOn) => {
     write(SOUND_KEY, JSON.stringify({ on: soundOn, volume: get().volume }));

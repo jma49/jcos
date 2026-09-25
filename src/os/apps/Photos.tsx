@@ -56,6 +56,13 @@ export default function Photos({ win }: AppProps) {
     useWindows.getState().setBounds(win.id, bounds);
   };
 
+  // Opened for a particular photo (from Finder): show it.
+  const asked = win.props?.photo;
+  useEffect(() => {
+    const index = asked ? photos.findIndex((p) => p.id === asked) : -1;
+    if (index >= 0) show(index);
+  }, [asked]);
+
   // Fit the window to whichever photo is showing.
   useEffect(() => {
     if (current) resize(fitTo(current));
