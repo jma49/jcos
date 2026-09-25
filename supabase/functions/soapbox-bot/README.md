@@ -5,6 +5,11 @@ account can post; everyone else is ignored.
 
 ## Setup
 
+The quick way: create the bot (step 2), run the migration (step 1), log
+in with `supabase login`, then run `bash scripts/setup-soapbox.sh`. It
+asks for the token (without echoing it) and your user ID, and does steps
+4–6 plus the bot's command menu. The manual steps follow.
+
 1. **Database.** Run `supabase/migrations/20260926_soapbox.sql` in the
    Supabase SQL editor.
 2. **Bot.** In Telegram, message [@BotFather](https://t.me/BotFather),
