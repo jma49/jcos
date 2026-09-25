@@ -39,8 +39,9 @@ readers, crawlers and visitors without JavaScript.
   Jincheng's time in San Jose next to it.
 - `src/os/genie.ts`: the displacement map behind the Genie minimize in
   `Window.tsx`.
-- `src/os/social.ts`: Stickies (a guestbook) and presence (the
-  online count and other visitors' cursors) on Supabase. See below.
+- `src/os/social.ts`: Stickies (a guestbook) and presence (who's
+  online and from which city, and other visitors' cursors labelled with
+  it) on Supabase. See below.
 - `src/os/registry.tsx`: every app's name, icon, default and minimum size,
   and lazily imported component. `dockApps` and `mobileDockApps` pick what
   the Dock shows.

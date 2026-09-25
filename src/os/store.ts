@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import type { AppId, Rect, WindowState } from './types';
 import type { Place } from './place';
+import type { Visitor } from './social';
 
 export const MENU_BAR_HEIGHT = 22;
 export const DOCK_CLEARANCE = 78;
@@ -27,7 +28,7 @@ interface WindowStore {
   exposeOpen: boolean;
   screensaverOn: boolean;
   /** People on the desktop right now, this visitor included; null until known. */
-  online: number | null;
+  visitors: Visitor[] | null;
   /** A photo URL chosen as the desktop picture, or null for the default. */
   wallpaper: string | null;
   /** Where the visitor is (see place.ts); null until located. */
@@ -44,7 +45,7 @@ interface WindowStore {
   setDashboard: (open: boolean) => void;
   setExpose: (open: boolean) => void;
   setScreensaver: (on: boolean) => void;
-  setOnline: (count: number | null) => void;
+  setVisitors: (visitors: Visitor[] | null) => void;
   setWallpaper: (url: string | null) => void;
   setPlace: (place: Place) => void;
 }
@@ -85,7 +86,7 @@ export const useWindows = create<WindowStore>((set, get) => ({
   dashboardOpen: false,
   exposeOpen: false,
   screensaverOn: false,
-  online: null,
+  visitors: null,
   wallpaper: typeof window === 'undefined' ? null : savedWallpaper(),
   place: null,
 
@@ -145,7 +146,7 @@ export const useWindows = create<WindowStore>((set, get) => ({
   setDashboard: (dashboardOpen) => set({ dashboardOpen }),
   setExpose: (exposeOpen) => set({ exposeOpen }),
   setScreensaver: (screensaverOn) => set({ screensaverOn }),
-  setOnline: (online) => set({ online }),
+  setVisitors: (visitors) => set({ visitors }),
   setWallpaper: (wallpaper) => {
     try {
       if (wallpaper) localStorage.setItem(WALLPAPER_KEY, wallpaper);
