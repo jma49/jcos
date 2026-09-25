@@ -3,6 +3,7 @@ title: majincheng.com
 description: 就是这个网站。用 Astro 做的中英双语个人主页，几乎不加载 JavaScript。
 date: 2026-09
 status: live
+order: 3
 stack: [Astro, TypeScript, Tailwind CSS, Vercel]
 repo: https://github.com/jma49/Jincheng-Protafolio
 cover: ../covers/majincheng-com.jpg

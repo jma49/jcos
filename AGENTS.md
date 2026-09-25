@@ -34,6 +34,7 @@ title: Project name
 description: One sentence, shown in the list and as the page description.
 date: 2026-10          # month the project shipped or started
 status: live           # live | wip | archived
+order: 1               # optional list position, lowest first; unset sorts after, newest first
 stack: [Go, TypeScript]
 repo: https://github.com/jma49/...   # optional
 demo: https://...                    # optional, a URL or a site path

@@ -10,6 +10,8 @@ const projects = defineCollection({
       description: z.string(),
       date: z.coerce.date(),
       status: z.enum(['live', 'wip', 'archived']),
+      // Position in the list, lowest first; projects without one follow, newest first.
+      order: z.number().int().optional(),
       stack: z.array(z.string()).default([]),
       repo: z.string().url().optional(),
       demo: z.string().optional(),

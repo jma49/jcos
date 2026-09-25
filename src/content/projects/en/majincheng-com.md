@@ -3,6 +3,7 @@ title: majincheng.com
 description: This site. A bilingual personal page built with Astro that ships almost no JavaScript.
 date: 2026-09
 status: live
+order: 3
 stack: [Astro, TypeScript, Tailwind CSS, Vercel]
 repo: https://github.com/jma49/Jincheng-Protafolio
 cover: ../covers/majincheng-com.jpg

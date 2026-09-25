@@ -3,6 +3,7 @@ title: Assay
 description: 开源的 PostgreSQL 数据检查工具。写好只读的 SQL 检查，定时运行，一眼看出哪里需要处理。
 date: 2025-04
 status: live
+order: 2
 stack: [Next.js, TypeScript, PostgreSQL, MongoDB, Redis, Clerk]
 repo: https://github.com/jma49/Assay
 demo: https://sql-script-depoly.vercel.app/
