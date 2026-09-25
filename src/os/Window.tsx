@@ -43,8 +43,18 @@ function towards(frame: Rect, target?: DOMRect | Rect) {
   };
 }
 
-/** Pointer-captured drag helper: calls onMove with the offset from the start. */
-function useDrag(onMove: (dx: number, dy: number) => void, onStart?: () => void) {
+/** How far back the release velocity looks, in milliseconds. */
+const VELOCITY_WINDOW = 90;
+
+/**
+ * Pointer-captured drag helper: calls onMove with the offset from the start,
+ * and onEnd with the pointer's velocity (px/s) as it let go.
+ */
+function useDrag(
+  onMove: (dx: number, dy: number) => void,
+  onStart?: () => void,
+  onEnd?: (vx: number, vy: number) => void
+) {
   return useCallback(
     (e: ReactPointerEvent) => {
       if (e.button !== 0) return;
@@ -55,13 +65,23 @@ function useDrag(onMove: (dx: number, dy: number) => void, onStart?: () => void)
       document.body.classList.add('os-dragging');
       onStart?.();
       let frame = 0;
+      const samples: { t: number; x: number; y: number }[] = [];
       const move = (ev: PointerEvent) => {
+        samples.push({ t: ev.timeStamp, x: ev.clientX, y: ev.clientY });
+        while (samples.length > 2 && ev.timeStamp - samples[0].t > VELOCITY_WINDOW) samples.shift();
         cancelAnimationFrame(frame);
         frame = requestAnimationFrame(() => onMove(ev.clientX - startX, ev.clientY - startY));
       };
-      const up = () => {
+      const up = (ev: PointerEvent) => {
         cancelAnimationFrame(frame);
         document.body.classList.remove('os-dragging');
+        const first = samples[0];
+        const last = samples[samples.length - 1];
+        // A pointer that paused before letting go isn't throwing anything.
+        if (onEnd && first && last !== first && ev.timeStamp - last.t < 50) {
+          const dt = (last.t - first.t) / 1000;
+          onEnd((last.x - first.x) / dt, (last.y - first.y) / dt);
+        }
         el.removeEventListener('pointermove', move);
         el.removeEventListener('pointerup', up);
         el.removeEventListener('pointercancel', up);
@@ -70,9 +90,18 @@ function useDrag(onMove: (dx: number, dy: number) => void, onStart?: () => void)
       el.addEventListener('pointerup', up);
       el.addEventListener('pointercancel', up);
     },
-    [onMove, onStart]
+    [onMove, onStart, onEnd]
   );
 }
+
+/** Throws below this speed (px/s) just drop the window where it is. */
+const THROW_MIN_SPEED = 500;
+/** Fastest a window can be thrown, px/s. */
+const THROW_MAX_SPEED = 3000;
+/** Share of velocity lost per second while gliding. */
+const FRICTION = 3.2;
+/** Share of velocity kept when bouncing off a screen edge. */
+const BOUNCE = 0.45;
 
 export function Window({ win, focused, z, exposed }: Props) {
   const { close, focus, minimize, toggleMaximize, setBounds } = useWindows.getState();
@@ -80,6 +109,45 @@ export function Window({ win, focused, z, exposed }: Props) {
   const reduced = useReducedMotion();
   const start = useRef(win);
   const isMobile = typeof window !== 'undefined' && window.innerWidth < MOBILE_BREAKPOINT;
+
+  // A thrown window glides on, slows down and bounces off the screen edges.
+  const glide = useRef(0);
+  useEffect(() => () => cancelAnimationFrame(glide.current), []);
+  const throwWindow = (vx: number, vy: number) => {
+    const speed = Math.hypot(vx, vy);
+    if (reduced || speed < THROW_MIN_SPEED) return;
+    const cap = Math.min(1, THROW_MAX_SPEED / speed);
+    vx *= cap;
+    vy *= cap;
+    let { x, y } = useWindows.getState().windows[win.id];
+    const { width, height } = useWindows.getState().windows[win.id];
+    // A window already hanging off an edge may stay there.
+    const minX = Math.min(0, x);
+    const maxX = Math.max(window.innerWidth - width, x);
+    const minY = MENU_BAR_HEIGHT;
+    const maxY = Math.max(window.innerHeight - height, y, minY);
+    let last = performance.now();
+    const step = (now: number) => {
+      const dt = Math.min(0.032, (now - last) / 1000);
+      last = now;
+      const decay = Math.exp(-FRICTION * dt);
+      vx *= decay;
+      vy *= decay;
+      x += vx * dt;
+      y += vy * dt;
+      if (x < minX || x > maxX) {
+        x = Math.min(maxX, Math.max(minX, x));
+        vx *= -BOUNCE;
+      }
+      if (y < minY || y > maxY) {
+        y = Math.min(maxY, Math.max(minY, y));
+        vy *= -BOUNCE;
+      }
+      setBounds(win.id, { x: Math.round(x), y: Math.round(y) });
+      if (Math.hypot(vx, vy) > 12) glide.current = requestAnimationFrame(step);
+    };
+    glide.current = requestAnimationFrame(step);
+  };
 
   const beginDrag = useDrag(
     (dx, dy) => {
@@ -91,9 +159,11 @@ export function Window({ win, focused, z, exposed }: Props) {
       });
     },
     () => {
+      cancelAnimationFrame(glide.current);
       start.current = useWindows.getState().windows[win.id];
       focus(win.id);
-    }
+    },
+    throwWindow
   );
 
   const edge = useRef<Edge>('se');
