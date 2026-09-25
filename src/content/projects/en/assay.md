@@ -3,6 +3,7 @@ title: Assay
 description: Open-source SQL data checks for PostgreSQL. Write read-only checks, run them on a schedule, and see what needs attention.
 date: 2025-04
 status: live
+order: 2
 stack: [Next.js, TypeScript, PostgreSQL, MongoDB, Redis, Clerk]
 repo: https://github.com/jma49/Assay
 demo: https://sql-script-depoly.vercel.app/
