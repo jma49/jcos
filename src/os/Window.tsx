@@ -2,7 +2,8 @@ import { Suspense, useCallback, useRef, type PointerEvent as ReactPointerEvent, 
 import { motion, useReducedMotion } from 'motion/react';
 import { apps } from './registry';
 import { DOCK_CLEARANCE, MENU_BAR_HEIGHT, MOBILE_BREAKPOINT, useWindows } from './store';
-import type { WindowState } from './types';
+import { frameOf } from './Expose';
+import type { Rect, WindowState } from './types';
 
 type Edge = 'e' | 's' | 'se' | 'w' | 'sw';
 
@@ -10,19 +11,21 @@ interface Props {
   win: WindowState;
   focused: boolean;
   z: number;
+  /** Where Exposé shows the window, while it is open. */
+  exposed?: Rect;
 }
 
 const spring = { type: 'spring', stiffness: 420, damping: 34, mass: 0.9 } as const;
 
-/** Offset and scale that map the window onto a target rect (for open/minimize). */
-function towards(win: WindowState, target?: DOMRect | { x: number; y: number; width: number; height: number }) {
+/** Offset and scale that map a window's frame onto a target rect (open, minimize, Exposé). */
+function towards(frame: Rect, target?: DOMRect | Rect) {
   if (!target) return { x: 0, y: 40, scale: 0.9 };
   const tx = 'left' in target ? target.left : target.x;
   const ty = 'top' in target ? target.top : target.y;
   return {
-    x: tx + target.width / 2 - (win.x + win.width / 2),
-    y: ty + target.height / 2 - (win.y + win.height / 2),
-    scale: Math.max(0.05, target.width / win.width)
+    x: tx + target.width / 2 - (frame.x + frame.width / 2),
+    y: ty + target.height / 2 - (frame.y + frame.height / 2),
+    scale: Math.max(0.05, target.width / frame.width)
   };
 }
 
@@ -57,7 +60,7 @@ function useDrag(onMove: (dx: number, dy: number) => void, onStart?: () => void)
   );
 }
 
-export function Window({ win, focused, z }: Props) {
+export function Window({ win, focused, z, exposed }: Props) {
   const { close, focus, minimize, toggleMaximize, setBounds } = useWindows.getState();
   const def = apps[win.app];
   const reduced = useReducedMotion();
@@ -122,22 +125,33 @@ export function Window({ win, focused, z }: Props) {
     document.querySelector(`[data-dock-app="${win.app}"]`)?.getBoundingClientRect() ??
     document.querySelector('[data-dock-minimized]')?.getBoundingClientRect();
 
-  const hidden = win.minimized
-    ? { ...towards(win, dockTarget()), opacity: 0 }
-    : { x: 0, y: 0, scale: 1, opacity: 1 };
+  const rect = isMobile ? { x: frame.left, y: frame.top, width: frame.width, height: frame.height } : frameOf(win);
+  const target = win.minimized
+    ? { ...towards(rect, dockTarget()), opacity: 0 }
+    : exposed
+      ? { ...towards(rect, exposed), opacity: 1 }
+      : { x: 0, y: 0, scale: 1, opacity: 1 };
+
+  // Exposé moves windows even with reduced motion, just without the animation.
+  const pickFromExpose = () => {
+    useWindows.getState().setExpose(false);
+    focus(win.id);
+  };
 
   return (
     <motion.section
       role="dialog"
       aria-label={win.title}
       data-focused={focused}
+      data-exposed={exposed ? true : undefined}
       className="os-window"
       style={{ ...frame, zIndex: z, pointerEvents: win.minimized ? 'none' : undefined }}
-      initial={reduced ? { opacity: 0 } : { ...towards(win, win.origin), opacity: 0 }}
-      animate={reduced ? { opacity: win.minimized ? 0 : 1 } : hidden}
+      initial={reduced ? { opacity: 0 } : { ...towards(rect, win.origin), opacity: 0 }}
+      animate={reduced ? (exposed ? target : { x: 0, y: 0, scale: 1, opacity: win.minimized ? 0 : 1 }) : target}
       exit={reduced ? { opacity: 0 } : { scale: 0.94, opacity: 0, transition: { duration: 0.16 } }}
-      transition={spring}
-      onPointerDown={() => !focused && focus(win.id)}
+      transition={reduced ? { duration: 0 } : spring}
+      onPointerDown={() => !exposed && !focused && focus(win.id)}
+      onClick={exposed ? pickFromExpose : undefined}
     >
       <header
         className="os-titlebar"

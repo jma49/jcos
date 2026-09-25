@@ -22,6 +22,11 @@ interface WindowStore {
   theme: 'light' | 'dark';
   spotlightOpen: boolean;
   dashboardOpen: boolean;
+  /** Exposé: every open window laid out side by side. */
+  exposeOpen: boolean;
+  screensaverOn: boolean;
+  /** A photo URL chosen as the desktop picture, or null for the default. */
+  wallpaper: string | null;
 
   open: (app: AppId, options: OpenOptions) => string;
   close: (id: string) => void;
@@ -32,6 +37,19 @@ interface WindowStore {
   setTheme: (theme: 'light' | 'dark') => void;
   setSpotlight: (open: boolean) => void;
   setDashboard: (open: boolean) => void;
+  setExpose: (open: boolean) => void;
+  setScreensaver: (on: boolean) => void;
+  setWallpaper: (url: string | null) => void;
+}
+
+const WALLPAPER_KEY = 'os-wallpaper';
+
+function savedWallpaper() {
+  try {
+    return localStorage.getItem(WALLPAPER_KEY);
+  } catch {
+    return null;
+  }
 }
 
 /** Where a new window goes: centred, then stepped down-right per open window. */
@@ -58,6 +76,9 @@ export const useWindows = create<WindowStore>((set, get) => ({
   theme: 'light',
   spotlightOpen: false,
   dashboardOpen: false,
+  exposeOpen: false,
+  screensaverOn: false,
+  wallpaper: typeof window === 'undefined' ? null : savedWallpaper(),
 
   open: (app, { key = app, title, width, height, origin, props }) => {
     const existing = get().windows[key];
@@ -112,7 +133,16 @@ export const useWindows = create<WindowStore>((set, get) => ({
 
   setTheme: (theme) => set({ theme }),
   setSpotlight: (spotlightOpen) => set({ spotlightOpen }),
-  setDashboard: (dashboardOpen) => set({ dashboardOpen })
+  setDashboard: (dashboardOpen) => set({ dashboardOpen }),
+  setExpose: (exposeOpen) => set({ exposeOpen }),
+  setScreensaver: (screensaverOn) => set({ screensaverOn }),
+  setWallpaper: (wallpaper) => {
+    try {
+      if (wallpaper) localStorage.setItem(WALLPAPER_KEY, wallpaper);
+      else localStorage.removeItem(WALLPAPER_KEY);
+    } catch {}
+    set({ wallpaper });
+  }
 }));
 
 /** The focused window: the frontmost one that isn't minimized. */
