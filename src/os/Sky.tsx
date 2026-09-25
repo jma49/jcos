@@ -74,6 +74,10 @@ export interface SkyState {
   tint: RGBA;
   /** Between sunrise and sunset. */
   daylight: boolean;
+  /** Minutes after local midnight, and today's sunrise and sunset, for the dynamic sky wallpaper. */
+  minutes: number;
+  sunrise: number;
+  sunset: number;
 }
 
 /** The light and weather where the visitor is, rechecked every minute. */
@@ -99,7 +103,10 @@ export function useSky(): SkyState {
     weather,
     condition: pinned.condition ?? weather?.condition ?? 'clear',
     tint: tintAt(minutes, sunrise, sunset),
-    daylight: minutes >= sunrise && minutes < sunset
+    daylight: minutes >= sunrise && minutes < sunset,
+    minutes,
+    sunrise,
+    sunset
   };
 }
 
@@ -205,14 +212,15 @@ function Lightning() {
 }
 
 /** The tint and weather layers, drawn over the wallpaper and under everything else. */
-export function Sky({ sky }: { sky: SkyState }) {
+export function Sky({ sky, tinted = true }: { sky: SkyState; tinted?: boolean }) {
   const reduced = useReducedMotion();
   const mood = MOOD[sky.condition];
   const [r, g, b, a] = sky.tint;
 
   return (
     <div className="os-sky" aria-hidden="true">
-      <div className="os-sky-tint" style={{ backgroundColor: `rgba(${r | 0}, ${g | 0}, ${b | 0}, ${a.toFixed(3)})` }} />
+      {/* The dynamic sky wallpaper already is the light, so it isn't tinted twice. */}
+      {tinted && <div className="os-sky-tint" style={{ backgroundColor: `rgba(${r | 0}, ${g | 0}, ${b | 0}, ${a.toFixed(3)})` }} />}
       <div className="os-sky-gloom" style={{ opacity: mood.gloom }} />
       {mood.fog && <div className="os-sky-fog" />}
       {!reduced && (mood.drops > 0 || mood.flakes > 0) && <Precipitation drops={mood.drops} flakes={mood.flakes} />}
