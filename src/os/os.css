@@ -408,6 +408,13 @@
   will-change: transform;
 }
 
+/* Holds a window's Genie filter; takes no space. */
+.os-genie-defs {
+  position: absolute;
+  width: 0;
+  height: 0;
+}
+
 .os-window[data-focused='true'] {
   box-shadow: var(--os-shadow);
 }
