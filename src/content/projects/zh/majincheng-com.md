@@ -7,7 +7,7 @@ order: 3
 stack: [Astro, TypeScript, Tailwind CSS, Vercel]
 repo: https://github.com/jma49/Jincheng-Protafolio
 cover: ../covers/majincheng-com.jpg
-demo: https://majincheng.com/zh/
+demo: https://www.majincheng.com/zh/
 ---
 
 我想要一个读起来像文章、而不是像控制台的个人主页，而且以后加项目要方便。

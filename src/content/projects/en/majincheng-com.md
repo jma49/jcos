@@ -8,7 +8,7 @@ stack: [Astro, TypeScript, Tailwind CSS, Vercel]
 repo: https://github.com/jma49/Jincheng-Protafolio
 cover: ../covers/majincheng-com.jpg
 capture: /
-demo: https://majincheng.com
+demo: https://www.majincheng.com
 ---
 
 I wanted a personal site that reads like a page rather than a dashboard, and that stays easy to update as I add projects.
