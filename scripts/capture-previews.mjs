@@ -11,7 +11,8 @@
 // not exist yet gets a blank placeholder first, since the build needs it.
 // Screenshots are 1920x1200 (1440x900 at 4/3 scale), light theme, with
 // motion reduced. An existing cover is only replaced when more than 0.1%
-// of its pixels change, so re-running on an unchanged site is a no-op.
+// of its pixels change, so re-running on an unchanged site is a no-op, and
+// never when the page answers with an HTTP error.
 
 import { spawn, spawnSync } from 'node:child_process';
 import { access, readdir, readFile, writeFile } from 'node:fs/promises';
@@ -145,7 +146,13 @@ try {
   const page = await context.newPage();
 
   for (const [out, url] of targets) {
-    await page.goto(url, { waitUntil: 'networkidle' });
+    // Keep the current cover when the page is down; an error page is not a
+    // preview. `::warning::` surfaces the skip in the GitHub Actions summary.
+    const response = await page.goto(url, { waitUntil: 'networkidle' });
+    if (!response?.ok()) {
+      console.log(`::warning::Skipped ${url}: HTTP ${response?.status() ?? 'no response'}`);
+      continue;
+    }
     // Wait for fonts and for images visible in the viewport. Hidden or
     // below-the-fold lazy images never load, so skip them, and cap the wait.
     await page.evaluate(async () => {
