@@ -1,0 +1,55 @@
+---
+// JM/OS prototype: the site as a desktop. The shell is one client-only React
+// island; everything it shows is gathered here at build time.
+import { getImage } from 'astro:assets';
+import Layout from '../layouts/Layout.astro';
+import Desktop from '../os/Desktop';
+import illustration from '../assets/golden-gate.webp';
+import { content, profile } from '../i18n/content';
+import { formatMonth, getProjects } from '../lib/projects';
+import type { OSData } from '../os/types';
+
+const t = content.en;
+const wallpaper = await getImage({ src: illustration, width: 2400, format: 'webp' });
+
+const projects = await Promise.all(
+  (await getProjects('en')).map(async (p) => ({
+    slug: p.slug,
+    title: p.data.title,
+    description: p.data.description,
+    when: formatMonth('en', p.data.date),
+    status: p.data.status,
+    stack: p.data.stack,
+    repo: p.data.repo,
+    demo: p.data.demo,
+    cover: p.data.cover ? (await getImage({ src: p.data.cover, width: 1200, format: 'webp' })).src : undefined,
+    html: p.rendered?.html ?? ''
+  }))
+);
+
+const data: OSData = {
+  name: profile.name.en,
+  role: t.role,
+  location: profile.location.en,
+  email: profile.email,
+  links: {
+    github: profile.github,
+    linkedin: profile.linkedin,
+    photography: profile.photography,
+    resume: t.links.resumeHref
+  },
+  bio: { short: [...t.bio.shortParagraphs], long: [...t.bio.longParagraphs] },
+  jobs: t.jobs.map((j) => ({ ...j, bullets: [...j.bullets] })),
+  skills: t.skills.groups.map((g) => ({ name: g.name, items: [...g.items] })),
+  education: t.education.items.map((e) => ({ ...e })),
+  projects,
+  wallpaper: wallpaper.src
+};
+---
+
+<Layout lang="en" path="/os/" title="JM/OS — Jincheng Ma" translated={false}>
+  <Desktop client:only="react" data={data} />
+  <noscript>
+    <p>JM/OS needs JavaScript. The <a href="/">classic site</a> has everything without it.</p>
+  </noscript>
+</Layout>
