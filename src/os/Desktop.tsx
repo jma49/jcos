@@ -6,6 +6,7 @@ import { Spotlight } from './Spotlight';
 import { Window } from './Window';
 import { OSDataContext } from './context';
 import { apps, launch, rectOf } from './registry';
+import { DiskIcon, PdfIcon } from './icons';
 import { useFocusedId, useWindows } from './store';
 import type { AppId, OSData } from './types';
 import './os.css';
@@ -23,11 +24,12 @@ function DesktopIcons({ data }: { data: OSData }) {
     launch(app, { origin: rectOf(el), ...extra });
 
   const shortcuts: Shortcut[] = [
+    { id: 'hd', label: 'Macintosh HD', Icon: DiskIcon, open: (el) => openApp('projects', el) },
     { id: 'about', label: 'About Me', Icon: apps.about.Icon, open: (el) => openApp('about', el) },
     {
       id: 'resume',
       label: 'Résumé.pdf',
-      Icon: apps.pdf.Icon,
+      Icon: PdfIcon,
       open: (el) => openApp('pdf', el, { title: 'Résumé.pdf', props: { src: data.links.resume } })
     },
     { id: 'projects', label: 'Projects', Icon: apps.projects.Icon, open: (el) => openApp('projects', el) },

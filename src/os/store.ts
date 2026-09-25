@@ -1,8 +1,8 @@
 import { create } from 'zustand';
 import type { AppId, Rect, WindowState } from './types';
 
-export const MENU_BAR_HEIGHT = 30;
-export const DOCK_CLEARANCE = 92;
+export const MENU_BAR_HEIGHT = 22;
+export const DOCK_CLEARANCE = 78;
 export const MOBILE_BREAKPOINT = 768;
 
 export interface OpenOptions {

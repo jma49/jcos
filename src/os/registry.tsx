@@ -1,5 +1,5 @@
 import { lazy, type ComponentType, type LazyExoticComponent } from 'react';
-import { AboutIcon, BrowserIcon, FolderIcon, PdfIcon, ResumeIcon, TerminalIcon } from './icons';
+import { AboutIcon, BrowserIcon, FolderIcon, ProjectIcon, ResumeIcon, TerminalIcon } from './icons';
 import { useWindows } from './store';
 import type { AppId, Rect, WindowState } from './types';
 
@@ -48,7 +48,7 @@ export const apps: Record<AppId, AppDefinition> = {
   },
   project: {
     name: 'Project',
-    Icon: FolderIcon,
+    Icon: ProjectIcon,
     width: 640,
     height: 640,
     minWidth: 380,
@@ -75,7 +75,7 @@ export const apps: Record<AppId, AppDefinition> = {
   },
   pdf: {
     name: 'Preview',
-    Icon: PdfIcon,
+    Icon: ResumeIcon,
     width: 720,
     height: 760,
     minWidth: 360,

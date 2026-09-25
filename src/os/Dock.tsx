@@ -1,7 +1,7 @@
 import { useRef } from 'react';
 import { motion, useMotionValue, useSpring, useTransform, type MotionValue } from 'motion/react';
 import { apps, dockApps, launch, rectOf } from './registry';
-import { ClassicIcon } from './icons';
+import { TrashIcon } from './icons';
 import { useWindows } from './store';
 import type { AppId } from './types';
 
@@ -110,8 +110,8 @@ export function Dock() {
           );
         })}
 
-        <Magnified mouseX={mouseX} label="Classic site" onActivate={() => (window.location.href = '/')}>
-          {(s) => <ClassicIcon size={s} />}
+        <Magnified mouseX={mouseX} label="Trash" onActivate={() => {}}>
+          {(s) => <TrashIcon size={s} />}
         </Magnified>
       </motion.div>
     </nav>

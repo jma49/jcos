@@ -51,7 +51,6 @@ export function MenuBar() {
     '◐': [
       { label: `About ${data.name}`, action: () => launch('about') },
       { divider: true, label: '' },
-      { label: 'Classic site', action: () => (window.location.href = '/') },
       { label: 'Source on GitHub', action: () => window.open('https://github.com/jma49/Jincheng-Protafolio', '_blank') }
     ],
     File: [
@@ -93,7 +92,7 @@ export function MenuBar() {
               aria-haspopup="menu"
               aria-expanded={openMenu === title}
             >
-              {i === 0 ? <span className="os-logo">JM</span> : title}
+              {i === 0 ? <img className="os-logo" src="/os/icons/apple.png" alt="Menu" width={16} height={16} /> : title}
             </button>
             {i === 0 && <span className="os-menu-appname">{appName}</span>}
             {openMenu === title && (

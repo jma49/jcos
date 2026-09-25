@@ -4,13 +4,13 @@
 import { getImage } from 'astro:assets';
 import Layout from '../layouts/Layout.astro';
 import Desktop from '../os/Desktop';
-import illustration from '../assets/golden-gate.webp';
+import wallpaperSource from '../assets/os/stones.jpg';
 import { content, profile } from '../i18n/content';
 import { formatMonth, getProjects } from '../lib/projects';
 import type { OSData } from '../os/types';
 
 const t = content.en;
-const wallpaper = await getImage({ src: illustration, width: 2400, format: 'webp' });
+const wallpaper = await getImage({ src: wallpaperSource, width: 2560, format: 'webp', quality: 82 });
 
 const projects = await Promise.all(
   (await getProjects('en')).map(async (p) => ({
@@ -50,6 +50,6 @@ const data: OSData = {
 <Layout lang="en" path="/os/" title="JM/OS — Jincheng Ma" translated={false}>
   <Desktop client:only="react" data={data} />
   <noscript>
-    <p>JM/OS needs JavaScript. The <a href="/">classic site</a> has everything without it.</p>
+    <p>JM/OS needs JavaScript. Résumé: <a href="/Jincheng_Ma_Resume.pdf">Jincheng_Ma_Resume.pdf</a></p>
   </noscript>
 </Layout>

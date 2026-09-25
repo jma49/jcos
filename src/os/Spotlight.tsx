@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type ComponentType } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { apps, dockApps, launch } from './registry';
-import { ClassicIcon } from './icons';
 import { useWindows } from './store';
 import { useOSData } from './context';
 
@@ -44,13 +43,6 @@ export function Spotlight() {
         hint: 'Document',
         Icon: apps.pdf.Icon,
         run: () => launch('pdf', { title: 'Résumé.pdf', props: { src: data.links.resume } })
-      },
-      {
-        id: 'classic',
-        label: 'Classic site',
-        hint: 'The plain, one-page version',
-        Icon: ClassicIcon,
-        run: () => (window.location.href = '/')
       }
     ],
     [data]
