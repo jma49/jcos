@@ -2114,12 +2114,12 @@
   height: 12px;
 }
 
-/* ---------- Dock (Tiger-style glass shelf) ---------- */
+/* ---------- Dock (one floating pane of frosted glass) ---------- */
 
 .os-dock-wrap {
   position: absolute;
   left: 50%;
-  bottom: 0;
+  bottom: 6px;
   z-index: 900;
   translate: -50% 0;
 }
@@ -2128,18 +2128,21 @@
   display: flex;
   align-items: flex-end;
   gap: 4px;
-  height: 60px;
-  padding: 0 10px 5px;
-  border-radius: 7px 7px 0 0;
-  background: linear-gradient(rgba(255, 255, 255, 0.52), rgba(255, 255, 255, 0.28));
-  backdrop-filter: blur(10px) saturate(1.4);
-  -webkit-backdrop-filter: blur(10px) saturate(1.4);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85), 0 0 0 1px rgba(255, 255, 255, 0.45),
-    0 -2px 14px rgba(0, 0, 0, 0.18);
+  height: 62px;
+  padding: 0 8px 6px;
+  border-radius: 18px;
+  background: linear-gradient(rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0.2));
+  backdrop-filter: blur(24px) saturate(1.8);
+  -webkit-backdrop-filter: blur(24px) saturate(1.8);
+  /* A bright rim on top, a hairline all round and a soft lift off the desktop. */
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6), inset 0 0 0 1px rgba(255, 255, 255, 0.28),
+    0 0 0 0.5px rgba(0, 0, 0, 0.22), 0 10px 30px rgba(0, 0, 0, 0.22);
 }
 
 :root[data-theme='dark'] .os-dock {
-  background: linear-gradient(rgba(80, 80, 80, 0.55), rgba(40, 40, 40, 0.45));
+  background: linear-gradient(rgba(70, 70, 74, 0.5), rgba(40, 40, 44, 0.42));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16), inset 0 0 0 1px rgba(255, 255, 255, 0.08),
+    0 0 0 0.5px rgba(0, 0, 0, 0.5), 0 10px 30px rgba(0, 0, 0, 0.35);
 }
 
 .os-dock-item {
@@ -2163,21 +2166,22 @@
   filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.3));
 }
 
-/* Running apps get the classic black triangle. */
+/* Running apps get a small dot under their icon, inside the glass. */
 .os-dock-dot {
   position: absolute;
   bottom: -5px;
   left: 50%;
   translate: -50% 0;
-  width: 0;
-  height: 0;
-  border-left: 4px solid transparent;
-  border-right: 4px solid transparent;
-  border-bottom: 4px solid #111;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.7);
+  box-shadow: 0 0 2px rgba(255, 255, 255, 0.6);
 }
 
 :root[data-theme='dark'] .os-dock-dot {
-  border-bottom-color: #eee;
+  background: rgba(255, 255, 255, 0.85);
+  box-shadow: none;
 }
 
 .os-dock-label {
@@ -2207,9 +2211,14 @@
   flex: none;
   align-self: stretch;
   width: 1px;
-  margin: 8px 5px 0;
-  background: linear-gradient(transparent, rgba(0, 0, 0, 0.35) 30%, rgba(0, 0, 0, 0.35));
-  box-shadow: 1px 0 0 rgba(255, 255, 255, 0.5);
+  margin: 10px 5px 4px;
+  background: rgba(0, 0, 0, 0.2);
+  box-shadow: 1px 0 0 rgba(255, 255, 255, 0.35);
+}
+
+:root[data-theme='dark'] .os-dock-divider {
+  background: rgba(255, 255, 255, 0.2);
+  box-shadow: none;
 }
 
 /* ---------- Spotlight ---------- */
@@ -4319,10 +4328,15 @@
     display: none;
   }
 
+  .os-dock-wrap {
+    bottom: 10px;
+  }
+
   .os-dock {
     gap: 14px;
-    height: 72px;
-    padding: 0 16px 8px;
+    height: 76px;
+    padding: 0 14px 12px;
+    border-radius: 26px;
   }
 
   .os-dock-label {
@@ -4468,9 +4482,3 @@
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.45), 0 0 0 1px rgba(0, 0, 0, 0.15), 0 12px 30px rgba(0, 0, 0, 0.3);
 }
 
-.os-root[data-glass] .os-dock {
-  border-radius: 12px 12px 0 0;
-  background: linear-gradient(rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0.18));
-  backdrop-filter: blur(20px) saturate(1.8);
-  -webkit-backdrop-filter: blur(20px) saturate(1.8);
-}
