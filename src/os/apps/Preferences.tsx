@@ -145,6 +145,31 @@ function AccentPicker() {
   );
 }
 
+function MaterialPicker() {
+  const glass = useWindows((s) => s.glass);
+  const setGlass = useWindows((s) => s.setGlass);
+  const options = [
+    { glass: false, name: 'Aqua', blurb: 'Pinstripes and brushed metal, as in Mac OS X Tiger.' },
+    { glass: true, name: 'Glass', blurb: 'Frosted, translucent windows and menus that let the desktop show through.' }
+  ];
+  return (
+    <section className="os-prefs-section">
+      <h3>Material</h3>
+      <div className="os-prefs-radios" role="radiogroup" aria-label="Material">
+        {options.map((o) => (
+          <label key={o.name}>
+            <input type="radio" name="material" checked={glass === o.glass} onChange={() => setGlass(o.glass)} />
+            <span>
+              <strong>{o.name}</strong>
+              <small>{o.blurb}</small>
+            </span>
+          </label>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function AppearancePane() {
   const appearance = useWindows((s) => s.appearance);
   const setAppearance = useWindows((s) => s.setAppearance);
@@ -164,6 +189,7 @@ function AppearancePane() {
           ))}
         </div>
       </section>
+      <MaterialPicker />
       <AccentPicker />
     </>
   );

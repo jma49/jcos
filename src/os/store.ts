@@ -38,6 +38,8 @@ interface WindowStore {
   theme: 'light' | 'dark';
   appearance: Appearance;
   saver: SaverPrefs;
+  /** Frosted glass windows and menus instead of pinstripes and metal. */
+  glass: boolean;
   /** The accent colour: from the desktop picture, or a fixed one (see accent.ts). */
   accent: AccentChoice;
   /** Applets installed from the Applet Store (see applets.ts). */
@@ -76,6 +78,7 @@ interface WindowStore {
   setIconPositions: (positions: IconPositions | null) => void;
   setApplets: (applets: AppId[]) => void;
   setAccent: (accent: AccentChoice) => void;
+  setGlass: (glass: boolean) => void;
   setSound: (on: boolean) => void;
   setVolume: (volume: number) => void;
   setSpotlight: (open: boolean) => void;
@@ -95,6 +98,7 @@ const SOUND_KEY = 'os-sound';
 const ICONS_KEY = 'os-icon-positions';
 const APPLETS_KEY = 'os-applets';
 const ACCENT_KEY = 'os-accent';
+const GLASS_KEY = 'os-glass';
 const ACCENT_CHOICES: AccentChoice[] = ['auto', 'blue', 'graphite', 'green', 'orange', 'purple', 'red'];
 
 function savedAccent(): AccentChoice {
@@ -194,6 +198,7 @@ export const useWindows = create<WindowStore>((set, get) => ({
   iconPositions: typeof window === 'undefined' ? null : savedIconPositions(),
   applets: typeof window === 'undefined' ? DEFAULT_APPLETS : savedApplets(),
   accent: typeof window === 'undefined' ? 'auto' : savedAccent(),
+  glass: typeof window === 'undefined' ? false : read(GLASS_KEY) === '1',
   spotlightOpen: false,
   dashboardOpen: false,
   exposeOpen: false,
@@ -271,6 +276,10 @@ export const useWindows = create<WindowStore>((set, get) => ({
       else localStorage.removeItem(ICONS_KEY);
     } catch {}
     set({ iconPositions });
+  },
+  setGlass: (glass) => {
+    write(GLASS_KEY, glass ? '1' : '0');
+    set({ glass });
   },
   setAccent: (accent) => {
     write(ACCENT_KEY, accent);
