@@ -910,11 +910,154 @@
   background: var(--os-gel-pressed);
 }
 
+/*
+ * Aqua gloss: every gel control gets a bright specular band across its
+ * top half and a soft glow along its bottom edge. Both sit under the
+ * label (isolation + z-index: -1) so text stays crisp.
+ */
+.os-root .os-button,
+.os-root .os-segmented,
+.os-root select {
+  isolation: isolate;
+}
+
+.os-root .os-button::before,
+.os-root .os-segmented::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  top: 1px;
+  left: 5px;
+  right: 5px;
+  height: 48%;
+  border-radius: 10px 10px 5px 5px / 10px 10px 4px 4px;
+  background: linear-gradient(rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.25));
+  pointer-events: none;
+}
+
+.os-root .os-button::after,
+.os-root .os-segmented::after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  bottom: 0;
+  left: 12%;
+  right: 12%;
+  height: 45%;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at 50% 100%, rgba(255, 255, 255, 0.7), transparent 70%);
+  pointer-events: none;
+}
+
+.os-root .os-segmented {
+  position: relative;
+}
+
+/* Pressed segments carry their own gel, so the shared shine goes over them. */
+.os-root .os-segmented::before {
+  z-index: 1;
+  opacity: 0.55;
+}
+
+.os-root .os-segmented button {
+  position: relative;
+}
+
+/* Pop-up menus (selects): a white gel with the accent's arrow cap on the right. */
+.os-root select {
+  appearance: none;
+  height: 22px;
+  padding: 0 30px 0 10px;
+  border: 0;
+  border-radius: 6px;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='7' height='11'%3E%3Cpath d='M3.5 0L7 4H0zM3.5 11L0 7h7z' fill='white'/%3E%3C/svg%3E") right 7px center / 7px 11px no-repeat,
+    var(--os-gel) right / 21px 100% no-repeat,
+    linear-gradient(rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.2) 48%, transparent 50%),
+    linear-gradient(#ffffff, #f1f1f1 45%, #dedede 50%, #f4f4f4);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.35), 0 1px 1px rgba(0, 0, 0, 0.15);
+  color: #111;
+  font: inherit;
+  font-size: 12px;
+}
+
+/* Checkboxes and radios: white gels that fill with the accent when on. */
+.os-root input[type='checkbox'],
+.os-root input[type='radio'] {
+  appearance: none;
+  flex: none;
+  width: 14px;
+  height: 14px;
+  margin: 1px 0 0;
+  border-radius: 3px;
+  background: linear-gradient(#ffffff, #f1f1f1 45%, #dcdcdc 50%, #f6f6f6);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.4), inset 0 1px 2px rgba(0, 0, 0, 0.12);
+}
+
+.os-root input[type='radio'] {
+  border-radius: 50%;
+}
+
+.os-root input[type='checkbox']:checked {
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12'%3E%3Cpath d='M2 6.5l2.6 2.8L10 2.5' fill='none' stroke='%23111' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 11px no-repeat, var(--os-gel);
+  box-shadow: inset 0 0 0 1px var(--os-accent-rim);
+}
+
+.os-root input[type='radio']:checked {
+  background: radial-gradient(circle, #1b1b1b 0 2.4px, transparent 2.9px), var(--os-gel);
+  box-shadow: inset 0 0 0 1px var(--os-accent-rim);
+}
+
+/* Sliders: a recessed track and a glossy white thumb. */
+.os-root input[type='range'] {
+  appearance: none;
+  height: 16px;
+  background: transparent;
+}
+
+.os-root input[type='range']::-webkit-slider-runnable-track {
+  height: 5px;
+  border-radius: 3px;
+  background: linear-gradient(#9a9a9a, #d4d4d4);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.45);
+}
+
+.os-root input[type='range']::-moz-range-track {
+  height: 5px;
+  border-radius: 3px;
+  background: linear-gradient(#9a9a9a, #d4d4d4);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.45);
+}
+
+.os-root input[type='range']::-webkit-slider-thumb {
+  appearance: none;
+  width: 15px;
+  height: 15px;
+  margin-top: -5px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 30%, #fff, #e4e4e4 55%, #bdbdbd);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+.os-root input[type='range']::-moz-range-thumb {
+  width: 15px;
+  height: 15px;
+  border: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 30%, #fff, #e4e4e4 55%, #bdbdbd);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+.os-root input:disabled {
+  opacity: 0.5;
+}
+
 .os-root .os-button-primary {
   background: var(--os-gel);
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--os-accent-rim) 55%, transparent), 0 1px 1px rgba(0, 0, 0, 0.2);
-  color: #fff;
-  text-shadow: 0 -1px 0 var(--os-accent-shadow);
+  /* Aqua's default buttons have black labels on the gel. */
+  color: #111;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
   animation: os-throb 1.6s ease-in-out infinite alternate;
 }
 
@@ -953,8 +1096,8 @@
 
 .os-segmented button[aria-pressed='true'] {
   background: var(--os-gel);
-  color: #fff;
-  text-shadow: 0 -1px 0 var(--os-accent-shadow);
+  color: #111;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
 }
 
 .os-empty {
@@ -2193,8 +2336,8 @@
 .os-store-spinner {
   width: 12px;
   height: 12px;
-  border: 2px solid rgba(255, 255, 255, 0.4);
-  border-top-color: #fff;
+  border: 2px solid rgba(0, 0, 0, 0.2);
+  border-top-color: #222;
   border-radius: 50%;
   animation: os-spin 0.7s linear infinite;
 }
