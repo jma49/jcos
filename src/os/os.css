@@ -144,6 +144,79 @@
   filter: brightness(0.6);
 }
 
+/* ---------- Sky (San Jose light and weather over the wallpaper) ---------- */
+
+.os-sky {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.os-sky > * {
+  position: absolute;
+  inset: 0;
+}
+
+.os-sky-tint {
+  mix-blend-mode: multiply;
+  transition: background-color 60s linear;
+}
+
+.os-sky-gloom {
+  background: linear-gradient(rgba(70, 78, 92, 0.9), rgba(110, 116, 126, 0.6));
+  mix-blend-mode: multiply;
+  transition: opacity 3s ease;
+}
+
+.os-sky-fog {
+  inset: -10% -30%;
+  background:
+    radial-gradient(ellipse 40% 30% at 30% 60%, rgba(235, 238, 242, 0.55), transparent 70%),
+    radial-gradient(ellipse 45% 35% at 75% 40%, rgba(235, 238, 242, 0.45), transparent 70%),
+    linear-gradient(transparent, rgba(225, 228, 232, 0.4));
+  animation: os-fog-drift 60s ease-in-out infinite alternate;
+}
+
+@keyframes os-fog-drift {
+  to {
+    transform: translateX(12%);
+  }
+}
+
+.os-sky-canvas {
+  width: 100%;
+  height: 100%;
+}
+
+.os-sky-flash {
+  background: rgba(235, 240, 255, 0.9);
+  mix-blend-mode: soft-light;
+  opacity: 0;
+  animation: os-lightning 0.9s ease-out;
+}
+
+@keyframes os-lightning {
+  0%, 100% { opacity: 0; }
+  6% { opacity: 1; }
+  14% { opacity: 0.2; }
+  22% { opacity: 0.8; }
+}
+
+.os-status .os-sky-status {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  height: 100%;
+  font-size: 12px;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.os-status .os-sky-status span {
+  font-size: 11px;
+}
+
 /* ---------- Menu bar ---------- */
 
 .os-menubar {

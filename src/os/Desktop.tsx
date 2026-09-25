@@ -7,6 +7,7 @@ import { Dashboard } from './Dashboard';
 import { Window } from './Window';
 import { Expose, exposeLayout } from './Expose';
 import { Screensaver } from './Screensaver';
+import { Sky, useSky } from './Sky';
 import { OSDataContext } from './context';
 import { apps, launch, rectOf } from './registry';
 import { DiskIcon, DocumentIcon, PhotosIcon } from './icons';
@@ -156,6 +157,7 @@ export default function Desktop({ data }: { data: OSData }) {
   const exposeOpen = useWindows((s) => s.exposeOpen);
   const wallpaper = useWindows((s) => s.wallpaper) ?? data.wallpaper;
   const focusedId = useFocusedId();
+  const sky = useSky();
   const [menuAt, setMenuAt] = useState<{ x: number; y: number } | null>(null);
   const closeMenu = useCallback(() => setMenuAt(null), []);
   const reduced = useReducedMotion();
@@ -259,7 +261,8 @@ export default function Desktop({ data }: { data: OSData }) {
             transition={{ duration: 0.8 }}
           />
         </AnimatePresence>
-        <MenuBar />
+        <Sky sky={sky} />
+        <MenuBar sky={sky} />
         <DesktopIcons data={data} />
         <Expose layout={layout} />
 

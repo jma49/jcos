@@ -2,6 +2,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useWindows } from './store';
 import { useOSData } from './context';
+import { describe as describeWeather, getWeather, type Weather } from './weather';
 
 // Tiger-style Dashboard: an overlay of widgets that zoom in over a dimmed desktop.
 
@@ -94,46 +95,15 @@ function CalendarWidget() {
   );
 }
 
-const WEATHER: [number[], string, string][] = [
-  [[0], 'Clear', '☀️'],
-  [[1, 2], 'Partly Cloudy', '⛅'],
-  [[3], 'Overcast', '☁️'],
-  [[45, 48], 'Fog', '🌫️'],
-  [[51, 53, 55, 56, 57], 'Drizzle', '🌦️'],
-  [[61, 63, 65, 66, 67, 80, 81, 82], 'Rain', '🌧️'],
-  [[71, 73, 75, 77, 85, 86], 'Snow', '🌨️'],
-  [[95, 96, 99], 'Thunderstorms', '⛈️']
-];
-
-interface Weather {
-  temp: number;
-  high: number;
-  low: number;
-  code: number;
-}
-
 function WeatherWidget() {
   const [weather, setWeather] = useState<Weather | null | 'error'>(null);
   useEffect(() => {
-    const url =
-      'https://api.open-meteo.com/v1/forecast?latitude=37.3382&longitude=-121.8863' +
-      '&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min' +
-      '&temperature_unit=fahrenheit&timezone=America%2FLos_Angeles&forecast_days=1';
-    fetch(url)
-      .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
-      .then((d) =>
-        setWeather({
-          temp: Math.round(d.current.temperature_2m),
-          code: d.current.weather_code,
-          high: Math.round(d.daily.temperature_2m_max[0]),
-          low: Math.round(d.daily.temperature_2m_min[0])
-        })
-      )
+    getWeather()
+      .then(setWeather)
       .catch(() => setWeather('error'));
   }, []);
 
-  const [, label, icon] =
-    weather && weather !== 'error' ? (WEATHER.find(([codes]) => codes.includes(weather.code)) ?? WEATHER[0]) : WEATHER[0];
+  const { label, icon } = describeWeather(weather && weather !== 'error' ? weather.condition : 'clear');
 
   return (
     <div className="os-widget os-widget-weather">
