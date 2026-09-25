@@ -12,6 +12,7 @@ import { Presence } from './Presence';
 import { AppSwitcher } from './AppSwitcher';
 import { watchWindows } from './sound';
 import { ACCENTS, accentFromPicture, cachedAccent, DEFAULT_ACCENT } from './accent';
+import { accentForGenerated, backgroundFor, isPicture, SKY } from './wallpapers';
 import { OSDataContext } from './context';
 import { apps, launch, rectOf } from './registry';
 import { DiskIcon, DocumentIcon, PhotosIcon } from './icons';
@@ -245,7 +246,9 @@ export default function Desktop({ data }: { data: OSData }) {
   const order = useWindows((s) => s.order);
   const theme = useWindows((s) => s.theme);
   const exposeOpen = useWindows((s) => s.exposeOpen);
-  const wallpaper = useWindows((s) => s.wallpaper) ?? data.wallpaper;
+  // What's stored: a photo's URL, a generated picture (wallpapers.ts), or null for the default.
+  const chosen = useWindows((s) => s.wallpaper);
+  const wallpaper = chosen ?? data.wallpaper;
   const focusedId = useFocusedId();
   const sky = useSky();
   const [menuAt, setMenuAt] = useState<{ x: number; y: number } | null>(null);
@@ -270,6 +273,7 @@ export default function Desktop({ data }: { data: OSData }) {
     if (!el) return;
     const apply = (color: string) => el.style.setProperty('--os-accent', color);
     if (accentChoice !== 'auto') return apply(ACCENTS[accentChoice].color);
+    if (!isPicture(chosen)) return apply(accentForGenerated(wallpaper, sky) ?? DEFAULT_ACCENT);
     let live = true;
     const known = cachedAccent(wallpaper);
     if (known) return apply(known);
@@ -280,7 +284,8 @@ export default function Desktop({ data }: { data: OSData }) {
     return () => {
       live = false;
     };
-  }, [accentChoice, wallpaper]);
+    // The dynamic sky's accent follows the hour, so it depends on the sky too.
+  }, [accentChoice, wallpaper, chosen === SKY ? `${sky.minutes},${sky.condition}` : '']);
 
   // Light or dark as the visitor chose; `system` follows the OS, `sun` the daylight where they are.
   const appearance = useWindows((s) => s.appearance);
@@ -374,14 +379,14 @@ export default function Desktop({ data }: { data: OSData }) {
             key={wallpaper}
             className="os-wallpaper"
             aria-hidden="true"
-            style={{ '--os-wallpaper': `url(${wallpaper})` } as React.CSSProperties}
+            style={{ background: backgroundFor(chosen, data.wallpaper, sky) }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0, transition: { delay: 0.8 } }}
             transition={{ duration: 0.8 }}
           />
         </AnimatePresence>
-        <Sky sky={sky} />
+        <Sky sky={sky} tinted={chosen !== SKY} />
         <MenuBar sky={sky} />
         <DesktopIcons data={data} />
         <Expose layout={layout} />

@@ -37,6 +37,11 @@ readers, crawlers and visitors without JavaScript.
   screen saver, appearance (light, dark, automatic, or follow the sun
   where the visitor is) and place. Choices live in `localStorage`
   (`os-wallpaper`, `os-screensaver`, `theme`, `os-place`).
+- `src/os/wallpapers.ts`: desktop pictures besides photos: solid
+  colours, SVG/CSS patterns and a dynamic sky that follows the sun and
+  weather at the visitor's place. The store keeps a photo URL or
+  `color:<id>`, `pattern:<id>`, `dynamic:sky`; `backgroundFor()` turns
+  it into CSS.
 - `src/os/accent.ts`: the accent colour. By default it's sampled from the
   desktop picture (the most prominent colourful hue, at a readable
   lightness); System Preferences can fix it instead. Everything blue in

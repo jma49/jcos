@@ -7,6 +7,8 @@ import { PlaceSearch } from '../PlaceSearch';
 import { SAVER_STYLES, SAVER_VIEWS } from '../Screensaver';
 import { play } from '../sound';
 import { ACCENTS, cachedAccent, type AccentChoice } from '../accent';
+import { backgroundFor, PATTERNS, SKY, SOLID_COLORS } from '../wallpapers';
+import { useSky } from '../Sky';
 
 // System Preferences, Tiger style: a toolbar of panes. Everything here is
 // remembered in this browser.
@@ -28,32 +30,84 @@ const IDLE_CHOICES = [
   { minutes: 0, label: 'Never' }
 ];
 
+type Collection = 'desktop' | 'photos' | 'colors' | 'patterns' | 'dynamic';
+
+interface Picture {
+  /** What's stored: null for the default picture, a URL, or color:/pattern:/dynamic: (wallpapers.ts). */
+  value: string | null;
+  name: string;
+  /** An image thumbnail, or a CSS background for generated pictures. */
+  thumb?: string;
+  background?: string;
+}
+
+const COLLECTIONS: { id: Collection; name: string }[] = [
+  { id: 'desktop', name: 'Desktop Pictures' },
+  { id: 'photos', name: 'Jincheng’s Photos' },
+  { id: 'colors', name: 'Solid Colors' },
+  { id: 'patterns', name: 'Patterns' },
+  { id: 'dynamic', name: 'Dynamic' }
+];
+
+function collectionOf(value: string | null, photoUrls: Set<string>): Collection {
+  if (!value) return 'desktop';
+  if (value.startsWith('color:')) return 'colors';
+  if (value.startsWith('pattern:')) return 'patterns';
+  if (value === SKY) return 'dynamic';
+  return photoUrls.has(value) ? 'photos' : 'desktop';
+}
+
 function DesktopPane() {
   const data = useOSData();
   const custom = useWindows((s) => s.wallpaper);
   const saver = useWindows((s) => s.saver);
   const { setWallpaper, setSaver, setScreensaver } = useWindows.getState();
-  const pictures = [{ id: 'default', thumb: data.wallpaper, full: null as string | null, alt: 'Stones (default)' }].concat(
-    data.photos.map((p) => ({ id: p.id, thumb: p.thumb, full: p.full, alt: p.alt }))
-  );
+  const sky = useSky();
+  const [collection, setCollection] = useState<Collection>(() => collectionOf(custom, new Set(data.photos.map((p) => p.full))));
+  const skyNow = backgroundFor(SKY, data.wallpaper, sky);
+
+  const pictures: Record<Collection, Picture[]> = {
+    desktop: [{ value: null, name: 'Stones', thumb: data.wallpaper }],
+    photos: data.photos.map((p) => ({ value: p.full, name: p.alt, thumb: p.thumb })),
+    colors: SOLID_COLORS.map((c) => ({ value: `color:${c.id}`, name: c.name, background: backgroundFor(`color:${c.id}`, '', sky) })),
+    patterns: PATTERNS.map((p) => ({ value: `pattern:${p.id}`, name: p.name, background: p.background })),
+    dynamic: [{ value: SKY, name: 'Sky: the light and weather where you are, all day', background: skyNow }]
+  };
   const blurb = SAVER_STYLES.find((s) => s.style === saver.style)?.blurb;
 
   return (
     <>
       <section className="os-prefs-section">
         <h3>Desktop Picture</h3>
-        <ul className="os-prefs-pictures" role="listbox" aria-label="Desktop picture">
-          {pictures.map((p) => {
-            const selected = (custom ?? null) === p.full;
-            return (
-              <li key={p.id} role="option" aria-selected={selected}>
-                <button type="button" onClick={() => setWallpaper(p.full)} title={p.alt}>
-                  <img src={p.thumb} alt={p.alt} loading="lazy" draggable={false} />
+        <div className="os-prefs-saver-body">
+          <ul className="os-prefs-list" role="listbox" aria-label="Collection">
+            {COLLECTIONS.map((c) => (
+              <li key={c.id} role="option" aria-selected={collection === c.id}>
+                <button type="button" onClick={() => setCollection(c.id)}>
+                  {c.name}
                 </button>
               </li>
-            );
-          })}
-        </ul>
+            ))}
+          </ul>
+          <ul className="os-prefs-pictures" role="listbox" aria-label="Desktop picture">
+            {pictures[collection].map((p) => (
+              <li key={p.value ?? 'default'} role="option" aria-selected={(custom ?? null) === p.value}>
+                <button type="button" onClick={() => setWallpaper(p.value)} title={p.name}>
+                  {p.thumb ? (
+                    <img src={p.thumb} alt={p.name} loading="lazy" draggable={false} />
+                  ) : (
+                    <span className="os-prefs-swatch-picture" style={{ background: p.background }} aria-label={p.name} />
+                  )}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+        {collection === 'dynamic' && (
+          <p className="os-prefs-note">
+            The sky follows the sun where you are: dawn, day, golden hour, dusk and night, greyed by clouds and rain.
+          </p>
+        )}
       </section>
 
       <section className="os-prefs-section os-prefs-saver">
