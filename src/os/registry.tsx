@@ -3,6 +3,7 @@ import {
   AboutIcon,
   BrowserIcon,
   FolderIcon,
+  MinesweeperIcon,
   PhotosIcon,
   PreferencesIcon,
   ProjectIcon,
@@ -111,6 +112,15 @@ export const apps: Record<AppId, AppDefinition> = {
     minHeight: 300,
     Component: lazy(() => import('./apps/Soapbox'))
   },
+  minesweeper: {
+    name: 'Minesweeper',
+    Icon: MinesweeperIcon,
+    width: 400,
+    height: 470,
+    minWidth: 300,
+    minHeight: 360,
+    Component: lazy(() => import('./apps/Minesweeper'))
+  },
   preferences: {
     name: 'System Preferences',
     Icon: PreferencesIcon,
@@ -124,6 +134,9 @@ export const apps: Record<AppId, AppDefinition> = {
 
 /** Apps shown in the Dock, left to right. */
 export const dockApps: AppId[] = ['about', 'resume', 'projects', 'photos', 'stickies', 'soapbox', 'terminal', 'browser', 'preferences'];
+
+/** Everything Spotlight can open: the Dock's apps plus a few that aren't in it. */
+export const launchableApps: AppId[] = [...dockApps, 'minesweeper'];
 
 /** Dock apps that also appear in the four-slot Dock on phones. */
 export const mobileDockApps: AppId[] = ['projects', 'photos', 'terminal'];
