@@ -43,8 +43,7 @@ function DesktopIcons({ data }: { data: OSData }) {
     { id: 'photos', label: 'Photos', Icon: PhotosIcon, open: (el) => openApp('photos', el) },
     { id: 'stickies', label: 'Stickies', Icon: apps.stickies.Icon, open: (el) => openApp('stickies', el) },
     { id: 'soapbox', label: 'Soapbox', Icon: apps.soapbox.Icon, open: (el) => openApp('soapbox', el) },
-    { id: 'terminal', label: 'Terminal', Icon: apps.terminal.Icon, open: (el) => openApp('terminal', el) },
-    { id: 'minesweeper', label: 'Minesweeper', Icon: apps.minesweeper.Icon, open: (el) => openApp('minesweeper', el) }
+    { id: 'terminal', label: 'Terminal', Icon: apps.terminal.Icon, open: (el) => openApp('terminal', el) }
   ];
 
   const positions = useWindows((s) => s.iconPositions);
@@ -394,7 +393,7 @@ export default function Desktop({ data }: { data: OSData }) {
   );
 }
 
-const DEEP_LINK_APPS: AppId[] = ['about', 'resume', 'projects', 'photos', 'stickies', 'soapbox', 'terminal', 'preferences', 'minesweeper', 'finder'];
+const DEEP_LINK_APPS: AppId[] = ['about', 'resume', 'projects', 'photos', 'stickies', 'soapbox', 'terminal', 'preferences', 'minesweeper', 'finder', 'appstore', 'calculator', 'tilegame'];
 
 /** Handles links like /?open=resume or /?open=ocra. Returns whether it opened anything. */
 function openFromUrl(data: OSData): boolean {

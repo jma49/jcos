@@ -62,7 +62,10 @@ export type AppId =
   | 'preferences'
   | 'soapbox'
   | 'minesweeper'
-  | 'finder';
+  | 'finder'
+  | 'appstore'
+  | 'calculator'
+  | 'tilegame';
 
 export interface Rect {
   x: number;

@@ -24,8 +24,27 @@ export const APPLETS: Applet[] = [
     description:
       'The classic, in Aqua blue. Three board sizes, a safe first click, flags, chording and your best time for each level.',
     added: '2026-09-25'
+  },
+  {
+    app: 'tilegame',
+    category: 'Games',
+    tagline: 'One of Jincheng’s photos, cut into sixteen tiles.',
+    description:
+      'After the Tile Game widget in Mac OS X Tiger: a sliding puzzle made from a photo in the Photos library. Slide the tiles back into place with the mouse or the arrow keys, then try another photo.',
+    added: '2026-09-26'
+  },
+  {
+    app: 'calculator',
+    category: 'Utilities',
+    tagline: 'Add, subtract, multiply, divide. Nicely.',
+    description:
+      'A four-function calculator with an LCD and Aqua keys. It chains operations, repeats the last one when you press = again, rounds away floating-point noise, and follows your keyboard.',
+    added: '2026-09-26'
   }
 ];
+
+/** The applet the store's banner shows. */
+export const FEATURED: AppId = 'tilegame';
 
 export const isApplet = (app: AppId) => APPLETS.some((a) => a.app === app);
 

@@ -146,3 +146,109 @@ export function SoapboxIcon({ size = 64 }: { size?: number }) {
     </svg>
   );
 }
+
+/** Applet Store: a shopping bag with an Aqua band and four applet tiles. Drawn here. */
+export function AppletStoreIcon({ size = 64 }: { size?: number }) {
+  const id = `store${useId().replace(/[^\w-]/g, '')}`;
+  const handle = 'M22 22v-6a10 10 0 0 1 20 0v6';
+  return (
+    <svg className="os-icon" width={size} height={size} viewBox="0 0 64 64" aria-hidden="true">
+      <defs>
+        <linearGradient id={`${id}-bag`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#ffffff" />
+          <stop offset="1" stopColor="#e3e6ea" />
+        </linearGradient>
+        <linearGradient id={`${id}-side`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#d9dde3" />
+          <stop offset="1" stopColor="#bfc5cd" />
+        </linearGradient>
+        <linearGradient id={`${id}-band`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#8fd0ff" />
+          <stop offset="0.5" stopColor="#3a95ee" />
+          <stop offset="1" stopColor="#1b62c9" />
+        </linearGradient>
+        <linearGradient id={`${id}-gloss`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#fff" stopOpacity="0.85" />
+          <stop offset="1" stopColor="#fff" stopOpacity="0" />
+        </linearGradient>
+        <filter id={`${id}-shadow`} x="-20%" y="-20%" width="140%" height="140%">
+          <feDropShadow dx="0" dy="1.5" stdDeviation="1.6" floodOpacity="0.35" />
+        </filter>
+      </defs>
+      <g filter={`url(#${id}-shadow)`}>
+        <path d={handle} fill="none" stroke="#7d8793" strokeWidth="3" strokeLinecap="round" />
+        <path d={handle} fill="none" stroke="#c9d0d8" strokeWidth="1.2" strokeLinecap="round" />
+        <path d="M48 20l6 3-2 35-4 2z" fill={`url(#${id}-side)`} />
+        <path d="M12 20h36l0 40H10z" fill={`url(#${id}-bag)`} stroke="#9aa3ad" strokeWidth="0.8" strokeLinejoin="round" />
+        <path d="M11.6 26h36.4v7H11.2z" fill={`url(#${id}-band)`} />
+        <path d="M11.6 26h36.4v3H11.4z" fill={`url(#${id}-gloss)`} />
+        <path d="M12 20h36v4H11.8z" fill="#fff" opacity="0.7" />
+        <g stroke="rgba(0,0,0,0.25)" strokeWidth="0.6">
+          <rect x="20" y="37" width="9" height="9" rx="2.2" fill="#ff8a3d" />
+          <rect x="31" y="37" width="9" height="9" rx="2.2" fill="#35b25a" />
+          <rect x="20" y="48" width="9" height="9" rx="2.2" fill="#a05cf0" />
+          <rect x="31" y="48" width="9" height="9" rx="2.2" fill="#ffcf33" />
+        </g>
+        <g fill="#fff" opacity="0.55">
+          <rect x="21" y="38" width="7" height="3" rx="1.5" />
+          <rect x="32" y="38" width="7" height="3" rx="1.5" />
+          <rect x="21" y="49" width="7" height="3" rx="1.5" />
+          <rect x="32" y="49" width="7" height="3" rx="1.5" />
+        </g>
+      </g>
+    </svg>
+  );
+}
+
+/** Tile Game: a landscape cut into sliding tiles, one of them loose. Drawn here. */
+export function TileGameIcon({ size = 64 }: { size?: number }) {
+  const id = `tiles${useId().replace(/[^\w-]/g, '')}`;
+  return (
+    <svg className="os-icon" width={size} height={size} viewBox="0 0 64 64" aria-hidden="true">
+      <defs>
+        <linearGradient id={`${id}-sky`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#6fb6f2" />
+          <stop offset="0.55" stopColor="#cfe6f7" />
+          <stop offset="1" stopColor="#f6d9a8" />
+        </linearGradient>
+        <linearGradient id={`${id}-frame`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#f4f4f4" />
+          <stop offset="1" stopColor="#b9b9b9" />
+        </linearGradient>
+        <clipPath id={`${id}-pic`}>
+          <rect x="10" y="10" width="44" height="44" />
+        </clipPath>
+        <mask id={`${id}-gaps`}>
+          <rect x="0" y="0" width="64" height="64" fill="#fff" />
+          <path d="M21 10v44M32 10v44M43 10v44M10 21h44M10 32h44M10 43h44" stroke="#000" strokeWidth="0.9" />
+          <rect x="43" y="43" width="11" height="11" fill="#000" />
+        </mask>
+        <filter id={`${id}-shadow`} x="-20%" y="-20%" width="140%" height="140%">
+          <feDropShadow dx="0" dy="1.5" stdDeviation="1.6" floodOpacity="0.35" />
+        </filter>
+      </defs>
+      <g filter={`url(#${id}-shadow)`}>
+        <rect x="6" y="6" width="52" height="52" rx="5" fill={`url(#${id}-frame)`} stroke="#8a8a8a" strokeWidth="0.8" />
+        <rect x="10" y="10" width="44" height="44" fill="#e6e6e6" />
+        <rect x="43.6" y="43.6" width="10.4" height="10.4" fill="#9a9a9a" />
+        <path d="M43.6 54V43.6H54" fill="none" stroke="#6d6d6d" strokeWidth="1.2" />
+        <g clipPath={`url(#${id}-pic)`} mask={`url(#${id}-gaps)`}>
+          <rect x="10" y="10" width="44" height="44" fill={`url(#${id}-sky)`} />
+          <circle cx="41" cy="22" r="5" fill="#fff4c2" />
+          <path d="M10 42l12-11 9 8 8-6 15 11v10H10z" fill="#3f7d4a" />
+          <path d="M10 47l14-6 12 5 18-5v13H10z" fill="#2d5f37" />
+          <path
+            d="M10 10.7h44M10 21.7h44M10 32.7h44M10 43.7h44M10.7 10v44M21.7 10v44M32.7 10v44M43.7 10v44"
+            stroke="#fff"
+            strokeOpacity="0.45"
+            strokeWidth="0.8"
+          />
+        </g>
+        <g transform="translate(44.5 45.5) rotate(-6)">
+          <rect x="-1" y="-1" width="11.5" height="11.5" rx="1" fill="#2d5f37" stroke="#fff" strokeWidth="1" />
+          <path d="M-1 3l5 -2 6 3v6.5H-1z" fill="#3f7d4a" />
+        </g>
+      </g>
+    </svg>
+  );
+}

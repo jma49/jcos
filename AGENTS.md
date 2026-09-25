@@ -58,8 +58,11 @@ readers, crawlers and visitors without JavaScript.
 - `src/os/files.ts` and `apps/Finder.tsx`: Macintosh HD, a read-only
   file system built from the content (Applications, Applets, Documents,
   Pictures, Projects), browsed in Finder with icon and list views.
-- `src/os/applets.ts`: the Applet Store's catalog and which applets this
-  browser has installed (`os-applets`).
+- `src/os/applets.ts` and `apps/AppletStore.tsx`: the Applet Store's
+  catalog (Minesweeper, Tile Game, Calculator) and which applets this
+  browser has installed (`os-applets`). Installed applets appear in
+  Finder's Applets folder and Spotlight. To add one, write the app,
+  register it, and add an entry to `APPLETS`.
 - `src/os/registry.tsx`: every app's name, icon, default and minimum size,
   and lazily imported component. `dockApps` and `mobileDockApps` pick what
   the Dock shows.

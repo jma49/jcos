@@ -30,7 +30,7 @@ export interface FileNode {
 }
 
 /** Apps in /Applications, alphabetically. */
-const APPLICATIONS: AppId[] = ['photos', 'preferences', 'soapbox', 'stickies', 'terminal', 'browser'];
+const APPLICATIONS: AppId[] = ['appstore', 'photos', 'preferences', 'soapbox', 'stickies', 'terminal', 'browser'];
 
 const appFile = (dir: string, app: AppId, kind = 'Application'): FileNode => ({
   path: `${dir}/${apps[app].name}`,

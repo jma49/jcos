@@ -1,6 +1,9 @@
 import { lazy, type ComponentType, type LazyExoticComponent } from 'react';
 import {
   AboutIcon,
+  AppletStoreIcon,
+  CalculatorIcon,
+  TileGameIcon,
   BrowserIcon,
   DiskIcon,
   FolderIcon,
@@ -122,6 +125,33 @@ export const apps: Record<AppId, AppDefinition> = {
     minHeight: 300,
     Component: lazy(() => import('./apps/Finder'))
   },
+  appstore: {
+    name: 'Applet Store',
+    Icon: AppletStoreIcon,
+    width: 680,
+    height: 540,
+    minWidth: 420,
+    minHeight: 360,
+    Component: lazy(() => import('./apps/AppletStore'))
+  },
+  calculator: {
+    name: 'Calculator',
+    Icon: CalculatorIcon,
+    width: 250,
+    height: 360,
+    minWidth: 230,
+    minHeight: 340,
+    Component: lazy(() => import('./apps/Calculator'))
+  },
+  tilegame: {
+    name: 'Tile Game',
+    Icon: TileGameIcon,
+    width: 380,
+    height: 470,
+    minWidth: 360,
+    minHeight: 450,
+    Component: lazy(() => import('./apps/TileGame'))
+  },
   minesweeper: {
     name: 'Minesweeper',
     Icon: MinesweeperIcon,
@@ -143,10 +173,7 @@ export const apps: Record<AppId, AppDefinition> = {
 };
 
 /** Apps shown in the Dock, left to right. */
-export const dockApps: AppId[] = ['about', 'resume', 'projects', 'photos', 'stickies', 'soapbox', 'terminal', 'browser', 'preferences'];
-
-/** Everything Spotlight can open: the Dock's apps plus a few that aren't in it. */
-export const launchableApps: AppId[] = [...dockApps, 'minesweeper'];
+export const dockApps: AppId[] = ['about', 'resume', 'projects', 'photos', 'stickies', 'soapbox', 'terminal', 'browser', 'appstore', 'preferences'];
 
 /** Dock apps that also appear in the four-slot Dock on phones. */
 export const mobileDockApps: AppId[] = ['projects', 'photos', 'terminal'];
