@@ -1,6 +1,6 @@
 // Music for the iPod and Karaoke apps: a small library of YouTube videos
-// (src/data/songs.json, curated by hand), played through YouTube's IFrame
-// API. Both apps share one "now playing": each has its own player, and the
+// (src/data/songs.json, curated by hand: singles and whole albums), played
+// through YouTube's IFrame API. Both apps share one "now playing": each has its own player, and the
 // app the visitor last played from owns playback. Taking it over carries the
 // song and the position across, so a song started on the iPod continues in
 // Karaoke where it was.
@@ -22,14 +22,47 @@ export interface Song {
   offset?: number;
   /** An lrclib.net lyrics id, to pin the right lyrics when the search picks wrong ones. */
   lyrics?: number;
+  /** The album it's from; a title in ALBUMS when the whole album is in the library. */
+  album?: string;
+  /** Square cover art. Album tracks share the album's. */
+  cover?: string;
+  /** Position on its album, for albums in ALBUMS. */
+  track?: number;
+  /** No words to sing: Karaoke shows the album instead of looking for lyrics. */
+  instrumental?: boolean;
 }
 
-export const SONGS: Song[] = library;
+/** A whole album in the library, shown with its cover and track list. */
+export interface Album {
+  title: string;
+  artist: string;
+  year: number;
+  cover: string;
+  /** A sentence or two about it. */
+  note?: string;
+}
+
+export const ALBUMS: Album[] = library.albums;
+export const SONGS: Song[] = library.songs;
+
+/** A whole album in the library, by title. */
+export const albumNamed = (title: string | undefined) => ALBUMS.find((a) => a.title === title);
+
+/** The album a song belongs to, when the whole album is in the library. */
+export const albumOf = (song: Song) => albumNamed(song.album);
+
+/** Indexes of an album's songs, in track order. */
+export const tracksOf = (album: Album) =>
+  SONGS.flatMap((s, i) => (s.album === album.title ? [i] : [])).sort((a, b) => (SONGS[a].track ?? 0) - (SONGS[b].track ?? 0));
+
+/** Every song, as a queue. */
+const EVERYTHING = SONGS.map((_, i) => i);
 
 export type MusicApp = 'ipod' | 'karaoke';
 export type Repeat = 'off' | 'all' | 'one';
 
-export const coverOf = (song: Song) => `https://i.ytimg.com/vi/${song.id}/mqdefault.jpg`;
+/** Square cover art for a song; the video's thumbnail when there's none. */
+export const coverOf = (song: Song) => song.cover ?? albumOf(song)?.cover ?? `https://i.ytimg.com/vi/${song.id}/mqdefault.jpg`;
 
 const OFFSETS_KEY = 'os-lyric-offsets';
 const SETTINGS_KEY = 'os-music';
@@ -51,6 +84,8 @@ function write(key: string, value: unknown) {
 interface MusicStore {
   /** The current song, an index into SONGS. */
   index: number;
+  /** What ⏭ and ⏮ step through: an album, an artist or everything (indexes into SONGS). */
+  queue: number[];
   playing: boolean;
   /** The app whose player has the current song; null until something plays. */
   owner: MusicApp | null;
@@ -63,8 +98,8 @@ interface MusicStore {
   /** The visitor's own lyric timing tweaks, in ms per song, on top of Song.offset. */
   offsets: Record<string, number>;
 
-  /** Plays from `app`: the song at `index`, or the current one. */
-  play: (app: MusicApp, index?: number) => void;
+  /** Plays from `app`: the song at `index`, or the current one; `queue` is what follows it. */
+  play: (app: MusicApp, index?: number, queue?: number[]) => void;
   /** Play/pause from `app`, taking over playback if another app had it. */
   toggle: (app: MusicApp) => void;
   pause: () => void;
@@ -100,11 +135,20 @@ export const useMusic = create<MusicStore>((set, get) => {
     const { shuffle, repeat, volume } = get();
     write(SETTINGS_KEY, { shuffle, repeat, volume });
   };
-  const randomOther = (index: number) =>
-    SONGS.length < 2 ? index : (index + 1 + Math.floor(Math.random() * (SONGS.length - 1))) % SONGS.length;
+  /** Another song from the queue, at random. */
+  const randomOther = (index: number, queue: number[]) => {
+    const others = queue.filter((i) => i !== index);
+    return others.length ? others[Math.floor(Math.random() * others.length)] : index;
+  };
+  /** The song `step` places along the queue from `index`, wrapping round. */
+  const along = (index: number, queue: number[], step: number) => {
+    const at = queue.indexOf(index);
+    return queue[(Math.max(0, at) + step + queue.length) % queue.length];
+  };
 
   return {
     index: 0,
+    queue: EVERYTHING,
     playing: false,
     owner: null,
     resume: null,
@@ -113,9 +157,9 @@ export const useMusic = create<MusicStore>((set, get) => {
     volume: settings?.volume ?? 80,
     offsets: typeof window === 'undefined' ? {} : read<Record<string, number>>(OFFSETS_KEY, {}),
 
-    play: (app, index = get().index) => {
+    play: (app, index = get().index, queue) => {
       // A different song starts from the top; the same one carries on.
-      set({ ...claim(app), ...(index !== get().index ? { resume: null } : {}), index, playing: true });
+      set({ ...claim(app), ...(index !== get().index ? { resume: null } : {}), ...(queue ? { queue } : {}), index, playing: true });
     },
     toggle: (app) => {
       const { owner, playing } = get();
@@ -124,19 +168,19 @@ export const useMusic = create<MusicStore>((set, get) => {
     },
     pause: () => set({ playing: false }),
     next: (app, ended = false) => {
-      const { index, shuffle, repeat } = get();
+      const { index, queue, shuffle, repeat } = get();
       const owner = { ...claim(app), resume: null };
-      if (shuffle) return set({ ...owner, index: randomOther(index), playing: true });
-      const last = index === SONGS.length - 1;
-      // The end of the list stops, unless it repeats.
-      if (ended && last && repeat === 'off') return set({ ...owner, index: 0, playing: false });
-      set({ ...owner, index: (index + 1) % SONGS.length, ...(ended ? { playing: true } : {}) });
+      if (shuffle) return set({ ...owner, index: randomOther(index, queue), playing: true });
+      const last = queue.indexOf(index) === queue.length - 1;
+      // The end of the queue stops (back at its start), unless it repeats.
+      if (ended && last && repeat === 'off') return set({ ...owner, index: queue[0], playing: false });
+      set({ ...owner, index: along(index, queue, 1), ...(ended ? { playing: true } : {}) });
     },
     previous: (app) => {
-      const { index, owner } = get();
+      const { index, queue, owner } = get();
       // Like an iPod: a few seconds in, ⏮ goes back to the start of this song.
       if (owner === app && (clocks.get(app)?.() ?? 0) > 3) return set({ resume: { index, time: 0 } });
-      set({ ...claim(app), resume: null, index: (index - 1 + SONGS.length) % SONGS.length });
+      set({ ...claim(app), resume: null, index: along(index, queue, -1) });
     },
     setShuffle: (shuffle) => {
       set({ shuffle });

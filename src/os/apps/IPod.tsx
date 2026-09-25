@@ -3,13 +3,14 @@ import type { AppProps } from '../registry';
 import { launch } from '../registry';
 import { useFocusedId } from '../store';
 import { lineAt, useLyrics } from '../lyrics';
-import { formatTime, lyricOffset, SONGS, useClock, useKeys, useMusic, usePlayer, type Repeat } from '../music';
+import { albumNamed, albumOf, coverOf, formatTime, lyricOffset, SONGS, tracksOf, useClock, useKeys, useMusic, usePlayer, type Repeat } from '../music';
 import { play as playSound } from '../sound';
 
 // An iPod with a click wheel. Drag round the wheel (or scroll, or use the
 // arrow keys) to move through the menus; MENU goes back, the centre button
 // chooses, and the wheel's edges are ⏮ ⏭ ⏯. The songs are YouTube videos
 // (see music.ts), shown in the screen on Now Playing with a line of lyrics.
+// Albums get their own page: the cover, what the album is, and its tracks.
 
 interface Item {
   label: string;
@@ -17,6 +18,11 @@ interface Item {
   value?: string;
   /** Opens another menu. */
   more?: boolean;
+  /** Album art, for a taller row with `sub` under the label. */
+  cover?: string;
+  sub?: string;
+  /** A track number, shown before the label. */
+  number?: number;
   action?: () => void;
 }
 
@@ -29,10 +35,24 @@ interface Frame {
 
 const REPEATS: Repeat[] = ['off', 'one', 'all'];
 const ROW = 19;
+const TALL_ROW = 34;
+const ALBUM_CARD = 74;
+/** The menu's height: the screen less its header. */
+const MENU_HEIGHT = 183;
 /** Degrees of wheel travel per step. */
 const STEP = (18 * Math.PI) / 180;
 
 const artists = [...new Set(SONGS.map((s) => s.artist))].sort((a, b) => a.localeCompare(b));
+/** Every album a song comes from, whole albums first. */
+const albums = [...new Set(SONGS.map((s) => s.album).filter((a): a is string => !!a))].sort(
+  (a, b) => Number(!!albumNamed(b)) - Number(!!albumNamed(a)) || a.localeCompare(b)
+);
+const ALL = SONGS.map((_, i) => i);
+/** Songs of an album in track order (or the library's order for singles' albums). */
+const albumTracks = (title: string) => {
+  const whole = albumNamed(title);
+  return whole ? tracksOf(whole) : ALL.filter((i) => SONGS[i].album === title);
+};
 
 export default function IPod({ win }: AppProps) {
   const { host, status } = usePlayer('ipod');
@@ -48,12 +68,13 @@ export default function IPod({ win }: AppProps) {
   const push = (screen: Screen) => setStack((s) => [...s, { screen, selected: 0 }]);
   const pop = () => setStack((s) => (s.length > 1 ? s.slice(0, -1) : s));
   const nowPlaying = () => push({ kind: 'now' });
-  const playSong = (index: number) => {
-    music.play('ipod', index);
+  /** Plays a song, with `queue` (an album, an artist, everything) to follow it. */
+  const playSong = (index: number, queue: number[]) => {
+    music.play('ipod', index, queue);
     nowPlaying();
   };
 
-  const songsOf = (list: number[]): Item[] => list.map((i) => ({ label: SONGS[i].title, action: () => playSong(i) }));
+  const songsOf = (list: number[]): Item[] => list.map((i) => ({ label: SONGS[i].title, action: () => playSong(i, list) }));
 
   const menu = (id: string): Item[] => {
     switch (id) {
@@ -64,7 +85,7 @@ export default function IPod({ win }: AppProps) {
             label: 'Shuffle Songs',
             action: () => {
               music.setShuffle(true);
-              playSong(Math.floor(Math.random() * SONGS.length));
+              playSong(Math.floor(Math.random() * SONGS.length), ALL);
             }
           },
           { label: 'Karaoke', more: true, action: () => launch('karaoke') },
@@ -73,11 +94,23 @@ export default function IPod({ win }: AppProps) {
         ];
       case 'music':
         return [
-          { label: 'Songs', more: true, action: () => push({ kind: 'menu', id: 'songs', title: 'Songs' }) },
-          { label: 'Artists', more: true, action: () => push({ kind: 'menu', id: 'artists', title: 'Artists' }) }
+          { label: 'Albums', more: true, action: () => push({ kind: 'menu', id: 'albums', title: 'Albums' }) },
+          { label: 'Artists', more: true, action: () => push({ kind: 'menu', id: 'artists', title: 'Artists' }) },
+          { label: 'Songs', more: true, action: () => push({ kind: 'menu', id: 'songs', title: 'Songs' }) }
         ];
       case 'songs':
-        return songsOf(SONGS.map((_, i) => i));
+        return songsOf(ALL);
+      case 'albums':
+        return albums.map((title) => {
+          const first = SONGS[albumTracks(title)[0]];
+          return {
+            label: title,
+            sub: first.artist,
+            cover: coverOf(first),
+            more: true,
+            action: () => push({ kind: 'menu', id: `album:${title}`, title })
+          };
+        });
       case 'artists':
         return artists.map((a) => ({ label: a, more: true, action: () => push({ kind: 'menu', id: `artist:${a}`, title: a }) }));
       case 'settings':
@@ -94,10 +127,33 @@ export default function IPod({ win }: AppProps) {
         return [
           { label: 'Songs', value: String(SONGS.length) },
           { label: 'Artists', value: String(artists.length) },
+          { label: 'Albums', value: String(albums.length) },
           { label: 'Videos', value: 'YouTube' },
-          { label: 'Lyrics', value: 'lrclib.net' }
+          { label: 'Lyrics', value: 'lrclib, NetEase' }
         ];
       default:
+        if (id.startsWith('album:')) {
+          const list = albumTracks(id.slice(6));
+          return [
+            {
+              label: 'Play',
+              value: '▶',
+              action: () => {
+                music.setShuffle(false);
+                playSong(list[0], list);
+              }
+            },
+            {
+              label: 'Shuffle',
+              value: '⤮',
+              action: () => {
+                music.setShuffle(true);
+                playSong(list[Math.floor(Math.random() * list.length)], list);
+              }
+            },
+            ...list.map((i, n) => ({ label: SONGS[i].title, number: SONGS[i].track ?? n + 1, action: () => playSong(i, list) }))
+          ];
+        }
         if (id.startsWith('artist:')) {
           const name = id.slice(7);
           return songsOf(SONGS.flatMap((s, i) => (s.artist === name ? [i] : [])));
@@ -107,6 +163,8 @@ export default function IPod({ win }: AppProps) {
   };
 
   const items = top.screen.kind === 'menu' ? menu(top.screen.id) : [];
+  const albumTitle = top.screen.kind === 'menu' && top.screen.id.startsWith('album:') ? top.screen.id.slice(6) : null;
+  const albumPage = albumTitle ? { title: albumTitle, first: SONGS[albumTracks(albumTitle)[0]], whole: albumNamed(albumTitle) } : null;
 
   const step = (delta: number) => {
     playSound('tick');
@@ -156,9 +214,12 @@ export default function IPod({ win }: AppProps) {
   const offset = lyricOffset(song, music.offsets);
   const line = lyrics.state === 'ready' ? lyrics.lines[lineAt(lyrics.lines, time + offset)]?.text : undefined;
   const now = top.screen.kind === 'now';
-  // Keep the chosen row in view.
-  const visible = 8;
-  const scroll = Math.max(0, Math.min(top.selected - visible + 1, items.length - visible)) * -ROW;
+  // Keep the chosen row in view: scroll just enough to show its bottom edge.
+  const heights = items.map((item) => (item.cover ? TALL_ROW : ROW));
+  const rowBottom = (albumPage ? ALBUM_CARD : 0) + heights.slice(0, top.selected + 1).reduce((a, b) => a + b, 0);
+  const scroll = -Math.max(0, rowBottom - MENU_HEIGHT);
+  const { queue } = music;
+  const position = queue.indexOf(music.index);
 
   return (
     <div className="os-app os-ipod-app">
@@ -180,10 +241,15 @@ export default function IPod({ win }: AppProps) {
               {status === 'offline' && <p className="os-ipod-note">YouTube can’t be reached.</p>}
               {line && <p className="os-ipod-caption">{line}</p>}
               <div className="os-ipod-info">
-                <strong>{song.title}</strong>
-                <span>
-                  {song.artist} · {music.index + 1} of {SONGS.length}
-                </span>
+                <p>
+                  <strong>{song.title}</strong>
+                  {position >= 0 && (
+                    <small>
+                      {position + 1} of {queue.length}
+                    </small>
+                  )}
+                </p>
+                <span>{song.album && albumOf(song) ? `${song.artist} — ${song.album}` : song.artist}</span>
               </div>
               {showVolume ? (
                 <div className="os-ipod-bar" aria-label={`Volume ${music.volume}`}>
@@ -206,18 +272,41 @@ export default function IPod({ win }: AppProps) {
           ) : (
             <div className="os-ipod-menu">
               <ul role="listbox" aria-label={top.screen.kind === 'menu' ? top.screen.title : ''} style={{ translate: `0 ${scroll}px` }}>
+                {albumPage && (
+                  <li className="os-ipod-album" role="presentation">
+                    <img src={coverOf(albumPage.first)} alt="" />
+                    <div>
+                      <strong>{albumPage.title}</strong>
+                      <span>{albumPage.first.artist}</span>
+                      <small>
+                        {albumPage.whole ? `${albumPage.whole.year} · ` : ''}
+                        {items.length - 2} {items.length === 3 ? 'song' : 'songs'}
+                      </small>
+                    </div>
+                  </li>
+                )}
                 {items.map((item, i) => (
                   <li
-                    key={item.label}
+                    key={`${i}:${item.label}`}
                     role="option"
                     aria-selected={i === top.selected}
+                    data-tall={item.cover ? true : undefined}
                     onClick={() => {
                       setStack((s) => [...s.slice(0, -1), { ...s[s.length - 1], selected: i }]);
                       playSound('click');
                       item.action?.();
                     }}
                   >
-                    <span>{item.label}</span>
+                    {item.cover && <img className="os-ipod-thumb" src={item.cover} alt="" />}
+                    {item.number !== undefined && <span className="os-ipod-number">{item.number}</span>}
+                    {item.sub ? (
+                      <span className="os-ipod-two">
+                        <span>{item.label}</span>
+                        <small>{item.sub}</small>
+                      </span>
+                    ) : (
+                      <span>{item.label}</span>
+                    )}
                     {item.value && <span className="os-ipod-value">{item.value}</span>}
                     {item.more && <span aria-hidden="true">›</span>}
                   </li>
