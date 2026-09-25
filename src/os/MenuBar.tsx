@@ -60,6 +60,7 @@ export function MenuBar() {
       { label: 'Close Window', shortcut: '⌥W', disabled: !focused, action: () => focused && close(focused.id) }
     ],
     View: [
+      { label: 'Show Dashboard', action: () => useWindows.getState().setDashboard(true) },
       { label: theme === 'dark' ? 'Light Appearance' : 'Dark Appearance', action: () => setTheme(theme === 'dark' ? 'light' : 'dark') }
     ],
     Window: [

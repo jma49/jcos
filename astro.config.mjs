@@ -10,13 +10,7 @@ export default defineConfig({
   devToolbar: { enabled: false },
   integrations: [
     react(),
-    sitemap({
-      // Pair each English page with its /zh/ counterpart as hreflang alternates.
-      i18n: {
-        defaultLocale: 'en',
-        locales: { en: 'en', zh: 'zh-CN' }
-      }
-    })
+    sitemap()
   ],
   vite: {
     plugins: [tailwindcss()]

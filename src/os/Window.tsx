@@ -149,6 +149,10 @@ export function Window({ win, focused, z }: Props) {
           <button type="button" className="os-control os-min" aria-label="Minimize" onClick={() => minimize(win.id)} />
           <button type="button" className="os-control os-max" aria-label="Zoom" onClick={() => toggleMaximize(win.id)} />
         </div>
+        {/* Phones show this in place of the traffic lights. */}
+        <button type="button" className="os-back" onClick={() => close(win.id)} onPointerDown={(e) => e.stopPropagation()}>
+          ‹ Home
+        </button>
         <h2 className="os-title">{win.title}</h2>
       </header>
 

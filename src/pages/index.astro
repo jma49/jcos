@@ -1,8 +1,96 @@
 ---
+// Home: JM/OS, a Mac OS X–style desktop. The shell is one client-only React
+// island; everything it shows is gathered here at build time. A plain-text
+// copy of the same content sits beside it for screen readers, crawlers and
+// visitors without JavaScript.
+import { getImage } from 'astro:assets';
 import Layout from '../layouts/Layout.astro';
-import Page from '../components/Page.astro';
+import Desktop from '../os/Desktop';
+import wallpaperSource from '../assets/os/stones.jpg';
+import { content, profile } from '../i18n/content';
+import { formatMonth, getProjects, projectHref } from '../lib/projects';
+import { getPhotos } from '../lib/photos';
+import type { OSData } from '../os/types';
+
+const t = content.en;
+const wallpaper = await getImage({ src: wallpaperSource, width: 2560, format: 'webp', quality: 82 });
+const entries = await getProjects('en');
+
+const projects = await Promise.all(
+  entries.map(async (p) => ({
+    slug: p.slug,
+    title: p.data.title,
+    description: p.data.description,
+    when: formatMonth('en', p.data.date),
+    status: p.data.status,
+    stack: p.data.stack,
+    repo: p.data.repo,
+    demo: p.data.demo,
+    cover: p.data.cover ? (await getImage({ src: p.data.cover, width: 1200, format: 'webp' })).src : undefined,
+    html: p.rendered?.html ?? ''
+  }))
+);
+
+const data: OSData = {
+  name: profile.name.en,
+  role: t.role,
+  location: profile.location.en,
+  email: profile.email,
+  links: {
+    github: profile.github,
+    linkedin: profile.linkedin,
+    photography: profile.photography,
+    resume: t.links.resumeHref
+  },
+  bio: { short: [...t.bio.shortParagraphs], long: [...t.bio.longParagraphs] },
+  jobs: t.jobs.map((j) => ({ ...j, bullets: [...j.bullets] })),
+  skills: t.skills.groups.map((g) => ({ name: g.name, items: [...g.items] })),
+  education: t.education.items.map((e) => ({ ...e })),
+  projects,
+  photos: await getPhotos(),
+  wallpaper: wallpaper.src
+};
+
+const unlink = (text: string) => text.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1');
 ---
 
 <Layout lang="en">
-  <Page lang="en" />
+  <Desktop client:only="react" data={data} />
+
+  <article class="sr-only">
+    <h1>{profile.name.en} — {t.role}</h1>
+    {t.bio.shortParagraphs.map((p) => <p>{unlink(p)}</p>)}
+    <h2>Projects</h2>
+    <ul>
+      {
+        entries.map((p) => (
+          <li>
+            <a href={projectHref('en', p.slug)}>{p.data.title}</a>: {p.data.description}
+          </li>
+        ))
+      }
+    </ul>
+    <h2>Experience</h2>
+    <ul>
+      {
+        t.jobs.map((job) => (
+          <li>
+            {job.company}, {job.role} ({job.period}): {job.summary}
+          </li>
+        ))
+      }
+    </ul>
+    <h2>Links</h2>
+    <ul>
+      <li><a href={t.links.resumeHref}>Résumé (PDF)</a></li>
+      <li><a href={`mailto:${profile.email}`}>{profile.email}</a></li>
+      <li><a href={profile.github}>GitHub</a></li>
+      <li><a href={profile.linkedin}>LinkedIn</a></li>
+      <li><a href={profile.photography}>Photography on Unsplash</a></li>
+    </ul>
+  </article>
+
+  <noscript>
+    <p>This desktop needs JavaScript. The résumé is at <a href="/Jincheng_Ma_Resume.pdf">Jincheng_Ma_Resume.pdf</a>.</p>
+  </noscript>
 </Layout>

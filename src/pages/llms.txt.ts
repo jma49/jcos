@@ -29,7 +29,6 @@ export const GET: APIRoute = async ({ site }) => {
     `- [GitHub](${profile.github})`,
     `- [LinkedIn](${profile.linkedin})`,
     `- [Photography](${profile.photography})`,
-    `- [Chinese version](${url('/zh/')})`,
     ''
   ];
 

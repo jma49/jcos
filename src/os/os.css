@@ -1323,7 +1323,316 @@
   display: none;
 }
 
-/* ---------- Small screens: full-screen apps, a launcher grid, a compact Dock ---------- */
+/* ---------- Photos (iPhoto) ---------- */
+
+.os-sidebar-link {
+  display: block;
+  padding: 3px 12px 3px 20px;
+  font-size: 12px;
+  color: #1a5cc8;
+  text-decoration: none;
+}
+
+.os-photo-grid {
+  margin: 0;
+  padding: 14px;
+  list-style: none;
+  display: grid;
+  align-items: center;
+  gap: 14px;
+  background: var(--os-content);
+}
+
+.os-photo-grid button {
+  width: 100%;
+  display: grid;
+  place-items: center;
+}
+
+.os-photo-grid img {
+  display: block;
+  max-width: 100%;
+  max-height: 260px;
+  object-fit: contain;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2), 0 3px 8px rgba(0, 0, 0, 0.35);
+  transition: transform 0.15s;
+}
+
+.os-photo-grid button:hover img {
+  transform: scale(1.03);
+}
+
+.os-photo-bar {
+  flex: none;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 12px;
+  background: linear-gradient(#e2e2e2, #c9c9c9);
+  border-top: 1px solid #9c9c9c;
+  color: var(--os-dim);
+  font-size: 11px;
+}
+
+.os-photo-bar input {
+  width: 120px;
+}
+
+.os-photo-viewer {
+  background: #1e1e1e;
+}
+
+.os-photo-stage {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+}
+
+.os-photo-stage img {
+  max-width: 100%;
+  max-height: 100%;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+}
+
+.os-photos-empty {
+  gap: 12px;
+  align-content: center;
+}
+
+/* ---------- Dashboard ---------- */
+
+.os-dashboard {
+  position: absolute;
+  inset: 0;
+  z-index: 1500;
+  display: grid;
+  place-items: center;
+  background: rgba(0, 0, 0, 0.45);
+  overflow: auto;
+}
+
+.os-dashboard-board {
+  position: relative;
+  width: min(940px, 100%);
+  height: 560px;
+}
+
+.os-dashboard-slot {
+  position: absolute;
+}
+
+.os-slot-clock {
+  left: 40px;
+  top: 30px;
+}
+
+.os-slot-calendar {
+  left: 250px;
+  top: 40px;
+}
+
+.os-slot-weather {
+  right: 40px;
+  top: 30px;
+}
+
+.os-slot-github {
+  left: 120px;
+  top: 270px;
+}
+
+.os-slot-sticky {
+  right: 90px;
+  top: 250px;
+}
+
+.os-widget {
+  color: #fff;
+  font-size: 12px;
+  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.45));
+}
+
+.os-widget-title {
+  margin: 0 0 8px;
+  font-weight: 700;
+  font-size: 12px;
+  opacity: 0.85;
+}
+
+.os-widget-muted {
+  margin: 0;
+  opacity: 0.6;
+}
+
+.os-widget-clock {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+}
+
+.os-widget-clock svg {
+  width: 160px;
+  height: 160px;
+}
+
+.os-widget-clock span {
+  font-weight: 700;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+.os-widget-calendar {
+  display: flex;
+  overflow: hidden;
+  border-radius: 12px;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.25);
+}
+
+.os-cal-page {
+  width: 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: linear-gradient(#fff, #e9e9e9);
+  color: #222;
+}
+
+.os-cal-page span {
+  width: 100%;
+  padding: 5px 0;
+  text-align: center;
+  background: linear-gradient(#ef6a5b, #c9261b);
+  color: #fff;
+  font-weight: 700;
+}
+
+.os-cal-page strong {
+  font-family: var(--os-display);
+  font-size: 72px;
+  font-weight: 400;
+  line-height: 1.2;
+}
+
+.os-cal-month {
+  width: 190px;
+  padding: 8px 10px;
+  background: linear-gradient(#4a4a4a, #232323);
+}
+
+.os-cal-month p {
+  margin: 0 0 6px;
+  text-align: center;
+  font-weight: 700;
+}
+
+.os-cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+  text-align: center;
+  font-size: 11px;
+}
+
+.os-cal-grid b {
+  opacity: 0.6;
+}
+
+.os-cal-grid span[data-today] {
+  border-radius: 3px;
+  background: #d8302a;
+  font-weight: 700;
+}
+
+.os-widget-weather {
+  width: 230px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: linear-gradient(#5aa4ea, #1f5fb3);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+.os-weather-city {
+  margin: 0;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.os-weather-now {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 4px 0;
+}
+
+.os-weather-icon {
+  font-size: 40px;
+}
+
+.os-weather-now strong {
+  font-size: 48px;
+  font-weight: 400;
+  line-height: 1;
+}
+
+.os-weather-note {
+  margin: 0;
+  opacity: 0.9;
+}
+
+.os-widget-github {
+  width: 330px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: linear-gradient(rgba(60, 60, 60, 0.95), rgba(25, 25, 25, 0.95));
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+}
+
+.os-widget-github ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.os-widget-github li {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 5px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.os-widget-github li span {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.os-widget-github time {
+  flex: none;
+  opacity: 0.55;
+}
+
+.os-widget-sticky {
+  width: 200px;
+  min-height: 170px;
+  padding: 14px;
+  background: linear-gradient(#fff6a8, #f7e36a);
+  color: #3a3000;
+  font-family: 'Marker Felt', 'Comic Sans MS', var(--os-ui);
+  font-size: 14px;
+  line-height: 1.45;
+  box-shadow: inset 0 -12px 20px -16px rgba(120, 90, 0, 0.5);
+  rotate: 2deg;
+}
+
+/* ---------- Small screens: an iOS-style home screen ---------- */
+
+.os-back {
+  display: none;
+}
 
 @media (max-width: 767px) {
   .os-menus .os-menu:not(:first-child) {
@@ -1334,25 +1643,77 @@
     font-size: 12px;
   }
 
+  /* Home screen: a four-column grid of large icons. */
   .os-desktop-icons {
-    inset: 40px 12px auto;
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: flex-start;
+    inset: 34px 10px auto;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px 4px;
   }
 
   .os-desktop-icons button {
-    width: 80px;
+    width: 100%;
   }
 
+  .os-desktop-icons .os-icon {
+    width: 60px;
+    height: 60px;
+  }
+
+  .os-desktop-icons span {
+    font-size: 11px;
+  }
+
+  /* Apps are full screen with a tall title bar and a Home button. */
   .os-window,
   .os-window[data-focused='true'] {
     border-radius: 0;
+    box-shadow: none;
   }
 
-  .os-resize,
-  .os-min,
-  .os-max {
+  .os-titlebar {
+    height: 44px;
+    padding: 0 90px;
+  }
+
+  .os-title {
+    font-size: 15px;
+    font-weight: 700;
+  }
+
+  .os-controls,
+  .os-resize {
+    display: none;
+  }
+
+  .os-back {
+    display: block;
+    position: absolute;
+    left: 6px;
+    top: 50%;
+    translate: 0 -50%;
+    padding: 6px 10px;
+    color: #1a5cc8;
+    font-size: 15px;
+  }
+
+  /* The Dock is the home screen's; it steps aside while an app is open. */
+  .os-root[data-app-open] .os-dock-wrap {
+    display: none;
+  }
+
+  .os-dock-item:not([data-mobile]),
+  .os-dock-divider {
+    display: none;
+  }
+
+  .os-dock {
+    gap: 14px;
+    height: 72px;
+    padding: 0 16px 8px;
+  }
+
+  .os-dock-label {
     display: none;
   }
 
@@ -1368,6 +1729,32 @@
   .os-resume,
   .os-project {
     padding: 22px 20px 32px;
+  }
+
+  .os-photo-bar input {
+    display: none;
+  }
+
+  /* Dashboard widgets stack in a scrolling column. */
+  .os-dashboard {
+    place-items: start center;
+    padding: 40px 0;
+  }
+
+  .os-dashboard-board {
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+  }
+
+  .os-dashboard-slot {
+    position: static;
+  }
+
+  .os-widget-github {
+    width: min(330px, 92vw);
   }
 }
 

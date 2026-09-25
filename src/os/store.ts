@@ -21,6 +21,7 @@ interface WindowStore {
   order: string[];
   theme: 'light' | 'dark';
   spotlightOpen: boolean;
+  dashboardOpen: boolean;
 
   open: (app: AppId, options: OpenOptions) => string;
   close: (id: string) => void;
@@ -30,6 +31,7 @@ interface WindowStore {
   setBounds: (id: string, bounds: Partial<Pick<WindowState, 'x' | 'y' | 'width' | 'height'>>) => void;
   setTheme: (theme: 'light' | 'dark') => void;
   setSpotlight: (open: boolean) => void;
+  setDashboard: (open: boolean) => void;
 }
 
 /** Where a new window goes: centred, then stepped down-right per open window. */
@@ -55,6 +57,7 @@ export const useWindows = create<WindowStore>((set, get) => ({
   order: [],
   theme: 'light',
   spotlightOpen: false,
+  dashboardOpen: false,
 
   open: (app, { key = app, title, width, height, origin, props }) => {
     const existing = get().windows[key];
@@ -108,7 +111,8 @@ export const useWindows = create<WindowStore>((set, get) => ({
     set((s) => (s.windows[id] ? { windows: { ...s.windows, [id]: { ...s.windows[id], ...bounds } } } : s)),
 
   setTheme: (theme) => set({ theme }),
-  setSpotlight: (spotlightOpen) => set({ spotlightOpen })
+  setSpotlight: (spotlightOpen) => set({ spotlightOpen }),
+  setDashboard: (dashboardOpen) => set({ dashboardOpen })
 }));
 
 /** The focused window: the frontmost one that isn't minimized. */

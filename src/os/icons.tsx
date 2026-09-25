@@ -28,3 +28,5 @@ export const BrowserIcon = pngIcon('ie');
 export const ProjectIcon = pngIcon('app');
 export const TrashIcon = pngIcon('trash-empty');
 export const DiskIcon = pngIcon('disk');
+export const PhotosIcon = pngIcon('images');
+export const DashboardIcon = pngIcon('dashboard');

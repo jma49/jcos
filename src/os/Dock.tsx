@@ -1,7 +1,7 @@
 import { useRef } from 'react';
 import { motion, useMotionValue, useSpring, useTransform, type MotionValue } from 'motion/react';
-import { apps, dockApps, launch, rectOf } from './registry';
-import { TrashIcon } from './icons';
+import { apps, dockApps, launch, mobileDockApps, rectOf } from './registry';
+import { DashboardIcon, TrashIcon } from './icons';
 import { useWindows } from './store';
 import type { AppId } from './types';
 
@@ -16,7 +16,8 @@ function Magnified({
   running,
   onActivate,
   children,
-  dataApp
+  dataApp,
+  mobile = false
 }: {
   mouseX: MotionValue<number>;
   label: string;
@@ -24,6 +25,8 @@ function Magnified({
   onActivate: (el: HTMLElement) => void;
   children: (size: number) => React.ReactNode;
   dataApp?: string;
+  /** Whether the slot stays in the compact phone Dock. */
+  mobile?: boolean;
 }) {
   const ref = useRef<HTMLButtonElement>(null);
   const distance = useTransform(mouseX, (x) => {
@@ -42,6 +45,7 @@ function Magnified({
       onClick={() => ref.current && onActivate(ref.current)}
       aria-label={label}
       data-dock-app={dataApp}
+      data-mobile={mobile || undefined}
     >
       <span className="os-dock-label">{label}</span>
       <motion.span className="os-dock-icon" style={{ width: size, height: size }}>
@@ -87,12 +91,25 @@ export function Dock() {
               label={name}
               running={running.has(app)}
               dataApp={app}
+              mobile={mobileDockApps.includes(app)}
               onActivate={(el) => activate(app, el)}
             >
               {(s) => <Icon size={s} />}
             </Magnified>
           );
         })}
+
+        <Magnified
+          mouseX={mouseX}
+          label="Dashboard"
+          mobile
+          onActivate={() => {
+            const { dashboardOpen, setDashboard } = useWindows.getState();
+            setDashboard(!dashboardOpen);
+          }}
+        >
+          {(s) => <DashboardIcon size={s} />}
+        </Magnified>
 
         <span className="os-dock-divider" aria-hidden="true" data-dock-minimized />
 

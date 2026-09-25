@@ -3,10 +3,11 @@ import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { Dock } from './Dock';
 import { MenuBar } from './MenuBar';
 import { Spotlight } from './Spotlight';
+import { Dashboard } from './Dashboard';
 import { Window } from './Window';
 import { OSDataContext } from './context';
 import { apps, launch, rectOf } from './registry';
-import { DiskIcon, PdfIcon } from './icons';
+import { DiskIcon, PdfIcon, PhotosIcon } from './icons';
 import { useFocusedId, useWindows } from './store';
 import type { AppId, OSData } from './types';
 import './os.css';
@@ -33,6 +34,7 @@ function DesktopIcons({ data }: { data: OSData }) {
       open: (el) => openApp('pdf', el, { title: 'Résumé.pdf', props: { src: data.links.resume } })
     },
     { id: 'projects', label: 'Projects', Icon: apps.projects.Icon, open: (el) => openApp('projects', el) },
+    { id: 'photos', label: 'Photos', Icon: PhotosIcon, open: (el) => openApp('photos', el) },
     { id: 'terminal', label: 'Terminal', Icon: apps.terminal.Icon, open: (el) => openApp('terminal', el) }
   ];
 
@@ -118,13 +120,13 @@ export default function Desktop({ data }: { data: OSData }) {
     setBooting(false);
   };
 
-  // Greet with the About window once the desktop is up.
+  // Once the desktop is up, open whatever ?open= names (an app or a project
+  // slug), or greet with About.
   useEffect(() => {
-    if (!booting && Object.keys(useWindows.getState().windows).length === 0) {
-      const t = setTimeout(() => launch('about'), reduced ? 0 : 250);
-      return () => clearTimeout(t);
-    }
-  }, [booting, reduced]);
+    if (booting || Object.keys(useWindows.getState().windows).length > 0) return;
+    const t = setTimeout(() => openFromUrl(data) || launch('about'), reduced ? 0 : 250);
+    return () => clearTimeout(t);
+  }, [booting, reduced, data]);
 
   // Keyboard: ⌘K search; ⌥W / ⌥M / ⌥T for windows (the browser keeps ⌘W/⌘T).
   useEffect(() => {
@@ -151,7 +153,12 @@ export default function Desktop({ data }: { data: OSData }) {
 
   return (
     <OSDataContext.Provider value={data}>
-      <div ref={root} className="os-root" style={{ '--os-wallpaper': `url(${data.wallpaper})` } as React.CSSProperties}>
+      <div
+        ref={root}
+        className="os-root"
+        data-app-open={Object.values(windows).some((w) => !w.minimized) || undefined}
+        style={{ '--os-wallpaper': `url(${data.wallpaper})` } as React.CSSProperties}
+      >
         <div className="os-wallpaper" aria-hidden="true" />
         <MenuBar />
         <DesktopIcons data={data} />
@@ -165,6 +172,7 @@ export default function Desktop({ data }: { data: OSData }) {
         </AnimatePresence>
 
         <Dock />
+        <Dashboard />
         <Spotlight />
 
         <AnimatePresence>{booting && !reduced && <Boot onDone={finishBoot} />}</AnimatePresence>
@@ -172,6 +180,28 @@ export default function Desktop({ data }: { data: OSData }) {
       </div>
     </OSDataContext.Provider>
   );
+}
+
+const DEEP_LINK_APPS: AppId[] = ['about', 'resume', 'projects', 'photos', 'terminal'];
+
+/** Handles links like /?open=resume or /?open=ocra. Returns whether it opened anything. */
+function openFromUrl(data: OSData): boolean {
+  const target = new URLSearchParams(window.location.search).get('open')?.toLowerCase();
+  if (!target) return false;
+  if (target === 'dashboard') {
+    useWindows.getState().setDashboard(true);
+    return true;
+  }
+  if ((DEEP_LINK_APPS as string[]).includes(target)) {
+    launch(target as AppId);
+    return true;
+  }
+  const project = data.projects.find((p) => p.slug === target);
+  if (project) {
+    launch('project', { key: `project:${project.slug}`, title: project.title, props: { slug: project.slug } });
+    return true;
+  }
+  return false;
 }
 
 function BootSkip({ onDone }: { onDone: () => void }) {

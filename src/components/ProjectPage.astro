@@ -3,9 +3,9 @@ import { Picture } from 'astro:assets';
 import { render } from 'astro:content';
 import Layout from '../layouts/Layout.astro';
 import Footer from './Footer.astro';
-import SiteControls from './SiteControls.astro';
+import ThemeToggle from './ThemeToggle.astro';
 import { content, profile, type Lang } from '../i18n/content';
-import { formatMonth, getProjects, projectHref, type Project } from '../lib/projects';
+import { formatMonth, type Project } from '../lib/projects';
 
 interface Props {
   lang: Lang;
@@ -17,10 +17,7 @@ const t = content[lang];
 const { Content } = await render(project);
 const { title, description, date, status, stack, repo, demo, cover } = project.data;
 
-const other: Lang = lang === 'en' ? 'zh' : 'en';
-const translated = (await getProjects(other)).some((p) => p.slug === project.slug);
-const home = lang === 'zh' ? '/zh/' : '/';
-const otherHref = translated ? projectHref(other, project.slug) : other === 'zh' ? '/zh/' : '/';
+const home = '/';
 
 const meta = [formatMonth(lang, date), t.projects.status[status], stack.join(', ')].filter(Boolean);
 ---
@@ -30,14 +27,16 @@ const meta = [formatMonth(lang, date), t.projects.status[status], stack.join(', 
   path={`/projects/${project.slug}/`}
   title={`${title} — ${profile.name[lang]}`}
   description={description}
-  translated={translated}
 >
   <article class="mx-auto w-full max-w-[600px] min-w-0">
     <header class="meta mb-10 flex items-baseline justify-between gap-4">
       <a href={home} aria-label={t.projects.back} class="transition-colors hover:text-ink">
         ← {profile.name[lang]}
       </a>
-      <SiteControls lang={lang} otherHref={otherHref} />
+      <div class="flex items-center gap-4">
+        <a href={`/?open=${project.slug}`} class="transition-colors hover:text-ink">Open in JM/OS</a>
+        <ThemeToggle lang={lang} />
+      </div>
     </header>
 
     <h1 class="text-[2rem] leading-[1.2] font-semibold tracking-[-0.02em] text-balance">

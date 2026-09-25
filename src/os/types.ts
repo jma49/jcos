@@ -18,7 +18,22 @@ export interface OSData {
   skills: { name: string; items: string[] }[];
   education: { school: string; degree: string; period: string }[];
   projects: OSProject[];
+  photos: OSPhoto[];
   wallpaper: string;
+}
+
+export interface OSPhoto {
+  id: string;
+  width: number;
+  height: number;
+  /** Dominant colour, shown while the image loads. */
+  color: string;
+  taken: string;
+  alt: string;
+  thumb: string;
+  full: string;
+  /** The photo's page on Unsplash. */
+  page: string;
 }
 
 export interface OSProject {
@@ -35,7 +50,15 @@ export interface OSProject {
   html: string;
 }
 
-export type AppId = 'about' | 'resume' | 'projects' | 'project' | 'browser' | 'terminal' | 'pdf';
+export type AppId =
+  | 'about'
+  | 'resume'
+  | 'projects'
+  | 'project'
+  | 'browser'
+  | 'terminal'
+  | 'pdf'
+  | 'photos';
 
 export interface Rect {
   x: number;
