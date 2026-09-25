@@ -11,6 +11,34 @@ The only exception is the Chinese copy of the site itself, the `zh`
 entries in `src/i18n/content.ts` and the Chinese résumé PDF. Keep those
 in Chinese.
 
+## Site structure
+
+The home page (`src/pages/index.astro`) is JM/OS, a Mac OS X–style
+desktop rendered by one client-only React island in `src/os/`. The page
+also renders a visually hidden plain-text copy of the content for screen
+readers, crawlers and visitors without JavaScript.
+
+- `src/os/store.ts`: zustand store for windows (map + z-order array),
+  theme, Spotlight and Dashboard.
+- `src/os/registry.tsx`: every app's name, icon, default and minimum size,
+  and lazily imported component. `dockApps` and `mobileDockApps` pick what
+  the Dock shows.
+- `src/os/apps/`: one component per app. Content comes from `OSData`,
+  assembled at build time in `index.astro` from `src/i18n/content.ts`, the
+  projects collection and `src/lib/photos.ts` (Unsplash, fetched at build).
+- `src/os/os.css`: the Aqua theme. Icons, fonts and the wallpaper under
+  `public/os/` and `src/assets/os/` come from ryOS; see `NOTICE`.
+- Deep links: `/?open=<app|project-slug|dashboard>` opens that window.
+
+To add an app: add its id to `AppId` in `src/os/types.ts`, write the
+component in `src/os/apps/`, register it in `registry.tsx`, and add it to
+`dockApps` or the desktop shortcuts in `Desktop.tsx` if it should be
+reachable from there.
+
+The Chinese site is offline for now: `/zh/*` redirects to the English
+paths (`vercel.json`). Keep the `zh` content in `content.ts` and the
+Chinese project files; they will be used again.
+
 ## Commits
 
 Follow [Conventional Commits](https://www.conventionalcommits.org/):
@@ -49,16 +77,16 @@ needs. Projects without a cover show their title on a plain tile.
 
 Set `capture` (in one language's file) to have the cover generated: a
 site path like `/` is captured from the local build, a full URL from the
-live site. Run `npm run preview:capture` to update covers locally. The
-`Update project previews` workflow runs it on every push to `main`, on
-macOS so the serif fonts match, and commits covers whose pixels changed
-by more than 0.1%. Don't edit a captured cover by hand; it will be
-overwritten.
+live site. Run `npm run preview:capture` to update covers locally; it
+also captures the home page into `public/og.png`. Captures use a frozen
+clock and reduced motion, and pages that answer with an HTTP error are
+skipped. The `Update project previews` workflow runs it on every push to
+`main`, on macOS so the fonts match, and commits images whose pixels
+changed by more than 0.1%. Don't edit a captured image by hand; it will
+be overwritten.
 
-The home page list, the pages at `/projects/<slug>/` and
-`/zh/projects/<slug>/`, the sitemap and `llms.txt` all update
-automatically. If a project has no Chinese file, its English page is
-still built and the language switch falls back to the Chinese home page.
+The JM/OS Projects app, the pages at `/projects/<slug>/`, the sitemap and
+`llms.txt` all update automatically.
 
 Put a client-side tool that needs no backend under `src/pages/tools/`
 and hydrate its React component only on that page. Deploy a tool that
