@@ -34,10 +34,17 @@ export interface Presence {
   leave: () => void;
 }
 
+/** Thrown by postNote when this visitor already has a note up. */
+export class AlreadyPostedError extends Error {
+  constructor() {
+    super('You’ve already left a note.');
+  }
+}
+
 export interface Social {
-  /** The newest approved notes. */
+  /** The newest visible notes. */
   listNotes: () => Promise<Note[]>;
-  /** Submits a note for review; it isn't visible until approved. */
+  /** Puts a note up. Each visitor gets one; a second throws AlreadyPostedError. */
   postNote: (note: Pick<Note, 'body' | 'name' | 'color'>) => Promise<void>;
   joinPresence: (color: string, handlers: PresenceHandlers) => Presence;
 }
@@ -87,8 +94,9 @@ async function supabaseSocial(url: string, key: string): Promise<Social> {
     },
 
     async postNote(note) {
-      // No .select(): the new row isn't approved, so it can't be read back.
+      // No .select(): visitors can't read back the columns the database fills in.
       const { error } = await client.from('notes').insert(note);
+      if (error?.code === '23505') throw new AlreadyPostedError();
       if (error) throw new Error(error.message);
     },
 

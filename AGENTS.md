@@ -30,7 +30,7 @@ readers, crawlers and visitors without JavaScript.
   day and weather in San Jose (Open-Meteo). `?sky=dusk,rain` pins both.
 - `src/os/genie.ts`: the displacement map behind the Genie minimize in
   `Window.tsx`.
-- `src/os/social.ts`: Stickies (a moderated guestbook) and presence (the
+- `src/os/social.ts`: Stickies (a guestbook) and presence (the
   online count and other visitors' cursors) on Supabase. See below.
 - `src/os/registry.tsx`: every app's name, icon, default and minimum size,
   and lazily imported component. `dockApps` and `mobileDockApps` pick what
@@ -46,19 +46,22 @@ readers, crawlers and visitors without JavaScript.
 ### Stickies and presence (Supabase)
 
 The browser talks to Supabase directly with the public anon key; row-level
-security in `supabase/schema.sql` lets anyone add a note but only shows
-approved ones. To set it up, create a Supabase project, run the schema in
-its SQL editor, and set `PUBLIC_SUPABASE_URL` and
+security in `supabase/schema.sql` lets anyone add a note, which shows right
+away. Each visitor gets one note: the database keeps a salted hash of the
+poster's IP address, and the browser remembers it has posted. To set it
+up, create a Supabase project, run the schema in its SQL editor, and set `PUBLIC_SUPABASE_URL` and
 `PUBLIC_SUPABASE_ANON_KEY` (see `.env.example`) in Vercel and in `.env`,
 for both Production and Preview. The names the Supabase integration for
 Vercel uses, `NEXT_PUBLIC_SUPABASE_URL` and
 `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, work as well.
-Approve a note by setting `approved` to true in the Table editor.
+Hide a note by setting `approved` to false in the Table editor. A project
+set up from an older schema also needs the files in `supabase/migrations/`,
+run in date order.
 
 Without those variables, production hides both features, and `astro dev`
 falls back to `src/os/social-local.ts`, which keeps notes in
-`localStorage` (shown 10 s after posting) and shares presence between tabs
-of one browser.
+`localStorage` (one per browser) and shares presence between tabs of one
+browser.
 
 To add an app: add its id to `AppId` in `src/os/types.ts`, write the
 component in `src/os/apps/`, register it in `registry.tsx`, and add it to

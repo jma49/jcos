@@ -1,15 +1,15 @@
 // A stand-in for the Supabase backend during `astro dev`, so Stickies and
 // presence can be tried without a project: notes live in localStorage and
-// presence goes between tabs of this browser over a BroadcastChannel.
-// Posted notes appear after a short "review", to mimic moderation.
+// presence goes between tabs of this browser over a BroadcastChannel. The
+// whole browser counts as one visitor, so it gets one note.
 
-import type { Note, Social } from './social';
+import { AlreadyPostedError, type Note, type Social } from './social';
 
 const NOTES_KEY = 'os-dev-notes';
 const HEARTBEAT = 2000;
 const EXPIRE = 5000;
 
-function readNotes(): (Note & { visibleAt: number })[] {
+function readNotes(): Note[] {
   try {
     return JSON.parse(localStorage.getItem(NOTES_KEY) ?? '[]');
   } catch {
@@ -20,20 +20,13 @@ function readNotes(): (Note & { visibleAt: number })[] {
 export function localSocial(): Social {
   return {
     async listNotes() {
-      const now = Date.now();
-      return readNotes()
-        .filter((n) => n.visibleAt <= now)
-        .sort((a, b) => b.created_at.localeCompare(a.created_at));
+      return readNotes().sort((a, b) => b.created_at.localeCompare(a.created_at));
     },
 
     async postNote(note) {
       const notes = readNotes();
-      notes.push({
-        ...note,
-        id: crypto.randomUUID(),
-        created_at: new Date().toISOString(),
-        visibleAt: Date.now() + 10_000
-      });
+      if (notes.length > 0) throw new AlreadyPostedError();
+      notes.push({ ...note, id: crypto.randomUUID(), created_at: new Date().toISOString() });
       localStorage.setItem(NOTES_KEY, JSON.stringify(notes));
     },
 

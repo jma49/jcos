@@ -1,13 +1,24 @@
 import { useEffect, useState, type CSSProperties, type FormEvent } from 'react';
-import { getSocial, NAME_MAX, NOTE_COLORS, NOTE_MAX, type Note, type NoteColor, type Social } from '../social';
+import {
+  AlreadyPostedError,
+  getSocial,
+  NAME_MAX,
+  NOTE_COLORS,
+  NOTE_MAX,
+  type Note,
+  type NoteColor,
+  type Social
+} from '../social';
 import type { AppProps } from '../registry';
 
-/** One note per visitor per minute, checked in the browser (the database has its own backstop). */
-const COOLDOWN_MS = 60_000;
-const LAST_POST_KEY = 'os-stickies-last-post';
+/**
+ * Remembers that this browser has left its one note, so the button can say
+ * so up front. The database enforces the limit by IP address as well.
+ */
+const POSTED_KEY = 'os-stickies-posted';
 
 type Load = { state: 'loading' } | { state: 'offline' } | { state: 'ready'; social: Social; notes: Note[] };
-type Draft = { state: 'idle' | 'writing' | 'sending' | 'sent' } | { state: 'error'; message: string };
+type Draft = { state: 'idle' | 'writing' | 'sending' } | { state: 'error'; message: string };
 
 /** A small, stable tilt per note, so the wall looks hand-placed. */
 function tilt(id: string) {
@@ -16,18 +27,25 @@ function tilt(id: string) {
   return ((hash % 7) - 3) * 0.6;
 }
 
-function lastPost() {
+function postedBefore() {
   try {
-    return Number(localStorage.getItem(LAST_POST_KEY) ?? 0);
+    return localStorage.getItem(POSTED_KEY) === '1';
   } catch {
-    return 0;
+    return false;
   }
 }
 
-/** Mac OS X Stickies as a guestbook: approved notes on a wall, and a blank note to write on. */
+function rememberPosted() {
+  try {
+    localStorage.setItem(POSTED_KEY, '1');
+  } catch {}
+}
+
+/** Mac OS X Stickies as a guestbook: everyone's notes on a wall, and one blank note per visitor. */
 export default function Stickies(_: AppProps) {
   const [load, setLoad] = useState<Load>({ state: 'loading' });
   const [draft, setDraft] = useState<Draft>({ state: 'idle' });
+  const [posted, setPosted] = useState(postedBefore);
   const [body, setBody] = useState('');
   const [name, setName] = useState('');
   const [color, setColor] = useState<NoteColor>('yellow');
@@ -53,21 +71,22 @@ export default function Stickies(_: AppProps) {
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
-    if (load.state !== 'ready' || !body.trim()) return;
-    if (trap) return setDraft({ state: 'sent' });
-    const wait = lastPost() + COOLDOWN_MS - Date.now();
-    if (wait > 0) {
-      return setDraft({ state: 'error', message: `One note a minute, please. Try again in ${Math.ceil(wait / 1000)}s.` });
-    }
+    if (load.state !== 'ready' || !body.trim() || posted) return;
+    if (trap) return setDraft({ state: 'idle' });
     setDraft({ state: 'sending' });
     try {
       await load.social.postNote({ body: body.trim(), name: name.trim(), color });
-      try {
-        localStorage.setItem(LAST_POST_KEY, String(Date.now()));
-      } catch {}
+      rememberPosted();
+      setPosted(true);
       setBody('');
-      setDraft({ state: 'sent' });
+      setDraft({ state: 'idle' });
+      // Show the new note in its place on the wall.
+      setLoad({ ...load, notes: await load.social.listNotes() });
     } catch (error) {
+      if (error instanceof AlreadyPostedError) {
+        rememberPosted();
+        setPosted(true);
+      }
       setDraft({ state: 'error', message: error instanceof Error ? error.message : 'Couldn’t post the note.' });
     }
   };
@@ -96,12 +115,12 @@ export default function Stickies(_: AppProps) {
           type="button"
           className="os-button"
           onClick={() => setDraft({ state: 'writing' })}
-          disabled={writing}
+          disabled={writing || posted}
         >
-          New Note
+          {posted ? 'Note Posted ✓' : 'New Note'}
         </button>
         <span className="os-toolbar-meta">
-          {load.notes.length} note{load.notes.length === 1 ? '' : 's'} · notes appear after Jincheng reads them
+          {load.notes.length} note{load.notes.length === 1 ? '' : 's'} · one per visitor
         </span>
       </div>
 
@@ -152,18 +171,16 @@ export default function Stickies(_: AppProps) {
               <button type="button" className="os-button" onClick={() => setDraft({ state: 'idle' })}>
                 Cancel
               </button>
-              <button type="submit" className="os-button os-button-primary" disabled={draft.state === 'sending' || !body.trim()}>
+              <button
+                type="submit"
+                className="os-button os-button-primary"
+                disabled={draft.state === 'sending' || !body.trim() || posted}
+              >
                 {draft.state === 'sending' ? 'Posting…' : 'Post'}
               </button>
             </div>
             {draft.state === 'error' && <p className="os-sticky-error">{draft.message}</p>}
           </form>
-        )}
-
-        {draft.state === 'sent' && (
-          <div className="os-sticky os-sticky-thanks" data-color={color}>
-            <p>Thanks! Your note will show up here once Jincheng has read it.</p>
-          </div>
         )}
 
         {load.notes.map((note) => (
@@ -178,7 +195,7 @@ export default function Stickies(_: AppProps) {
           </article>
         ))}
 
-        {load.notes.length === 0 && !writing && draft.state !== 'sent' && (
+        {load.notes.length === 0 && !writing && (
           <p className="os-stickies-empty">No notes yet. Be the first to leave one.</p>
         )}
       </div>

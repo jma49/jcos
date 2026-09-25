@@ -2130,11 +2130,6 @@
   color: #a1261d;
 }
 
-.os-sticky-thanks {
-  min-height: 0;
-  justify-content: center;
-}
-
 .os-stickies-empty {
   grid-column: 1 / -1;
   margin: 40px 0;
