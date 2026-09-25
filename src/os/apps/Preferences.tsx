@@ -7,7 +7,8 @@ import { PlaceSearch } from '../PlaceSearch';
 import { SAVER_STYLES, SAVER_VIEWS } from '../Screensaver';
 import { play } from '../sound';
 import { ACCENTS, cachedAccent, type AccentChoice } from '../accent';
-import { backgroundFor, PATTERNS, SKY, SOLID_COLORS } from '../wallpapers';
+import { backgroundFor, COVER, PATTERNS, SKY, SOLID_COLORS } from '../wallpapers';
+import { coverOf, SONGS, useMusic } from '../music';
 import { useSky } from '../Sky';
 
 // System Preferences, Tiger style: a toolbar of panes. Everything here is
@@ -53,7 +54,7 @@ function collectionOf(value: string | null, photoUrls: Set<string>): Collection 
   if (!value) return 'desktop';
   if (value.startsWith('color:')) return 'colors';
   if (value.startsWith('pattern:')) return 'patterns';
-  if (value === SKY) return 'dynamic';
+  if (value.startsWith('dynamic:')) return 'dynamic';
   return photoUrls.has(value) ? 'photos' : 'desktop';
 }
 
@@ -66,13 +67,23 @@ function DesktopPane() {
   const sky = useSky();
   const [collection, setCollection] = useState<Collection>(() => collectionOf(custom, new Set(data.photos.map((p) => p.full))));
   const skyNow = backgroundFor(SKY, data.wallpaper, sky);
+  // The cover of the song that's on, or the first album's for the thumbnail.
+  const playing = useMusic((s) => (s.owner ? coverOf(SONGS[s.index]) : null));
+  const nowCover = playing ?? coverOf(SONGS[0]);
 
   const pictures: Record<Collection, Picture[]> = {
     desktop: [{ value: null, name: 'Stones', thumb: data.wallpaper }],
     photos: data.photos.map((p) => ({ value: p.full, name: p.alt, thumb: p.thumb })),
     colors: SOLID_COLORS.map((c) => ({ value: `color:${c.id}`, name: c.name, background: backgroundFor(`color:${c.id}`, '', sky) })),
     patterns: PATTERNS.map((p) => ({ value: `pattern:${p.id}`, name: p.name, background: p.background })),
-    dynamic: [{ value: SKY, name: 'Sky: the light and weather where you are, all day', background: skyNow }]
+    dynamic: [
+      { value: SKY, name: 'Sky: the light and weather where you are, all day', background: skyNow },
+      {
+        value: COVER,
+        name: 'Now Playing: the cover of the song that’s on',
+        background: `url("${nowCover}") center / cover, #333`
+      }
+    ]
   };
   const blurb = SAVER_STYLES.find((s) => s.style === saver.style)?.blurb;
 
@@ -106,7 +117,9 @@ function DesktopPane() {
         </div>
         {collection === 'dynamic' ? (
           <p className="os-prefs-note">
-            The sky follows the sun where you are: dawn, day, golden hour, dusk and night, greyed by clouds and rain.
+            {custom === COVER
+              ? 'The cover of whatever the iPod or Karaoke is playing, blurred into a wash of its colours; the menus take its colour too. With nothing on, the default picture.'
+              : 'The sky follows the sun where you are: dawn, day, golden hour, dusk and night, greyed by clouds and rain.'}
           </p>
         ) : (
           <div className="os-prefs-radios os-prefs-rotate">

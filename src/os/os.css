@@ -172,6 +172,13 @@
   transition: background 2s linear;
 }
 
+/* Now Playing: the cover, blurred into a wash of its colours. Overhanging
+   the screen keeps the blur from fading at the edges. */
+.os-wallpaper[data-blur] {
+  inset: -80px;
+  filter: blur(60px) saturate(1.4) brightness(0.82);
+}
+
 :root[data-theme='dark'] .os-wallpaper {
   filter: brightness(0.6);
 }
