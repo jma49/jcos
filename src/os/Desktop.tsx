@@ -9,6 +9,7 @@ import { Expose, exposeLayout } from './Expose';
 import { Screensaver } from './Screensaver';
 import { Sky, useSky } from './Sky';
 import { Presence } from './Presence';
+import { AppSwitcher } from './AppSwitcher';
 import { OSDataContext } from './context';
 import { apps, launch, rectOf } from './registry';
 import { DiskIcon, DocumentIcon, PhotosIcon } from './icons';
@@ -293,6 +294,7 @@ export default function Desktop({ data }: { data: OSData }) {
         <Dock />
         <Dashboard />
         <Spotlight />
+        <AppSwitcher />
         <Screensaver />
         {!booting && <Presence />}
         {menuAt && <DesktopMenu at={menuAt} onClose={closeMenu} />}
