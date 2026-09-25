@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import type { AppId, Rect, WindowState } from './types';
+import type { Place } from './place';
 
 export const MENU_BAR_HEIGHT = 22;
 export const DOCK_CLEARANCE = 78;
@@ -29,6 +30,8 @@ interface WindowStore {
   online: number | null;
   /** A photo URL chosen as the desktop picture, or null for the default. */
   wallpaper: string | null;
+  /** Where the visitor is (see place.ts); null until located. */
+  place: Place | null;
 
   open: (app: AppId, options: OpenOptions) => string;
   close: (id: string) => void;
@@ -43,6 +46,7 @@ interface WindowStore {
   setScreensaver: (on: boolean) => void;
   setOnline: (count: number | null) => void;
   setWallpaper: (url: string | null) => void;
+  setPlace: (place: Place) => void;
 }
 
 const WALLPAPER_KEY = 'os-wallpaper';
@@ -83,6 +87,7 @@ export const useWindows = create<WindowStore>((set, get) => ({
   screensaverOn: false,
   online: null,
   wallpaper: typeof window === 'undefined' ? null : savedWallpaper(),
+  place: null,
 
   open: (app, { key = app, title, width, height, origin, props }) => {
     const existing = get().windows[key];
@@ -147,7 +152,8 @@ export const useWindows = create<WindowStore>((set, get) => ({
       else localStorage.removeItem(WALLPAPER_KEY);
     } catch {}
     set({ wallpaper });
-  }
+  },
+  setPlace: (place) => set({ place })
 }));
 
 /** The focused window: the frontmost one that isn't minimized. */

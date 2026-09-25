@@ -6,6 +6,8 @@ import type { AppProps } from '../registry';
 import type { OSData } from '../types';
 import { plain } from './inline';
 import { openProject } from './Projects';
+import { HOME, placeLabel, searchPlaces, type Place } from '../place';
+import { describe, getWeather } from '../weather';
 
 interface Line {
   id: number;
@@ -28,6 +30,7 @@ const COMMANDS: Record<string, string> = {
   history: 'commands you have run',
   clear: 'clear the screen',
   date: 'current date and time',
+  weather: 'weather where you are, or `weather <city>`',
   echo: 'print text',
   exit: 'close this window'
 };
@@ -169,6 +172,23 @@ export default function Terminal({ win }: AppProps) {
         return setLines([]);
       case 'date':
         return print({ content: new Date().toString() });
+      case 'weather': {
+        const here = useWindows.getState().place ?? HOME;
+        const find: Promise<Place | undefined> = arg ? searchPlaces(arg).then((found) => found[0]) : Promise.resolve(here);
+        find
+          .then((place) => {
+            if (!place) return print({ kind: 'error', content: `weather: no such place: ${arg}` });
+            return getWeather(place).then((w) => {
+              const { icon, label } = describe(w.condition);
+              print(
+                { content: `${placeLabel(place)}` },
+                { content: `${icon}  ${w.temp}°${w.unit}, ${label.toLowerCase()} · high ${w.high}° low ${w.low}°` }
+              );
+            });
+          })
+          .catch(() => print({ kind: 'error', content: 'weather: the forecast service is unreachable' }));
+        return;
+      }
       case 'echo':
         return print({ content: arg });
       case 'sudo':

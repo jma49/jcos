@@ -1685,8 +1685,13 @@
 }
 
 .os-slot-sticky {
-  right: 90px;
-  top: 250px;
+  right: 30px;
+  top: 290px;
+}
+
+.os-slot-home {
+  left: 480px;
+  top: 270px;
 }
 
 .os-widget {
@@ -1786,6 +1791,7 @@
 }
 
 .os-widget-weather {
+  position: relative;
   width: 230px;
   padding: 14px 16px;
   border-radius: 14px;
@@ -1814,6 +1820,166 @@
   font-size: 48px;
   font-weight: 400;
   line-height: 1;
+}
+
+.os-weather-now small {
+  margin-left: 2px;
+  font-size: 16px;
+  vertical-align: top;
+  opacity: 0.8;
+}
+
+.os-weather-forecast {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  margin: 10px 0 0;
+  padding: 8px 0 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.3);
+  list-style: none;
+  text-align: center;
+}
+
+.os-weather-forecast li {
+  display: grid;
+  gap: 2px;
+}
+
+.os-weather-forecast li span:first-child {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+
+.os-weather-forecast li span:nth-child(2) {
+  font-size: 18px;
+}
+
+/* The "i" that flips a widget over, as on Tiger's widgets. */
+.os-widget-info {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 16px;
+  height: 16px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.25);
+  color: #fff;
+  font: italic 700 10px/1 Georgia, serif;
+  cursor: pointer;
+  opacity: 0.6;
+}
+
+.os-widget-weather:hover .os-widget-info,
+.os-widget-info:focus-visible {
+  opacity: 1;
+}
+
+.os-weather-back {
+  display: grid;
+  gap: 8px;
+}
+
+.os-weather-back input {
+  width: 100%;
+  padding: 4px 8px;
+  border: 1px solid rgba(0, 0, 0, 0.35);
+  border-radius: 10px;
+  font: inherit;
+  color: #111;
+}
+
+.os-weather-back ul {
+  min-height: 20px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.os-weather-back li button {
+  width: 100%;
+  padding: 3px 6px;
+  border: 0;
+  border-radius: 4px;
+  background: none;
+  color: #fff;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.os-weather-back li button:hover,
+.os-weather-back li button:focus-visible {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.os-weather-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.os-weather-actions button {
+  padding: 2px 10px;
+  border: 1px solid rgba(0, 0, 0, 0.3);
+  border-radius: 10px;
+  background: linear-gradient(#fff, #d8d8d8);
+  color: #111;
+  font: inherit;
+  cursor: pointer;
+}
+
+.os-widget-home {
+  width: 210px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: linear-gradient(#3b4658, #161b25);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+.os-home-now {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.os-home-now div {
+  display: grid;
+}
+
+.os-home-now strong {
+  font-size: 26px;
+  font-weight: 400;
+  line-height: 1.1;
+}
+
+.os-home-now span {
+  opacity: 0.8;
+}
+
+.os-home-offset {
+  margin: 8px 0 2px;
+  font-weight: 700;
+}
+
+.os-home-status {
+  margin: 0 0 8px;
+  opacity: 0.8;
+  line-height: 1.35;
+}
+
+.os-widget-home a {
+  color: #9cc7ff;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.os-widget-home a:hover {
+  text-decoration: underline;
 }
 
 .os-weather-note {
