@@ -12,7 +12,8 @@
     "preview": "astro preview",
     "astro": "astro",
     "check": "astro check",
-    "preview:capture": "node scripts/capture-previews.mjs"
+    "preview:capture": "node scripts/capture-previews.mjs",
+    "photos:update": "node scripts/update-photos.mjs"
   },
   "dependencies": {
     "@astrojs/react": "^4.2.4",
