@@ -1,16 +1,24 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { AppProps } from '../registry';
 import { launch } from '../registry';
 import { useFocusedId } from '../store';
 import { lineAt, useLyrics } from '../lyrics';
 import { albumNamed, albumOf, coverOf, formatTime, lyricOffset, SONGS, tracksOf, useClock, useKeys, useMusic, usePlayer, type Repeat } from '../music';
 import { play as playSound } from '../sound';
+import { CoverFlow } from './ipod/CoverFlow';
+import { Brick } from './ipod/Brick';
+import { Quiz } from './ipod/Quiz';
+import { Marquee } from './ipod/Marquee';
+import type { ScreenInput } from './ipod/input';
 
 // An iPod with a click wheel. Drag round the wheel (or scroll, or use the
 // arrow keys) to move through the menus; MENU goes back, the centre button
 // chooses, and the wheel's edges are ⏮ ⏭ ⏯. The songs are YouTube videos
-// (see music.ts), shown in the screen on Now Playing with a line of lyrics.
-// Albums get their own page: the cover, what the album is, and its tracks.
+// (see music.ts). Now Playing shows the album art, as an iPod would, or the
+// video; the centre button switches between them. Music has Cover Flow and
+// album pages; Extras has Karaoke, Brick and a Music Quiz. The screen's
+// backlight goes down after a while without a touch, and the iPod comes in
+// white, black or U2 red and black.
 
 interface Item {
   label: string;
@@ -26,12 +34,51 @@ interface Item {
   action?: () => void;
 }
 
-type Screen = { kind: 'menu'; id: string; title: string } | { kind: 'now' };
+type Screen =
+  | { kind: 'menu'; id: string; title: string }
+  | { kind: 'now' }
+  | { kind: 'coverflow' }
+  | { kind: 'brick' }
+  | { kind: 'quiz' };
 
 interface Frame {
   screen: Screen;
   selected: number;
 }
+
+type Look = 'auto' | 'white' | 'black' | 'u2';
+interface Prefs {
+  look: Look;
+  /** Seconds before the backlight dims; 0 keeps it on. */
+  backlight: number;
+  /** What Now Playing shows. */
+  show: 'artwork' | 'video';
+}
+
+const PREFS_KEY = 'os-ipod';
+const DEFAULT_PREFS: Prefs = { look: 'auto', backlight: 10, show: 'artwork' };
+const LOOKS: { look: Look; name: string }[] = [
+  { look: 'auto', name: 'Automatic' },
+  { look: 'white', name: 'White' },
+  { look: 'black', name: 'Black' },
+  { look: 'u2', name: 'U2' }
+];
+const BACKLIGHTS = [5, 10, 20, 0];
+
+function savedPrefs(): Prefs {
+  try {
+    return { ...DEFAULT_PREFS, ...JSON.parse(localStorage.getItem(PREFS_KEY) ?? '{}') };
+  } catch {
+    return DEFAULT_PREFS;
+  }
+}
+
+const TITLES: Record<Exclude<Screen['kind'], 'menu'>, string> = {
+  now: 'Now Playing',
+  coverflow: 'Cover Flow',
+  brick: 'Brick',
+  quiz: 'Music Quiz'
+};
 
 const REPEATS: Repeat[] = ['off', 'one', 'all'];
 const ROW = 19;
@@ -55,24 +102,47 @@ const albumTracks = (title: string) => {
 };
 
 export default function IPod({ win }: AppProps) {
-  const { host, status } = usePlayer('ipod');
+  const { host, status, live } = usePlayer('ipod');
   const music = useMusic();
   const { time, duration } = useClock();
   const song = SONGS[music.index];
   const lyrics = useLyrics(song, music.owner ? duration : 0);
   const [stack, setStack] = useState<Frame[]>([{ screen: { kind: 'menu', id: 'root', title: 'iPod' }, selected: 0 }]);
   const [showVolume, setShowVolume] = useState(0);
+  const [prefs, setPrefs] = useState(savedPrefs);
+  const [touched, setTouched] = useState(() => Date.now());
+  const [dim, setDim] = useState(false);
   const focused = useFocusedId() === win.id;
+  // The full-screen view on top (Cover Flow, a game) takes the wheel while it's open.
+  const view = useRef<ScreenInput | null>(null);
+  const setView = useCallback((handle: ScreenInput | null) => {
+    view.current = handle;
+  }, []);
 
   const top = stack[stack.length - 1];
+  const kind = top.screen.kind;
   const push = (screen: Screen) => setStack((s) => [...s, { screen, selected: 0 }]);
   const pop = () => setStack((s) => (s.length > 1 ? s.slice(0, -1) : s));
   const nowPlaying = () => push({ kind: 'now' });
+  const menuOf = (id: string, title: string) => () => push({ kind: 'menu', id, title });
+
+  const setPref = <K extends keyof Prefs>(key: K, value: Prefs[K]) =>
+    setPrefs((p) => {
+      const next = { ...p, [key]: value };
+      try {
+        localStorage.setItem(PREFS_KEY, JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+
   /** Plays a song, with `queue` (an album, an artist, everything) to follow it. */
-  const playSong = (index: number, queue: number[]) => {
-    music.play('ipod', index, queue);
-    nowPlaying();
-  };
+  const playSong = useCallback(
+    (index: number, queue: number[]) => {
+      useMusic.getState().play('ipod', index, queue);
+      setStack((s) => [...s, { screen: { kind: 'now' }, selected: 0 }]);
+    },
+    []
+  );
 
   const songsOf = (list: number[]): Item[] => list.map((i) => ({ label: SONGS[i].title, action: () => playSong(i, list) }));
 
@@ -80,7 +150,9 @@ export default function IPod({ win }: AppProps) {
     switch (id) {
       case 'root':
         return [
-          { label: 'Music', more: true, action: () => push({ kind: 'menu', id: 'music', title: 'Music' }) },
+          { label: 'Music', more: true, action: menuOf('music', 'Music') },
+          { label: 'Extras', more: true, action: menuOf('extras', 'Extras') },
+          { label: 'Settings', more: true, action: menuOf('settings', 'Settings') },
           {
             label: 'Shuffle Songs',
             action: () => {
@@ -88,31 +160,30 @@ export default function IPod({ win }: AppProps) {
               playSong(Math.floor(Math.random() * SONGS.length), ALL);
             }
           },
-          { label: 'Karaoke', more: true, action: () => launch('karaoke') },
-          { label: 'Settings', more: true, action: () => push({ kind: 'menu', id: 'settings', title: 'Settings' }) },
           ...(music.owner ? [{ label: 'Now Playing', more: true, action: nowPlaying }] : [])
         ];
       case 'music':
         return [
-          { label: 'Albums', more: true, action: () => push({ kind: 'menu', id: 'albums', title: 'Albums' }) },
-          { label: 'Artists', more: true, action: () => push({ kind: 'menu', id: 'artists', title: 'Artists' }) },
-          { label: 'Songs', more: true, action: () => push({ kind: 'menu', id: 'songs', title: 'Songs' }) }
+          { label: 'Cover Flow', more: true, action: () => push({ kind: 'coverflow' }) },
+          { label: 'Albums', more: true, action: menuOf('albums', 'Albums') },
+          { label: 'Artists', more: true, action: menuOf('artists', 'Artists') },
+          { label: 'Songs', more: true, action: menuOf('songs', 'Songs') }
+        ];
+      case 'extras':
+        return [
+          { label: 'Karaoke', more: true, action: () => launch('karaoke') },
+          { label: 'Brick', more: true, action: () => push({ kind: 'brick' }) },
+          { label: 'Music Quiz', more: true, action: () => push({ kind: 'quiz' }) }
         ];
       case 'songs':
         return songsOf(ALL);
       case 'albums':
         return albums.map((title) => {
           const first = SONGS[albumTracks(title)[0]];
-          return {
-            label: title,
-            sub: first.artist,
-            cover: coverOf(first),
-            more: true,
-            action: () => push({ kind: 'menu', id: `album:${title}`, title })
-          };
+          return { label: title, sub: first.artist, cover: coverOf(first), more: true, action: menuOf(`album:${title}`, title) };
         });
       case 'artists':
-        return artists.map((a) => ({ label: a, more: true, action: () => push({ kind: 'menu', id: `artist:${a}`, title: a }) }));
+        return artists.map((a) => ({ label: a, more: true, action: menuOf(`artist:${a}`, a) }));
       case 'settings':
         return [
           { label: 'Shuffle', value: music.shuffle ? 'Songs' : 'Off', action: () => music.setShuffle(!music.shuffle) },
@@ -121,13 +192,28 @@ export default function IPod({ win }: AppProps) {
             value: music.repeat === 'off' ? 'Off' : music.repeat === 'one' ? 'One' : 'All',
             action: () => music.setRepeat(REPEATS[(REPEATS.indexOf(music.repeat) + 1) % REPEATS.length])
           },
-          { label: 'About', more: true, action: () => push({ kind: 'menu', id: 'about', title: 'About' }) }
+          {
+            label: 'Now Playing',
+            value: prefs.show === 'artwork' ? 'Artwork' : 'Video',
+            action: () => setPref('show', prefs.show === 'artwork' ? 'video' : 'artwork')
+          },
+          {
+            label: 'Backlight',
+            value: prefs.backlight ? `${prefs.backlight} Seconds` : 'Always On',
+            action: () => setPref('backlight', BACKLIGHTS[(BACKLIGHTS.indexOf(prefs.backlight) + 1) % BACKLIGHTS.length])
+          },
+          {
+            label: 'Theme',
+            value: LOOKS.find((l) => l.look === prefs.look)?.name,
+            action: () => setPref('look', LOOKS[(LOOKS.findIndex((l) => l.look === prefs.look) + 1) % LOOKS.length].look)
+          },
+          { label: 'About', more: true, action: menuOf('about', 'About') }
         ];
       case 'about':
         return [
           { label: 'Songs', value: String(SONGS.length) },
-          { label: 'Artists', value: String(artists.length) },
           { label: 'Albums', value: String(albums.length) },
+          { label: 'Artists', value: String(artists.length) },
           { label: 'Videos', value: 'YouTube' },
           { label: 'Lyrics', value: 'lrclib, NetEase' }
         ];
@@ -156,19 +242,27 @@ export default function IPod({ win }: AppProps) {
         }
         if (id.startsWith('artist:')) {
           const name = id.slice(7);
-          return songsOf(SONGS.flatMap((s, i) => (s.artist === name ? [i] : [])));
+          return songsOf(ALL.filter((i) => SONGS[i].artist === name));
         }
         return [];
     }
   };
 
-  const items = top.screen.kind === 'menu' ? menu(top.screen.id) : [];
+  const items = kind === 'menu' ? menu((top.screen as { id: string }).id) : [];
   const albumTitle = top.screen.kind === 'menu' && top.screen.id.startsWith('album:') ? top.screen.id.slice(6) : null;
   const albumPage = albumTitle ? { title: albumTitle, first: SONGS[albumTracks(albumTitle)[0]], whole: albumNamed(albumTitle) } : null;
 
+  /** Any touch brings the backlight up (and still does what it does, as on an iPod). */
+  const wake = () => {
+    setTouched(Date.now());
+    setDim(false);
+  };
+
   const step = (delta: number) => {
     playSound('tick');
-    if (top.screen.kind === 'now') {
+    wake();
+    if (view.current) return view.current.step(delta);
+    if (kind === 'now') {
       music.setVolume(music.volume + delta * 4);
       setShowVolume(Date.now());
       return;
@@ -182,12 +276,21 @@ export default function IPod({ win }: AppProps) {
 
   const choose = () => {
     playSound('click');
-    if (top.screen.kind === 'menu') items[top.selected]?.action?.();
+    wake();
+    if (view.current) return view.current.choose();
+    // On Now Playing the centre button switches between the artwork and the video.
+    if (kind === 'now') return setPref('show', prefs.show === 'artwork' ? 'video' : 'artwork');
+    items[top.selected]?.action?.();
   };
 
   const press = (button: 'menu' | 'next' | 'previous' | 'play') => {
     playSound('click');
-    if (button === 'menu') pop();
+    wake();
+    if (button === 'menu') {
+      if (view.current?.back?.()) return;
+      return pop();
+    }
+    if (view.current?.press?.(button)) return;
     if (button === 'next') music.next('ipod');
     if (button === 'previous') music.previous('ipod');
     if (button === 'play') music.toggle('ipod');
@@ -199,6 +302,14 @@ export default function IPod({ win }: AppProps) {
     const t = setTimeout(() => setShowVolume(0), 1500);
     return () => clearTimeout(t);
   }, [showVolume]);
+
+  // The backlight goes down after a while without a touch (not during a game).
+  const playingGame = kind === 'brick' || kind === 'quiz';
+  useEffect(() => {
+    if (!prefs.backlight || playingGame) return setDim(false);
+    const t = setTimeout(() => setDim(true), prefs.backlight * 1000);
+    return () => clearTimeout(t);
+  }, [touched, prefs.backlight, playingGame]);
 
   useKeys(focused, {
     ArrowUp: () => step(-1),
@@ -213,43 +324,62 @@ export default function IPod({ win }: AppProps) {
 
   const offset = lyricOffset(song, music.offsets);
   const line = lyrics.state === 'ready' ? lyrics.lines[lineAt(lyrics.lines, time + offset)]?.text : undefined;
-  const now = top.screen.kind === 'now';
+  const now = kind === 'now';
+  const showVideo = now && prefs.show === 'video';
   // Keep the chosen row in view: scroll just enough to show its bottom edge.
   const heights = items.map((item) => (item.cover ? TALL_ROW : ROW));
-  const rowBottom = (albumPage ? ALBUM_CARD : 0) + heights.slice(0, top.selected + 1).reduce((a, b) => a + b, 0);
-  const scroll = -Math.max(0, rowBottom - MENU_HEIGHT);
+  const card = albumPage ? ALBUM_CARD : 0;
+  const total = card + heights.reduce((a, b) => a + b, 0);
+  const rowBottom = card + heights.slice(0, top.selected + 1).reduce((a, b) => a + b, 0);
+  const scroll = Math.max(0, rowBottom - MENU_HEIGHT);
   const { queue } = music;
   const position = queue.indexOf(music.index);
+  const album = albumOf(song);
+  const title = kind === 'menu' ? (top.screen as { title: string }).title : TITLES[kind];
 
   return (
     <div className="os-app os-ipod-app">
-      <div className="os-ipod" aria-label="iPod">
-        <div className="os-ipod-screen" data-now={now || undefined}>
+      <div className="os-ipod" data-look={prefs.look} aria-label="iPod">
+        <div className="os-ipod-screen" data-now={now || undefined} data-dim={dim || undefined}>
           <header className="os-ipod-header">
             <span className="os-ipod-state" aria-hidden="true">
               {music.playing ? '▶' : music.owner ? '❚❚' : ''}
             </span>
-            <span>{now ? 'Now Playing' : top.screen.kind === 'menu' ? top.screen.title : ''}</span>
+            <span>{title}</span>
             <span className="os-ipod-battery" aria-hidden="true" />
           </header>
 
-          {/* Always mounted, so the music keeps going under the menus. */}
-          <div className="os-ipod-video" ref={host} aria-hidden={!now} />
+          {/* Always mounted, so the music keeps going under the menus. It
+              only shows in video mode, and then only once it's really
+              playing: until then (and when paused) the artwork covers
+              YouTube's own title, spinner and suggestions. */}
+          <div className="os-ipod-video" ref={host} aria-hidden={!showVideo} data-show={showVideo || undefined} />
+          {showVideo && !live && <img className="os-ipod-video-cover" src={coverOf(song)} alt="" />}
 
-          {now ? (
-            <div className="os-ipod-now">
+          {now && (
+            <div className="os-ipod-now" data-show={prefs.show}>
               {status === 'offline' && <p className="os-ipod-note">YouTube can’t be reached.</p>}
-              {line && <p className="os-ipod-caption">{line}</p>}
+              {prefs.show === 'artwork' ? (
+                <div className="os-ipod-artwork">
+                  <img src={coverOf(song)} alt="" />
+                  <div>
+                    <Marquee className="os-ipod-song" text={song.title} />
+                    <span>{song.artist}</span>
+                    {song.album && <span>{song.album}</span>}
+                    {line && <em>{line}</em>}
+                  </div>
+                </div>
+              ) : (
+                line && <p className="os-ipod-caption">{line}</p>
+              )}
               <div className="os-ipod-info">
-                <p>
-                  <strong>{song.title}</strong>
-                  {position >= 0 && (
-                    <small>
-                      {position + 1} of {queue.length}
-                    </small>
-                  )}
-                </p>
-                <span>{song.album && albumOf(song) ? `${song.artist} — ${song.album}` : song.artist}</span>
+                {prefs.show === 'video' && (
+                  <p>
+                    <Marquee className="os-ipod-song" text={song.title} />
+                    <span>{album ? `${song.artist} — ${song.album}` : song.artist}</span>
+                  </p>
+                )}
+                <p className="os-ipod-count">{position >= 0 ? `${position + 1} of ${queue.length}` : ''}</p>
               </div>
               {showVolume ? (
                 <div className="os-ipod-bar" aria-label={`Volume ${music.volume}`}>
@@ -269,9 +399,11 @@ export default function IPod({ win }: AppProps) {
                 </div>
               )}
             </div>
-          ) : (
-            <div className="os-ipod-menu">
-              <ul role="listbox" aria-label={top.screen.kind === 'menu' ? top.screen.title : ''} style={{ translate: `0 ${scroll}px` }}>
+          )}
+
+          {kind === 'menu' && (
+            <div className="os-ipod-menu" data-scrolls={total > MENU_HEIGHT || undefined}>
+              <ul role="listbox" aria-label={title} style={{ translate: `0 ${-scroll}px` }}>
                 {albumPage && (
                   <li className="os-ipod-album" role="presentation">
                     <img src={coverOf(albumPage.first)} alt="" />
@@ -294,6 +426,7 @@ export default function IPod({ win }: AppProps) {
                     onClick={() => {
                       setStack((s) => [...s.slice(0, -1), { ...s[s.length - 1], selected: i }]);
                       playSound('click');
+                      wake();
                       item.action?.();
                     }}
                   >
@@ -301,19 +434,28 @@ export default function IPod({ win }: AppProps) {
                     {item.number !== undefined && <span className="os-ipod-number">{item.number}</span>}
                     {item.sub ? (
                       <span className="os-ipod-two">
-                        <span>{item.label}</span>
+                        <Marquee text={item.label} run={i === top.selected} />
                         <small>{item.sub}</small>
                       </span>
                     ) : (
-                      <span>{item.label}</span>
+                      <Marquee className="os-ipod-label-text" text={item.label} run={i === top.selected} />
                     )}
                     {item.value && <span className="os-ipod-value">{item.value}</span>}
                     {item.more && <span aria-hidden="true">›</span>}
                   </li>
                 ))}
               </ul>
+              {total > MENU_HEIGHT && (
+                <div className="os-ipod-scrollbar" aria-hidden="true">
+                  <span style={{ top: `${(scroll / total) * 100}%`, height: `${(MENU_HEIGHT / total) * 100}%` }} />
+                </div>
+              )}
             </div>
           )}
+
+          {kind === 'coverflow' && <CoverFlow input={setView} start={music.owner ? song.album : undefined} onPlay={playSong} />}
+          {kind === 'brick' && <Brick input={setView} />}
+          {kind === 'quiz' && <Quiz input={setView} />}
         </div>
 
         <Wheel onStep={step} onPress={press} onChoose={choose} />

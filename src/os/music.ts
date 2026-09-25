@@ -350,12 +350,22 @@ export type PlayerStatus = 'loading' | 'ready' | 'offline';
  * A YouTube player for `app`, mounted into the returned `host` element. It
  * follows the store while `app` owns playback and pauses when another app
  * takes over.
+ *
+ * YouTube draws its title bar along the top of the player, its logo along
+ * the bottom and "more videos" over a paused one. The player is made 300px
+ * taller than `host` and centred on it (see .os-player-frame), so the video,
+ * which letterboxes to the player's width, fills the host while the top and
+ * bottom strips fall outside it and are cut off. `live` is true only while
+ * the video is actually playing, so apps can cover everything else (start,
+ * buffering, paused) with the song's artwork.
  */
 export function usePlayer(app: MusicApp) {
   const host = useRef<HTMLDivElement>(null);
   const [status, setStatus] = useState<PlayerStatus>('loading');
+  const [live, setLive] = useState(false);
 
   useEffect(() => {
+    const el = host.current;
     let dead = false;
     let player: YTPlayer | null = null;
     let ready = false;
@@ -403,9 +413,12 @@ export function usePlayer(app: MusicApp) {
 
     loadYouTube().then(
       (YT) => {
-        if (dead || !host.current) return;
+        if (dead || !el) return;
+        const frame = document.createElement('div');
+        frame.className = 'os-player-frame';
         const mount = document.createElement('div');
-        host.current.append(mount);
+        frame.append(mount);
+        el.append(frame);
         loaded = SONGS[useMusic.getState().index].id;
         player = new YT.Player(mount, {
           width: '100%',
@@ -430,6 +443,7 @@ export function usePlayer(app: MusicApp) {
               apply(useMusic.getState());
             },
             onStateChange: ({ data }) => {
+              setLive(data === PLAYING);
               const s = useMusic.getState();
               if (s.owner !== app) return;
               if (data === PLAYING) switching = false;
@@ -470,13 +484,14 @@ export function usePlayer(app: MusicApp) {
       clocks.delete(app);
       durations.delete(app);
       player?.destroy();
+      el?.replaceChildren();
       // Closing the window that was playing stops the music.
       const s = useMusic.getState();
       if (s.owner === app) useMusic.setState({ playing: false, owner: null, resume: null });
     };
   }, [app]);
 
-  return { host, status };
+  return { host, status, live };
 }
 
 /**

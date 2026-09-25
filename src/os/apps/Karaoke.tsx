@@ -56,7 +56,7 @@ function span(lines: LyricLine[], i: number) {
 }
 
 export default function Karaoke({ win }: AppProps) {
-  const { host, status } = usePlayer('karaoke');
+  const { host, status, live } = usePlayer('karaoke');
   const music = useMusic();
   const { time, duration } = useClock(500);
   const song = SONGS[music.index];
@@ -120,11 +120,14 @@ export default function Karaoke({ win }: AppProps) {
 
   return (
     <div ref={root} className="os-app os-karaoke">
+      {/* YouTube's chrome is cropped off (see usePlayer); until the video
+          really plays, and while it's paused, the blurred cover hides the
+          rest (thumbnail, spinner, suggestions). */}
       <div className="os-karaoke-video" ref={host} aria-hidden="true" />
       <div
         className="os-karaoke-backdrop"
         aria-hidden="true"
-        data-show={(mine && listening) || undefined}
+        data-show={!live || (mine && listening) || undefined}
         style={{ backgroundImage: `url("${coverOf(song)}")` }}
       />
       <div className="os-karaoke-shade" aria-hidden="true" />
