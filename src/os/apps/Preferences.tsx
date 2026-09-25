@@ -61,7 +61,8 @@ function DesktopPane() {
   const data = useOSData();
   const custom = useWindows((s) => s.wallpaper);
   const saver = useWindows((s) => s.saver);
-  const { setWallpaper, setSaver, setScreensaver } = useWindows.getState();
+  const rotate = useWindows((s) => s.rotateWallpaper);
+  const { setWallpaper, setSaver, setScreensaver, setRotateWallpaper } = useWindows.getState();
   const sky = useSky();
   const [collection, setCollection] = useState<Collection>(() => collectionOf(custom, new Set(data.photos.map((p) => p.full))));
   const skyNow = backgroundFor(SKY, data.wallpaper, sky);
@@ -103,10 +104,20 @@ function DesktopPane() {
             ))}
           </ul>
         </div>
-        {collection === 'dynamic' && (
+        {collection === 'dynamic' ? (
           <p className="os-prefs-note">
             The sky follows the sun where you are: dawn, day, golden hour, dusk and night, greyed by clouds and rain.
           </p>
+        ) : (
+          <div className="os-prefs-radios os-prefs-rotate">
+            <label>
+              <input type="checkbox" checked={rotate} onChange={(e) => setRotateWallpaper(e.target.checked)} />
+              <span>
+                <strong>Change picture when you come back</strong>
+                <small>Switch to another tab or app and return to a new picture from this collection.</small>
+              </span>
+            </label>
+          </div>
         )}
       </section>
 

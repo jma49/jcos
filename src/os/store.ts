@@ -59,6 +59,8 @@ interface WindowStore {
   visitors: Visitor[] | null;
   /** A photo URL chosen as the desktop picture, or null for the default. */
   wallpaper: string | null;
+  /** Show another picture from the same collection each time the visitor comes back to the tab. */
+  rotateWallpaper: boolean;
   /** Where the visitor is (see place.ts); null until located. */
   place: Place | null;
 
@@ -87,10 +89,12 @@ interface WindowStore {
   setScreensaver: (on: boolean) => void;
   setVisitors: (visitors: Visitor[] | null) => void;
   setWallpaper: (url: string | null) => void;
+  setRotateWallpaper: (on: boolean) => void;
   setPlace: (place: Place) => void;
 }
 
 const WALLPAPER_KEY = 'os-wallpaper';
+const ROTATE_KEY = 'os-wallpaper-rotate';
 // Shared with the classic site, which stored 'light' or 'dark' here.
 const APPEARANCE_KEY = 'theme';
 const SAVER_KEY = 'os-screensaver';
@@ -205,6 +209,7 @@ export const useWindows = create<WindowStore>((set, get) => ({
   screensaverOn: false,
   visitors: null,
   wallpaper: typeof window === 'undefined' ? null : savedWallpaper(),
+  rotateWallpaper: typeof window === 'undefined' ? true : read(ROTATE_KEY) !== '0',
   place: null,
 
   open: (app, { key = app, title, width, height, origin, props }) => {
@@ -313,6 +318,10 @@ export const useWindows = create<WindowStore>((set, get) => ({
       else localStorage.removeItem(WALLPAPER_KEY);
     } catch {}
     set({ wallpaper });
+  },
+  setRotateWallpaper: (rotateWallpaper) => {
+    write(ROTATE_KEY, rotateWallpaper ? '1' : '0');
+    set({ rotateWallpaper });
   },
   setPlace: (place) => set({ place })
 }));

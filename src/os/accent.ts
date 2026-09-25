@@ -97,46 +97,82 @@ export function accentFromPixels(data: Uint8ClampedArray): string {
 }
 
 const CACHE_KEY = 'os-accent-cache';
+const BRIGHTNESS_KEY = 'os-brightness-cache';
 
-function cached(url: string): string | null {
+function cached<T>(url: string, key = CACHE_KEY): T | null {
   try {
-    return JSON.parse(localStorage.getItem(CACHE_KEY) ?? '{}')[url] ?? null;
+    return JSON.parse(localStorage.getItem(key) ?? '{}')[url] ?? null;
   } catch {
     return null;
   }
 }
 
-function remember(url: string, color: string) {
+function remember(url: string, value: string | number, key = CACHE_KEY) {
   try {
-    const all = JSON.parse(localStorage.getItem(CACHE_KEY) ?? '{}');
+    const all = JSON.parse(localStorage.getItem(key) ?? '{}');
     // Keep the cache small: the last dozen pictures.
-    const entries = Object.entries({ ...all, [url]: color }).slice(-12);
-    localStorage.setItem(CACHE_KEY, JSON.stringify(Object.fromEntries(entries)));
+    const entries = Object.entries({ ...all, [url]: value }).slice(-12);
+    localStorage.setItem(key, JSON.stringify(Object.fromEntries(entries)));
   } catch {}
 }
 
 /** A small copy of an Unsplash picture is plenty to sample. */
 const sampleUrl = (url: string) => (url.includes('images.unsplash.com') ? url.replace(/([?&])w=\d+/, '$1w=160') : url);
 
-/** The accent for a desktop picture; cached per picture in this browser. */
-export async function accentFromPicture(url: string): Promise<string> {
-  const hit = cached(url);
-  if (hit) return hit;
+/** A small copy of a picture, as RGBA pixels, for sampling. */
+async function pixels(url: string, size = 48) {
   const img = new Image();
   img.crossOrigin = 'anonymous';
   img.src = sampleUrl(url);
   await img.decode();
-  const size = 48;
   const canvas = document.createElement('canvas');
   canvas.width = size;
   canvas.height = size;
   const ctx = canvas.getContext('2d', { willReadFrequently: true });
-  if (!ctx) return DEFAULT_ACCENT;
+  if (!ctx) return null;
   ctx.drawImage(img, 0, 0, size, size);
-  const color = accentFromPixels(ctx.getImageData(0, 0, size, size).data);
+  return ctx.getImageData(0, 0, size, size).data;
+}
+
+/** The accent for a desktop picture; cached per picture in this browser. */
+export async function accentFromPicture(url: string): Promise<string> {
+  const hit = cached<string>(url);
+  if (hit) return hit;
+  const data = await pixels(url);
+  if (!data) return DEFAULT_ACCENT;
+  const color = accentFromPixels(data);
   remember(url, color);
   return color;
 }
 
 /** The cached accent for a picture, if it has been sampled before; for the first paint. */
-export const cachedAccent = cached;
+export const cachedAccent = (url: string) => cached<string>(url);
+
+/** Perceived brightness of a colour, 0 (black) to 1 (white). */
+export const brightness = (r: number, g: number, b: number) => (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+
+/**
+ * How bright the top of a picture is, 0 to 1: the strip the menu bar sits
+ * on, which picks its text colour now that it's see-through. Cached per
+ * picture like the accent.
+ */
+export async function topBrightness(url: string): Promise<number> {
+  const hit = cached<number>(url, BRIGHTNESS_KEY);
+  if (hit !== null) return hit;
+  const size = 48;
+  const data = await pixels(url, size);
+  if (!data) return 0.5;
+  // The top eighth of the picture, as the desktop crops it roughly.
+  let sum = 0;
+  let count = 0;
+  for (let i = 0; i < size * 6 * 4; i += 4) {
+    sum += brightness(data[i], data[i + 1], data[i + 2]);
+    count++;
+  }
+  const value = Math.round((sum / count) * 1000) / 1000;
+  remember(url, value, BRIGHTNESS_KEY);
+  return value;
+}
+
+/** The cached top brightness of a picture, for the first paint. */
+export const cachedTopBrightness = (url: string) => cached<number>(url, BRIGHTNESS_KEY);

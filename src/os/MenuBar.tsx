@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { apps, launch } from './registry';
-import { useFocusedId, useWindows } from './store';
+import { MOBILE_BREAKPOINT, useFocusedId, useWindows } from './store';
 import { useOSData } from './context';
 import { SkyStatus, type SkyState } from './Sky';
 import { OnlineStatus } from './Presence';
@@ -93,8 +93,13 @@ export function MenuBar({ sky }: { sky: SkyState }) {
     ? undefined
     : `${now.toLocaleTimeString('en-US', { timeZone: HOME.timeZone, hour: 'numeric', minute: '2-digit' })} for Jincheng in ${HOME.city}`;
 
+  // See-through over the desktop; solid when a window runs up under it: a
+  // zoomed one, or any app on a phone, where apps are full screen.
+  const phone = window.innerWidth < MOBILE_BREAKPOINT;
+  const solid = Object.values(windows).some((w) => !w.minimized && (w.maximized || phone));
+
   return (
-    <header ref={barRef} className="os-menubar">
+    <header ref={barRef} className="os-menubar" data-solid={solid || undefined}>
       <nav className="os-menus" aria-label="Menu bar">
         {Object.entries(menus).map(([title, items], i) => (
           <div key={title} className="os-menu">
@@ -107,7 +112,7 @@ export function MenuBar({ sky }: { sky: SkyState }) {
               aria-haspopup="menu"
               aria-expanded={openMenu === title}
             >
-              {i === 0 ? <img className="os-logo" src="/os/icons/apple.png" alt="Menu" width={16} height={16} /> : title}
+              {i === 0 ? <span className="os-logo" role="img" aria-label="Menu" /> : title}
             </button>
             {i === 0 && <span className="os-menu-appname">{appName}</span>}
             {openMenu === title && (
