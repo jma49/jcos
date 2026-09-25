@@ -1321,7 +1321,8 @@
   flex: none;
 }
 
-.os-dock-icon img {
+/* PNG and SVG icons alike follow the magnified slot size. */
+.os-dock-icon .os-icon {
   display: block;
   width: 100%;
   height: 100%;
