@@ -4261,6 +4261,615 @@
   }
 }
 
+/* ---------- iPod ---------- */
+
+.os-ipod-app {
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  user-select: none;
+}
+
+/* A fifth-generation iPod: white polycarbonate, or black in dark appearance. */
+.os-ipod {
+  --ipod-body: linear-gradient(#ffffff, #eeeef1 55%, #e2e3e7);
+  --ipod-rim: rgba(0, 0, 0, 0.18);
+  --ipod-wheel: radial-gradient(circle at 50% 40%, #fbfbfc, #ebecef 70%, #e0e1e5);
+  --ipod-label: #a3a7ae;
+  --ipod-center: linear-gradient(#ffffff, #eceef1);
+  flex: none;
+  width: 264px;
+  height: 436px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 14px 14px 0;
+  border-radius: 24px;
+  background: var(--ipod-body);
+  box-shadow: inset 0 1px 0 #fff, inset 0 0 0 1px var(--ipod-rim), 0 10px 26px rgba(0, 0, 0, 0.28);
+  outline: none;
+}
+
+:root[data-theme='dark'] .os-ipod {
+  --ipod-body: linear-gradient(#3b3b3f, #1d1d20 55%, #111113);
+  --ipod-rim: rgba(255, 255, 255, 0.12);
+  --ipod-wheel: radial-gradient(circle at 50% 40%, #3c3c40, #2a2a2e 70%, #222225);
+  --ipod-label: #8c8c93;
+  --ipod-center: linear-gradient(#303034, #202023);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), inset 0 0 0 1px var(--ipod-rim), 0 10px 26px rgba(0, 0, 0, 0.5);
+}
+
+.os-ipod-screen {
+  position: relative;
+  flex: none;
+  width: 236px;
+  height: 200px;
+  overflow: hidden;
+  border-radius: 5px;
+  background: linear-gradient(#fbfcfd, #e7ebf0);
+  box-shadow: 0 0 0 2px #50565e, 0 0 0 3px rgba(255, 255, 255, 0.4);
+  color: #111;
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+.os-ipod-header {
+  position: relative;
+  z-index: 2;
+  height: 17px;
+  display: grid;
+  grid-template-columns: 24px 1fr 24px;
+  align-items: center;
+  padding: 0 4px;
+  background: linear-gradient(#fdfdfd, #d5dae0);
+  border-bottom: 1px solid #98a2ad;
+  font-size: 11px;
+  font-weight: 700;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.os-ipod-header > span:nth-child(2) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.os-ipod-state {
+  justify-self: start;
+  font-size: 8px;
+  color: #3d6fb8;
+}
+
+.os-ipod-battery {
+  justify-self: end;
+  width: 17px;
+  height: 8px;
+  border: 1px solid #555;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #6ac25f 70%, transparent 70%);
+  box-shadow: 2px 0 0 -1px #555;
+}
+
+/* The player sits under the menus and shows on Now Playing. */
+.os-ipod-video {
+  position: absolute;
+  top: 17px;
+  left: 0;
+  width: 236px;
+  height: 133px;
+  background: #000;
+  pointer-events: none;
+}
+
+.os-ipod-video iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.os-ipod-menu {
+  position: absolute;
+  inset: 17px 0 0;
+  z-index: 1;
+  overflow: hidden;
+  background: linear-gradient(#fbfcfd, #e7ebf0);
+}
+
+.os-ipod-menu ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  transition: translate 0.08s;
+}
+
+.os-ipod-menu li {
+  height: 19px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 7px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.os-ipod-menu li > span:first-child {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.os-ipod-value {
+  color: #6b7480;
+  font-weight: 400;
+}
+
+.os-ipod-menu li[aria-selected='true'] {
+  background: var(--os-select-grad);
+  color: #fff;
+}
+
+.os-ipod-menu li[aria-selected='true'] .os-ipod-value {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.os-ipod-now {
+  position: absolute;
+  inset: 150px 0 0;
+  display: grid;
+  align-content: center;
+  gap: 4px;
+  padding: 0 7px;
+}
+
+.os-ipod-info {
+  display: grid;
+  min-width: 0;
+}
+
+.os-ipod-info strong,
+.os-ipod-info span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.os-ipod-info strong {
+  font-size: 11px;
+}
+
+.os-ipod-info span {
+  color: #5b6470;
+  font-size: 10px;
+}
+
+.os-ipod-bar {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 5px;
+  font-size: 9px;
+  font-variant-numeric: tabular-nums;
+}
+
+.os-ipod-progress {
+  height: 6px;
+  overflow: hidden;
+  border: 1px solid #7d8894;
+  background: #fff;
+}
+
+.os-ipod-progress span {
+  display: block;
+  height: 100%;
+  background: var(--os-gel);
+}
+
+/* A line of the lyrics, subtitled over the bottom of the video. */
+.os-ipod-caption {
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 6px;
+  right: 6px;
+  margin: 0;
+  padding: 1px 4px;
+  border-radius: 3px;
+  background: rgba(0, 0, 0, 0.5);
+  color: #fff;
+  font-size: 10px;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.os-ipod-note {
+  position: absolute;
+  bottom: calc(100% + 50px);
+  left: 0;
+  right: 0;
+  margin: 0;
+  color: #fff;
+  font-size: 11px;
+  text-align: center;
+}
+
+.os-ipod-wheel {
+  position: relative;
+  flex: none;
+  width: 176px;
+  height: 176px;
+  margin: auto 0;
+  border-radius: 50%;
+  background: var(--ipod-wheel);
+  box-shadow: inset 0 0 0 1px var(--ipod-rim), inset 0 1px 2px rgba(0, 0, 0, 0.06);
+  touch-action: none;
+}
+
+.os-ipod-label {
+  position: absolute;
+  color: var(--ipod-label);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  pointer-events: none;
+}
+
+.os-ipod-label[data-at='top'] {
+  top: 13px;
+  left: 50%;
+  translate: -50% 0;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+}
+
+.os-ipod-label[data-at='right'] {
+  right: 13px;
+  top: 50%;
+  translate: 0 -50%;
+}
+
+.os-ipod-label[data-at='bottom'] {
+  bottom: 13px;
+  left: 50%;
+  translate: -50% 0;
+}
+
+.os-ipod-label[data-at='left'] {
+  left: 13px;
+  top: 50%;
+  translate: 0 -50%;
+}
+
+.os-root .os-ipod-center {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--ipod-center);
+  box-shadow: inset 0 0 0 1px var(--ipod-rim), 0 1px 2px rgba(0, 0, 0, 0.12);
+}
+
+.os-root .os-ipod-center:active {
+  background: var(--ipod-wheel);
+}
+
+/* ---------- Karaoke ---------- */
+
+.os-karaoke {
+  --karaoke-fill: color-mix(in srgb, var(--os-accent) 45%, white);
+  position: relative;
+  flex: 1;
+  overflow: hidden;
+  container-type: size;
+  background: #000;
+  color: #fff;
+  outline: none;
+  user-select: none;
+}
+
+/* The video covers the window, cropped like a desktop picture. */
+.os-karaoke-video {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: max(100cqw, 177.78cqh);
+  height: max(100cqh, 56.25cqw);
+  translate: -50% -50%;
+  pointer-events: none;
+}
+
+.os-karaoke-video iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.os-karaoke-shade {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 50%, rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.78));
+}
+
+.os-karaoke-stage {
+  position: absolute;
+  inset: 0 0 60px;
+  display: grid;
+  place-items: center;
+  padding: 0 6%;
+  text-align: center;
+}
+
+.os-karaoke-lines {
+  width: 100%;
+  display: grid;
+  gap: 0.5em;
+}
+
+.os-karaoke-line {
+  margin: 0;
+  min-height: 1.25em;
+  font-weight: 700;
+  line-height: 1.25;
+  text-wrap: balance;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.6));
+}
+
+.os-karaoke-line[data-at='past'] {
+  font-size: clamp(13px, 2.6cqw, 22px);
+  opacity: 0.35;
+}
+
+/* The line being sung fills from the left as it goes (--fill, set every frame). */
+.os-karaoke-line[data-at='now'] {
+  --fill: 0%;
+  font-size: clamp(22px, 5.4cqw, 54px);
+  background: linear-gradient(90deg, var(--karaoke-fill) var(--fill), rgba(255, 255, 255, 0.92) var(--fill));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.os-karaoke-line[data-at='next'] {
+  font-size: clamp(15px, 3.2cqw, 28px);
+  opacity: 0.7;
+}
+
+.os-karaoke-line[data-at='later'] {
+  font-size: clamp(13px, 2.6cqw, 22px);
+  opacity: 0.4;
+}
+
+.os-karaoke-title,
+.os-root .os-karaoke-start {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+}
+
+.os-karaoke-title strong,
+.os-karaoke-start strong {
+  font-size: clamp(24px, 6cqw, 56px);
+  line-height: 1.1;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.6));
+}
+
+.os-karaoke-title small,
+.os-karaoke-start small {
+  font-size: clamp(13px, 2.4cqw, 20px);
+  opacity: 0.8;
+}
+
+.os-karaoke-title em,
+.os-karaoke-note {
+  margin: 0;
+  font-size: 13px;
+  font-style: normal;
+  opacity: 0.7;
+}
+
+.os-karaoke-count {
+  color: var(--karaoke-fill);
+  font-size: 18px;
+  letter-spacing: 0.4em;
+}
+
+.os-root .os-karaoke-start {
+  padding: 22px 34px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.15);
+  transition: background 0.15s;
+}
+
+.os-root .os-karaoke-start:hover {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.os-karaoke-start > span {
+  width: 56px;
+  height: 56px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--os-gel);
+  box-shadow: inset 0 0 0 1px var(--os-accent-rim);
+  font-size: 22px;
+  text-indent: 4px;
+}
+
+.os-karaoke-bar {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: 10px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 10px;
+  border-radius: 12px;
+  background: rgba(24, 24, 26, 0.55);
+  backdrop-filter: blur(18px) saturate(1.6);
+  -webkit-backdrop-filter: blur(18px) saturate(1.6);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+  font-size: 12px;
+}
+
+.os-root .os-karaoke-bar button {
+  flex: none;
+  padding: 4px 8px;
+  border-radius: 6px;
+  line-height: 1.2;
+}
+
+.os-root .os-karaoke-bar button:hover,
+.os-root .os-karaoke-bar button[aria-expanded='true'] {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.os-root .os-karaoke-bar .os-karaoke-song {
+  flex: 0 1 180px;
+  min-width: 0;
+  display: grid;
+  text-align: left;
+}
+
+.os-karaoke-song strong,
+.os-karaoke-song small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.os-karaoke-song small {
+  opacity: 0.7;
+  font-size: 11px;
+}
+
+.os-karaoke-transport {
+  display: flex;
+  font-size: 14px;
+}
+
+.os-karaoke-time {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.os-karaoke-time input {
+  flex: 1;
+  min-width: 0;
+}
+
+.os-karaoke-offset {
+  display: flex;
+  align-items: center;
+}
+
+.os-karaoke-offset span {
+  min-width: 42px;
+  font-size: 11px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.8;
+}
+
+.os-karaoke-picker {
+  position: absolute;
+  left: 10px;
+  bottom: 62px;
+  width: min(340px, calc(100% - 20px));
+  max-height: calc(100% - 80px);
+  overflow: auto;
+  padding: 6px;
+  border-radius: 12px;
+  background: rgba(24, 24, 26, 0.82);
+  backdrop-filter: blur(18px) saturate(1.6);
+  -webkit-backdrop-filter: blur(18px) saturate(1.6);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12), 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+/* A slim, dark scroller instead of the Aqua one. */
+.os-karaoke-picker::-webkit-scrollbar {
+  width: 8px;
+}
+
+.os-karaoke-picker::-webkit-scrollbar-track {
+  background: transparent;
+  box-shadow: none;
+}
+
+.os-karaoke-picker::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  background: rgba(255, 255, 255, 0.3) padding-box;
+  box-shadow: none;
+}
+
+.os-karaoke-picker ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.os-root .os-karaoke-picker button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 6px;
+  border-radius: 8px;
+  text-align: left;
+}
+
+.os-root .os-karaoke-picker button:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.os-root .os-karaoke-picker button[aria-current='true'] {
+  background: color-mix(in srgb, var(--os-accent) 65%, transparent);
+}
+
+.os-karaoke-picker img {
+  flex: none;
+  width: 64px;
+  height: 36px;
+  border-radius: 4px;
+  object-fit: cover;
+}
+
+.os-karaoke-picker span {
+  display: grid;
+  min-width: 0;
+}
+
+.os-karaoke-picker strong,
+.os-karaoke-picker small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.os-karaoke-picker small {
+  opacity: 0.7;
+}
+
+@container (max-width: 560px) {
+  .os-karaoke-offset,
+  .os-karaoke-time time {
+    display: none;
+  }
+}
+
 /* ---------- Small screens: an iOS-style home screen ---------- */
 
 .os-back {

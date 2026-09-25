@@ -65,7 +65,9 @@ export type AppId =
   | 'finder'
   | 'appstore'
   | 'calculator'
-  | 'tilegame';
+  | 'tilegame'
+  | 'ipod'
+  | 'karaoke';
 
 export interface Rect {
   x: number;

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } fro
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { useOSData } from './context';
 import { MOBILE_BREAKPOINT, useWindows, type SaverStyle } from './store';
+import { useMusic } from './music';
 import { clockTimeZone, usePlace } from './place';
 import { describe, useWeather } from './weather';
 import type { OSPhoto } from './types';
@@ -49,7 +50,7 @@ function shuffle<T>(items: T[]) {
 /**
  * Starts the screensaver after `minutes` without input (never for 0). Doesn't
  * run on phones, or while an iframe (a live demo in the Browser) has focus,
- * since the page can't see input inside it.
+ * since the page can't see input inside it, or during karaoke.
  */
 function useIdle(minutes: number, onIdle: () => void) {
   useEffect(() => {
@@ -58,7 +59,9 @@ function useIdle(minutes: number, onIdle: () => void) {
     const reset = () => {
       clearTimeout(timer);
       timer = window.setTimeout(() => {
-        if (document.activeElement?.tagName === 'IFRAME') reset();
+        // Nor in the middle of a song in Karaoke, where nobody touches anything.
+        const { owner, playing } = useMusic.getState();
+        if (document.activeElement?.tagName === 'IFRAME' || (owner === 'karaoke' && playing)) reset();
         else onIdle();
       }, minutes * 60_000);
     };
