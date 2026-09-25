@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { useReducedMotion } from 'motion/react';
-import { describe, getWeather, localMinutes, type Condition, type Weather } from './weather';
+import { describe, localMinutes, useWeather, type Condition, type Weather } from './weather';
+import { deviceTimeZone, placeLabel, startLocating, usePlace, type Place } from './place';
 
-// The desktop follows the sky over San Jose: the wallpaper takes on the
-// light of the hour there (dawn, golden hour, dusk, night) and shows the
-// weather (rain, drizzle, storms, snow, fog) behind the windows.
+// The desktop follows the sky over the visitor (see place.ts): the
+// wallpaper takes on the light of the hour there (dawn, golden hour, dusk,
+// night) and shows the weather (rain, drizzle, storms, snow, fog) behind
+// the windows.
 
 type RGBA = [number, number, number, number];
 
@@ -66,27 +68,32 @@ function override() {
 }
 
 export interface SkyState {
+  place: Place | null;
   weather: Weather | null;
   condition: Condition;
   tint: RGBA;
 }
 
-/** San Jose's light and weather, rechecked every minute. */
+/** The light and weather where the visitor is, rechecked every minute. */
 export function useSky(): SkyState {
-  const [weather, setWeather] = useState<Weather | null>(null);
-  const [now, setNow] = useState(() => localMinutes());
+  const place = usePlace();
+  const result = useWeather(place);
+  const weather = result === 'error' ? null : result;
+  const [now, setNow] = useState(() => new Date());
 
   useEffect(() => {
-    getWeather().then(setWeather, () => {});
-    const timer = setInterval(() => setNow(localMinutes()), 60_000);
+    startLocating();
+    const timer = setInterval(() => setNow(new Date()), 60_000);
     return () => clearInterval(timer);
   }, []);
 
   const pinned = override();
   const sunrise = weather?.sunrise ?? DEFAULT_SUNRISE;
   const sunset = weather?.sunset ?? DEFAULT_SUNSET;
-  const minutes = pinned.time ? TIMES[pinned.time](sunrise, sunset) : now;
+  // Until the visitor is located, the device's own time zone is the best guess.
+  const minutes = pinned.time ? TIMES[pinned.time](sunrise, sunset) : localMinutes(place?.timeZone ?? deviceTimeZone(), now);
   return {
+    place,
     weather,
     condition: pinned.condition ?? weather?.condition ?? 'clear',
     tint: tintAt(minutes, sunrise, sunset)
@@ -211,17 +218,18 @@ export function Sky({ sky }: { sky: SkyState }) {
   );
 }
 
-/** Menu bar item: the San Jose weather the desktop is showing. Opens the Dashboard. */
+/** Menu bar item: the weather the desktop is showing. Opens the Dashboard. */
 export function SkyStatus({ sky, onOpen }: { sky: SkyState; onOpen: () => void }) {
   const { label, icon } = describe(sky.condition);
-  if (!sky.weather) return null;
+  if (!sky.weather || !sky.place) return null;
+  const where = placeLabel(sky.place);
   return (
     <button
       type="button"
       className="os-sky-status"
       onClick={onOpen}
-      title={`San Jose · ${label}. The desktop follows the sky there.`}
-      aria-label={`San Jose weather: ${label}, ${sky.weather.temp} degrees`}
+      title={`${where} · ${label}. The desktop follows the sky there.`}
+      aria-label={`Weather in ${where}: ${label}, ${sky.weather.temp} degrees`}
     >
       <span aria-hidden="true">{icon}</span>
       {sky.weather.temp}°

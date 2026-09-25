@@ -4,6 +4,7 @@ import { useFocusedId, useWindows } from './store';
 import { useOSData } from './context';
 import { SkyStatus, type SkyState } from './Sky';
 import { OnlineStatus } from './Presence';
+import { clockTimeZone, HOME, sameTime } from './place';
 
 interface MenuItem {
   label: string;
@@ -76,13 +77,18 @@ export function MenuBar({ sky }: { sky: SkyState }) {
     ]
   };
 
+  const timeZone = clockTimeZone(sky.place);
   const clock = now.toLocaleString('en-US', {
+    timeZone,
     weekday: 'short',
     month: 'short',
     day: 'numeric',
     hour: 'numeric',
     minute: '2-digit'
   });
+  const homeClock = sameTime(timeZone, HOME.timeZone, now)
+    ? undefined
+    : `${now.toLocaleTimeString('en-US', { timeZone: HOME.timeZone, hour: 'numeric', minute: '2-digit' })} for Jincheng in ${HOME.city}`;
 
   return (
     <header ref={barRef} className="os-menubar">
@@ -141,7 +147,9 @@ export function MenuBar({ sky }: { sky: SkyState }) {
             <path d="M10.4 10.4L14 14" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
           </svg>
         </button>
-        <time dateTime={now.toISOString()}>{clock}</time>
+        <time dateTime={now.toISOString()} title={homeClock}>
+          {clock}
+        </time>
       </div>
     </header>
   );

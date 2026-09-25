@@ -26,8 +26,17 @@ readers, crawlers and visitors without JavaScript.
   don't reload.
 - `src/os/Screensaver.tsx`: a slideshow of the Photos library after two
   idle minutes.
+- `src/os/place.ts`: where the visitor is. `api/geo.ts` (a Vercel
+  Function) returns the city, coordinates and time zone Vercel derives
+  from their IP address; the Weather widget's flip side lets them pick a
+  city instead (kept in `localStorage`), and `?place=<city>` overrides
+  both for demos. Without a location (e.g. `astro dev`) it falls back to
+  San Jose's weather and the device clock.
 - `src/os/Sky.tsx` and `weather.ts`: tint the wallpaper with the time of
-  day and weather in San Jose (Open-Meteo). `?sky=dusk,rain` pins both.
+  day and weather at that place (Open-Meteo), in °F or °C by country.
+  `?sky=dusk,rain` pins both. The menu bar clock and the Dashboard's
+  clock and calendar use the place's time zone; a Dashboard widget shows
+  Jincheng's time in San Jose next to it.
 - `src/os/genie.ts`: the displacement map behind the Genie minimize in
   `Window.tsx`.
 - `src/os/social.ts`: Stickies (a guestbook) and presence (the
