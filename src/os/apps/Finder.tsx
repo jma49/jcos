@@ -109,100 +109,102 @@ export default function Finder({ win }: AppProps) {
   });
 
   return (
-    <div className="os-app os-finder os-finder-app" onKeyDown={onKey}>
-      <aside className="os-sidebar" aria-label="Places">
-        <p className="os-sidebar-heading">Places</p>
-        {places.map(({ path: p, node }) => (
-          <button
-            key={p}
-            type="button"
-            className="os-sidebar-place"
-            aria-pressed={path === p || (p !== '/' && path.startsWith(`${p}/`))}
-            onClick={() => go(p)}
-          >
-            <span className="os-sidebar-icon">
-              <node.Icon size={18} />
-            </span>
-            {node.name}
+    <div className="os-app os-finder-app" onKeyDown={onKey}>
+      <div className="os-toolbar">
+        <div className="os-segmented" role="group" aria-label="Navigate">
+          <button type="button" disabled={at === 0} onClick={() => setAt(at - 1)} aria-label="Back" title="Back (⌥[)">
+            ◀
           </button>
-        ))}
-      </aside>
-
-      <div className="os-finder-main">
-        <div className="os-toolbar">
-          <div className="os-segmented" role="group" aria-label="Navigate">
-            <button type="button" disabled={at === 0} onClick={() => setAt(at - 1)} aria-label="Back" title="Back (⌥[)">
-              ◀
-            </button>
-            <button
-              type="button"
-              disabled={at >= history.length - 1}
-              onClick={() => setAt(at + 1)}
-              aria-label="Forward"
-              title="Forward (⌥])"
-            >
-              ▶
-            </button>
-          </div>
-          <div className="os-segmented" role="group" aria-label="View">
-            <button type="button" aria-pressed={view === 'icons'} onClick={() => changeView('icons')} aria-label="Icons" title="As Icons">
-              <svg viewBox="0 0 14 14" width="12" height="12" aria-hidden="true">
-                <path d="M1 1h5v5H1zM8 1h5v5H8zM1 8h5v5H1zM8 8h5v5H8z" fill="currentColor" />
-              </svg>
-            </button>
-            <button type="button" aria-pressed={view === 'list'} onClick={() => changeView('list')} aria-label="List" title="As List">
-              <svg viewBox="0 0 14 14" width="12" height="12" aria-hidden="true">
-                <path d="M1 2h12v2H1zM1 6h12v2H1zM1 10h12v2H1z" fill="currentColor" />
-              </svg>
-            </button>
-          </div>
-          <nav className="os-finder-path" aria-label="Path">
-            {['/', ...path.split('/').filter(Boolean).map((_, i, parts) => `/${parts.slice(0, i + 1).join('/')}`)].map((p, i) => (
-              <span key={p}>
-                {i > 0 && <span aria-hidden="true"> ▸ </span>}
-                <button type="button" onClick={() => go(p)}>
-                  {find(disk, p)?.name}
-                </button>
-              </span>
-            ))}
-          </nav>
+          <button type="button" disabled={at >= history.length - 1} onClick={() => setAt(at + 1)} aria-label="Forward" title="Forward (⌥])">
+            ▶
+          </button>
         </div>
-
-        {view === 'icons' ? (
-          <ul className="os-scroll os-files-grid" onPointerDown={(e) => e.target === e.currentTarget && setSelected(null)}>
-            {items.map((node) => (
-              <li key={node.path}>
-                <button type="button" {...itemProps(node)}>
-                  <Thumb node={node} size={64} />
-                  <span className="os-finder-name">{node.name}</span>
-                </button>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <div className="os-scroll os-files-list" role="table" aria-label={folder.name}>
-            <div role="row" className="os-files-head">
-              <span role="columnheader">Name</span>
-              <span role="columnheader">Date Modified</span>
-              <span role="columnheader">Kind</span>
-            </div>
-            {items.map((node) => (
-              <button key={node.path} type="button" role="row" {...itemProps(node)}>
-                <span role="cell" className="os-files-name">
-                  <Thumb node={node} size={16} />
-                  {node.name}
-                </span>
-                <span role="cell">{formatDate(node.date)}</span>
-                <span role="cell">{node.kind}</span>
+        <div className="os-segmented" role="group" aria-label="View">
+          <button type="button" aria-pressed={view === 'icons'} onClick={() => changeView('icons')} aria-label="Icons" title="As Icons">
+            <svg viewBox="0 0 14 14" width="12" height="12" aria-hidden="true">
+              <path d="M1 1h5v5H1zM8 1h5v5H8zM1 8h5v5H1zM8 8h5v5H8z" fill="currentColor" />
+            </svg>
+          </button>
+          <button type="button" aria-pressed={view === 'list'} onClick={() => changeView('list')} aria-label="List" title="As List">
+            <svg viewBox="0 0 14 14" width="12" height="12" aria-hidden="true">
+              <path d="M1 2h12v2H1zM1 6h12v2H1zM1 10h12v2H1z" fill="currentColor" />
+            </svg>
+          </button>
+        </div>
+        <nav className="os-finder-path" aria-label="Path">
+          {[
+            '/',
+            ...path
+              .split('/')
+              .filter(Boolean)
+              .map((_, i, parts) => `/${parts.slice(0, i + 1).join('/')}`)
+          ].map((p, i) => (
+            <span key={p}>
+              {i > 0 && <span aria-hidden="true"> ▸ </span>}
+              <button type="button" onClick={() => go(p)}>
+                {find(disk, p)?.name}
               </button>
-            ))}
-          </div>
-        )}
+            </span>
+          ))}
+        </nav>
+      </div>
 
-        <p className="os-finder-status">
-          {items.length} item{items.length === 1 ? '' : 's'}
-          {folder.path === '/Applets' ? ' · get more in the Applet Store' : ''}
-        </p>
+      <div className="os-finder">
+        <aside className="os-sidebar" aria-label="Places">
+          <p className="os-sidebar-heading">Places</p>
+          {places.map(({ path: p, node }) => (
+            <button
+              key={p}
+              type="button"
+              className="os-sidebar-place"
+              aria-pressed={path === p || (p !== '/' && path.startsWith(`${p}/`))}
+              onClick={() => go(p)}
+            >
+              <span className="os-sidebar-icon">
+                <node.Icon size={18} />
+              </span>
+              {node.name}
+            </button>
+          ))}
+        </aside>
+
+        <div className="os-finder-main">
+          {view === 'icons' ? (
+            <ul className="os-scroll os-files-grid" onPointerDown={(e) => e.target === e.currentTarget && setSelected(null)}>
+              {items.map((node) => (
+                <li key={node.path}>
+                  <button type="button" {...itemProps(node)}>
+                    <Thumb node={node} size={64} />
+                    <span className="os-finder-name">{node.name}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <div className="os-scroll os-files-list" role="table" aria-label={folder.name}>
+              <div role="row" className="os-files-head">
+                <span role="columnheader">Name</span>
+                <span role="columnheader">Date Modified</span>
+                <span role="columnheader">Kind</span>
+              </div>
+              {items.map((node) => (
+                <button key={node.path} type="button" role="row" {...itemProps(node)}>
+                  <span role="cell" className="os-files-name">
+                    <Thumb node={node} size={16} />
+                    {node.name}
+                  </span>
+                  <span role="cell">{formatDate(node.date)}</span>
+                  <span role="cell">{node.kind}</span>
+                </button>
+              ))}
+            </div>
+          )}
+
+          <p className="os-finder-status">
+            {items.length} item{items.length === 1 ? '' : 's'}
+            {folder.path === '/Applets' ? ' · get more in the Applet Store' : ''}
+          </p>
+        </div>
       </div>
     </div>
   );

@@ -260,6 +260,7 @@ export function Window({ win, focused, z, exposed }: Props) {
       role="dialog"
       aria-label={win.title}
       data-focused={focused}
+      data-material={def.material}
       data-exposed={exposed ? true : undefined}
       className="os-window"
       style={{
