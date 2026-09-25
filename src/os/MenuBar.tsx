@@ -81,11 +81,11 @@ export function MenuBar({ sky }: { sky: SkyState }) {
   };
 
   const timeZone = clockTimeZone(sky.place);
+  // Phones have room for the time only.
+  const phone = window.innerWidth < MOBILE_BREAKPOINT;
   const clock = now.toLocaleString('en-US', {
     timeZone,
-    weekday: 'short',
-    month: 'short',
-    day: 'numeric',
+    ...(phone ? {} : { weekday: 'short', month: 'short', day: 'numeric' }),
     hour: 'numeric',
     minute: '2-digit'
   });
@@ -95,7 +95,6 @@ export function MenuBar({ sky }: { sky: SkyState }) {
 
   // See-through over the desktop; solid when a window runs up under it: a
   // zoomed one, or any app on a phone, where apps are full screen.
-  const phone = window.innerWidth < MOBILE_BREAKPOINT;
   const solid = Object.values(windows).some((w) => !w.minimized && (w.maximized || phone));
 
   return (
@@ -148,7 +147,12 @@ export function MenuBar({ sky }: { sky: SkyState }) {
         <SoundToggle />
         <OnlineStatus />
         <SkyStatus sky={sky} onOpen={() => useWindows.getState().setDashboard(true)} />
-        <button type="button" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} aria-label="Toggle appearance">
+        <button
+          type="button"
+          className="os-theme-toggle"
+          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+          aria-label="Toggle appearance"
+        >
           {theme === 'dark' ? '☀︎' : '☾'}
         </button>
         <button type="button" onClick={() => setSpotlight(true)} aria-label="Search">

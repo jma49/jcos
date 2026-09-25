@@ -4881,6 +4881,43 @@
     display: none;
   }
 
+  /* One line, whatever fits: the app name gives way, and the speaker and
+     appearance switches (both in System Preferences) step aside. */
+  .os-menubar {
+    white-space: nowrap;
+  }
+
+  .os-menus {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .os-menus .os-menu:first-child {
+    min-width: 0;
+  }
+
+  .os-menu-appname {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .os-status {
+    flex: none;
+  }
+
+  .os-status .os-sound-toggle,
+  .os-status .os-theme-toggle {
+    display: none;
+  }
+
+  /* iOS zooms into any text field under 16px when it's focused, and the
+     desktop doesn't scroll back. */
+  html .os-root input:not([type='range'], [type='checkbox'], [type='radio']),
+  html .os-root textarea,
+  html .os-root select {
+    font-size: 16px;
+  }
+
   .os-status time {
     font-size: 12px;
   }
