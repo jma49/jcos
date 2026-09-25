@@ -32,6 +32,10 @@ export const PhotosIcon = pngIcon('images');
 export const DashboardIcon = pngIcon('dashboard');
 export const PreferencesIcon = pngIcon('preferences');
 export const MinesweeperIcon = pngIcon('minesweeper');
+export const CalculatorIcon = pngIcon('calculator');
+export const ApplicationsFolderIcon = pngIcon('applications');
+export const AppletsFolderIcon = pngIcon('applets');
+export const DocumentsFolderIcon = pngIcon('documents');
 
 /** Stickies: a stack of notes. Drawn here; ryOS has no Stickies icon. */
 export function StickiesIcon({ size = 64 }: { size?: number }) {

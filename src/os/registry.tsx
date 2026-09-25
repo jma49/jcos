@@ -2,6 +2,7 @@ import { lazy, type ComponentType, type LazyExoticComponent } from 'react';
 import {
   AboutIcon,
   BrowserIcon,
+  DiskIcon,
   FolderIcon,
   MinesweeperIcon,
   PhotosIcon,
@@ -111,6 +112,15 @@ export const apps: Record<AppId, AppDefinition> = {
     minWidth: 360,
     minHeight: 300,
     Component: lazy(() => import('./apps/Soapbox'))
+  },
+  finder: {
+    name: 'Finder',
+    Icon: DiskIcon,
+    width: 760,
+    height: 480,
+    minWidth: 440,
+    minHeight: 300,
+    Component: lazy(() => import('./apps/Finder'))
   },
   minesweeper: {
     name: 'Minesweeper',

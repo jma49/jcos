@@ -31,7 +31,7 @@ function DesktopIcons({ data }: { data: OSData }) {
     launch(app, { origin: rectOf(el), ...extra });
 
   const shortcuts: Shortcut[] = [
-    { id: 'hd', label: 'Macintosh HD', Icon: DiskIcon, open: (el) => openApp('projects', el) },
+    { id: 'hd', label: 'Macintosh HD', Icon: DiskIcon, open: (el) => openApp('finder', el, { props: { path: '/' } }) },
     { id: 'about', label: 'About Me', Icon: apps.about.Icon, open: (el) => openApp('about', el) },
     {
       id: 'resume',
@@ -394,7 +394,7 @@ export default function Desktop({ data }: { data: OSData }) {
   );
 }
 
-const DEEP_LINK_APPS: AppId[] = ['about', 'resume', 'projects', 'photos', 'stickies', 'soapbox', 'terminal', 'preferences', 'minesweeper'];
+const DEEP_LINK_APPS: AppId[] = ['about', 'resume', 'projects', 'photos', 'stickies', 'soapbox', 'terminal', 'preferences', 'minesweeper', 'finder'];
 
 /** Handles links like /?open=resume or /?open=ocra. Returns whether it opened anything. */
 function openFromUrl(data: OSData): boolean {

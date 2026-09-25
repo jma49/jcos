@@ -61,7 +61,8 @@ export type AppId =
   | 'stickies'
   | 'preferences'
   | 'soapbox'
-  | 'minesweeper';
+  | 'minesweeper'
+  | 'finder';
 
 export interface Rect {
   x: number;
