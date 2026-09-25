@@ -43,7 +43,7 @@ export function StickiesIcon({ size = 64 }: { size?: number }) {
   // hidden copy's gradient can't be borrowed by the others.
   const id = `stickies${useId().replace(/[^\w-]/g, '')}`;
   return (
-    <svg className="os-icon" width={size} height={size} viewBox="0 0 64 64" aria-hidden="true">
+    <svg className="os-icon" width={size} height={size} viewBox="4.9 3.7 55.2 55.2" aria-hidden="true">
       <defs>
         <linearGradient id={`${id}-paper`} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stopColor="#fff7a8" />
@@ -71,7 +71,7 @@ export function SoapboxIcon({ size = 64 }: { size?: number }) {
   const id = `soapbox${useId().replace(/[^\w-]/g, '')}`;
   const rings = [13, 19, 25, 31, 37, 43];
   return (
-    <svg className="os-icon" width={size} height={size} viewBox="0 0 64 64" aria-hidden="true">
+    <svg className="os-icon" width={size} height={size} viewBox="2.65 4.07 60.7 60.7" aria-hidden="true">
       <defs>
         <linearGradient id={`${id}-paper`} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stopColor="#fffdf6" />
@@ -150,9 +150,9 @@ export function SoapboxIcon({ size = 64 }: { size?: number }) {
 /** Applet Store: a shopping bag with an Aqua band and four applet tiles. Drawn here. */
 export function AppletStoreIcon({ size = 64 }: { size?: number }) {
   const id = `store${useId().replace(/[^\w-]/g, '')}`;
-  const handle = 'M22 22v-6a10 10 0 0 1 20 0v6';
+  const handle = 'M21 22v-4a10 10 0 0 1 20 0v4';
   return (
-    <svg className="os-icon" width={size} height={size} viewBox="0 0 64 64" aria-hidden="true">
+    <svg className="os-icon" width={size} height={size} viewBox="5.5 5.8 54 54" aria-hidden="true">
       <defs>
         <linearGradient id={`${id}-bag`} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stopColor="#ffffff" />
@@ -176,24 +176,24 @@ export function AppletStoreIcon({ size = 64 }: { size?: number }) {
         </filter>
       </defs>
       <g filter={`url(#${id}-shadow)`}>
-        <path d={handle} fill="none" stroke="#7d8793" strokeWidth="3" strokeLinecap="round" />
-        <path d={handle} fill="none" stroke="#c9d0d8" strokeWidth="1.2" strokeLinecap="round" />
-        <path d="M48 20l6 3-2 35-4 2z" fill={`url(#${id}-side)`} />
-        <path d="M12 20h36l0 40H10z" fill={`url(#${id}-bag)`} stroke="#9aa3ad" strokeWidth="0.8" strokeLinejoin="round" />
-        <path d="M11.6 26h36.4v7H11.2z" fill={`url(#${id}-band)`} />
-        <path d="M11.6 26h36.4v3H11.4z" fill={`url(#${id}-gloss)`} />
-        <path d="M12 20h36v4H11.8z" fill="#fff" opacity="0.7" />
+        <path d={handle} fill="none" stroke="#6f7985" strokeWidth="3.6" strokeLinecap="round" />
+        <path d={handle} fill="none" stroke="#d3d9e0" strokeWidth="1.4" strokeLinecap="round" />
+        <path d="M52 21l5 2.4-1.5 27.8-3.5 1.1z" fill={`url(#${id}-side)`} />
+        <path d="M8 21h44v31.3H8z" fill={`url(#${id}-bag)`} stroke="#9aa3ad" strokeWidth="0.8" strokeLinejoin="round" />
+        <path d="M8.4 25.5h43.2v6.5H8.4z" fill={`url(#${id}-band)`} />
+        <path d="M8.4 25.5h43.2v2.8H8.4z" fill={`url(#${id}-gloss)`} />
+        <path d="M8.4 21.4h43.2v3.4H8.4z" fill="#fff" opacity="0.7" />
         <g stroke="rgba(0,0,0,0.25)" strokeWidth="0.6">
-          <rect x="20" y="37" width="9" height="9" rx="2.2" fill="#ff8a3d" />
-          <rect x="31" y="37" width="9" height="9" rx="2.2" fill="#35b25a" />
-          <rect x="20" y="48" width="9" height="9" rx="2.2" fill="#a05cf0" />
-          <rect x="31" y="48" width="9" height="9" rx="2.2" fill="#ffcf33" />
+          <rect x="19.5" y="35" width="10" height="7.6" rx="2.2" fill="#ff8a3d" />
+          <rect x="31" y="35" width="10" height="7.6" rx="2.2" fill="#35b25a" />
+          <rect x="19.5" y="43.6" width="10" height="7.6" rx="2.2" fill="#a05cf0" />
+          <rect x="31" y="43.6" width="10" height="7.6" rx="2.2" fill="#ffcf33" />
         </g>
         <g fill="#fff" opacity="0.55">
-          <rect x="21" y="38" width="7" height="3" rx="1.5" />
-          <rect x="32" y="38" width="7" height="3" rx="1.5" />
-          <rect x="21" y="49" width="7" height="3" rx="1.5" />
-          <rect x="32" y="49" width="7" height="3" rx="1.5" />
+          <rect x="20.5" y="35.8" width="8" height="2.6" rx="1.3" />
+          <rect x="32" y="35.8" width="8" height="2.6" rx="1.3" />
+          <rect x="20.5" y="44.4" width="8" height="2.6" rx="1.3" />
+          <rect x="32" y="44.4" width="8" height="2.6" rx="1.3" />
         </g>
       </g>
     </svg>
@@ -204,7 +204,7 @@ export function AppletStoreIcon({ size = 64 }: { size?: number }) {
 export function TileGameIcon({ size = 64 }: { size?: number }) {
   const id = `tiles${useId().replace(/[^\w-]/g, '')}`;
   return (
-    <svg className="os-icon" width={size} height={size} viewBox="0 0 64 64" aria-hidden="true">
+    <svg className="os-icon" width={size} height={size} viewBox="2.5 3 59 59" aria-hidden="true">
       <defs>
         <linearGradient id={`${id}-sky`} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stopColor="#6fb6f2" />
