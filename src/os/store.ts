@@ -25,6 +25,8 @@ interface WindowStore {
   /** Exposé: every open window laid out side by side. */
   exposeOpen: boolean;
   screensaverOn: boolean;
+  /** People on the desktop right now, this visitor included; null until known. */
+  online: number | null;
   /** A photo URL chosen as the desktop picture, or null for the default. */
   wallpaper: string | null;
 
@@ -39,6 +41,7 @@ interface WindowStore {
   setDashboard: (open: boolean) => void;
   setExpose: (open: boolean) => void;
   setScreensaver: (on: boolean) => void;
+  setOnline: (count: number | null) => void;
   setWallpaper: (url: string | null) => void;
 }
 
@@ -78,6 +81,7 @@ export const useWindows = create<WindowStore>((set, get) => ({
   dashboardOpen: false,
   exposeOpen: false,
   screensaverOn: false,
+  online: null,
   wallpaper: typeof window === 'undefined' ? null : savedWallpaper(),
 
   open: (app, { key = app, title, width, height, origin, props }) => {
@@ -136,6 +140,7 @@ export const useWindows = create<WindowStore>((set, get) => ({
   setDashboard: (dashboardOpen) => set({ dashboardOpen }),
   setExpose: (exposeOpen) => set({ exposeOpen }),
   setScreensaver: (screensaverOn) => set({ screensaverOn }),
+  setOnline: (online) => set({ online }),
   setWallpaper: (wallpaper) => {
     try {
       if (wallpaper) localStorage.setItem(WALLPAPER_KEY, wallpaper);

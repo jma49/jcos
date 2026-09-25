@@ -13,6 +13,9 @@ export default defineConfig({
     sitemap()
   ],
   vite: {
-    plugins: [tailwindcss()]
+    plugins: [tailwindcss()],
+    // NEXT_PUBLIC_ too: the Supabase integration for Vercel names its
+    // variables for Next.js (see src/os/social.ts).
+    envPrefix: ['PUBLIC_', 'NEXT_PUBLIC_']
   }
 });

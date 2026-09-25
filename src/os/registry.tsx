@@ -1,5 +1,14 @@
 import { lazy, type ComponentType, type LazyExoticComponent } from 'react';
-import { AboutIcon, BrowserIcon, FolderIcon, PhotosIcon, ProjectIcon, ResumeIcon, TerminalIcon } from './icons';
+import {
+  AboutIcon,
+  BrowserIcon,
+  FolderIcon,
+  PhotosIcon,
+  ProjectIcon,
+  ResumeIcon,
+  StickiesIcon,
+  TerminalIcon
+} from './icons';
 import { useWindows } from './store';
 import type { AppId, Rect, WindowState } from './types';
 
@@ -82,10 +91,19 @@ export const apps: Record<AppId, AppDefinition> = {
     minHeight: 320,
     Component: lazy(() => import('./apps/Photos'))
   },
+  stickies: {
+    name: 'Stickies',
+    Icon: StickiesIcon,
+    width: 720,
+    height: 540,
+    minWidth: 360,
+    minHeight: 320,
+    Component: lazy(() => import('./apps/Stickies'))
+  }
 };
 
 /** Apps shown in the Dock, left to right. */
-export const dockApps: AppId[] = ['about', 'resume', 'projects', 'photos', 'terminal', 'browser'];
+export const dockApps: AppId[] = ['about', 'resume', 'projects', 'photos', 'stickies', 'terminal', 'browser'];
 
 /** Dock apps that also appear in the four-slot Dock on phones. */
 export const mobileDockApps: AppId[] = ['projects', 'photos', 'terminal'];
