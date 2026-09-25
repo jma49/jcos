@@ -26,7 +26,9 @@ readers, crawlers and visitors without JavaScript.
   don't reload.
 - `src/os/sound.ts`: interface sounds synthesized with Web Audio (no
   recordings). Off by default; the menu bar speaker and the Sound pane
-  turn them on (`os-sound` in `localStorage`).
+  turn them on (`os-sound` in `localStorage`). That one switch and volume
+  govern every sound, the music included: anything new that plays audio
+  must follow it (see `setLoudness()` in `music.ts`).
 - `src/os/AppSwitcher.tsx`: ⌥Tab steps through open windows, most
   recent first; releasing ⌥ focuses the chosen one.
 - `src/os/Screensaver.tsx` and `savers.tsx`: Photos (a slideshow of the
@@ -83,14 +85,26 @@ readers, crawlers and visitors without JavaScript.
 - `src/os/music.ts`, `lyrics.ts`, `apps/IPod.tsx` and `apps/Karaoke.tsx`:
   the iPod (click wheel, menus, Now Playing with the video and a line of
   lyrics) and Karaoke (full-window video with lyrics that fill as they're
-  sung). Songs are YouTube videos listed in `src/data/songs.json`, played
-  with the YouTube IFrame API; the app used last owns playback and hands
-  the position over when the other takes it. Lyrics come from lrclib.net,
-  straight from the browser. To add a song, add its video id, title and
-  artist; tune `offset` (ms the lyrics run ahead of the video, negative
-  for videos with an intro) by nudging it in Karaoke with `[`/`]` and
-  adding the tweak it shows to `offset`, and set `lyrics` to an lrclib id if the search picks the wrong entry.
-  Visitors' own timing tweaks live in `os-lyric-offsets`.
+  sung, or a listening view for instrumentals). `src/data/songs.json`
+  holds `albums` (whole albums, with cover, year and a note) and `songs`
+  (YouTube video id, title, artist, `album`, square `cover` art from
+  Apple's catalogue, `track` for album tracks, `instrumental`). Playback
+  uses the YouTube IFrame API; the app used last owns playback and hands
+  the position over when the other takes it, and ⏭/⏮ follow the queue a
+  song was started from (album, artist or all). Lyrics come from
+  lrclib.net in the browser, or, when it has none, from NetEase through
+  `api/lyrics.ts` (a Vercel Function; converted to Traditional Chinese).
+  To add a song, add its video id, title, artist, album and cover; tune
+  `offset` (ms the lyrics run ahead of the video, negative for videos
+  with an intro) by nudging it in Karaoke with `[`/`]` and adding the
+  tweak it shows, and set `lyrics` to an lrclib id if the search picks
+  the wrong entry. Prefer album audio (a "Topic" or label upload) over
+  music videos, whose edits don't match the lyrics' timing. Visitors'
+  own timing tweaks live in `os-lyric-offsets`.
+- `src/os/NowPlaying.tsx`: the menu bar's ♫ while a song is on, with a
+  card to control it; it also feeds the Media Session API. The Dynamic
+  desktop picture `dynamic:cover` shows the playing song's cover,
+  blurred.
 - `src/os/files.ts` and `apps/Finder.tsx`: Macintosh HD, a read-only
   file system built from the content (Applications, Applets, Documents,
   Pictures, Projects), browsed in Finder with icon and list views.
@@ -101,7 +115,8 @@ readers, crawlers and visitors without JavaScript.
   register it, and add an entry to `APPLETS`.
 - `src/os/registry.tsx`: every app's name, icon, default and minimum size,
   and lazily imported component. `dockApps` and `mobileDockApps` pick what
-  the Dock shows.
+  the Dock keeps (other apps appear there while open); `launcherApps` is
+  what Spotlight lists.
 - `src/os/apps/`: one component per app. Content comes from `OSData`,
   assembled at build time in `index.astro` from `src/i18n/content.ts`, the
   projects collection and `src/lib/photos.ts` (Unsplash, fetched at build).
