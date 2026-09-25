@@ -454,6 +454,81 @@
   box-shadow: var(--os-shadow);
 }
 
+/* ---------- Finder toolbar: action menu and search ---------- */
+
+.os-finder-action {
+  position: relative;
+}
+
+.os-root .os-finder-gear {
+  gap: 3px;
+  padding: 0 8px;
+  font-size: 9px;
+}
+
+.os-finder-action-menu {
+  top: 26px;
+  z-index: 5;
+  min-width: 200px;
+  border-radius: 5px;
+}
+
+.os-menu-check {
+  display: inline-block;
+  width: 16px;
+}
+
+.os-search-field {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 170px;
+  height: 22px;
+  margin-left: auto;
+  padding: 0 8px;
+  border-radius: 11px;
+  background: #fff;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.35), 0 1px 0 rgba(255, 255, 255, 0.6);
+  color: #777;
+}
+
+.os-search-field input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: none;
+  color: #111;
+  font: inherit;
+  font-size: 12px;
+}
+
+.os-search-field:focus-within {
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.35), 0 0 0 3px var(--os-focus);
+}
+
+:root[data-theme='dark'] .os-search-field {
+  background: #2a2a2a;
+  color: #aaa;
+}
+
+:root[data-theme='dark'] .os-search-field input {
+  color: #eee;
+}
+
+.os-sidebar-divider {
+  margin: 6px 12px;
+  border: 0;
+  border-top: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.os-finder-empty {
+  margin: 0;
+  padding: 24px;
+  color: var(--os-faint);
+  text-align: center;
+}
+
 /* ---------- Brushed metal windows ---------- */
 
 .os-window[data-material='metal'] {
@@ -1270,12 +1345,17 @@
 .os-sidebar-icon {
   display: grid;
   place-items: center;
-  width: 18px;
-  height: 18px;
+  width: 22px;
+  height: 22px;
+}
+
+.os-finder-app .os-sidebar .os-sidebar-place {
+  padding-block: 2px;
+  font-size: 12.5px;
 }
 
 .os-finder-path {
-  margin-left: auto;
+  min-width: 0;
   overflow: hidden;
   font-size: 11px;
   white-space: nowrap;
@@ -1297,11 +1377,12 @@
 }
 
 .os-files-grid {
+  --icon: 64px;
   margin: 0;
   padding: 16px;
   list-style: none;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(calc(var(--icon) + 40px), 1fr));
   align-content: start;
   gap: 12px 6px;
   user-select: none;
@@ -1417,6 +1498,9 @@
 
 .os-finder-status {
   flex: none;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
   margin: 0;
   padding: 3px 12px;
   border-top: 1px solid var(--os-line-soft);
