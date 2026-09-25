@@ -8,6 +8,7 @@ import { plain } from './inline';
 import { openProject } from './Projects';
 import { HOME, placeLabel, searchPlaces, type Place } from '../place';
 import { describe, getWeather } from '../weather';
+import { getSocial } from '../social';
 
 interface Line {
   id: number;
@@ -31,11 +32,12 @@ const COMMANDS: Record<string, string> = {
   clear: 'clear the screen',
   date: 'current date and time',
   weather: 'weather where you are, or `weather <city>`',
+  soapbox: 'what Jincheng posted lately',
   echo: 'print text',
   exit: 'close this window'
 };
 
-const APP_TARGETS = ['about', 'resume', 'projects', 'photos', 'stickies', 'terminal', 'browser', 'preferences'] as const;
+const APP_TARGETS = ['about', 'resume', 'projects', 'photos', 'stickies', 'soapbox', 'terminal', 'browser', 'preferences'] as const;
 
 function neofetch(data: OSData): ReactNode {
   const art = [
@@ -189,6 +191,22 @@ export default function Terminal({ win }: AppProps) {
           .catch(() => print({ kind: 'error', content: 'weather: the forecast service is unreachable' }));
         return;
       }
+      case 'soapbox':
+        getSocial()
+          .then((social) => social?.listPosts())
+          .then((posts) => {
+            if (!posts) return print({ kind: 'error', content: 'soapbox: offline' });
+            if (!posts.length) return print({ content: 'Nothing on the Soapbox yet.' });
+            print(
+              ...posts.slice(0, 3).flatMap((p) => [
+                { content: `${p.kind === 'rant' ? '🔥' : '📝'} ${new Date(p.created_at).toDateString()}${p.place ? ` · ${p.place}` : ''}` },
+                { content: `   ${p.body.split('\n')[0]}` }
+              ]),
+              { content: 'Type `open soapbox` for the rest.' }
+            );
+          })
+          .catch(() => print({ kind: 'error', content: 'soapbox: offline' }));
+        return;
       case 'echo':
         return print({ content: arg });
       case 'sudo':

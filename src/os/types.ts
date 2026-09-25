@@ -59,7 +59,8 @@ export type AppId =
   | 'terminal'
   | 'photos'
   | 'stickies'
-  | 'preferences';
+  | 'preferences'
+  | 'soapbox';
 
 export interface Rect {
   x: number;

@@ -48,6 +48,21 @@ export interface Presence {
   leave: () => void;
 }
 
+export const REACTIONS = ['👍', '😂', '🫂', '🔥'] as const;
+export type Reaction = (typeof REACTIONS)[number];
+
+/** A Soapbox post: Jincheng's own note or rant, sent from Telegram. */
+export interface Post {
+  id: string;
+  body: string;
+  kind: 'note' | 'rant';
+  place: string | null;
+  weather: string | null;
+  created_at: string;
+  /** How many of each reaction it has. */
+  reactions: Partial<Record<Reaction, number>>;
+}
+
 /** Thrown by postNote when this visitor already has a note up. */
 export class AlreadyPostedError extends Error {
   constructor() {
@@ -61,6 +76,10 @@ export interface Social {
   /** Puts a note up. Each visitor gets one; a second throws AlreadyPostedError. */
   postNote: (note: Pick<Note, 'body' | 'name' | 'color'>) => Promise<void>;
   joinPresence: (info: VisitorInfo, handlers: PresenceHandlers) => Presence;
+  /** The newest Soapbox posts, with their reaction counts. */
+  listPosts: () => Promise<Post[]>;
+  /** Reacts to a post. Each visitor gets one reaction per post; a second throws AlreadyPostedError. */
+  react: (postId: string, reaction: Reaction) => Promise<void>;
 }
 
 /** Colours for visitors' cursors. */
@@ -110,6 +129,32 @@ async function supabaseSocial(url: string, key: string): Promise<Social> {
     async postNote(note) {
       // No .select(): visitors can't read back the columns the database fills in.
       const { error } = await client.from('notes').insert(note);
+      if (error?.code === '23505') throw new AlreadyPostedError();
+      if (error) throw new Error(error.message);
+    },
+
+    async listPosts() {
+      const { data: posts, error } = await client
+        .from('soapbox_posts')
+        .select('id, body, kind, place, weather, created_at')
+        .order('created_at', { ascending: false })
+        .limit(100);
+      if (error) throw new Error(error.message);
+      const ids = (posts ?? []).map((p) => p.id);
+      const { data: reactions } = ids.length
+        ? await client.from('soapbox_reactions').select('post_id, emoji').in('post_id', ids)
+        : { data: [] };
+      const counts = new Map<string, Post['reactions']>();
+      for (const r of reactions ?? []) {
+        const tally = counts.get(r.post_id) ?? {};
+        tally[r.emoji as Reaction] = (tally[r.emoji as Reaction] ?? 0) + 1;
+        counts.set(r.post_id, tally);
+      }
+      return (posts ?? []).map((p) => ({ ...(p as Omit<Post, 'reactions'>), reactions: counts.get(p.id) ?? {} }));
+    },
+
+    async react(postId, reaction) {
+      const { error } = await client.from('soapbox_reactions').insert({ post_id: postId, emoji: reaction });
       if (error?.code === '23505') throw new AlreadyPostedError();
       if (error) throw new Error(error.message);
     },
