@@ -6,9 +6,9 @@ status: live
 order: 2
 stack: [Next.js, TypeScript, PostgreSQL, MongoDB, Redis, Clerk]
 repo: https://github.com/jma49/Assay
-demo: https://sql-script-depoly.vercel.app/
+demo: https://assay-sql.vercel.app/
 cover: ../covers/assay.jpg
-capture: https://sql-script-depoly.vercel.app/
+capture: https://assay-sql.vercel.app/
 ---
 
 Assay runs SQL checks against a PostgreSQL database on a schedule and shows which ones found problems, so bad data gets caught before it reaches reports or customers.
@@ -23,7 +23,7 @@ Assay runs SQL checks against a PostgreSQL database on a schedule and shows whic
 
 ## Demo
 
-The [live demo](https://sql-script-depoly.vercel.app/) uses a `demo` schema of customers, orders, payments and inventory with data problems planted in it, plus 11 checks that find them, such as duplicate orders and negative inventory.
+The [live demo](https://assay-sql.vercel.app/) uses a `demo` schema of customers, orders, payments and inventory with data problems planted in it, plus 11 checks that find them, such as duplicate orders and negative inventory.
 
 ## How it's built
 
