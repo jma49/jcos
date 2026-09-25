@@ -10,7 +10,8 @@
 // the preview always matches the code being committed. A cover that does
 // not exist yet gets a blank placeholder first, since the build needs it.
 // Screenshots are 1920x1200 (1440x900 at 4/3 scale), light theme, with
-// motion reduced. An existing cover is only replaced when more than 0.1%
+// motion reduced. The home page is also captured into public/og.png at
+// 1200x630 for link previews. An existing cover is only replaced when more than 0.1%
 // of its pixels change, so re-running on an unchanged site is a no-op, and
 // never when the page answers with an HTTP error.
 
@@ -25,9 +26,12 @@ const PORT = 4329;
 const ORIGIN = `http://localhost:${PORT}`;
 const ASTRO = join(ROOT, 'node_modules/astro/astro.js');
 
-/** Every project Markdown file that sets both `cover` and `capture`. */
+const COVER = { width: 1440, height: 900, scale: 4 / 3 };
+const OG = { width: 1200, height: 630, scale: 1 };
+
+/** Every project Markdown file that sets both `cover` and `capture`, plus the OG image. */
 async function findTargets() {
-  const targets = new Map();
+  const targets = new Map([[join(ROOT, 'public/og.png'), { url: `${ORIGIN}/`, ...OG }]]);
   for (const entry of await readdir(PROJECTS, { recursive: true })) {
     if (!entry.endsWith('.md')) continue;
     const file = join(PROJECTS, entry);
@@ -38,7 +42,7 @@ async function findTargets() {
     if (!cover || !capture) continue;
     // Languages share one cover, so capture each image once.
     const out = resolve(dirname(file), cover);
-    targets.set(out, capture.startsWith('/') ? ORIGIN + capture : capture);
+    targets.set(out, { url: capture.startsWith('/') ? ORIGIN + capture : capture, ...COVER });
   }
   return targets;
 }
@@ -69,7 +73,8 @@ async function startServer() {
  * screenshot is worth committing.
  */
 async function pixelDiff(page, a, b) {
-  const toDataUrl = (buf) => `data:image/jpeg;base64,${buf.toString('base64')}`;
+  const type = (buf) => (buf[0] === 0x89 ? 'png' : 'jpeg');
+  const toDataUrl = (buf) => `data:image/${type(buf)};base64,${buf.toString('base64')}`;
   return page.evaluate(
     async ([a, b]) => {
       const load = async (src) => {
@@ -125,7 +130,7 @@ try {
   const scratch = await browser.newPage();
   await scratch.setContent('<body style="margin:0;background:#f6f5f3"></body>');
   for (const out of targets.keys()) {
-    if (await access(out).then(() => false, () => true)) {
+    if (out.endsWith('.jpg') && (await access(out).then(() => false, () => true))) {
       await scratch.screenshot({ path: out, type: 'jpeg', quality: 85 });
     }
   }
@@ -133,24 +138,27 @@ try {
   const build = spawnSync(process.execPath, [ASTRO, 'build'], { cwd: ROOT, stdio: 'inherit' });
   if (build.status !== 0) throw new Error('astro build failed');
 
-  if ([...targets.values()].some((url) => url.startsWith(ORIGIN))) {
+  if ([...targets.values()].some(({ url }) => url.startsWith(ORIGIN))) {
     server = await startServer();
   }
 
-  const context = await browser.newContext({
-    viewport: { width: 1440, height: 900 },
-    deviceScaleFactor: 4 / 3,
-    colorScheme: 'light',
-    reducedMotion: 'reduce'
-  });
-  const page = await context.newPage();
-
-  for (const [out, url] of targets) {
+  for (const [out, { url, width, height, scale }] of targets) {
+    // Reduced motion also skips the JM/OS boot screen.
+    const context = await browser.newContext({
+      viewport: { width, height },
+      deviceScaleFactor: scale,
+      colorScheme: 'light',
+      reducedMotion: 'reduce'
+    });
+    const page = await context.newPage();
+    // Freeze time so the JM/OS menu-bar clock doesn't change every capture.
+    await page.clock.setFixedTime(new Date('2026-09-25T09:41:00'));
     // Keep the current cover when the page is down; an error page is not a
     // preview. `::warning::` surfaces the skip in the GitHub Actions summary.
     const response = await page.goto(url, { waitUntil: 'networkidle' });
     if (!response?.ok()) {
       console.log(`::warning::Skipped ${url}: HTTP ${response?.status() ?? 'no response'}`);
+      await context.close();
       continue;
     }
     // Wait for fonts and for images visible in the viewport. Hidden or
@@ -170,6 +178,7 @@ try {
     const shot = await page.screenshot(jpeg ? { type: 'jpeg', quality: 85 } : {});
     const previous = await readFile(out).catch(() => null);
     const diff = previous ? await pixelDiff(scratch, previous, shot) : 1;
+    await context.close();
     if (diff < 0.001) {
       console.log(`${url} unchanged (${(diff * 100).toFixed(3)}% of pixels differ)`);
       continue;

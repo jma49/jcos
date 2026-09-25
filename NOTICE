@@ -1,0 +1,18 @@
+Third-party assets
+
+The JM/OS desktop at /os uses assets copied from ryOS
+(https://github.com/ryokun6/ryos), which is distributed under the
+GNU Affero General Public License v3.0:
+
+  public/os/icons/*        Mac OS X–style icons (from public/icons/macosx)
+  public/os/fonts/*        Lucida Grande, Apple Garamond and Monaco font files
+  src/assets/os/stones.jpg Desktop wallpaper (from public/wallpapers/photos/nature)
+
+These assets reproduce Apple's Mac OS X look. Apple, Mac, Mac OS, Aqua,
+Lucida Grande, Monaco and the Apple logo are trademarks of Apple Inc.,
+and the icons, wallpaper and typefaces remain the property of their
+respective owners. This site is not affiliated with or endorsed by Apple
+Inc. or by ryOS.
+
+The JM/OS source code (src/os) is original work; its architecture takes
+ideas from ryOS but copies none of its code.
