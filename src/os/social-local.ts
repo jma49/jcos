@@ -3,9 +3,38 @@
 // presence goes between tabs of this browser over a BroadcastChannel. The
 // whole browser counts as one visitor, so it gets one note.
 
-import { AlreadyPostedError, type Note, type Social, type VisitorInfo } from './social';
+import { AlreadyPostedError, type Note, type Post, type Reaction, type Social, type VisitorInfo } from './social';
 
 const NOTES_KEY = 'os-dev-notes';
+const REACTIONS_KEY = 'os-dev-reactions';
+
+/** Stand-in Soapbox posts; the real ones come from the Telegram bot. */
+const SAMPLE_POSTS: Omit<Post, 'reactions'>[] = [
+  {
+    id: 'sample-3',
+    body: 'Sent a V6 today after three weeks on it. The trick was trusting the left heel hook.',
+    kind: 'note',
+    place: 'San Jose',
+    weather: '☀️ 74°F',
+    created_at: '2026-09-24T02:10:00Z'
+  },
+  {
+    id: 'sample-2',
+    body: 'Flaky test of the week: passes locally, fails in CI, and only on Tuesdays. Time zones. It is always time zones.',
+    kind: 'rant',
+    place: 'San Jose',
+    weather: '⛅ 68°F',
+    created_at: '2026-09-22T18:40:00Z'
+  },
+  {
+    id: 'sample-1',
+    body: 'Rebuilt my portfolio as a fake Mac OS X desktop. No regrets.\nOkay, a few regrets about CSS gradients.',
+    kind: 'note',
+    place: 'San Jose',
+    weather: '🌫️ 61°F',
+    created_at: '2026-09-20T05:15:00Z'
+  }
+];
 const HEARTBEAT = 2000;
 const EXPIRE = 5000;
 
@@ -28,6 +57,17 @@ export function localSocial(): Social {
       if (notes.length > 0) throw new AlreadyPostedError();
       notes.push({ ...note, id: crypto.randomUUID(), created_at: new Date().toISOString() });
       localStorage.setItem(NOTES_KEY, JSON.stringify(notes));
+    },
+
+    async listPosts() {
+      const mine: Record<string, Reaction> = JSON.parse(localStorage.getItem(REACTIONS_KEY) ?? '{}');
+      return SAMPLE_POSTS.map((p) => ({ ...p, reactions: mine[p.id] ? { [mine[p.id]]: 1 } : {} }));
+    },
+
+    async react(postId, reaction) {
+      const mine: Record<string, Reaction> = JSON.parse(localStorage.getItem(REACTIONS_KEY) ?? '{}');
+      if (mine[postId]) throw new AlreadyPostedError();
+      localStorage.setItem(REACTIONS_KEY, JSON.stringify({ ...mine, [postId]: reaction }));
     },
 
     joinPresence(info, { onVisitors, onCursor, onLeave }) {

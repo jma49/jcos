@@ -7,6 +7,7 @@ import {
   PreferencesIcon,
   ProjectIcon,
   ResumeIcon,
+  SoapboxIcon,
   StickiesIcon,
   TerminalIcon
 } from './icons';
@@ -101,6 +102,15 @@ export const apps: Record<AppId, AppDefinition> = {
     minHeight: 320,
     Component: lazy(() => import('./apps/Stickies'))
   },
+  soapbox: {
+    name: 'Soapbox',
+    Icon: SoapboxIcon,
+    width: 560,
+    height: 600,
+    minWidth: 360,
+    minHeight: 300,
+    Component: lazy(() => import('./apps/Soapbox'))
+  },
   preferences: {
     name: 'System Preferences',
     Icon: PreferencesIcon,
@@ -113,7 +123,7 @@ export const apps: Record<AppId, AppDefinition> = {
 };
 
 /** Apps shown in the Dock, left to right. */
-export const dockApps: AppId[] = ['about', 'resume', 'projects', 'photos', 'stickies', 'terminal', 'browser', 'preferences'];
+export const dockApps: AppId[] = ['about', 'resume', 'projects', 'photos', 'stickies', 'soapbox', 'terminal', 'browser', 'preferences'];
 
 /** Dock apps that also appear in the four-slot Dock on phones. */
 export const mobileDockApps: AppId[] = ['projects', 'photos', 'terminal'];

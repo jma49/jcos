@@ -47,6 +47,9 @@ readers, crawlers and visitors without JavaScript.
 - `src/os/social.ts`: Stickies (a guestbook) and presence (who's
   online and from which city, and other visitors' cursors labelled with
   it) on Supabase. See below.
+- `src/os/apps/Soapbox.tsx`: Jincheng's own notes and rants. Posts come
+  from a Telegram bot, `supabase/functions/soapbox-bot` (setup in its
+  README); visitors read them and leave one emoji reaction per post.
 - `src/os/registry.tsx`: every app's name, icon, default and minimum size,
   and lazily imported component. `dockApps` and `mobileDockApps` pick what
   the Dock shows.
