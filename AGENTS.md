@@ -36,7 +36,18 @@ readers, crawlers and visitors without JavaScript.
 - `src/os/apps/Preferences.tsx`: System Preferences: desktop picture,
   screen saver, appearance (light, dark, automatic, or follow the sun
   where the visitor is) and place. Choices live in `localStorage`
-  (`os-wallpaper`, `os-screensaver`, `theme`, `os-place`).
+  (`os-wallpaper`, `os-wallpaper-rotate`, `os-screensaver`, `theme`,
+  `os-place`).
+- The desktop picture changes to another from the same collection each
+  time the visitor leaves the tab and comes back (`Desktop.tsx`,
+  `nextPicture()` in `wallpapers.ts`); a checkbox in System Preferences
+  turns it off.
+- The menu bar is see-through. Its text is white or black depending on
+  how bright the top of the desktop picture is (`topBrightness()` in
+  `accent.ts`, darkened by the sky's layers via `skyDimming()`), shown as
+  `data-backdrop` on `.os-root`. It turns opaque over a zoomed window and
+  on phones while an app is open. The Apple logo is tinted with the
+  accent.
 - `src/os/wallpapers.ts`: desktop pictures besides photos: solid
   colours, SVG/CSS patterns and a dynamic sky that follows the sun and
   weather at the visitor's place. The store keeps a photo URL or
@@ -69,6 +80,17 @@ readers, crawlers and visitors without JavaScript.
 - `src/os/apps/Soapbox.tsx`: Jincheng's own notes and rants. Posts come
   from a Telegram bot, `supabase/functions/soapbox-bot` (setup in its
   README); visitors read them and leave one emoji reaction per post.
+- `src/os/music.ts`, `lyrics.ts`, `apps/IPod.tsx` and `apps/Karaoke.tsx`:
+  the iPod (click wheel, menus, Now Playing with the video and a line of
+  lyrics) and Karaoke (full-window video with lyrics that fill as they're
+  sung). Songs are YouTube videos listed in `src/data/songs.json`, played
+  with the YouTube IFrame API; the app used last owns playback and hands
+  the position over when the other takes it. Lyrics come from lrclib.net,
+  straight from the browser. To add a song, add its video id, title and
+  artist; tune `offset` (ms the lyrics run ahead of the video, negative
+  for videos with an intro) by nudging it in Karaoke with `[`/`]` and
+  adding the tweak it shows to `offset`, and set `lyrics` to an lrclib id if the search picks the wrong entry.
+  Visitors' own timing tweaks live in `os-lyric-offsets`.
 - `src/os/files.ts` and `apps/Finder.tsx`: Macintosh HD, a read-only
   file system built from the content (Applications, Applets, Documents,
   Pictures, Projects), browsed in Finder with icon and list views.
