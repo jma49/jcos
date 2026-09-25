@@ -657,6 +657,12 @@
   right: 1px;
   width: min(260px, 86vw);
   overflow: hidden;
+  /* Over the window's content: only an open drawer takes the pointer. */
+  pointer-events: none;
+}
+
+.os-drawer-slot[data-side='inside'] .os-drawer[data-open] {
+  pointer-events: auto;
 }
 
 .os-drawer-slot[data-side='inside'] .os-drawer {
@@ -682,6 +688,7 @@
     right: 0;
     width: min(300px, 86vw);
     overflow: hidden;
+    pointer-events: none;
   }
 
   .os-drawer,
@@ -695,6 +702,7 @@
 
   .os-drawer-slot[data-side] .os-drawer[data-open] {
     transform: none;
+    pointer-events: auto;
   }
 }
 
