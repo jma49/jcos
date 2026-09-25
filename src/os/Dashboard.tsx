@@ -6,6 +6,7 @@ import { describe as describeWeather, useWeather } from './weather';
 import {
   choosePlace,
   clockTimeZone,
+  distanceKm,
   HOME,
   hoursAhead,
   placeLabel,
@@ -290,7 +291,8 @@ function HomeWidget({ email }: { email: string }) {
   const { now, zone, clock } = useWallClock(1000, HOME.timeZone);
   const offset = hoursAhead(HOME.timeZone, clockTimeZone(place), now);
   const time = now.toLocaleTimeString('en-US', { timeZone: zone, hour: 'numeric', minute: '2-digit' });
-  const here = place?.source === 'ip' && hoursAhead(HOME.timeZone, place.timeZone, now) === 0 && place.region === HOME.region;
+  // Within the Bay Area, roughly.
+  const here = place !== null && place.source !== 'fallback' && distanceKm(place, HOME) < 80;
 
   return (
     <div className="os-widget os-widget-home">

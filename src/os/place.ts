@@ -70,6 +70,15 @@ export function hoursAhead(zone: string, from: string, date = new Date()) {
   return (wall(zone) - wall(from)) / 3_600_000;
 }
 
+/** Distance between two places in kilometres (haversine). */
+export function distanceKm(a: Pick<Place, 'latitude' | 'longitude'>, b: Pick<Place, 'latitude' | 'longitude'>) {
+  const rad = Math.PI / 180;
+  const dLat = (b.latitude - a.latitude) * rad;
+  const dLon = (b.longitude - a.longitude) * rad;
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(a.latitude * rad) * Math.cos(b.latitude * rad) * Math.sin(dLon / 2) ** 2;
+  return 12_742 * Math.asin(Math.sqrt(h));
+}
+
 /** Whether two time zones read the same wall clock right now. */
 export function sameTime(a: string, b: string, date = new Date()) {
   return hoursAhead(a, b, date) === 0;
