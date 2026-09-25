@@ -1,6 +1,7 @@
 // Desktop pictures beyond photos: solid colours, patterns and a dynamic sky.
 // The store keeps one string: a photo's URL (as before), or `color:<id>`,
-// `pattern:<id>` or `dynamic:sky`. backgroundFor() turns it into CSS.
+// `pattern:<id>`, `dynamic:sky` or `dynamic:cover` (the cover of the song
+// that's playing). backgroundFor() turns it into CSS.
 
 import { accentFromPixels, brightness } from './accent';
 import type { Condition } from './weather';
@@ -89,6 +90,7 @@ export const PATTERNS: Pattern[] = [
 ];
 
 export const SKY = 'dynamic:sky';
+export const COVER = 'dynamic:cover';
 
 type Rgb = [number, number, number];
 
@@ -149,8 +151,13 @@ export interface SkyInput {
   condition: Condition;
 }
 
-/** The CSS background for a stored desktop picture (null is the default picture). */
-export function backgroundFor(value: string | null, defaultUrl: string, sky: SkyInput): string {
+/**
+ * The CSS background for a stored desktop picture (null is the default
+ * picture). `cover` is the playing song's cover, for COVER; without one it's
+ * the default picture.
+ */
+export function backgroundFor(value: string | null, defaultUrl: string, sky: SkyInput, cover: string | null = null): string {
+  if (value === COVER) return `url("${cover ?? defaultUrl}") center / cover no-repeat`;
   if (!value) return `url(${defaultUrl}) center / cover no-repeat`;
   if (value.startsWith('color:')) {
     const c = SOLID_COLORS.find((s) => s.id === value.slice(6));
@@ -198,13 +205,13 @@ export function topBrightnessOfGenerated(value: string, sky: SkyInput): number |
 /**
  * The picture to show next when the desktop changes by itself: another one
  * from the collection the current one belongs to. The default picture moves
- * on to the photos; the dynamic sky already changes, so it stays.
+ * on to the photos; the dynamic ones (sky, cover) change anyway, so they stay.
  */
 export function nextPicture(current: string | null, photos: string[]): string | null {
   let pool: string[];
   if (current?.startsWith('color:')) pool = SOLID_COLORS.map((c) => `color:${c.id}`);
   else if (current?.startsWith('pattern:')) pool = PATTERNS.map((p) => `pattern:${p.id}`);
-  else if (current === SKY) return null;
+  else if (current?.startsWith('dynamic:')) return null;
   else pool = photos;
   const others = pool.filter((value) => value !== current);
   return others.length ? others[Math.floor(Math.random() * others.length)] : null;

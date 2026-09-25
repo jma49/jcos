@@ -172,6 +172,13 @@
   transition: background 2s linear;
 }
 
+/* Now Playing: the cover, blurred into a wash of its colours. Overhanging
+   the screen keeps the blur from fading at the edges. */
+.os-wallpaper[data-blur] {
+  inset: -80px;
+  filter: blur(60px) saturate(1.4) brightness(0.82);
+}
+
 :root[data-theme='dark'] .os-wallpaper {
   filter: brightness(0.6);
 }
@@ -421,6 +428,145 @@
 .os-status time {
   padding: 0 6px;
   font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Now playing (menu bar) ---------- */
+
+.os-nowplaying-wrap {
+  position: relative;
+  display: flex;
+  height: 100%;
+}
+
+.os-status .os-nowplaying {
+  min-width: 24px;
+}
+
+.os-nowplaying[aria-expanded='true'] {
+  background: var(--os-select-grad);
+  color: #fff;
+}
+
+/* Three bars, still when paused and bouncing while it plays. */
+.os-nowplaying-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 1.5px;
+  height: 10px;
+}
+
+.os-nowplaying-bars i {
+  width: 2.5px;
+  height: 40%;
+  border-radius: 1px;
+  background: currentColor;
+}
+
+.os-nowplaying-bars i:nth-child(2) {
+  height: 100%;
+}
+
+.os-nowplaying-bars i:nth-child(3) {
+  height: 65%;
+}
+
+.os-nowplaying[data-playing] .os-nowplaying-bars i {
+  animation: os-eq 0.9s ease-in-out infinite alternate;
+}
+
+.os-nowplaying[data-playing] .os-nowplaying-bars i:nth-child(2) {
+  animation-duration: 0.7s;
+  animation-delay: -0.3s;
+}
+
+.os-nowplaying[data-playing] .os-nowplaying-bars i:nth-child(3) {
+  animation-duration: 1.1s;
+  animation-delay: -0.6s;
+}
+
+@keyframes os-eq {
+  from {
+    height: 20%;
+  }
+  to {
+    height: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .os-nowplaying[data-playing] .os-nowplaying-bars i {
+    animation: none;
+  }
+}
+
+.os-nowplaying-card {
+  right: 0;
+  left: auto;
+  width: 260px;
+  min-width: 0;
+  padding: 12px;
+  display: grid;
+  gap: 10px;
+}
+
+.os-nowplaying-song {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.os-nowplaying-song img {
+  flex: none;
+  width: 56px;
+  height: 56px;
+  border-radius: 4px;
+  object-fit: cover;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.12), 0 3px 8px rgba(0, 0, 0, 0.25);
+}
+
+.os-nowplaying-song span {
+  min-width: 0;
+  display: grid;
+  white-space: nowrap;
+}
+
+.os-nowplaying-song strong,
+.os-nowplaying-song small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.os-nowplaying-song small {
+  color: var(--os-dim);
+  font-size: 11px;
+}
+
+.os-nowplaying-controls {
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+}
+
+.os-menubar .os-nowplaying-card button {
+  width: auto;
+  height: auto;
+  min-width: 0;
+  display: grid;
+  place-items: center;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 15px;
+}
+
+.os-menubar .os-nowplaying-card button:hover {
+  background: rgba(0, 0, 0, 0.07);
+  color: inherit;
+}
+
+.os-menubar .os-nowplaying-card .os-nowplaying-open {
+  justify-self: center;
+  color: var(--os-accent);
+  font-size: 12px;
 }
 
 /* ---------- Desktop icons ---------- */
@@ -4393,11 +4539,107 @@
   white-space: nowrap;
 }
 
-.os-ipod-menu li > span:first-child {
+/* The label (the one span without a class) takes the room. */
+.os-ipod-menu li > span:not([class]) {
   flex: 1;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* Albums: a cover and two lines per row. */
+.os-ipod-menu li[data-tall] {
+  height: 34px;
+  padding-left: 4px;
+}
+
+.os-ipod-thumb {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 2px;
+  object-fit: cover;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.18);
+}
+
+.os-ipod-two {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  line-height: 1.15;
+}
+
+.os-ipod-two > span,
+.os-ipod-two small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.os-ipod-two small {
+  color: #6b7480;
+  font-size: 10px;
+  font-weight: 400;
+}
+
+.os-ipod-menu li[aria-selected='true'] .os-ipod-two small,
+.os-ipod-menu li[aria-selected='true'] .os-ipod-number {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.os-ipod-number {
+  flex: none;
+  min-width: 14px;
+  color: #7a8390;
+  font-size: 10px;
+  font-weight: 400;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* The top of an album's page: its cover and what it is, above the tracks. */
+.os-ipod-menu li.os-ipod-album {
+  height: 74px;
+  gap: 8px;
+  padding: 7px;
+  align-items: center;
+  border-bottom: 1px solid #c6ccd3;
+  background: linear-gradient(#ffffff, #eef1f4);
+}
+
+.os-ipod-album img {
+  flex: none;
+  width: 60px;
+  height: 60px;
+  border-radius: 2px;
+  object-fit: cover;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+}
+
+.os-ipod-album div {
+  min-width: 0;
+  display: grid;
+  gap: 1px;
+  white-space: normal;
+}
+
+.os-ipod-album strong {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  font-size: 11px;
+  line-height: 1.2;
+}
+
+.os-ipod-album span {
+  font-size: 10px;
+  font-weight: 400;
+}
+
+.os-ipod-album small {
+  color: #6b7480;
+  font-size: 9px;
+  font-weight: 400;
 }
 
 .os-ipod-value {
@@ -4426,6 +4668,22 @@
 .os-ipod-info {
   display: grid;
   min-width: 0;
+}
+
+.os-ipod-info p {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin: 0;
+  min-width: 0;
+}
+
+.os-ipod-info small {
+  flex: none;
+  margin-left: auto;
+  color: #5b6470;
+  font-size: 9px;
+  font-variant-numeric: tabular-nums;
 }
 
 .os-ipod-info strong,
@@ -4702,6 +4960,117 @@
   text-indent: 4px;
 }
 
+/* Nothing to sing: the cover, blurred, fills the window. */
+.os-karaoke-backdrop {
+  position: absolute;
+  inset: -12%;
+  background: center / cover no-repeat;
+  filter: blur(46px) saturate(1.25) brightness(0.8);
+  opacity: 0;
+  transition: opacity 0.8s ease;
+}
+
+.os-karaoke-backdrop[data-show] {
+  opacity: 1;
+}
+
+.os-karaoke-listen {
+  width: min(100%, 760px);
+  display: flex;
+  align-items: center;
+  gap: clamp(18px, 5cqw, 48px);
+  text-align: left;
+  animation: os-karaoke-rise 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.os-karaoke-cover {
+  flex: none;
+  width: clamp(120px, 42cqh, 320px);
+  aspect-ratio: 1;
+  border-radius: 6px;
+  object-fit: cover;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12), 0 24px 60px rgba(0, 0, 0, 0.55), 0 6px 16px rgba(0, 0, 0, 0.35);
+  -webkit-box-reflect: below 2px linear-gradient(transparent 72%, rgba(255, 255, 255, 0.18));
+}
+
+.os-karaoke-about {
+  min-width: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.os-karaoke-about p,
+.os-karaoke-about h2 {
+  margin: 0;
+}
+
+.os-karaoke-eyebrow {
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.os-karaoke-about h2 {
+  font-family: var(--os-display);
+  font-size: clamp(28px, 6.4cqw, 64px);
+  font-weight: 400;
+  line-height: 1.02;
+  letter-spacing: -0.01em;
+  overflow-wrap: anywhere;
+}
+
+.os-karaoke-by {
+  color: rgba(255, 255, 255, 0.82);
+  font-size: clamp(13px, 1.9cqw, 16px);
+}
+
+.os-karaoke-blurb {
+  max-width: 44ch;
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.os-karaoke-next {
+  margin-top: 10px !important;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.16);
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 12px;
+}
+
+.os-karaoke-about .os-karaoke-note {
+  color: rgba(255, 255, 255, 0.62);
+}
+
+@keyframes os-karaoke-rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .os-karaoke-listen {
+    animation: none;
+  }
+}
+
+/* Narrow windows: cover above, words below. */
+@container (max-width: 520px) {
+  .os-karaoke-listen {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .os-karaoke-cover {
+    width: clamp(110px, 34cqh, 220px);
+    -webkit-box-reflect: unset;
+  }
+}
+
 .os-karaoke-bar {
   position: absolute;
   left: 10px;
@@ -4776,6 +5145,10 @@
   align-items: center;
 }
 
+.os-karaoke-offset[hidden] {
+  display: none;
+}
+
 .os-karaoke-offset span {
   min-width: 42px;
   font-size: 11px;
@@ -4790,7 +5163,7 @@
   bottom: 62px;
   width: min(340px, calc(100% - 20px));
   max-height: calc(100% - 80px);
-  overflow: auto;
+  overflow: hidden auto;
   padding: 6px;
   border-radius: 12px;
   background: rgba(24, 24, 26, 0.82);
@@ -4809,6 +5182,10 @@
   box-shadow: none;
 }
 
+.os-karaoke-picker::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
 .os-karaoke-picker::-webkit-scrollbar-thumb {
   border: 2px solid transparent;
   background: rgba(255, 255, 255, 0.3) padding-box;
@@ -4821,7 +5198,80 @@
   list-style: none;
 }
 
-.os-root .os-karaoke-picker button {
+.os-karaoke-picker section + section {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.os-karaoke-picker h3 {
+  margin: 4px 6px 4px;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* A whole album: its cover and a Play button, then numbered tracks. */
+.os-karaoke-album {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px;
+}
+
+.os-karaoke-album img {
+  flex: none;
+  width: 52px;
+  height: 52px;
+  border-radius: 4px;
+  object-fit: cover;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.os-karaoke-album span {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+}
+
+.os-karaoke-album strong,
+.os-karaoke-album small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.os-karaoke-album small {
+  opacity: 0.65;
+  font-size: 11px;
+}
+
+.os-root .os-karaoke-album button {
+  flex: none;
+  padding: 4px 12px;
+  border-radius: 12px;
+  background: var(--os-gel);
+  box-shadow: inset 0 0 0 1px var(--os-accent-rim);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.os-root .os-karaoke-picker ul[data-album] button {
+  padding: 3px 6px;
+}
+
+.os-karaoke-track {
+  flex: none;
+  width: 22px;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 11px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.os-root .os-karaoke-picker li button {
   width: 100%;
   display: flex;
   align-items: center;
@@ -4831,19 +5281,19 @@
   text-align: left;
 }
 
-.os-root .os-karaoke-picker button:hover {
+.os-root .os-karaoke-picker li button:hover {
   background: rgba(255, 255, 255, 0.1);
 }
 
-.os-root .os-karaoke-picker button[aria-current='true'] {
+.os-root .os-karaoke-picker li button[aria-current='true'] {
   background: color-mix(in srgb, var(--os-accent) 65%, transparent);
 }
 
-.os-karaoke-picker img {
+.os-karaoke-picker li img {
   flex: none;
-  width: 64px;
+  width: 36px;
   height: 36px;
-  border-radius: 4px;
+  border-radius: 3px;
   object-fit: cover;
 }
 

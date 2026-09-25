@@ -1,17 +1,272 @@
-[
-  { "id": "QLHMhVonF-s", "title": "黄昏のBAY CITY", "artist": "八神純子", "offset": 150 },
-  { "id": "SNq4zqTN_DQ", "title": "Last Summer Whisper", "artist": "Anri", "offset": 450 },
-  { "id": "XJWqHmY-g9U", "title": "Telephone Number", "artist": "大橋純子", "offset": 1000 },
-  { "id": "TkmfOyuGSdQ", "title": "OH NO, OH YES!", "artist": "中森明菜", "offset": 500 },
-  { "id": "bX33UI9ZPLk", "title": "黑色毛衣", "artist": "周杰倫", "offset": 3750 },
-  { "id": "D3IDK_R1LTg", "title": "Every Heart -ミンナノキモチ-", "artist": "BoA", "offset": -5000 },
-  { "id": "RNBiaZbFGII", "title": "come again", "artist": "m-flo", "offset": -6800 },
-  { "id": "Dlz_XHeUUis", "title": "White Ferrari", "artist": "Frank Ocean", "offset": 850 },
-  { "id": "BME88lS6aVY", "title": "Self Control", "artist": "Frank Ocean", "offset": 650 },
-  { "id": "jG6RnLVX07I", "title": "Hold On", "artist": "The Internet", "offset": -850 },
-  { "id": "fXivMSJm_kA", "title": "YUKON", "artist": "Justin Bieber", "offset": 650 },
-  { "id": "kKsivrgoyDw", "title": "Cool with You", "artist": "NewJeans", "offset": 500 },
-  { "id": "4j7Umwfx60Q", "title": "4 Walls", "artist": "f(x)", "offset": 450 },
-  { "id": "jWQx2f-CErU", "title": "Whiplash", "artist": "aespa", "offset": 500 },
-  { "id": "QiYOkmrI1jg", "title": "IYKYK", "artist": "XG", "offset": 500 }
-]
+{
+  "albums": [
+    {
+      "title": "BTTB -20th Anniversary Edition-",
+      "artist": "Ryuichi Sakamoto",
+      "year": 2018,
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/6e/8d/82/6e8d82ee-ee42-9020-51ed-daa71ea624ad/881036000154_cover.jpg/600x600bb.jpg",
+      "note": "Back to the basics: solo piano, first released in 1998. The 20th anniversary edition gathers the original album, “snake eyes” and “tong poo” from the 1999 reissue, “reversing” from the international edition and “energy flow”."
+    }
+  ],
+  "songs": [
+    {
+      "id": "OxtZF0WGXtE",
+      "title": "寧夏",
+      "artist": "梁靜茹",
+      "album": "燕尾蝶",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/83/c1/66/83c1665d-af9a-ae17-769a-8995018e143f/dj.nbokcidv.jpg/600x600bb.jpg"
+    },
+    {
+      "id": "QLHMhVonF-s",
+      "title": "黄昏のBAY CITY",
+      "artist": "八神純子",
+      "album": "Full Moon",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music/y2005/m07/d13/h06/s07.usbmmjal.tif/600x600bb.jpg",
+      "offset": 150
+    },
+    {
+      "id": "TkmfOyuGSdQ",
+      "title": "OH NO, OH YES!",
+      "artist": "中森明菜",
+      "album": "CRIMSON",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music1/v4/93/82/35/93823581-bc38-2d16-8920-7d07c0f1b6c0/825646249701.jpg/600x600bb.jpg",
+      "offset": 500
+    },
+    {
+      "id": "0o-s_8Wt9zc",
+      "title": "寫信給你",
+      "artist": "黃韻玲",
+      "album": "平凡",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/68/db/8e/68db8e27-29d5-0cba-837b-6f9dcf489343/4710149911438_cover.jpg/600x600bb.jpg"
+    },
+    {
+      "id": "bX33UI9ZPLk",
+      "title": "黑色毛衣",
+      "artist": "周杰倫",
+      "album": "11月的蕭邦",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/9e/35/ad/9e35ad1e-749e-75b6-0539-1e80cea1817b/JAY11.jpg/600x600bb.jpg",
+      "offset": 3750
+    },
+    {
+      "id": "RNBiaZbFGII",
+      "title": "come again",
+      "artist": "m-flo",
+      "album": "MF10 - 10th ANNIVERSARY BEST",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music/d8/cc/76/mzi.wmjxzjse.jpg/600x600bb.jpg",
+      "offset": -6800
+    },
+    {
+      "id": "Dlz_XHeUUis",
+      "title": "White Ferrari",
+      "artist": "Frank Ocean",
+      "album": "Blonde",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/bb/45/68/bb4568f3-68cd-619d-fbcb-4e179916545d/BlondCover-Final.jpg/600x600bb.jpg",
+      "offset": 850
+    },
+    {
+      "id": "xGqZ9lsc6Ck",
+      "title": "心動 (2018錄音棚現場版)",
+      "artist": "黃韻玲",
+      "album": "心動 (2018錄音棚現場版)",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music118/v4/16/03/57/1603573b-def7-eecc-503b-31bc1730f14f/4718009857179.jpg/600x600bb.jpg"
+    },
+    {
+      "id": "rwFUxoLq3Ss",
+      "title": "Kiss & Tell",
+      "artist": "陳淑樺",
+      "album": "淑樺盛開",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Features114/v4/ea/e2/1c/eae21cef-7f7e-2a86-4a9e-7c81b5f7b70c/dj.rdpbhefl.jpg/600x600bb.jpg"
+    },
+    {
+      "id": "jG6RnLVX07I",
+      "title": "Hold On",
+      "artist": "The Internet",
+      "album": "Hive Mind",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/a7/9a/2d/a79a2dda-d97d-4225-bd7c-6a8b80715a01/886447110089.jpg/600x600bb.jpg",
+      "offset": -850
+    },
+    {
+      "id": "fXivMSJm_kA",
+      "title": "YUKON",
+      "artist": "Justin Bieber",
+      "album": "SWAG",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/f9/09/36/f9093663-c05f-7f95-0a60-4e95d52fbb22/25UMGIM93915.rgb.jpg/600x600bb.jpg",
+      "offset": 650
+    },
+    {
+      "id": "uUcZHrGnJ54",
+      "title": "三個人的晚餐",
+      "artist": "黃韻玲",
+      "album": "平凡",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/68/db/8e/68db8e27-29d5-0cba-837b-6f9dcf489343/4710149911438_cover.jpg/600x600bb.jpg"
+    },
+    {
+      "id": "kKsivrgoyDw",
+      "title": "Cool with You",
+      "artist": "NewJeans",
+      "album": "Get Up",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/d3/4b/7e/d34b7e1e-af3b-43b6-2949-7a8c652a1bc9/196922462726_Cover.jpg/600x600bb.jpg",
+      "offset": 500
+    },
+    {
+      "id": "jWQx2f-CErU",
+      "title": "Whiplash",
+      "artist": "aespa",
+      "album": "Whiplash",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/d5/c1/f5/d5c1f505-f588-775f-df05-c672a8ec22e9/888735949562_Cover.jpg/600x600bb.jpg",
+      "offset": 500
+    },
+    {
+      "id": "QiYOkmrI1jg",
+      "title": "IYKYK",
+      "artist": "XG",
+      "album": "AWE",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/ae/69/ce/ae69ce7b-6007-c83a-f692-93ebfca55449/ANTCD-A0000014930.jpg/600x600bb.jpg",
+      "offset": 500
+    },
+    {
+      "id": "n59qeMSCAgA",
+      "title": "opus",
+      "artist": "Ryuichi Sakamoto",
+      "album": "BTTB -20th Anniversary Edition-",
+      "track": 1,
+      "instrumental": true
+    },
+    {
+      "id": "qG0moUzt2wY",
+      "title": "sonatine",
+      "artist": "Ryuichi Sakamoto",
+      "album": "BTTB -20th Anniversary Edition-",
+      "track": 2,
+      "instrumental": true
+    },
+    {
+      "id": "mcBuwynaCsY",
+      "title": "intermezzo",
+      "artist": "Ryuichi Sakamoto",
+      "album": "BTTB -20th Anniversary Edition-",
+      "track": 3,
+      "instrumental": true
+    },
+    {
+      "id": "fJKGBLTzHLA",
+      "title": "lorenz and watson",
+      "artist": "Ryuichi Sakamoto",
+      "album": "BTTB -20th Anniversary Edition-",
+      "track": 4,
+      "instrumental": true
+    },
+    {
+      "id": "MtiqsRvASDI",
+      "title": "choral no.1",
+      "artist": "Ryuichi Sakamoto",
+      "album": "BTTB -20th Anniversary Edition-",
+      "track": 5,
+      "instrumental": true
+    },
+    {
+      "id": "IxnyhXJJyls",
+      "title": "choral no.2",
+      "artist": "Ryuichi Sakamoto",
+      "album": "BTTB -20th Anniversary Edition-",
+      "track": 6,
+      "instrumental": true
+    },
+    {
+      "id": "TQ-pIBU5g-E",
+      "title": "do bacteria sleep?",
+      "artist": "Ryuichi Sakamoto",
+      "album": "BTTB -20th Anniversary Edition-",
+      "track": 7,
+      "instrumental": true
+    },
+    {
+      "id": "dod5yASOmfU",
+      "title": "bachata",
+      "artist": "Ryuichi Sakamoto",
+      "album": "BTTB -20th Anniversary Edition-",
+      "track": 8,
+      "instrumental": true
+    },
+    {
+      "id": "-KS71VBbMpg",
+      "title": "chanson",
+      "artist": "Ryuichi Sakamoto",
+      "album": "BTTB -20th Anniversary Edition-",
+      "track": 9,
+      "instrumental": true
+    },
+    {
+      "id": "VtuUg1AcSbA",
+      "title": "distant echo",
+      "artist": "Ryuichi Sakamoto",
+      "album": "BTTB -20th Anniversary Edition-",
+      "track": 10,
+      "instrumental": true
+    },
+    {
+      "id": "K-rsp6m55cQ",
+      "title": "prelude",
+      "artist": "Ryuichi Sakamoto",
+      "album": "BTTB -20th Anniversary Edition-",
+      "track": 11,
+      "instrumental": true
+    },
+    {
+      "id": "59mCjeHk0sc",
+      "title": "sonata",
+      "artist": "Ryuichi Sakamoto",
+      "album": "BTTB -20th Anniversary Edition-",
+      "track": 12,
+      "instrumental": true
+    },
+    {
+      "id": "66HGO2Pl3kk",
+      "title": "uetax",
+      "artist": "Ryuichi Sakamoto",
+      "album": "BTTB -20th Anniversary Edition-",
+      "track": 13,
+      "instrumental": true
+    },
+    {
+      "id": "SJcbMTz2oNw",
+      "title": "aqua",
+      "artist": "Ryuichi Sakamoto",
+      "album": "BTTB -20th Anniversary Edition-",
+      "track": 14,
+      "instrumental": true
+    },
+    {
+      "id": "jHC_yMY9N0I",
+      "title": "energy flow",
+      "artist": "Ryuichi Sakamoto",
+      "album": "BTTB -20th Anniversary Edition-",
+      "track": 15,
+      "instrumental": true
+    },
+    {
+      "id": "H-Tj_pTZ0aM",
+      "title": "snake eyes",
+      "artist": "Ryuichi Sakamoto",
+      "album": "BTTB -20th Anniversary Edition-",
+      "track": 16,
+      "instrumental": true
+    },
+    {
+      "id": "4DIWZ5qi03g",
+      "title": "tong poo",
+      "artist": "Ryuichi Sakamoto",
+      "album": "BTTB -20th Anniversary Edition-",
+      "track": 17,
+      "instrumental": true
+    },
+    {
+      "id": "WKEuD1Ak3iM",
+      "title": "reversing",
+      "artist": "Ryuichi Sakamoto",
+      "album": "BTTB -20th Anniversary Edition-",
+      "track": 18,
+      "instrumental": true
+    }
+  ]
+}

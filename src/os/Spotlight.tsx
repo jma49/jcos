@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type ComponentType } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { apps, dockApps, launch } from './registry';
+import { apps, launch, launcherApps } from './registry';
 import { APPLETS, useInstalledApplets } from './applets';
 import { useWindows } from './store';
 import { useOSData } from './context';
@@ -25,7 +25,7 @@ export function Spotlight() {
 
   const all = useMemo<Result[]>(
     () => [
-      ...dockApps.map((id) => ({
+      ...launcherApps.map((id) => ({
         id,
         label: apps[id].name,
         hint: 'Application',

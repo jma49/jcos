@@ -3,7 +3,9 @@
 // so a search can turn up junk or a different edit of the song: we keep the
 // synced ones with real content and prefer the one whose length matches the
 // video's. A song can pin an entry by id (Song.lyrics) when that still picks
-// wrong.
+// wrong. Songs lrclib doesn't have (older Mandarin ones, mostly) are looked
+// up on NetEase Cloud Music through our own /api/lyrics, since NetEase
+// doesn't answer browsers.
 
 import { useEffect, useState } from 'react';
 import type { Song } from './music';
@@ -69,7 +71,13 @@ function candidates(song: Song): Promise<Candidate[]> {
       if (!found.some((e) => e.syncedLyrics)) {
         found = (await getJson<Entry[]>(`${API}/search?${new URLSearchParams({ q: `${song.artist} ${song.title}` })}`)) ?? [];
       }
-      return found.map(toCandidate).filter((c): c is Candidate => c !== null);
+      const usable = found.map(toCandidate).filter((c): c is Candidate => c !== null);
+      if (usable.length) return usable;
+      const relayed = await getJson<{ duration: number; lrc: string }>(
+        `/api/lyrics?${new URLSearchParams({ title: song.title, artist: song.artist })}`
+      ).catch(() => null);
+      const one = relayed && toCandidate({ id: 0, duration: relayed.duration, syncedLyrics: relayed.lrc });
+      return one ? [one] : [];
     })();
     // A failed lookup can be tried again next time.
     hit.catch(() => cache.delete(song.id));
@@ -85,12 +93,13 @@ function pick(list: Candidate[], duration: number): LyricLine[] | null {
   return [...list].sort((a, b) => Math.abs(a.duration - duration) - Math.abs(b.duration - duration))[0].lines;
 }
 
-export type Lyrics = { state: 'loading' } | { state: 'none' } | { state: 'ready'; lines: LyricLine[] };
+export type Lyrics = { state: 'loading' } | { state: 'none' } | { state: 'instrumental' } | { state: 'ready'; lines: LyricLine[] };
 
 /** The lyrics for a song, given the video's length once it's known (0 before). */
 export function useLyrics(song: Song, duration: number): Lyrics {
   const [list, setList] = useState<{ id: string; found: Candidate[] | null } | null>(null);
   useEffect(() => {
+    if (song.instrumental) return;
     let live = true;
     candidates(song).then(
       (found) => live && setList({ id: song.id, found }),
@@ -100,6 +109,7 @@ export function useLyrics(song: Song, duration: number): Lyrics {
       live = false;
     };
   }, [song]);
+  if (song.instrumental) return { state: 'instrumental' };
   if (!list || list.id !== song.id) return { state: 'loading' };
   const lines = list.found && pick(list.found, Math.round(duration));
   return lines ? { state: 'ready', lines } : { state: 'none' };

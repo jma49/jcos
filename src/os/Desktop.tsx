@@ -12,7 +12,8 @@ import { Presence } from './Presence';
 import { AppSwitcher } from './AppSwitcher';
 import { watchWindows } from './sound';
 import { ACCENTS, accentFromPicture, cachedAccent, cachedTopBrightness, DEFAULT_ACCENT, topBrightness } from './accent';
-import { accentForGenerated, backgroundFor, isPicture, nextPicture, SKY, topBrightnessOfGenerated } from './wallpapers';
+import { accentForGenerated, backgroundFor, COVER, isPicture, nextPicture, SKY, topBrightnessOfGenerated } from './wallpapers';
+import { coverOf, SONGS, useMusic } from './music';
 import { OSDataContext } from './context';
 import { apps, launch, rectOf } from './registry';
 import { DiskIcon, DocumentIcon, PhotosIcon } from './icons';
@@ -248,7 +249,14 @@ export default function Desktop({ data }: { data: OSData }) {
   const exposeOpen = useWindows((s) => s.exposeOpen);
   // What's stored: a photo's URL, a generated picture (wallpapers.ts), or null for the default.
   const chosen = useWindows((s) => s.wallpaper);
-  const wallpaper = chosen ?? data.wallpaper;
+  // "Now Playing" shows the cover of the song that's on, blurred.
+  const cover = useMusic((s) => (s.owner ? coverOf(SONGS[s.index]) : null));
+  const showsCover = chosen === COVER && !!cover;
+  const wallpaper = chosen === COVER ? (cover ?? data.wallpaper) : (chosen ?? data.wallpaper);
+  // Photos and covers are sampled for their colours; generated pictures know theirs.
+  const sampled = isPicture(chosen) || chosen === COVER;
+  // The sky's light tints photos, but not the sky itself or a cover.
+  const tinted = chosen !== SKY && chosen !== COVER;
   const focusedId = useFocusedId();
   const sky = useSky();
   const [menuAt, setMenuAt] = useState<{ x: number; y: number } | null>(null);
@@ -273,7 +281,7 @@ export default function Desktop({ data }: { data: OSData }) {
     if (!el) return;
     const apply = (color: string) => el.style.setProperty('--os-accent', color);
     if (accentChoice !== 'auto') return apply(ACCENTS[accentChoice].color);
-    if (!isPicture(chosen)) return apply(accentForGenerated(wallpaper, sky) ?? DEFAULT_ACCENT);
+    if (!sampled) return apply(accentForGenerated(wallpaper, sky) ?? DEFAULT_ACCENT);
     let live = true;
     const known = cachedAccent(wallpaper);
     if (known) return apply(known);
@@ -289,10 +297,10 @@ export default function Desktop({ data }: { data: OSData }) {
 
   // The menu bar is see-through, so its text follows what's behind it: how
   // bright the top of the picture is, darkened by the sky's tint and gloom.
-  const generatedTop = isPicture(chosen) ? null : topBrightnessOfGenerated(wallpaper, sky);
+  const generatedTop = sampled ? null : topBrightnessOfGenerated(wallpaper, sky);
   const [pictureTop, setPictureTop] = useState<number | null>(() => cachedTopBrightness(wallpaper));
   useEffect(() => {
-    if (!isPicture(chosen)) return;
+    if (!sampled) return;
     let live = true;
     const known = cachedTopBrightness(wallpaper);
     if (known !== null) return setPictureTop(known);
@@ -303,8 +311,8 @@ export default function Desktop({ data }: { data: OSData }) {
     return () => {
       live = false;
     };
-  }, [wallpaper, chosen]);
-  const top = (generatedTop ?? pictureTop ?? 0.4) * skyDimming(sky, chosen !== SKY);
+  }, [wallpaper, sampled]);
+  const top = (generatedTop ?? pictureTop ?? 0.4) * skyDimming(sky, tinted);
   const backdrop = top < 0.6 ? 'dark' : 'light';
 
   // Leave the tab and come back to a new desktop picture. The next one is
@@ -425,14 +433,15 @@ export default function Desktop({ data }: { data: OSData }) {
             key={wallpaper}
             className="os-wallpaper"
             aria-hidden="true"
-            style={{ background: backgroundFor(chosen, data.wallpaper, sky) }}
+            data-blur={showsCover || undefined}
+            style={{ background: backgroundFor(chosen, data.wallpaper, sky, cover) }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0, transition: { delay: 0.8 } }}
             transition={{ duration: 0.8 }}
           />
         </AnimatePresence>
-        <Sky sky={sky} tinted={chosen !== SKY} />
+        <Sky sky={sky} tinted={tinted} />
         <MenuBar sky={sky} />
         <DesktopIcons data={data} />
         <Expose layout={layout} />
