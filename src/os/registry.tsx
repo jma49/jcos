@@ -30,6 +30,8 @@ export interface AppDefinition {
   height: number;
   minWidth: number;
   minHeight: number;
+  /** Brushed metal instead of pinstripes, as Tiger's Finder, Safari and iTunes had. */
+  material?: 'metal';
   /** Loaded on first open, so the desktop itself stays small. */
   Component: LazyExoticComponent<ComponentType<AppProps>>;
 }
@@ -72,6 +74,7 @@ export const apps: Record<AppId, AppDefinition> = {
     Component: lazy(() => import('./apps/ProjectDetail'))
   },
   browser: {
+    material: 'metal',
     name: 'Browser',
     Icon: BrowserIcon,
     width: 1040,
@@ -90,6 +93,7 @@ export const apps: Record<AppId, AppDefinition> = {
     Component: lazy(() => import('./apps/Terminal'))
   },
   photos: {
+    material: 'metal',
     name: 'Photos',
     Icon: PhotosIcon,
     width: 1000,
@@ -117,6 +121,7 @@ export const apps: Record<AppId, AppDefinition> = {
     Component: lazy(() => import('./apps/Soapbox'))
   },
   finder: {
+    material: 'metal',
     name: 'Finder',
     Icon: DiskIcon,
     width: 760,
@@ -135,6 +140,7 @@ export const apps: Record<AppId, AppDefinition> = {
     Component: lazy(() => import('./apps/AppletStore'))
   },
   calculator: {
+    material: 'metal',
     name: 'Calculator',
     Icon: CalculatorIcon,
     width: 250,

@@ -52,6 +52,13 @@
   --os-shadow: 0 0 0 1px rgba(0, 0, 0, 0.28), 0 16px 42px rgba(0, 0, 0, 0.5);
   --os-shadow-quiet: 0 0 0 1px rgba(0, 0, 0, 0.2), 0 8px 22px rgba(0, 0, 0, 0.28);
 
+  /* Aqua pinstripes: 4px bands of white over the window grey. Layer them over a colour. */
+  --os-pinstripe: repeating-linear-gradient(0deg, transparent 0 1.5px, rgba(255, 255, 255, 0.62) 1.5px 4px);
+  --os-pinstripe-soft: repeating-linear-gradient(0deg, transparent 0 1.5px, rgba(255, 255, 255, 0.3) 1.5px 4px);
+  /* Brushed aluminium: fine horizontal grain (SVG noise stretched sideways) over a light-to-mid grey. */
+  --os-metal-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1600' height='240'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.0012 0.9' numOctaves='3' seed='7' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0.33 0.33 0.33 0 0 0.33 0.33 0.33 0 0 0.33 0.33 0.33 0 0 0 0 0 0 1'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)' opacity='0.4'/%3E%3C/svg%3E");
+  --os-metal: var(--os-metal-grain), linear-gradient(#e8e8e8, #c9c9c9 38%, #b9b9b9);
+
   position: fixed;
   inset: 0;
   overflow: hidden;
@@ -79,6 +86,9 @@
   --os-menu-bg: rgba(44, 44, 44, 0.96);
   --os-bar-top: rgba(60, 60, 60, 0.86);
   --os-bar-bottom: rgba(40, 40, 40, 0.86);
+  --os-pinstripe: repeating-linear-gradient(0deg, transparent 0 1.5px, rgba(255, 255, 255, 0.028) 1.5px 4px);
+  --os-pinstripe-soft: repeating-linear-gradient(0deg, transparent 0 1.5px, rgba(255, 255, 255, 0.02) 1.5px 4px);
+  --os-metal: var(--os-metal-grain), linear-gradient(#5b5b5b, #474747 38%, #3d3d3d);
 }
 
 /* Zero-specificity resets, so every component class below wins. */
@@ -228,7 +238,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 0 8px 0 4px;
-  background: linear-gradient(var(--os-bar-top), var(--os-bar-bottom));
+  background: var(--os-pinstripe-soft), linear-gradient(var(--os-bar-top), var(--os-bar-bottom));
   backdrop-filter: blur(18px) saturate(1.3);
   -webkit-backdrop-filter: blur(18px) saturate(1.3);
   box-shadow: 0 1px 0 rgba(0, 0, 0, 0.32), 0 2px 6px rgba(0, 0, 0, 0.15);
@@ -284,7 +294,7 @@
   padding: 4px 0;
   margin: 0;
   list-style: none;
-  background: var(--os-menu-bg);
+  background: var(--os-pinstripe-soft), var(--os-menu-bg);
   border-radius: 0 0 5px 5px;
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.18), 0 10px 26px rgba(0, 0, 0, 0.35);
 }
@@ -406,7 +416,7 @@
   display: flex;
   flex-direction: column;
   border-radius: 6px 6px 4px 4px;
-  background: var(--os-window);
+  background: var(--os-pinstripe), var(--os-window);
   box-shadow: var(--os-shadow-quiet);
   overflow: hidden;
   transform-origin: center;
@@ -424,6 +434,95 @@
   box-shadow: var(--os-shadow);
 }
 
+/* ---------- Brushed metal windows ---------- */
+
+.os-window[data-material='metal'] {
+  background: var(--os-metal);
+  border-radius: 8px;
+}
+
+/* One continuous sheet of metal: title bar and toolbar are part of it. */
+.os-window[data-material='metal'] .os-titlebar,
+.os-window[data-material='metal'] .os-toolbar {
+  background: transparent;
+  border-bottom: 0;
+  box-shadow: none;
+}
+
+.os-window[data-material='metal'] .os-titlebar {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75);
+}
+
+.os-window[data-material='metal'] .os-title,
+.os-window[data-material='metal'] .os-toolbar-meta {
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+/* Background metal windows go pale, like Tiger's. */
+.os-window[data-material='metal'][data-focused='false'] {
+  background: var(--os-metal-grain), linear-gradient(#f0f0f0, #dcdcdc 38%, #d2d2d2);
+}
+
+:root[data-theme='dark'] .os-window[data-material='metal'] .os-title,
+:root[data-theme='dark'] .os-window[data-material='metal'] .os-toolbar-meta {
+  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.5);
+}
+
+:root[data-theme='dark'] .os-window[data-material='metal'][data-focused='false'] {
+  background: var(--os-metal-grain), linear-gradient(#4a4a4a, #3e3e3e);
+}
+
+/* Content sits in panes set into the metal. */
+.os-window[data-material='metal'] .os-finder {
+  gap: 6px;
+  padding: 0 7px 7px;
+  background: transparent;
+}
+
+.os-window[data-material='metal'] .os-finder .os-sidebar,
+.os-window[data-material='metal'] .os-finder .os-finder-main,
+.os-window[data-material='metal'] .os-browser iframe,
+.os-window[data-material='metal'] .os-photo-stage {
+  border-radius: 4px;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.45), inset 0 1px 2px rgba(0, 0, 0, 0.2), 0 1px 0 rgba(255, 255, 255, 0.5);
+  overflow: hidden;
+}
+
+.os-window[data-material='metal'] .os-finder .os-sidebar {
+  border-right: 0;
+}
+
+/* Finder's toolbar spans both panes, on the metal. */
+.os-finder-app > .os-finder {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+}
+
+.os-window[data-material='metal'] .os-browser iframe {
+  width: auto;
+  margin: 0 7px 7px;
+}
+
+.os-window[data-material='metal'] .os-photo-viewer {
+  background: transparent;
+}
+
+.os-window[data-material='metal'] .os-photo-stage {
+  margin: 0 7px 7px;
+  background: #1a1a1a;
+}
+
+/* Apps that take keys themselves focus their root; no ring around the whole window. */
+.os-root .os-calc:focus-visible,
+.os-root .os-tiles:focus-visible {
+  outline: none;
+}
+
+.os-window[data-material='metal'] .os-calc {
+  background: transparent;
+}
+
 .os-titlebar {
   position: relative;
   flex: none;
@@ -431,13 +530,13 @@
   display: grid;
   place-items: center;
   padding: 0 78px;
-  background: linear-gradient(var(--os-title-top), var(--os-title-bottom));
+  background: var(--os-pinstripe-soft), linear-gradient(var(--os-title-top), var(--os-title-bottom));
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
   border-bottom: 1px solid #9c9c9c;
 }
 
 .os-window[data-focused='false'] .os-titlebar {
-  background: linear-gradient(var(--os-title-inactive-top), var(--os-title-inactive-bottom));
+  background: var(--os-pinstripe-soft), linear-gradient(var(--os-title-inactive-top), var(--os-title-inactive-bottom));
   border-bottom-color: #c8c8c8;
 }
 
@@ -628,7 +727,7 @@
   gap: 8px;
   padding: 0 10px;
   margin-top: -1px;
-  background: linear-gradient(var(--os-title-bottom), #bdbdbd);
+  background: var(--os-pinstripe-soft), linear-gradient(var(--os-title-bottom), #bdbdbd);
   border-bottom: 1px solid #8e8e8e;
   user-select: none;
 }
@@ -1257,7 +1356,7 @@
   margin: 0;
   padding: 3px 12px;
   border-top: 1px solid var(--os-line-soft);
-  background: var(--os-window);
+  background: var(--os-pinstripe), var(--os-window);
   color: var(--os-dim);
   font-size: 11px;
   text-align: center;
@@ -2066,7 +2165,7 @@
   align-items: center;
   gap: 10px;
   padding: 14px;
-  background: var(--os-window);
+  background: var(--os-pinstripe), var(--os-window);
   outline: none;
 }
 
@@ -2139,7 +2238,7 @@
   align-content: start;
   gap: 10px;
   padding: 16px;
-  background: var(--os-window);
+  background: var(--os-pinstripe), var(--os-window);
 }
 
 .os-mines-board {
@@ -2447,7 +2546,7 @@
 
 .os-prefs-pane {
   padding: 16px 20px 20px;
-  background: var(--os-window);
+  background: var(--os-pinstripe), var(--os-window);
   color: var(--os-ink);
 }
 
