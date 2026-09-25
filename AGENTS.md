@@ -26,6 +26,10 @@ readers, crawlers and visitors without JavaScript.
   don't reload.
 - `src/os/Screensaver.tsx`: a slideshow of the Photos library after two
   idle minutes.
+- `src/os/Sky.tsx` and `weather.ts`: tint the wallpaper with the time of
+  day and weather in San Jose (Open-Meteo). `?sky=dusk,rain` pins both.
+- `src/os/genie.ts`: the displacement map behind the Genie minimize in
+  `Window.tsx`.
 - `src/os/registry.tsx`: every app's name, icon, default and minimum size,
   and lazily imported component. `dockApps` and `mobileDockApps` pick what
   the Dock shows.
