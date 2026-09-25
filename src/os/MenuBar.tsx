@@ -4,6 +4,7 @@ import { MOBILE_BREAKPOINT, useFocusedId, useWindows } from './store';
 import { useOSData } from './context';
 import { SkyStatus, type SkyState } from './Sky';
 import { OnlineStatus } from './Presence';
+import { NowPlaying } from './NowPlaying';
 import { clockTimeZone, HOME, sameTime } from './place';
 import { play } from './sound';
 
@@ -145,6 +146,7 @@ export function MenuBar({ sky }: { sky: SkyState }) {
       </nav>
 
       <div className="os-status">
+        <NowPlaying />
         <SoundToggle />
         <OnlineStatus />
         <SkyStatus sky={sky} onOpen={() => useWindows.getState().setDashboard(true)} />
