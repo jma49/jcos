@@ -29,9 +29,10 @@ readers, crawlers and visitors without JavaScript.
   turn them on (`os-sound` in `localStorage`).
 - `src/os/AppSwitcher.tsx`: ⌥Tab steps through open windows, most
   recent first; releasing ⌥ focuses the chosen one.
-- `src/os/Screensaver.tsx`: Photos (a slideshow of the library),
-  Starfield or Clock, after the idle time chosen in System Preferences
-  (two minutes by default).
+- `src/os/Screensaver.tsx` and `savers.tsx`: Photos (a slideshow of the
+  library), Flurry, Soapbox (the latest posts in large type), Starfield,
+  Clock or Bounce, after the idle time chosen in System Preferences (two
+  minutes by default).
 - `src/os/apps/Preferences.tsx`: System Preferences: desktop picture,
   screen saver, appearance (light, dark, automatic, or follow the sun
   where the visitor is) and place. Choices live in `localStorage`

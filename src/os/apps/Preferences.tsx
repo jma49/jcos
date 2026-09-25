@@ -4,7 +4,7 @@ import type { AppProps } from '../registry';
 import { useWindows, type Appearance } from '../store';
 import { choosePlace, clockTimeZone, HOME, placeLabel, usePlace, usesFahrenheit } from '../place';
 import { PlaceSearch } from '../PlaceSearch';
-import { DriftingClock, SAVER_STYLES, Starfield } from '../Screensaver';
+import { SAVER_STYLES, SAVER_VIEWS } from '../Screensaver';
 import { play } from '../sound';
 import { ACCENTS, cachedAccent, type AccentChoice } from '../accent';
 
@@ -70,9 +70,7 @@ function DesktopPane() {
           </ul>
           <div className="os-prefs-preview">
             <div className="os-prefs-screen">
-              {saver.style === 'starfield' && <Starfield />}
-              {saver.style === 'clock' && <DriftingClock />}
-              {saver.style === 'photos' && data.photos[0] && <img src={data.photos[0].thumb} alt="" />}
+              {saver.style === 'photos' ? data.photos[0] && <img src={data.photos[0].thumb} alt="" /> : SAVER_VIEWS[saver.style]?.()}
             </div>
             <p>{blurb}</p>
             <div className="os-prefs-row">

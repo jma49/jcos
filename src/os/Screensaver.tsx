@@ -5,12 +5,25 @@ import { MOBILE_BREAKPOINT, useWindows, type SaverStyle } from './store';
 import { clockTimeZone, usePlace } from './place';
 import { describe, useWeather } from './weather';
 import type { OSPhoto } from './types';
+import { Bounce, Flurry, SoapboxSaver } from './savers';
 
 export const SAVER_STYLES: { style: SaverStyle; name: string; blurb: string }[] = [
   { style: 'photos', name: 'Photos', blurb: 'A slow pan across Jincheng’s photographs.' },
+  { style: 'flurry', name: 'Flurry', blurb: 'Glowing ribbons of colour, after the Mac OS X classic.' },
+  { style: 'soapbox', name: 'Soapbox', blurb: 'Jincheng’s latest notes and rants, one at a time, like Word of the Day.' },
   { style: 'starfield', name: 'Starfield', blurb: 'Flying through the stars.' },
-  { style: 'clock', name: 'Clock', blurb: 'The time and weather where you are, drifting so nothing burns in.' }
+  { style: 'clock', name: 'Clock', blurb: 'The time and weather where you are, drifting so nothing burns in.' },
+  { style: 'bounce', name: 'Bounce', blurb: 'JM, bouncing off the edges. Wait for it to hit a corner.' }
 ];
+
+/** Every screen saver but Photos, which needs the library; also the previews in System Preferences. */
+export const SAVER_VIEWS: Partial<Record<SaverStyle, () => ReactNode>> = {
+  flurry: () => <Flurry />,
+  soapbox: () => <SoapboxSaver />,
+  starfield: () => <Starfield />,
+  clock: () => <DriftingClock />,
+  bounce: () => <Bounce />
+};
 /** How long each photo stays up. */
 const SLIDE_MS = 8000;
 /** Pointer travel, in pixels, that counts as waking up rather than jitter. */
@@ -74,9 +87,7 @@ export function Screensaver() {
     <AnimatePresence>
       {active && (
         <Saver key={shown} onStop={stop}>
-          {shown === 'photos' && <Slideshow photos={photos} name={name} />}
-          {shown === 'starfield' && <Starfield />}
-          {shown === 'clock' && <DriftingClock />}
+          {shown === 'photos' ? <Slideshow photos={photos} name={name} /> : SAVER_VIEWS[shown]?.()}
         </Saver>
       )}
     </AnimatePresence>

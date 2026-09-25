@@ -20,7 +20,7 @@ export interface OpenOptions {
 
 /** Light, dark, the system's setting, or dark from sunset to sunrise where the visitor is. */
 export type Appearance = 'light' | 'dark' | 'system' | 'sun';
-export type SaverStyle = 'photos' | 'starfield' | 'clock';
+export type SaverStyle = 'photos' | 'flurry' | 'starfield' | 'soapbox' | 'clock' | 'bounce';
 export interface SaverPrefs {
   style: SaverStyle;
   /** Idle minutes before it starts; 0 for never. */
