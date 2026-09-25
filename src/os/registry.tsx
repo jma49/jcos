@@ -7,6 +7,8 @@ import {
   BrowserIcon,
   DiskIcon,
   FolderIcon,
+  IPodIcon,
+  KaraokeIcon,
   MinesweeperIcon,
   PhotosIcon,
   PreferencesIcon,
@@ -167,6 +169,24 @@ export const apps: Record<AppId, AppDefinition> = {
     minHeight: 360,
     Component: lazy(() => import('./apps/Minesweeper'))
   },
+  ipod: {
+    name: 'iPod',
+    Icon: IPodIcon,
+    width: 300,
+    height: 492,
+    minWidth: 300,
+    minHeight: 492,
+    Component: lazy(() => import('./apps/IPod'))
+  },
+  karaoke: {
+    name: 'Karaoke',
+    Icon: KaraokeIcon,
+    width: 760,
+    height: 500,
+    minWidth: 460,
+    minHeight: 320,
+    Component: lazy(() => import('./apps/Karaoke'))
+  },
   preferences: {
     name: 'System Preferences',
     Icon: PreferencesIcon,
@@ -179,7 +199,7 @@ export const apps: Record<AppId, AppDefinition> = {
 };
 
 /** Apps shown in the Dock, left to right. */
-export const dockApps: AppId[] = ['about', 'resume', 'projects', 'photos', 'stickies', 'soapbox', 'terminal', 'browser', 'appstore', 'preferences'];
+export const dockApps: AppId[] = ['about', 'resume', 'projects', 'photos', 'ipod', 'karaoke', 'stickies', 'soapbox', 'terminal', 'browser', 'appstore', 'preferences'];
 
 /** Dock apps that also appear in the four-slot Dock on phones. */
 export const mobileDockApps: AppId[] = ['projects', 'photos', 'terminal'];

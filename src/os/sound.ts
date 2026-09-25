@@ -5,7 +5,7 @@
 
 import { useWindows } from './store';
 
-export type Sound = 'open' | 'close' | 'minimize' | 'restore' | 'click' | 'pop' | 'error' | 'chime' | 'trash';
+export type Sound = 'open' | 'close' | 'minimize' | 'restore' | 'click' | 'tick' | 'pop' | 'error' | 'chime' | 'trash';
 
 let context: AudioContext | null = null;
 
@@ -73,6 +73,10 @@ const RECIPES: Record<Sound, (ctx: AudioContext, out: AudioNode) => void> = {
   },
   click: (ctx, out) => {
     tone(ctx, out, { from: 1800, to: 1200, length: 0.03, type: 'triangle', gain: 0.12 });
+  },
+  tick: (ctx, out) => {
+    // The click wheel's clicker: a very short, dry tick.
+    tone(ctx, out, { from: 3200, to: 2400, length: 0.012, type: 'square', gain: 0.05 });
   },
   pop: (ctx, out) => {
     tone(ctx, out, { from: 420, to: 880, length: 0.09, gain: 0.25 });
