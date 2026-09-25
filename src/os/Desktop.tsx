@@ -14,7 +14,7 @@ import { watchWindows } from './sound';
 import { OSDataContext } from './context';
 import { apps, launch, rectOf } from './registry';
 import { DiskIcon, DocumentIcon, PhotosIcon } from './icons';
-import { MOBILE_BREAKPOINT, useFocusedId, useWindows } from './store';
+import { MENU_BAR_HEIGHT, MOBILE_BREAKPOINT, useFocusedId, useWindows, type IconPositions } from './store';
 import type { AppId, OSData } from './types';
 import './os.css';
 
@@ -46,26 +46,108 @@ function DesktopIcons({ data }: { data: OSData }) {
     { id: 'terminal', label: 'Terminal', Icon: apps.terminal.Icon, open: (el) => openApp('terminal', el) }
   ];
 
+  const positions = useWindows((s) => s.iconPositions);
+  const items = useRef(new Map<string, HTMLLIElement>());
+  // Set while an icon is being dragged, so the click that ends the drag is ignored.
+  const dragged = useRef(false);
+  const [viewport, setViewport] = useState(() => ({ w: window.innerWidth, h: window.innerHeight }));
+  useEffect(() => {
+    const onResize = () => setViewport({ w: window.innerWidth, h: window.innerHeight });
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
+  /** Where every icon is right now, so the whole layout can go free-form at once. */
+  const snapshot = () => {
+    const all: IconPositions = {};
+    for (const [id, el] of items.current) {
+      const r = el.getBoundingClientRect();
+      all[id] = { top: r.top, right: window.innerWidth - r.right };
+    }
+    return all;
+  };
+
+  const startDrag = (id: string, e: React.PointerEvent<HTMLButtonElement>) => {
+    if (e.button !== 0 || e.pointerType === 'touch' || window.innerWidth < MOBILE_BREAKPOINT) return;
+    const el = items.current.get(id);
+    if (!el) return;
+    const start = { x: e.clientX, y: e.clientY };
+    const rect = el.getBoundingClientRect();
+    let layout: IconPositions | null = null;
+    dragged.current = false;
+
+    const onMove = (ev: PointerEvent) => {
+      const dx = ev.clientX - start.x;
+      const dy = ev.clientY - start.y;
+      if (!layout && Math.hypot(dx, dy) < 4) return;
+      layout ??= { ...snapshot(), ...useWindows.getState().iconPositions };
+      dragged.current = true;
+      // Keep the icon on the desktop: below the menu bar, above the Dock.
+      const top = Math.min(window.innerHeight - rect.height - 80, Math.max(MENU_BAR_HEIGHT + 4, rect.top + dy));
+      const right = Math.min(window.innerWidth - rect.width, Math.max(0, window.innerWidth - rect.right - dx));
+      layout = { ...layout, [id]: { top, right } };
+      useWindows.getState().setIconPositions(layout);
+    };
+    const onUp = () => {
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+      window.removeEventListener('pointercancel', onUp);
+    };
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+    window.addEventListener('pointercancel', onUp);
+  };
+
+  // Free-form positions only apply on desktops; phones keep the grid.
+  const free = positions && viewport.w >= MOBILE_BREAKPOINT ? positions : null;
+
   return (
     <ul className="os-desktop-icons" onPointerDown={(e) => e.target === e.currentTarget && setSelected(null)}>
-      {shortcuts.map(({ id, label, Icon, open }) => (
-        <li key={id}>
-          <button
-            type="button"
-            data-selected={selected === id}
-            onClick={(e) => {
-              // Touch has no double-click, so a tap opens right away.
-              if ((e.nativeEvent as PointerEvent).pointerType === 'touch') open(e.currentTarget);
-              else setSelected(id);
+      {shortcuts.map(({ id, label, Icon, open }) => {
+        const at = free?.[id];
+        return (
+          <li
+            key={id}
+            ref={(el) => {
+              if (el) items.current.set(id, el);
+              else items.current.delete(id);
             }}
-            onDoubleClick={(e) => open(e.currentTarget)}
-            onKeyDown={(e) => e.key === 'Enter' && open(e.currentTarget)}
+            className={at ? 'os-desktop-icon-free' : undefined}
+            style={
+              at
+                ? {
+                    // Pulled back on screen if the window has shrunk since.
+                    top: Math.min(at.top, viewport.h - 170),
+                    right: Math.min(at.right, viewport.w - 100)
+                  }
+                : undefined
+            }
           >
-            <Icon size={56} />
-            <span>{label}</span>
-          </button>
-        </li>
-      ))}
+            <button
+              type="button"
+              data-selected={selected === id}
+              onPointerDown={(e) => {
+                setSelected(id);
+                startDrag(id, e);
+              }}
+              onClick={(e) => {
+                if (dragged.current) {
+                  dragged.current = false;
+                  return;
+                }
+                // Touch has no double-click, so a tap opens right away.
+                if ((e.nativeEvent as PointerEvent).pointerType === 'touch') open(e.currentTarget);
+                else setSelected(id);
+              }}
+              onDoubleClick={(e) => open(e.currentTarget)}
+              onKeyDown={(e) => e.key === 'Enter' && open(e.currentTarget)}
+            >
+              <Icon size={56} />
+              <span>{label}</span>
+            </button>
+          </li>
+        );
+      })}
     </ul>
   );
 }
@@ -81,10 +163,12 @@ interface ContextMenuItem {
 /** The menu a right-click on the empty desktop opens. */
 function DesktopMenu({ at, onClose }: { at: { x: number; y: number }; onClose: () => void }) {
   const custom = useWindows((s) => s.wallpaper);
+  const arranged = useWindows((s) => s.iconPositions !== null);
   const s = useWindows.getState();
   const items: ContextMenuItem[] = [
     { label: 'Change Desktop Background…', action: () => launch('preferences', { props: { pane: 'desktop' } }) },
     { label: 'Use Default Desktop Picture', disabled: !custom, action: () => s.setWallpaper(null) },
+    { label: 'Clean Up Icons', disabled: !arranged, action: () => s.setIconPositions(null) },
     { divider: true, label: '' },
     { label: 'Exposé', shortcut: 'F9', action: () => s.setExpose(true) },
     { label: 'Start Screen Saver', action: () => s.setScreensaver(true) }

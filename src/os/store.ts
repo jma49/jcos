@@ -26,6 +26,9 @@ export interface SaverPrefs {
   idle: number;
 }
 
+/** Where a desktop icon was dragged: px from the top and from the right edge. */
+export type IconPositions = Record<string, { top: number; right: number }>;
+
 interface WindowStore {
   windows: Record<string, WindowState>;
   /** Window ids from back to front; the last one is focused. */
@@ -34,6 +37,8 @@ interface WindowStore {
   theme: 'light' | 'dark';
   appearance: Appearance;
   saver: SaverPrefs;
+  /** Desktop icons the visitor has arranged; null for the default column. */
+  iconPositions: IconPositions | null;
   /** Interface sounds (see sound.ts); off by default. */
   soundOn: boolean;
   /** 0 to 1. */
@@ -62,6 +67,7 @@ interface WindowStore {
   /** Shows a theme without changing the preference; for `system` and `sun`. */
   applyTheme: (theme: 'light' | 'dark') => void;
   setSaver: (saver: Partial<SaverPrefs>) => void;
+  setIconPositions: (positions: IconPositions | null) => void;
   setSound: (on: boolean) => void;
   setVolume: (volume: number) => void;
   setSpotlight: (open: boolean) => void;
@@ -78,6 +84,15 @@ const WALLPAPER_KEY = 'os-wallpaper';
 const APPEARANCE_KEY = 'theme';
 const SAVER_KEY = 'os-screensaver';
 const SOUND_KEY = 'os-sound';
+const ICONS_KEY = 'os-icon-positions';
+
+function savedIconPositions(): IconPositions | null {
+  try {
+    return JSON.parse(read(ICONS_KEY) ?? 'null');
+  } catch {
+    return null;
+  }
+}
 
 function read(key: string) {
   try {
@@ -149,6 +164,7 @@ export const useWindows = create<WindowStore>((set, get) => ({
   appearance: typeof window === 'undefined' ? 'system' : savedAppearance(),
   saver: typeof window === 'undefined' ? { style: 'photos', idle: 2 } : savedSaver(),
   ...(typeof window === 'undefined' ? { soundOn: false, volume: 0.6 } : savedSound()),
+  iconPositions: typeof window === 'undefined' ? null : savedIconPositions(),
   spotlightOpen: false,
   dashboardOpen: false,
   exposeOpen: false,
@@ -217,6 +233,13 @@ export const useWindows = create<WindowStore>((set, get) => ({
     set(appearance === 'light' || appearance === 'dark' ? { appearance, theme: appearance } : { appearance });
   },
   applyTheme: (theme) => set({ theme }),
+  setIconPositions: (iconPositions) => {
+    try {
+      if (iconPositions) localStorage.setItem(ICONS_KEY, JSON.stringify(iconPositions));
+      else localStorage.removeItem(ICONS_KEY);
+    } catch {}
+    set({ iconPositions });
+  },
   setSound: (soundOn) => {
     write(SOUND_KEY, JSON.stringify({ on: soundOn, volume: get().volume }));
     set({ soundOn });

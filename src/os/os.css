@@ -359,6 +359,11 @@
   gap: 10px;
 }
 
+/* Dragged somewhere by the visitor. */
+.os-desktop-icon-free {
+  position: fixed;
+}
+
 .os-desktop-icons button {
   width: 96px;
   padding: 4px;
