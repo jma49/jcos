@@ -643,7 +643,6 @@
 /* ---------- About (a TextEdit document) ---------- */
 
 .os-about .os-scroll,
-.os-resume,
 .os-project {
   background: var(--os-content);
 }
@@ -685,128 +684,213 @@
   color: var(--os-dim);
 }
 
-/* ---------- Résumé ---------- */
+/* ---------- Résumé (a Pages document) ---------- */
 
-.os-resume {
-  padding: 28px 36px 40px;
-  font-size: 13px;
-  line-height: 1.6;
+.os-pages-canvas {
+  padding: 28px 24px 48px;
+  background: #8e8e8e linear-gradient(#a3a3a3, #8a8a8a);
 }
 
-.os-resume header h1 {
+:root[data-theme='dark'] .os-pages-canvas {
+  background: #2a2a2a;
+}
+
+.os-page {
+  width: 760px;
+  min-height: 983px;
+  margin: 0 auto;
+  padding: 56px 60px 60px;
+  background: #fff;
+  color: #1d1d1f;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.18), 0 10px 30px rgba(0, 0, 0, 0.35);
+  font-size: 11.5px;
+  line-height: 1.55;
+  user-select: text;
+}
+
+.os-cv-header {
+  padding-bottom: 18px;
+  margin-bottom: 22px;
+  border-bottom: 2px solid #1d1d1f;
+}
+
+.os-cv-header h1 {
   margin: 0;
   font-family: var(--os-display);
-  font-size: 36px;
+  font-size: 46px;
   font-weight: 400;
-  line-height: 1.1;
+  letter-spacing: -0.01em;
+  line-height: 1;
 }
 
-.os-resume header p {
-  margin: 2px 0 0;
-  color: var(--os-faint);
-  font-size: 12px;
-}
-
-.os-resume section {
-  margin-top: 24px;
-}
-
-.os-resume h2 {
-  margin: 0 0 4px;
-  padding-bottom: 4px;
-  border-bottom: 1px solid var(--os-line-soft);
-  color: var(--os-dim);
+.os-cv-role {
+  margin: 10px 0 0;
+  color: #3875d7;
   font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
 }
 
-.os-resume details {
-  border-bottom: 1px solid var(--os-line-soft);
+.os-cv-where {
+  margin: 2px 0 0;
+  color: #6e6e73;
 }
 
-.os-resume summary,
-.os-resume-edu {
+.os-cv-body {
+  display: grid;
+  grid-template-columns: 196px 1fr;
+  gap: 34px;
+}
+
+.os-page h2 {
+  margin: 0 0 10px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid #d2d2d7;
+  color: #3875d7;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.os-page section + section {
+  margin-top: 22px;
+}
+
+.os-page h3 {
+  margin: 0;
+  font-size: 11.5px;
+  font-weight: 700;
+}
+
+.os-page p {
+  margin: 0;
+}
+
+.os-page a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.os-page a:hover {
+  color: #3875d7;
+}
+
+.os-cv-contact {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow-wrap: anywhere;
+}
+
+.os-cv-contact li + li {
+  margin-top: 3px;
+}
+
+.os-cv-skill + .os-cv-skill,
+.os-cv-edu + .os-cv-edu {
+  margin-top: 10px;
+}
+
+.os-cv-skill p,
+.os-cv-edu p {
+  color: #424245;
+}
+
+.os-cv-date {
+  color: #86868b;
+  font-size: 10.5px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.os-cv-profile {
+  font-family: var(--os-display);
+  font-size: 15px;
+  line-height: 1.5;
+  color: #1d1d1f;
+}
+
+.os-cv-job + .os-cv-job {
+  margin-top: 18px;
+}
+
+.os-cv-job-head {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  gap: 16px;
-  padding: 8px 0;
-  list-style: none;
+  gap: 12px;
 }
 
-.os-resume summary::-webkit-details-marker {
-  display: none;
+.os-cv-job h3 {
+  font-size: 13px;
 }
 
-/* Finder-style disclosure triangle. */
-.os-resume summary .os-resume-head::before {
-  content: '▸';
-  display: inline-block;
-  width: 14px;
-  color: var(--os-faint);
-  transition: rotate 0.15s;
+.os-cv-job-role {
+  color: #424245;
+  font-style: italic;
 }
 
-.os-resume details[open] summary .os-resume-head::before {
-  rotate: 90deg;
+.os-cv-job-summary {
+  margin-top: 4px !important;
+  color: #1d1d1f;
 }
 
-.os-resume-head strong {
-  font-weight: 700;
+.os-cv-job ul {
+  margin: 6px 0 0;
+  padding-left: 14px;
+  list-style: disc;
+  color: #424245;
 }
 
-.os-resume-head span {
-  color: var(--os-dim);
+.os-cv-job li + li {
+  margin-top: 3px;
 }
 
-.os-resume-head span::before {
-  content: ' — ';
+/* Print only the page, as a clean résumé. */
+@media print {
+  @page {
+    margin: 0;
+  }
+
+  body * {
+    visibility: hidden;
+  }
+
+  .os-page,
+  .os-page * {
+    visibility: visible;
+  }
+
+  .os-page {
+    position: fixed;
+    inset: 0;
+    zoom: 1 !important;
+    box-shadow: none;
+  }
 }
 
-.os-resume-period {
-  flex: none;
-  color: var(--os-faint);
-  font-size: 11px;
-  font-variant-numeric: tabular-nums;
-}
+@media (max-width: 767px) {
+  .os-pages-canvas {
+    padding: 0;
+  }
 
-.os-resume-summary {
-  margin: 0 0 6px 14px;
-  color: var(--os-dim);
-}
+  .os-page {
+    width: auto;
+    min-height: 0;
+    padding: 28px 22px;
+    box-shadow: none;
+  }
 
-.os-resume ul {
-  margin: 0 0 12px 14px;
-  padding-left: 16px;
-  color: var(--os-dim);
-  font-size: 12px;
-}
+  .os-cv-body {
+    grid-template-columns: 1fr;
+    gap: 22px;
+  }
 
-.os-resume li + li {
-  margin-top: 4px;
-}
-
-.os-resume-skills div {
-  display: grid;
-  grid-template-columns: 120px 1fr;
-  gap: 14px;
-  padding: 6px 0;
-  border-bottom: 1px solid var(--os-line-soft);
-}
-
-.os-resume-skills dt {
-  font-weight: 700;
-}
-
-.os-resume-skills dd {
-  margin: 0;
-  color: var(--os-dim);
-}
-
-.os-resume-edu {
-  border-bottom: 1px solid var(--os-line-soft);
+  .os-cv-side {
+    order: 2;
+  }
 }
 
 /* ---------- Projects (Finder) ---------- */
@@ -1726,7 +1810,6 @@
   }
 
   .os-document,
-  .os-resume,
   .os-project {
     padding: 22px 20px 32px;
   }

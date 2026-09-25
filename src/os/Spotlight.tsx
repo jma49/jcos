@@ -36,14 +36,7 @@ export function Spotlight() {
         hint: `Project · ${p.description}`,
         Icon: apps.project.Icon,
         run: () => launch('project', { key: `project:${p.slug}`, title: p.title, props: { slug: p.slug } })
-      })),
-      {
-        id: 'resume-pdf',
-        label: 'Résumé.pdf',
-        hint: 'Document',
-        Icon: apps.pdf.Icon,
-        run: () => launch('pdf', { title: 'Résumé.pdf', props: { src: data.links.resume } })
-      }
+      }))
     ],
     [data]
   );
