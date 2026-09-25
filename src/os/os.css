@@ -3269,6 +3269,10 @@
   gap: 10px;
 }
 
+.os-prefs-rotate {
+  margin-top: 10px;
+}
+
 .os-prefs-radios label {
   display: flex;
   align-items: flex-start;

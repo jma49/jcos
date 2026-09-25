@@ -12,7 +12,7 @@ import { Presence } from './Presence';
 import { AppSwitcher } from './AppSwitcher';
 import { watchWindows } from './sound';
 import { ACCENTS, accentFromPicture, cachedAccent, cachedTopBrightness, DEFAULT_ACCENT, topBrightness } from './accent';
-import { accentForGenerated, backgroundFor, isPicture, SKY, topBrightnessOfGenerated } from './wallpapers';
+import { accentForGenerated, backgroundFor, isPicture, nextPicture, SKY, topBrightnessOfGenerated } from './wallpapers';
 import { OSDataContext } from './context';
 import { apps, launch, rectOf } from './registry';
 import { DiskIcon, DocumentIcon, PhotosIcon } from './icons';
@@ -306,6 +306,31 @@ export default function Desktop({ data }: { data: OSData }) {
   }, [wallpaper, chosen]);
   const top = (generatedTop ?? pictureTop ?? 0.4) * skyDimming(sky, chosen !== SKY);
   const backdrop = top < 0.6 ? 'dark' : 'light';
+
+  // Leave the tab and come back to a new desktop picture. The next one is
+  // chosen and loaded (and its accent sampled) while the tab is hidden, so
+  // it's ready to fade in on return.
+  const rotate = useWindows((s) => s.rotateWallpaper);
+  useEffect(() => {
+    if (!rotate) return;
+    let next: string | null = null;
+    const onVisibility = () => {
+      const { wallpaper: current, setWallpaper } = useWindows.getState();
+      if (document.hidden) {
+        next = nextPicture(current, data.photos.map((p) => p.full));
+        if (next && isPicture(next)) {
+          new Image().src = next;
+          accentFromPicture(next).catch(() => {});
+          topBrightness(next).catch(() => {});
+        }
+      } else if (next) {
+        setWallpaper(next);
+        next = null;
+      }
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => document.removeEventListener('visibilitychange', onVisibility);
+  }, [rotate, data]);
 
   // Light or dark as the visitor chose; `system` follows the OS, `sun` the daylight where they are.
   const appearance = useWindows((s) => s.appearance);

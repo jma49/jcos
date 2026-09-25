@@ -195,3 +195,17 @@ export function topBrightnessOfGenerated(value: string, sky: SkyInput): number |
   return null;
 }
 
+/**
+ * The picture to show next when the desktop changes by itself: another one
+ * from the collection the current one belongs to. The default picture moves
+ * on to the photos; the dynamic sky already changes, so it stays.
+ */
+export function nextPicture(current: string | null, photos: string[]): string | null {
+  let pool: string[];
+  if (current?.startsWith('color:')) pool = SOLID_COLORS.map((c) => `color:${c.id}`);
+  else if (current?.startsWith('pattern:')) pool = PATTERNS.map((p) => `pattern:${p.id}`);
+  else if (current === SKY) return null;
+  else pool = photos;
+  const others = pool.filter((value) => value !== current);
+  return others.length ? others[Math.floor(Math.random() * others.length)] : null;
+}
