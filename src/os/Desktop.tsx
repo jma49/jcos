@@ -1,14 +1,16 @@
-import { useEffect, useRef, useState, type ComponentType } from 'react';
+import { useCallback, useEffect, useRef, useState, type ComponentType } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { Dock } from './Dock';
 import { MenuBar } from './MenuBar';
 import { Spotlight } from './Spotlight';
 import { Dashboard } from './Dashboard';
 import { Window } from './Window';
+import { Expose, exposeLayout } from './Expose';
+import { Screensaver } from './Screensaver';
 import { OSDataContext } from './context';
 import { apps, launch, rectOf } from './registry';
 import { DiskIcon, DocumentIcon, PhotosIcon } from './icons';
-import { useFocusedId, useWindows } from './store';
+import { MOBILE_BREAKPOINT, useFocusedId, useWindows } from './store';
 import type { AppId, OSData } from './types';
 import './os.css';
 
@@ -62,6 +64,69 @@ function DesktopIcons({ data }: { data: OSData }) {
   );
 }
 
+interface ContextMenuItem {
+  label: string;
+  shortcut?: string;
+  action?: () => void;
+  disabled?: boolean;
+  divider?: boolean;
+}
+
+/** The menu a right-click on the empty desktop opens. */
+function DesktopMenu({ at, onClose }: { at: { x: number; y: number }; onClose: () => void }) {
+  const custom = useWindows((s) => s.wallpaper);
+  const s = useWindows.getState();
+  const items: ContextMenuItem[] = [
+    { label: 'Change Desktop Background…', action: () => launch('photos') },
+    { label: 'Use Default Desktop Picture', disabled: !custom, action: () => s.setWallpaper(null) },
+    { divider: true, label: '' },
+    { label: 'Exposé', shortcut: 'F9', action: () => s.setExpose(true) },
+    { label: 'Start Screen Saver', action: () => s.setScreensaver(true) }
+  ];
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
+    window.addEventListener('pointerdown', onClose);
+    window.addEventListener('keydown', onKey);
+    window.addEventListener('blur', onClose);
+    return () => {
+      window.removeEventListener('pointerdown', onClose);
+      window.removeEventListener('keydown', onKey);
+      window.removeEventListener('blur', onClose);
+    };
+  }, [onClose]);
+
+  return (
+    <ul
+      className="os-menu-list os-context-menu"
+      role="menu"
+      style={{ left: Math.min(at.x, window.innerWidth - 240), top: Math.min(at.y, window.innerHeight - 140) }}
+      onPointerDown={(e) => e.stopPropagation()}
+    >
+      {items.map((item, i) =>
+        item.divider ? (
+          <li key={i} className="os-menu-divider" role="separator" />
+        ) : (
+          <li key={i} role="none">
+            <button
+              type="button"
+              role="menuitem"
+              disabled={item.disabled}
+              onClick={() => {
+                onClose();
+                item.action?.();
+              }}
+            >
+              <span>{item.label}</span>
+              {item.shortcut && <kbd>{item.shortcut}</kbd>}
+            </button>
+          </li>
+        )
+      )}
+    </ul>
+  );
+}
+
 function Boot({ onDone }: { onDone: () => void }) {
   useEffect(() => {
     const timer = setTimeout(onDone, 1500);
@@ -88,7 +153,11 @@ export default function Desktop({ data }: { data: OSData }) {
   const windows = useWindows((s) => s.windows);
   const order = useWindows((s) => s.order);
   const theme = useWindows((s) => s.theme);
+  const exposeOpen = useWindows((s) => s.exposeOpen);
+  const wallpaper = useWindows((s) => s.wallpaper) ?? data.wallpaper;
   const focusedId = useFocusedId();
+  const [menuAt, setMenuAt] = useState<{ x: number; y: number } | null>(null);
+  const closeMenu = useCallback(() => setMenuAt(null), []);
   const reduced = useReducedMotion();
   const root = useRef<HTMLDivElement>(null);
   const [booting, setBooting] = useState(() => {
@@ -113,6 +182,13 @@ export default function Desktop({ data }: { data: OSData }) {
     document.documentElement.dataset.theme = theme;
   }, [theme]);
 
+  // Exposé only has something to show while a window is open.
+  const layout = exposeOpen ? exposeLayout(Object.values(windows)) : null;
+  const exposeEmpty = layout !== null && Object.keys(layout).length === 0;
+  useEffect(() => {
+    if (exposeEmpty) useWindows.getState().setExpose(false);
+  }, [exposeEmpty]);
+
   const finishBoot = () => {
     try {
       sessionStorage.setItem('os-booted', '1');
@@ -128,12 +204,17 @@ export default function Desktop({ data }: { data: OSData }) {
     return () => clearTimeout(t);
   }, [booting, reduced, data]);
 
-  // Keyboard: ⌘K search; ⌥W / ⌥M / ⌥T for windows (the browser keeps ⌘W/⌘T).
+  // Keyboard: F9 Exposé; ⌘K search; ⌥W / ⌥M / ⌥T for windows (the browser keeps ⌘W/⌘T).
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const s = useWindows.getState();
       const top = [...s.order].reverse().find((id) => !s.windows[id]?.minimized);
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+      if (e.key === 'F9' && window.innerWidth >= MOBILE_BREAKPOINT) {
+        e.preventDefault();
+        s.setExpose(!s.exposeOpen);
+      } else if (e.key === 'Escape' && s.exposeOpen) {
+        s.setExpose(false);
+      } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
         s.setSpotlight(!s.spotlightOpen);
       } else if (e.altKey && e.code === 'KeyW' && top) {
@@ -157,23 +238,50 @@ export default function Desktop({ data }: { data: OSData }) {
         ref={root}
         className="os-root"
         data-app-open={Object.values(windows).some((w) => !w.minimized) || undefined}
-        style={{ '--os-wallpaper': `url(${data.wallpaper})` } as React.CSSProperties}
+        onContextMenu={(e) => {
+          // Only the empty desktop has this menu; windows keep the browser's.
+          const target = e.target as HTMLElement;
+          if (target !== e.currentTarget && !target.matches('.os-wallpaper, .os-desktop-icons')) return;
+          if (window.innerWidth < MOBILE_BREAKPOINT) return;
+          e.preventDefault();
+          setMenuAt({ x: e.clientX, y: e.clientY });
+        }}
       >
-        <div className="os-wallpaper" aria-hidden="true" />
+        <AnimatePresence initial={false}>
+          <motion.div
+            key={wallpaper}
+            className="os-wallpaper"
+            aria-hidden="true"
+            style={{ '--os-wallpaper': `url(${wallpaper})` } as React.CSSProperties}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0, transition: { delay: 0.8 } }}
+            transition={{ duration: 0.8 }}
+          />
+        </AnimatePresence>
         <MenuBar />
         <DesktopIcons data={data} />
+        <Expose layout={layout} />
 
         {/* Render in opening order and stack with z-index: reordering DOM nodes
             would reload any iframe inside a window. */}
         <AnimatePresence>
           {Object.values(windows).map((win) => (
-            <Window key={win.id} win={win} focused={win.id === focusedId} z={10 + order.indexOf(win.id)} />
+            <Window
+              key={win.id}
+              win={win}
+              focused={win.id === focusedId}
+              z={10 + order.indexOf(win.id)}
+              exposed={layout?.[win.id]}
+            />
           ))}
         </AnimatePresence>
 
         <Dock />
         <Dashboard />
         <Spotlight />
+        <Screensaver />
+        {menuAt && <DesktopMenu at={menuAt} onClose={closeMenu} />}
 
         <AnimatePresence>{booting && !reduced && <Boot onDone={finishBoot} />}</AnimatePresence>
         {booting && reduced && <BootSkip onDone={finishBoot} />}
@@ -190,6 +298,10 @@ function openFromUrl(data: OSData): boolean {
   if (!target) return false;
   if (target === 'dashboard') {
     useWindows.getState().setDashboard(true);
+    return true;
+  }
+  if (target === 'screensaver') {
+    useWindows.getState().setScreensaver(true);
     return true;
   }
   if ((DEEP_LINK_APPS as string[]).includes(target)) {

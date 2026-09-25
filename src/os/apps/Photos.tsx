@@ -38,6 +38,7 @@ function fitTo(photo: OSPhoto) {
 /** iPhoto-style library of the Unsplash photos fetched at build time. */
 export default function Photos({ win }: AppProps) {
   const { photos, links } = useOSData();
+  const wallpaper = useWindows((s) => s.wallpaper);
   const [row, setRow] = useState(180);
   const [open, setOpen] = useState<number | null>(null);
   const root = useRef<HTMLDivElement>(null);
@@ -116,6 +117,14 @@ export default function Photos({ win }: AppProps) {
           <span className="os-toolbar-meta">
             {open! + 1} of {photos.length} · {date}
           </span>
+          <button
+            type="button"
+            className="os-button"
+            disabled={wallpaper === current.full}
+            onClick={() => useWindows.getState().setWallpaper(current.full)}
+          >
+            {wallpaper === current.full ? 'Desktop Picture ✓' : 'Set as Desktop'}
+          </button>
           <a className="os-button" href={current.page} target="_blank" rel="noopener">
             Unsplash ↗
           </a>

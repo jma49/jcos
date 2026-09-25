@@ -19,7 +19,13 @@ also renders a visually hidden plain-text copy of the content for screen
 readers, crawlers and visitors without JavaScript.
 
 - `src/os/store.ts`: zustand store for windows (map + z-order array),
-  theme, Spotlight and Dashboard.
+  theme, Spotlight, Dashboard, Exposé, the screensaver and the chosen
+  desktop picture (kept in `localStorage`).
+- `src/os/Expose.tsx`: the Exposé grid (F9, the bottom-left hot corner or
+  View → Exposé). Windows animate to their slot in place, so iframes
+  don't reload.
+- `src/os/Screensaver.tsx`: a slideshow of the Photos library after two
+  idle minutes.
 - `src/os/registry.tsx`: every app's name, icon, default and minimum size,
   and lazily imported component. `dockApps` and `mobileDockApps` pick what
   the Dock shows.
@@ -28,7 +34,8 @@ readers, crawlers and visitors without JavaScript.
   projects collection and `src/lib/photos.ts` (Unsplash, fetched at build).
 - `src/os/os.css`: the Aqua theme. Icons, fonts and the wallpaper under
   `public/os/` and `src/assets/os/` come from ryOS; see `NOTICE`.
-- Deep links: `/?open=<app|project-slug|dashboard>` opens that window.
+- Deep links: `/?open=<app|project-slug|dashboard|screensaver>` opens that
+  window.
 
 To add an app: add its id to `AppId` in `src/os/types.ts`, write the
 component in `src/os/apps/`, register it in `registry.tsx`, and add it to
