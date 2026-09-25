@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type ComponentType } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { apps, launch, launchableApps } from './registry';
+import { apps, dockApps, launch } from './registry';
+import { APPLETS, useInstalledApplets } from './applets';
 import { useWindows } from './store';
 import { useOSData } from './context';
 
@@ -17,19 +18,32 @@ export function Spotlight() {
   const open = useWindows((s) => s.spotlightOpen);
   const setSpotlight = useWindows((s) => s.setSpotlight);
   const data = useOSData();
+  const installed = useInstalledApplets();
   const [query, setQuery] = useState('');
   const [active, setActive] = useState(0);
   const input = useRef<HTMLInputElement>(null);
 
   const all = useMemo<Result[]>(
     () => [
-      ...launchableApps.map((id) => ({
+      ...dockApps.map((id) => ({
         id,
         label: apps[id].name,
         hint: 'Application',
         Icon: apps[id].Icon,
         run: () => launch(id)
       })),
+      // Installed applets open; the rest open their page in the Applet Store.
+      ...APPLETS.map(({ app, tagline }) =>
+        installed.includes(app)
+          ? { id: app, label: apps[app].name, hint: 'Applet', Icon: apps[app].Icon, run: () => launch(app) }
+          : {
+              id: app,
+              label: apps[app].name,
+              hint: `Applet Store · ${tagline}`,
+              Icon: apps[app].Icon,
+              run: () => launch('appstore', { props: { applet: app } })
+            }
+      ),
       ...data.projects.map((p) => ({
         id: `project:${p.slug}`,
         label: p.title,
@@ -38,7 +52,7 @@ export function Spotlight() {
         run: () => launch('project', { key: `project:${p.slug}`, title: p.title, props: { slug: p.slug } })
       }))
     ],
-    [data]
+    [data, installed]
   );
 
   const q = query.trim().toLowerCase();
