@@ -3,6 +3,10 @@ interface ImportMetaEnv {
   readonly PUBLIC_SUPABASE_URL?: string;
   /** The project's public anon key. Row-level security guards the data. */
   readonly PUBLIC_SUPABASE_ANON_KEY?: string;
+  /** The same values as named by the Supabase integration for Vercel. */
+  readonly NEXT_PUBLIC_SUPABASE_URL?: string;
+  readonly NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY?: string;
+  readonly NEXT_PUBLIC_SUPABASE_ANON_KEY?: string;
 }
 
 interface ImportMeta {

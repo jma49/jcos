@@ -49,7 +49,10 @@ The browser talks to Supabase directly with the public anon key; row-level
 security in `supabase/schema.sql` lets anyone add a note but only shows
 approved ones. To set it up, create a Supabase project, run the schema in
 its SQL editor, and set `PUBLIC_SUPABASE_URL` and
-`PUBLIC_SUPABASE_ANON_KEY` (see `.env.example`) in Vercel and in `.env`.
+`PUBLIC_SUPABASE_ANON_KEY` (see `.env.example`) in Vercel and in `.env`,
+for both Production and Preview. The names the Supabase integration for
+Vercel uses, `NEXT_PUBLIC_SUPABASE_URL` and
+`NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, work as well.
 Approve a note by setting `approved` to true in the Table editor.
 
 Without those variables, production hides both features, and `astro dev`

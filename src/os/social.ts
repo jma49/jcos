@@ -1,9 +1,11 @@
 // Stickies (notes visitors leave) and presence (who else is on the desktop).
 //
-// Production talks to Supabase with the public anon key; see
-// supabase/schema.sql. Without PUBLIC_SUPABASE_URL and
-// PUBLIC_SUPABASE_ANON_KEY the features stay hidden, except in `astro dev`,
-// which falls back to a stand-in that works across tabs of one browser.
+// Production talks to Supabase with the public anon (or publishable) key;
+// see supabase/schema.sql. The URL and key are read from PUBLIC_SUPABASE_*
+// or, as the Supabase integration for Vercel names them, from
+// NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY. Without
+// them the features stay hidden, except in `astro dev`, which falls back to
+// a stand-in that works across tabs of one browser.
 
 export const NOTE_COLORS = ['yellow', 'blue', 'green', 'pink', 'purple', 'gray'] as const;
 export type NoteColor = (typeof NOTE_COLORS)[number];
@@ -58,8 +60,12 @@ export function getSocial(): Promise<Social | null> {
 }
 
 async function load(): Promise<Social | null> {
-  const url = import.meta.env.PUBLIC_SUPABASE_URL;
-  const key = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
+  // Written out in full so Vite inlines each value on its own.
+  const url = import.meta.env.PUBLIC_SUPABASE_URL ?? import.meta.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key =
+    import.meta.env.PUBLIC_SUPABASE_ANON_KEY ??
+    import.meta.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ??
+    import.meta.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (url && key) return supabaseSocial(url, key);
   if (import.meta.env.DEV) return (await import('./social-local')).localSocial();
   return null;
