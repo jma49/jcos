@@ -61,8 +61,14 @@ export function Dock() {
   const mouseX = useMotionValue(Infinity);
   const windows = useWindows((s) => s.windows);
   const running = new Set(Object.values(windows).map((w) => w.app));
-  // Minimized windows of apps without their own Dock icon get a slot on the right.
-  const parked = Object.values(windows).filter((w) => w.minimized && !dockApps.includes(w.app));
+  // Open apps that aren't kept in the Dock get a slot on the right while they
+  // run, as on a Mac: one per app, or one per window for project pages.
+  const visiting: { key: string; app: AppId; label: string; id?: string }[] = [];
+  for (const w of Object.values(windows)) {
+    if (dockApps.includes(w.app)) continue;
+    if (w.app === 'project') visiting.push({ key: w.id, app: w.app, label: w.title, id: w.id });
+    else if (!visiting.some((v) => v.app === w.app)) visiting.push({ key: w.app, app: w.app, label: apps[w.app].name });
+  }
 
   const activate = (app: AppId, el: HTMLElement) => {
     const open = Object.values(useWindows.getState().windows).filter((w) => w.app === app);
@@ -114,14 +120,16 @@ export function Dock() {
 
         <span className="os-dock-divider" aria-hidden="true" data-dock-minimized />
 
-        {parked.map((w) => {
-          const { Icon } = apps[w.app];
+        {visiting.map((v) => {
+          const { Icon } = apps[v.app];
           return (
             <Magnified
-              key={w.id}
+              key={v.key}
               mouseX={mouseX}
-              label={w.title}
-              onActivate={() => useWindows.getState().focus(w.id)}
+              label={v.label}
+              running
+              dataApp={v.id ? undefined : v.app}
+              onActivate={(el) => (v.id ? useWindows.getState().focus(v.id) : activate(v.app, el))}
             >
               {(s) => <Icon size={s} />}
             </Magnified>

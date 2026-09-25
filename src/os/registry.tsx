@@ -198,8 +198,11 @@ export const apps: Record<AppId, AppDefinition> = {
   }
 };
 
-/** Apps shown in the Dock, left to right. */
-export const dockApps: AppId[] = ['about', 'resume', 'projects', 'photos', 'ipod', 'karaoke', 'stickies', 'soapbox', 'terminal', 'browser', 'appstore', 'preferences'];
+/** Apps kept in the Dock, left to right. Others show up there while they're open. */
+export const dockApps: AppId[] = ['projects', 'photos', 'ipod', 'stickies', 'soapbox', 'terminal', 'preferences'];
+
+/** Every app Spotlight can open by name (applets are listed separately). */
+export const launcherApps: AppId[] = ['about', 'resume', 'projects', 'photos', 'ipod', 'karaoke', 'stickies', 'soapbox', 'terminal', 'browser', 'finder', 'appstore', 'preferences'];
 
 /** Dock apps that also appear in the four-slot Dock on phones. */
 export const mobileDockApps: AppId[] = ['projects', 'photos', 'terminal'];
