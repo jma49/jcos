@@ -60,7 +60,8 @@ export type AppId =
   | 'photos'
   | 'stickies'
   | 'preferences'
-  | 'soapbox';
+  | 'soapbox'
+  | 'minesweeper';
 
 export interface Rect {
   x: number;
