@@ -7,6 +7,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { create } from 'zustand';
+import { useWindows } from './store';
 import library from '../data/songs.json' with { type: 'json' };
 
 export interface Song {
@@ -158,12 +159,14 @@ export const useMusic = create<MusicStore>((set, get) => {
     offsets: typeof window === 'undefined' ? {} : read<Record<string, number>>(OFFSETS_KEY, {}),
 
     play: (app, index = get().index, queue) => {
+      soundOnToPlay();
       // A different song starts from the top; the same one carries on.
       set({ ...claim(app), ...(index !== get().index ? { resume: null } : {}), ...(queue ? { queue } : {}), index, playing: true });
     },
     toggle: (app) => {
       const { owner, playing } = get();
       if (owner !== app) return get().play(app);
+      if (!playing) soundOnToPlay();
       set({ playing: !playing });
     },
     pause: () => set({ playing: false }),
@@ -267,6 +270,8 @@ interface YTPlayer {
   getDuration(): number;
   getPlayerState(): number;
   setVolume(volume: number): void;
+  mute(): void;
+  unMute(): void;
   destroy(): void;
 }
 
@@ -300,6 +305,24 @@ const PAUSED = 2;
 const BUFFERING = 3;
 
 let api: Promise<YTNamespace> | null = null;
+
+/**
+ * Sets a player's loudness: the music's own volume scaled by the desktop's,
+ * and silent while the desktop's sounds are off. All sound on JM/OS goes
+ * through that one switch.
+ */
+function setLoudness(player: YTPlayer, musicVolume: number) {
+  const { soundOn, volume } = useWindows.getState();
+  if (!soundOn) return player.mute();
+  player.unMute();
+  player.setVolume(Math.round(musicVolume * volume));
+}
+
+/** Pressing play asks for sound, so it turns the desktop's sounds on if they're off. */
+function soundOnToPlay() {
+  const { soundOn, setSound } = useWindows.getState();
+  if (!soundOn) setSound(true);
+}
 
 /** Loads YouTube's player script once. */
 function loadYouTube(): Promise<YTNamespace> {
@@ -367,7 +390,7 @@ export function usePlayer(app: MusicApp) {
         else if (owned || jump !== null) player.pauseVideo();
       }
       owned = true;
-      player.setVolume(s.volume);
+      setLoudness(player, s.volume);
       // Browsers can refuse to start playback; don't claim it's playing when it isn't.
       clearTimeout(watchdog);
       if (s.playing) {
@@ -435,9 +458,14 @@ export function usePlayer(app: MusicApp) {
     );
 
     const unsubscribe = useMusic.subscribe(apply);
+    // The desktop's sound switch and volume (menu bar, System Preferences) govern the music too.
+    const unsubscribeSound = useWindows.subscribe((w, prev) => {
+      if (player && ready && (w.soundOn !== prev.soundOn || w.volume !== prev.volume)) setLoudness(player, useMusic.getState().volume);
+    });
     return () => {
       dead = true;
       unsubscribe();
+      unsubscribeSound();
       clearTimeout(watchdog);
       clocks.delete(app);
       durations.delete(app);

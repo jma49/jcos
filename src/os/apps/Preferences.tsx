@@ -264,8 +264,11 @@ function SoundPane() {
   const { setSound, setVolume } = useWindows.getState();
   return (
     <section className="os-prefs-section">
-      <h3>Sound Effects</h3>
-      <p className="os-prefs-lead">Windows whoosh, menus click and mistakes thud. All of it is synthesized in your browser.</p>
+      <h3>Sound</h3>
+      <p className="os-prefs-lead">
+        One switch for everything that makes a sound: windows whoosh, menus click and mistakes thud (synthesized in your
+        browser), and the music in the iPod and Karaoke.
+      </p>
       <div className="os-prefs-radios">
         <label>
           <input
@@ -277,8 +280,8 @@ function SoundPane() {
             }}
           />
           <span>
-            <strong>Play user interface sound effects</strong>
-            <small>Off unless you turn it on. The speaker in the menu bar does the same.</small>
+            <strong>Play sound</strong>
+            <small>Off until you turn it on, or press Play on a song. The speaker in the menu bar does the same.</small>
           </span>
         </label>
       </div>
