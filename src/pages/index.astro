@@ -39,8 +39,7 @@ const data: OSData = {
   links: {
     github: profile.github,
     linkedin: profile.linkedin,
-    photography: profile.photography,
-    resume: t.links.resumeHref
+    photography: profile.photography
   },
   bio: { short: [...t.bio.shortParagraphs], long: [...t.bio.longParagraphs] },
   jobs: t.jobs.map((j) => ({ ...j, bullets: [...j.bullets] })),
@@ -82,7 +81,7 @@ const unlink = (text: string) => text.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1');
     </ul>
     <h2>Links</h2>
     <ul>
-      <li><a href={t.links.resumeHref}>Résumé (PDF)</a></li>
+      <li><a href="/?open=resume">Résumé</a></li>
       <li><a href={`mailto:${profile.email}`}>{profile.email}</a></li>
       <li><a href={profile.github}>GitHub</a></li>
       <li><a href={profile.linkedin}>LinkedIn</a></li>
@@ -91,6 +90,6 @@ const unlink = (text: string) => text.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1');
   </article>
 
   <noscript>
-    <p>This desktop needs JavaScript. The résumé is at <a href="/Jincheng_Ma_Resume.pdf">Jincheng_Ma_Resume.pdf</a>.</p>
+    <p>This desktop needs JavaScript. The text above has the same content.</p>
   </noscript>
 </Layout>

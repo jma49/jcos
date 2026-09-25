@@ -21,7 +21,7 @@ function pngIcon(name: string): IconComponent {
 
 export const AboutIcon = pngIcon('textedit');
 export const ResumeIcon = pngIcon('preview');
-export const PdfIcon = pngIcon('file-pdf');
+export const DocumentIcon = pngIcon('file-text');
 export const FolderIcon = pngIcon('folder');
 export const TerminalIcon = pngIcon('terminal');
 export const BrowserIcon = pngIcon('ie');

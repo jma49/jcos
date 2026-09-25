@@ -31,8 +31,8 @@ export const apps: Record<AppId, AppDefinition> = {
   resume: {
     name: 'Résumé',
     Icon: ResumeIcon,
-    width: 760,
-    height: 620,
+    width: 900,
+    height: 760,
     minWidth: 420,
     minHeight: 320,
     Component: lazy(() => import('./apps/Resume'))
@@ -82,15 +82,6 @@ export const apps: Record<AppId, AppDefinition> = {
     minHeight: 320,
     Component: lazy(() => import('./apps/Photos'))
   },
-  pdf: {
-    name: 'Preview',
-    Icon: ResumeIcon,
-    width: 720,
-    height: 760,
-    minWidth: 360,
-    minHeight: 300,
-    Component: lazy(() => import('./apps/Pdf'))
-  }
 };
 
 /** Apps shown in the Dock, left to right. */

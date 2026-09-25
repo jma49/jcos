@@ -7,7 +7,7 @@ import { Dashboard } from './Dashboard';
 import { Window } from './Window';
 import { OSDataContext } from './context';
 import { apps, launch, rectOf } from './registry';
-import { DiskIcon, PdfIcon, PhotosIcon } from './icons';
+import { DiskIcon, DocumentIcon, PhotosIcon } from './icons';
 import { useFocusedId, useWindows } from './store';
 import type { AppId, OSData } from './types';
 import './os.css';
@@ -29,9 +29,9 @@ function DesktopIcons({ data }: { data: OSData }) {
     { id: 'about', label: 'About Me', Icon: apps.about.Icon, open: (el) => openApp('about', el) },
     {
       id: 'resume',
-      label: 'Résumé.pdf',
-      Icon: PdfIcon,
-      open: (el) => openApp('pdf', el, { title: 'Résumé.pdf', props: { src: data.links.resume } })
+      label: 'Résumé',
+      Icon: DocumentIcon,
+      open: (el) => openApp('resume', el)
     },
     { id: 'projects', label: 'Projects', Icon: apps.projects.Icon, open: (el) => openApp('projects', el) },
     { id: 'photos', label: 'Photos', Icon: PhotosIcon, open: (el) => openApp('photos', el) },

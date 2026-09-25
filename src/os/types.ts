@@ -6,7 +6,7 @@ export interface OSData {
   role: string;
   location: string;
   email: string;
-  links: { github: string; linkedin: string; photography: string; resume: string };
+  links: { github: string; linkedin: string; photography: string };
   bio: { short: string[]; long: string[] };
   jobs: {
     company: string;
@@ -57,7 +57,6 @@ export type AppId =
   | 'project'
   | 'browser'
   | 'terminal'
-  | 'pdf'
   | 'photos';
 
 export interface Rect {

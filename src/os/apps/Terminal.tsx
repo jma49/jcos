@@ -119,7 +119,7 @@ export default function Terminal({ win }: AppProps) {
       case 'ls':
         if (arg === 'projects' || arg === 'projects/')
           return print({ content: data.projects.map((p) => `${p.slug}/`).join('   ') });
-        return print({ content: 'About.txt   Résumé.pdf   Projects/   Terminal.app' });
+        return print({ content: 'About.txt   Résumé   Projects/   Photos/   Terminal.app' });
       case 'projects':
         return print(
           ...data.projects.map((p) => ({
