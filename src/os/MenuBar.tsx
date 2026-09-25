@@ -54,6 +54,8 @@ export function MenuBar({ sky }: { sky: SkyState }) {
     '◐': [
       { label: `About ${data.name}`, action: () => launch('about') },
       { divider: true, label: '' },
+      { label: 'System Preferences…', action: () => launch('preferences') },
+      { divider: true, label: '' },
       { label: 'Source on GitHub', action: () => window.open('https://github.com/jma49/Jincheng-Protafolio', '_blank') }
     ],
     File: [

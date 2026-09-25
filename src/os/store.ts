@@ -17,11 +17,23 @@ export interface OpenOptions {
   props?: Record<string, string>;
 }
 
+/** Light, dark, the system's setting, or dark from sunset to sunrise where the visitor is. */
+export type Appearance = 'light' | 'dark' | 'system' | 'sun';
+export type SaverStyle = 'photos' | 'starfield' | 'clock';
+export interface SaverPrefs {
+  style: SaverStyle;
+  /** Idle minutes before it starts; 0 for never. */
+  idle: number;
+}
+
 interface WindowStore {
   windows: Record<string, WindowState>;
   /** Window ids from back to front; the last one is focused. */
   order: string[];
+  /** The theme on screen, worked out from `appearance`. */
   theme: 'light' | 'dark';
+  appearance: Appearance;
+  saver: SaverPrefs;
   spotlightOpen: boolean;
   dashboardOpen: boolean;
   /** Exposé: every open window laid out side by side. */
@@ -40,7 +52,12 @@ interface WindowStore {
   minimize: (id: string) => void;
   toggleMaximize: (id: string) => void;
   setBounds: (id: string, bounds: Partial<Pick<WindowState, 'x' | 'y' | 'width' | 'height'>>) => void;
+  /** Picks light or dark outright (and remembers it). */
   setTheme: (theme: 'light' | 'dark') => void;
+  setAppearance: (appearance: Appearance) => void;
+  /** Shows a theme without changing the preference; for `system` and `sun`. */
+  applyTheme: (theme: 'light' | 'dark') => void;
+  setSaver: (saver: Partial<SaverPrefs>) => void;
   setSpotlight: (open: boolean) => void;
   setDashboard: (open: boolean) => void;
   setExpose: (open: boolean) => void;
@@ -51,6 +68,38 @@ interface WindowStore {
 }
 
 const WALLPAPER_KEY = 'os-wallpaper';
+// Shared with the classic site, which stored 'light' or 'dark' here.
+const APPEARANCE_KEY = 'theme';
+const SAVER_KEY = 'os-screensaver';
+
+function read(key: string) {
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+function write(key: string, value: string) {
+  try {
+    localStorage.setItem(key, value);
+  } catch {}
+}
+
+function savedAppearance(): Appearance {
+  const saved = read(APPEARANCE_KEY);
+  return saved === 'light' || saved === 'dark' || saved === 'sun' ? saved : 'system';
+}
+
+function savedSaver(): SaverPrefs {
+  const fallback: SaverPrefs = { style: 'photos', idle: 2 };
+  try {
+    const saved = JSON.parse(read(SAVER_KEY) ?? 'null');
+    return saved ? { ...fallback, ...saved } : fallback;
+  } catch {
+    return fallback;
+  }
+}
 
 function savedWallpaper() {
   try {
@@ -82,6 +131,8 @@ export const useWindows = create<WindowStore>((set, get) => ({
   windows: {},
   order: [],
   theme: 'light',
+  appearance: typeof window === 'undefined' ? 'system' : savedAppearance(),
+  saver: typeof window === 'undefined' ? { style: 'photos', idle: 2 } : savedSaver(),
   spotlightOpen: false,
   dashboardOpen: false,
   exposeOpen: false,
@@ -141,7 +192,20 @@ export const useWindows = create<WindowStore>((set, get) => ({
   setBounds: (id, bounds) =>
     set((s) => (s.windows[id] ? { windows: { ...s.windows, [id]: { ...s.windows[id], ...bounds } } } : s)),
 
-  setTheme: (theme) => set({ theme }),
+  setTheme: (theme) => {
+    write(APPEARANCE_KEY, theme);
+    set({ theme, appearance: theme });
+  },
+  setAppearance: (appearance) => {
+    write(APPEARANCE_KEY, appearance);
+    set(appearance === 'light' || appearance === 'dark' ? { appearance, theme: appearance } : { appearance });
+  },
+  applyTheme: (theme) => set({ theme }),
+  setSaver: (saver) => {
+    const next = { ...get().saver, ...saver };
+    write(SAVER_KEY, JSON.stringify(next));
+    set({ saver: next });
+  },
   setSpotlight: (spotlightOpen) => set({ spotlightOpen }),
   setDashboard: (dashboardOpen) => set({ dashboardOpen }),
   setExpose: (exposeOpen) => set({ exposeOpen }),

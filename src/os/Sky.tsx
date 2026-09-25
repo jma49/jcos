@@ -72,6 +72,8 @@ export interface SkyState {
   weather: Weather | null;
   condition: Condition;
   tint: RGBA;
+  /** Between sunrise and sunset. */
+  daylight: boolean;
 }
 
 /** The light and weather where the visitor is, rechecked every minute. */
@@ -96,7 +98,8 @@ export function useSky(): SkyState {
     place,
     weather,
     condition: pinned.condition ?? weather?.condition ?? 'clear',
-    tint: tintAt(minutes, sunrise, sunset)
+    tint: tintAt(minutes, sunrise, sunset),
+    daylight: minutes >= sunrise && minutes < sunset
   };
 }
 

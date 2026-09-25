@@ -19,13 +19,18 @@ also renders a visually hidden plain-text copy of the content for screen
 readers, crawlers and visitors without JavaScript.
 
 - `src/os/store.ts`: zustand store for windows (map + z-order array),
-  theme, Spotlight, Dashboard, Exposé, the screensaver and the chosen
-  desktop picture (kept in `localStorage`).
+  theme and appearance, Spotlight, Dashboard, Exposé, the screensaver
+  and its settings, the visitor's place and the chosen desktop picture.
 - `src/os/Expose.tsx`: the Exposé grid (F9, the bottom-left hot corner or
   View → Exposé). Windows animate to their slot in place, so iframes
   don't reload.
-- `src/os/Screensaver.tsx`: a slideshow of the Photos library after two
-  idle minutes.
+- `src/os/Screensaver.tsx`: Photos (a slideshow of the library),
+  Starfield or Clock, after the idle time chosen in System Preferences
+  (two minutes by default).
+- `src/os/apps/Preferences.tsx`: System Preferences: desktop picture,
+  screen saver, appearance (light, dark, automatic, or follow the sun
+  where the visitor is) and place. Choices live in `localStorage`
+  (`os-wallpaper`, `os-screensaver`, `theme`, `os-place`).
 - `src/os/place.ts`: where the visitor is. `api/geo.ts` (a Vercel
   Function) returns the city, coordinates and time zone Vercel derives
   from their IP address; the Weather widget's flip side lets them pick a
