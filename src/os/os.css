@@ -4068,3 +4068,96 @@
     animation: none;
   }
 }
+
+/* ---------- Glass (System Preferences › Appearance › Material) ---------- */
+
+/*
+ * Frosted glass instead of pinstripes and metal: the surfaces turn
+ * translucent and blur what's behind them. Only the tokens change for most
+ * components; windows, menus, the menu bar and Spotlight add the blur.
+ */
+.os-root[data-glass] {
+  --os-pinstripe: none;
+  --os-pinstripe-soft: none;
+  --os-window: rgba(238, 238, 238, 0.55);
+  --os-content: rgba(255, 255, 255, 0.68);
+  --os-sidebar: rgba(226, 232, 240, 0.4);
+  --os-menu-bg: rgba(246, 246, 246, 0.7);
+  --os-title-top: rgba(255, 255, 255, 0.5);
+  --os-title-bottom: rgba(236, 236, 236, 0.35);
+  --os-title-inactive-top: rgba(255, 255, 255, 0.35);
+  --os-title-inactive-bottom: rgba(240, 240, 240, 0.25);
+  --os-bar-top: rgba(255, 255, 255, 0.5);
+  --os-bar-bottom: rgba(240, 240, 240, 0.4);
+}
+
+:root[data-theme='dark'] .os-root[data-glass] {
+  --os-window: rgba(44, 44, 46, 0.6);
+  --os-content: rgba(28, 28, 30, 0.62);
+  --os-sidebar: rgba(60, 64, 70, 0.4);
+  --os-menu-bg: rgba(40, 40, 42, 0.72);
+  --os-title-top: rgba(80, 80, 80, 0.45);
+  --os-title-bottom: rgba(50, 50, 50, 0.35);
+  --os-title-inactive-top: rgba(70, 70, 70, 0.3);
+  --os-title-inactive-bottom: rgba(50, 50, 50, 0.22);
+  --os-bar-top: rgba(50, 50, 50, 0.5);
+  --os-bar-bottom: rgba(30, 30, 30, 0.42);
+}
+
+.os-root[data-glass] .os-window,
+.os-root[data-glass] .os-window[data-material='metal'] {
+  background: var(--os-window);
+  backdrop-filter: blur(24px) saturate(1.8);
+  -webkit-backdrop-filter: blur(24px) saturate(1.8);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35), var(--os-shadow);
+}
+
+/* Background windows thin out, so more of the desktop shows through. */
+.os-root[data-glass] .os-window[data-focused='false'] {
+  --os-window: rgba(238, 238, 238, 0.35);
+  --os-content: rgba(255, 255, 255, 0.5);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.25), var(--os-shadow-quiet);
+}
+
+:root[data-theme='dark'] .os-root[data-glass] .os-window[data-focused='false'] {
+  --os-window: rgba(44, 44, 46, 0.4);
+  --os-content: rgba(28, 28, 30, 0.45);
+}
+
+/* One pane of glass: no seam between title bar, toolbar and body. */
+.os-root[data-glass] .os-titlebar {
+  border-bottom-color: transparent;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55);
+}
+
+.os-root[data-glass] .os-toolbar {
+  background: transparent;
+  border-bottom-color: rgba(0, 0, 0, 0.1);
+}
+
+.os-root[data-glass] .os-sidebar {
+  border-right-color: rgba(0, 0, 0, 0.1);
+}
+
+.os-root[data-glass] .os-menubar,
+.os-root[data-glass] .os-menu-list,
+.os-root[data-glass] .os-spotlight {
+  backdrop-filter: blur(22px) saturate(1.8);
+  -webkit-backdrop-filter: blur(22px) saturate(1.8);
+}
+
+.os-root[data-glass] .os-menubar {
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.18);
+}
+
+.os-root[data-glass] .os-menu-list {
+  border-radius: 7px;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.45), 0 0 0 1px rgba(0, 0, 0, 0.15), 0 12px 30px rgba(0, 0, 0, 0.3);
+}
+
+.os-root[data-glass] .os-dock {
+  border-radius: 12px 12px 0 0;
+  background: linear-gradient(rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0.18));
+  backdrop-filter: blur(20px) saturate(1.8);
+  -webkit-backdrop-filter: blur(20px) saturate(1.8);
+}

@@ -264,6 +264,7 @@ export default function Desktop({ data }: { data: OSData }) {
 
   // The accent colour follows the desktop picture unless a fixed one was chosen.
   const accentChoice = useWindows((s) => s.accent);
+  const glass = useWindows((s) => s.glass);
   useEffect(() => {
     const el = root.current;
     if (!el) return;
@@ -357,6 +358,7 @@ export default function Desktop({ data }: { data: OSData }) {
       <div
         ref={root}
         className="os-root"
+        data-glass={glass || undefined}
         data-app-open={Object.values(windows).some((w) => !w.minimized) || undefined}
         onContextMenu={(e) => {
           // Only the empty desktop has this menu; windows keep the browser's.
