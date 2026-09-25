@@ -51,6 +51,10 @@ readers, crawlers and visitors without JavaScript.
   `?sky=dusk,rain` pins both. The menu bar clock and the Dashboard's
   clock and calendar use the place's time zone; a Dashboard widget shows
   Jincheng's time in San Jose next to it.
+- `src/os/drawer.tsx`: Tiger-style drawers. Each window has a slot
+  along its edge (right, left if there's no room, or over the content
+  when neither side fits); an app renders `<Drawer open>` anywhere and it
+  appears there. Used by Photos (Info) and Finder (Get Info, ⌥I).
 - `src/os/genie.ts`: the displacement map behind the Genie minimize in
   `Window.tsx`.
 - `src/os/social.ts`: Stickies (a guestbook) and presence (who's

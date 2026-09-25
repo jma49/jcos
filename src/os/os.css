@@ -438,9 +438,213 @@
   border-radius: 6px 6px 4px 4px;
   background: var(--os-pinstripe), var(--os-window);
   box-shadow: var(--os-shadow-quiet);
-  overflow: hidden;
+  /* Not clipped, so a drawer can hang off the edge; the title bar and body round their own corners. */
   transform-origin: center;
   will-change: transform;
+}
+
+.os-window > .os-titlebar {
+  border-top-left-radius: inherit;
+  border-top-right-radius: inherit;
+}
+
+.os-window > .os-body {
+  overflow: hidden;
+  border-bottom-left-radius: inherit;
+  border-bottom-right-radius: inherit;
+}
+
+/* ---------- Drawers ---------- */
+
+/* Where a window's drawer lives: along its right edge, under the title bar. */
+.os-drawer-slot {
+  position: absolute;
+  z-index: -1;
+  top: 34px;
+  bottom: 14px;
+  left: 100%;
+  width: 0;
+}
+
+.os-drawer {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -6px;
+  width: var(--drawer-width, 240px);
+  padding: 8px 8px 8px 14px;
+  border-radius: 0 7px 7px 0;
+  background: var(--os-pinstripe), var(--os-window);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3), 0 8px 22px rgba(0, 0, 0, 0.3);
+  /* Tucked under the window until opened. */
+  transform: translateX(-100%);
+  visibility: hidden;
+  transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1), visibility 0s linear 0.28s;
+}
+
+.os-drawer[data-open] {
+  transform: none;
+  visibility: visible;
+  transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.os-window[data-material='metal'] .os-drawer {
+  background: var(--os-metal);
+}
+
+.os-root[data-glass] .os-drawer {
+  background: var(--os-window);
+  backdrop-filter: blur(24px) saturate(1.8);
+  -webkit-backdrop-filter: blur(24px) saturate(1.8);
+}
+
+/* The drawer's content sits in an inset pane, like the window's. */
+.os-drawer-inner {
+  height: 100%;
+  overflow: auto;
+  padding: 12px;
+  border-radius: 4px;
+  background: var(--os-content);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3), inset 0 1px 2px rgba(0, 0, 0, 0.15);
+  font-size: 12px;
+  user-select: text;
+}
+
+/* Mirrored when there's no room on the right. */
+.os-drawer-slot[data-side='left'] {
+  left: auto;
+  right: 100%;
+}
+
+.os-drawer-slot[data-side='left'] .os-drawer {
+  left: auto;
+  right: -6px;
+  padding: 8px 14px 8px 8px;
+  border-radius: 7px 0 0 7px;
+  transform: translateX(100%);
+}
+
+.os-drawer-slot[data-side='left'] .os-drawer[data-open] {
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .os-drawer,
+  .os-drawer[data-open] {
+    transition: none;
+  }
+}
+
+/* "Get Info"-style content for drawers. */
+.os-info h3 {
+  margin: 8px 0 4px;
+  font-size: 13px;
+}
+
+.os-info-preview {
+  display: block;
+  width: 100%;
+  max-height: 150px;
+  object-fit: contain;
+  border: 3px solid #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+}
+
+.os-info-description {
+  margin: 0 0 8px;
+  color: var(--os-dim);
+  line-height: 1.4;
+}
+
+.os-info dl {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 3px 8px;
+  margin: 0 0 10px;
+}
+
+.os-info dt {
+  color: var(--os-faint);
+  text-align: right;
+}
+
+.os-info dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.os-file-info-icon {
+  display: grid;
+  place-items: center;
+  height: 110px;
+}
+
+.os-file-info h3 {
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.os-info-swatch {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  vertical-align: -1px;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.3);
+}
+
+.os-info a {
+  color: var(--os-select);
+}
+
+/* No room either side (maximized or very wide windows): slide over the window's content. */
+.os-drawer-slot[data-side='inside'] {
+  z-index: 5;
+  top: 60px;
+  bottom: 1px;
+  left: auto;
+  right: 1px;
+  width: min(260px, 86vw);
+  overflow: hidden;
+}
+
+.os-drawer-slot[data-side='inside'] .os-drawer {
+  left: 0;
+  width: 100%;
+  padding-left: 8px;
+  border-radius: 6px 0 0 0;
+  transform: translateX(100%);
+}
+
+.os-drawer-slot[data-side='inside'] .os-drawer[data-open] {
+  transform: none;
+}
+
+/* Phones: windows fill the screen, so the drawer always slides over the content. */
+@media (max-width: 767px) {
+  .os-drawer-slot,
+  .os-drawer-slot[data-side] {
+    z-index: 5;
+    top: 44px;
+    bottom: 0;
+    left: auto;
+    right: 0;
+    width: min(300px, 86vw);
+    overflow: hidden;
+  }
+
+  .os-drawer,
+  .os-drawer-slot[data-side] .os-drawer {
+    left: 0;
+    right: auto;
+    width: 100%;
+    border-radius: 0;
+    transform: translateX(100%);
+  }
+
+  .os-drawer-slot[data-side] .os-drawer[data-open] {
+    transform: none;
+  }
 }
 
 /* Holds a window's Genie filter; takes no space. */

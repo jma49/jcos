@@ -3,6 +3,7 @@ import { useOSData } from '../context';
 import type { AppProps } from '../registry';
 import { DOCK_CLEARANCE, MENU_BAR_HEIGHT, MOBILE_BREAKPOINT, useWindows } from '../store';
 import type { OSPhoto, WindowState } from '../types';
+import { Drawer } from '../drawer';
 
 /** Title bar + toolbar height, and the dark margin around a photo in the viewer. */
 const CHROME = 23 + 36;
@@ -35,12 +36,45 @@ function fitTo(photo: OSPhoto) {
   };
 }
 
+function PhotoInfo({ photo, index, total }: { photo: OSPhoto; index: number; total: number }) {
+  const taken = new Date(photo.taken);
+  const megapixels = (photo.width * photo.height) / 1_000_000;
+  return (
+    <div className="os-info">
+      <img className="os-info-preview" src={photo.thumb} alt="" style={{ backgroundColor: photo.color }} />
+      <h3>
+        Photo {index + 1} of {total}
+      </h3>
+      {photo.alt && <p className="os-info-description">{photo.alt[0].toUpperCase() + photo.alt.slice(1)}</p>}
+      <dl>
+        <dt>Uploaded</dt>
+        <dd>{taken.toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'long', day: 'numeric' })}</dd>
+        <dt>Size</dt>
+        <dd>
+          {photo.width.toLocaleString()} × {photo.height.toLocaleString()} ({megapixels.toFixed(1)} MP)
+        </dd>
+        <dt>Orientation</dt>
+        <dd>{photo.width > photo.height * 1.05 ? 'Landscape' : photo.height > photo.width * 1.05 ? 'Portrait' : 'Square'}</dd>
+        <dt>Color</dt>
+        <dd>
+          <span className="os-info-swatch" style={{ background: photo.color }} /> {photo.color}
+        </dd>
+      </dl>
+      <a href={photo.page} target="_blank" rel="noopener">
+        View on Unsplash ↗
+      </a>
+    </div>
+  );
+}
+
 /** iPhoto-style library of the Unsplash photos fetched at build time. */
 export default function Photos({ win }: AppProps) {
   const { photos, links } = useOSData();
   const wallpaper = useWindows((s) => s.wallpaper);
   const [row, setRow] = useState(180);
   const [open, setOpen] = useState<number | null>(null);
+  // The Info drawer stays open from photo to photo.
+  const [info, setInfo] = useState(false);
   const root = useRef<HTMLDivElement>(null);
   const saved = useRef<Pick<WindowState, 'x' | 'y' | 'width' | 'height'> | null>(null);
   const groups = useMemo(() => byYear(photos), [photos]);
@@ -135,11 +169,23 @@ export default function Photos({ win }: AppProps) {
           <a className="os-button" href={current.page} target="_blank" rel="noopener">
             Unsplash ↗
           </a>
+          <button
+            type="button"
+            className="os-button"
+            aria-pressed={info}
+            onClick={() => setInfo((i) => !i)}
+            title="Show or hide the Info drawer"
+          >
+            ⓘ Info
+          </button>
         </div>
         <div className="os-photo-stage">
           {/* object-fit: contain shows the whole photo at its own proportions. */}
           <img key={current.id} src={current.full} alt={current.alt} style={{ backgroundColor: current.color }} />
         </div>
+        <Drawer open={info} label="Photo info" width={230}>
+          <PhotoInfo photo={current} index={open!} total={photos.length} />
+        </Drawer>
       </div>
     );
   }

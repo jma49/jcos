@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useOSData } from '../context';
 import type { AppProps } from '../registry';
-import { useWindows } from '../store';
+import { useFocusedId, useWindows } from '../store';
 import { useInstalledApplets } from '../applets';
 import { buildDisk, find, type FileNode } from '../files';
 import { DiskIcon } from '../icons';
+import { Drawer } from '../drawer';
 
 // Finder over Macintosh HD (files.ts): a sidebar of places, back and
 // forward, icon or list views, a search field that looks through the
@@ -146,6 +147,39 @@ function ActionMenu({ items }: { items: MenuItem[] }) {
   );
 }
 
+/** What Get Info shows for a file or folder. */
+function FileInfo({ node, disk }: { node: FileNode; disk: FileNode }) {
+  const where = node.path === '/' ? '—' : find(disk, parentOf(node.path))?.name;
+  return (
+    <div className="os-info os-file-info">
+      <div className="os-file-info-icon">
+        <Thumb node={node} size={96} />
+      </div>
+      <h3>{node.name}</h3>
+      <dl>
+        <dt>Kind</dt>
+        <dd>{node.kind}</dd>
+        <dt>Where</dt>
+        <dd>{where}</dd>
+        {node.children && (
+          <>
+            <dt>Contains</dt>
+            <dd>
+              {node.children.length} item{node.children.length === 1 ? '' : 's'}
+            </dd>
+          </>
+        )}
+        {node.date && (
+          <>
+            <dt>Modified</dt>
+            <dd>{formatDate(node.date)}</dd>
+          </>
+        )}
+      </dl>
+    </div>
+  );
+}
+
 export default function Finder({ win }: AppProps) {
   const data = useOSData();
   const applets = useInstalledApplets();
@@ -156,6 +190,7 @@ export default function Finder({ win }: AppProps) {
   const [selected, setSelected] = useState<string | null>(null);
   const [prefs, setPrefs] = useState<Prefs>(savedPrefs);
   const [query, setQuery] = useState('');
+  const [info, setInfo] = useState(false);
 
   const path = history[at];
   const folder = find(disk, path) ?? disk;
@@ -201,22 +236,41 @@ export default function Finder({ win }: AppProps) {
 
   const parent = path === '/' ? null : parentOf(path);
 
-  const onKey = (e: React.KeyboardEvent) => {
-    if ((e.metaKey || e.altKey) && e.key === 'ArrowUp' && parent) {
+  // Keyboard shortcuts work whenever this is the front window. (Clicking a
+  // button doesn't focus it in Safari or Chrome on a Mac, so a handler on
+  // the window's own element would miss them.) e.code, because ⌥ changes
+  // e.key on a Mac.
+  const onKey = useRef<(e: KeyboardEvent) => void>(() => {});
+  onKey.current = (e) => {
+    if (!(e.metaKey || e.altKey)) return;
+    if (e.code === 'ArrowUp' && parent) {
       e.preventDefault();
       go(parent);
-    } else if ((e.metaKey || e.altKey) && e.key === '[' && at > 0) {
+    } else if (e.altKey && e.code === 'KeyI') {
+      e.preventDefault();
+      setInfo((i) => !i);
+    } else if (e.code === 'BracketLeft' && at > 0) {
+      e.preventDefault();
       setAt(at - 1);
-    } else if ((e.metaKey || e.altKey) && e.key === ']' && at < history.length - 1) {
+    } else if (e.code === 'BracketRight' && at < history.length - 1) {
+      e.preventDefault();
       setAt(at + 1);
     }
   };
+  const front = useFocusedId() === win.id;
+  useEffect(() => {
+    if (!front) return;
+    const handler = (e: KeyboardEvent) => onKey.current(e);
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [front]);
 
   const [disk0, ...folders] = [{ ...disk, Icon: DiskIcon }, ...(disk.children ?? [])];
   const selectedNode = selected ? all.find((n) => n.path === selected) : undefined;
 
   const actions: MenuItem[] = [
     { label: 'Open', disabled: !selectedNode, action: () => selectedNode && open(selectedNode, null) },
+    { label: info ? 'Hide Info (⌥I)' : 'Get Info (⌥I)', action: () => setInfo((i) => !i) },
     ...(searching
       ? [{ label: 'Show in Enclosing Folder', disabled: !selectedNode, action: () => selectedNode && go(parentOf(selectedNode.path)) }]
       : []),
@@ -274,7 +328,7 @@ export default function Finder({ win }: AppProps) {
   ];
 
   return (
-    <div className="os-app os-finder-app" onKeyDown={onKey}>
+    <div className="os-app os-finder-app">
       <div className="os-toolbar">
         <div className="os-segmented" role="group" aria-label="Navigate">
           <button type="button" disabled={at === 0} onClick={() => setAt(at - 1)} aria-label="Back" title="Back (⌥[)">
@@ -402,6 +456,9 @@ export default function Finder({ win }: AppProps) {
           </div>
         </div>
       </div>
+      <Drawer open={info} label="Info" width={220}>
+        <FileInfo node={selectedNode ?? folder} disk={disk} />
+      </Drawer>
     </div>
   );
 }

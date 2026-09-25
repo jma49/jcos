@@ -13,6 +13,7 @@ import { apps } from './registry';
 import { DOCK_CLEARANCE, MENU_BAR_HEIGHT, MOBILE_BREAKPOINT, useWindows } from './store';
 import { frameOf } from './Expose';
 import { GENIE_REACH, genieMap, genieSupported } from './genie';
+import { DrawerSlot } from './drawer';
 import type { Rect, WindowState } from './types';
 
 type Edge = 'e' | 's' | 'se' | 'w' | 'sw';
@@ -105,6 +106,12 @@ const BOUNCE = 0.45;
 
 export function Window({ win, focused, z, exposed }: Props) {
   const { close, focus, minimize, toggleMaximize, setBounds } = useWindows.getState();
+  const [drawerSlot, setDrawerSlot] = useState<HTMLDivElement | null>(null);
+  // Right if it fits, else left, else over the window's own content (maximized or very wide windows).
+  const DRAWER_ROOM = 250;
+  const roomRight = typeof window === 'undefined' ? DRAWER_ROOM : window.innerWidth - (win.x + win.width);
+  const drawerSide =
+    win.maximized || (roomRight < DRAWER_ROOM && win.x < DRAWER_ROOM) ? 'inside' : roomRight >= DRAWER_ROOM ? 'right' : 'left';
   const def = apps[win.app];
   const reduced = useReducedMotion();
   const start = useRef(win);
@@ -313,10 +320,14 @@ export function Window({ win, focused, z, exposed }: Props) {
       </header>
 
       <div className="os-body">
-        <Suspense fallback={<Loading />}>
-          <def.Component win={win} />
-        </Suspense>
+        <DrawerSlot.Provider value={drawerSlot}>
+          <Suspense fallback={<Loading />}>
+            <def.Component win={win} />
+          </Suspense>
+        </DrawerSlot.Provider>
       </div>
+      {/* Drawers open on whichever side has room, as on a Mac. */}
+      <div className="os-drawer-slot" ref={setDrawerSlot} data-side={drawerSide} />
 
       {!win.maximized && !isMobile && (
         <>
