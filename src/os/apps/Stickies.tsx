@@ -10,6 +10,7 @@ import {
   type Social
 } from '../social';
 import type { AppProps } from '../registry';
+import { play } from '../sound';
 
 /**
  * Remembers that this browser has left its one note, so the button can say
@@ -78,6 +79,7 @@ export default function Stickies(_: AppProps) {
       await load.social.postNote({ body: body.trim(), name: name.trim(), color });
       rememberPosted();
       setPosted(true);
+      play('pop');
       setBody('');
       setDraft({ state: 'idle' });
       // Show the new note in its place on the wall.

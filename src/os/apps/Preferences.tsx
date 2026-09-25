@@ -5,15 +5,17 @@ import { useWindows, type Appearance } from '../store';
 import { choosePlace, clockTimeZone, HOME, placeLabel, usePlace, usesFahrenheit } from '../place';
 import { PlaceSearch } from '../PlaceSearch';
 import { DriftingClock, SAVER_STYLES, Starfield } from '../Screensaver';
+import { play } from '../sound';
 
 // System Preferences, Tiger style: a toolbar of panes. Everything here is
 // remembered in this browser.
 
-type Pane = 'desktop' | 'appearance' | 'location';
+type Pane = 'desktop' | 'appearance' | 'sound' | 'location';
 
 const PANES: { id: Pane; name: string; icon: string }[] = [
   { id: 'desktop', name: 'Desktop & Screen Saver', icon: 'desktop-screen-saver' },
   { id: 'appearance', name: 'Appearance', icon: 'appearance-pane' },
+  { id: 'sound', name: 'Sound', icon: 'sound' },
   { id: 'location', name: 'Date, Time & Place', icon: 'international' }
 ];
 
@@ -120,6 +122,51 @@ function AppearancePane() {
   );
 }
 
+function SoundPane() {
+  const on = useWindows((s) => s.soundOn);
+  const volume = useWindows((s) => s.volume);
+  const { setSound, setVolume } = useWindows.getState();
+  return (
+    <section className="os-prefs-section">
+      <h3>Sound Effects</h3>
+      <p className="os-prefs-lead">Windows whoosh, menus click and mistakes thud. All of it is synthesized in your browser.</p>
+      <div className="os-prefs-radios">
+        <label>
+          <input
+            type="checkbox"
+            checked={on}
+            onChange={(e) => {
+              setSound(e.target.checked);
+              if (e.target.checked) play('chime', { force: true });
+            }}
+          />
+          <span>
+            <strong>Play user interface sound effects</strong>
+            <small>Off unless you turn it on. The speaker in the menu bar does the same.</small>
+          </span>
+        </label>
+      </div>
+      <div className="os-prefs-row os-prefs-volume">
+        <label htmlFor="os-volume">Volume</label>
+        <span aria-hidden="true">🔈</span>
+        <input
+          id="os-volume"
+          type="range"
+          min={0}
+          max={1}
+          step={0.05}
+          value={volume}
+          disabled={!on}
+          onChange={(e) => setVolume(Number(e.target.value))}
+          onPointerUp={() => play('pop')}
+          onKeyUp={() => play('pop')}
+        />
+        <span aria-hidden="true">🔊</span>
+      </div>
+    </section>
+  );
+}
+
 function LocationPane() {
   const place = usePlace();
   const [changing, setChanging] = useState(false);
@@ -199,6 +246,7 @@ export default function Preferences({ win }: AppProps) {
       <div className="os-scroll os-prefs-pane" role="tabpanel">
         {pane === 'desktop' && <DesktopPane />}
         {pane === 'appearance' && <AppearancePane />}
+        {pane === 'sound' && <SoundPane />}
         {pane === 'location' && <LocationPane />}
       </div>
     </div>

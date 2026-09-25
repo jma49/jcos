@@ -24,6 +24,9 @@ readers, crawlers and visitors without JavaScript.
 - `src/os/Expose.tsx`: the Exposé grid (F9, the bottom-left hot corner or
   View → Exposé). Windows animate to their slot in place, so iframes
   don't reload.
+- `src/os/sound.ts`: interface sounds synthesized with Web Audio (no
+  recordings). Off by default; the menu bar speaker and the Sound pane
+  turn them on (`os-sound` in `localStorage`).
 - `src/os/AppSwitcher.tsx`: ⌥Tab steps through open windows, most
   recent first; releasing ⌥ focuses the chosen one.
 - `src/os/Screensaver.tsx`: Photos (a slideshow of the library),

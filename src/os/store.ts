@@ -34,6 +34,10 @@ interface WindowStore {
   theme: 'light' | 'dark';
   appearance: Appearance;
   saver: SaverPrefs;
+  /** Interface sounds (see sound.ts); off by default. */
+  soundOn: boolean;
+  /** 0 to 1. */
+  volume: number;
   spotlightOpen: boolean;
   dashboardOpen: boolean;
   /** Exposé: every open window laid out side by side. */
@@ -58,6 +62,8 @@ interface WindowStore {
   /** Shows a theme without changing the preference; for `system` and `sun`. */
   applyTheme: (theme: 'light' | 'dark') => void;
   setSaver: (saver: Partial<SaverPrefs>) => void;
+  setSound: (on: boolean) => void;
+  setVolume: (volume: number) => void;
   setSpotlight: (open: boolean) => void;
   setDashboard: (open: boolean) => void;
   setExpose: (open: boolean) => void;
@@ -71,6 +77,7 @@ const WALLPAPER_KEY = 'os-wallpaper';
 // Shared with the classic site, which stored 'light' or 'dark' here.
 const APPEARANCE_KEY = 'theme';
 const SAVER_KEY = 'os-screensaver';
+const SOUND_KEY = 'os-sound';
 
 function read(key: string) {
   try {
@@ -89,6 +96,14 @@ function write(key: string, value: string) {
 function savedAppearance(): Appearance {
   const saved = read(APPEARANCE_KEY);
   return saved === 'light' || saved === 'dark' || saved === 'sun' ? saved : 'system';
+}
+
+function savedSound(): { soundOn: boolean; volume: number } {
+  try {
+    const saved = JSON.parse(read(SOUND_KEY) ?? 'null');
+    if (saved) return { soundOn: saved.on === true, volume: Math.min(1, Math.max(0, Number(saved.volume) || 0.6)) };
+  } catch {}
+  return { soundOn: false, volume: 0.6 };
 }
 
 function savedSaver(): SaverPrefs {
@@ -133,6 +148,7 @@ export const useWindows = create<WindowStore>((set, get) => ({
   theme: 'light',
   appearance: typeof window === 'undefined' ? 'system' : savedAppearance(),
   saver: typeof window === 'undefined' ? { style: 'photos', idle: 2 } : savedSaver(),
+  ...(typeof window === 'undefined' ? { soundOn: false, volume: 0.6 } : savedSound()),
   spotlightOpen: false,
   dashboardOpen: false,
   exposeOpen: false,
@@ -201,6 +217,14 @@ export const useWindows = create<WindowStore>((set, get) => ({
     set(appearance === 'light' || appearance === 'dark' ? { appearance, theme: appearance } : { appearance });
   },
   applyTheme: (theme) => set({ theme }),
+  setSound: (soundOn) => {
+    write(SOUND_KEY, JSON.stringify({ on: soundOn, volume: get().volume }));
+    set({ soundOn });
+  },
+  setVolume: (volume) => {
+    write(SOUND_KEY, JSON.stringify({ on: get().soundOn, volume }));
+    set({ volume });
+  },
   setSaver: (saver) => {
     const next = { ...get().saver, ...saver };
     write(SAVER_KEY, JSON.stringify(next));

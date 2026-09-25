@@ -3,6 +3,7 @@ import { motion, useMotionValue, useSpring, useTransform, type MotionValue } fro
 import { apps, dockApps, launch, mobileDockApps, rectOf } from './registry';
 import { DashboardIcon, TrashIcon } from './icons';
 import { useWindows } from './store';
+import { play } from './sound';
 import type { AppId } from './types';
 
 const BASE = 50;
@@ -127,7 +128,7 @@ export function Dock() {
           );
         })}
 
-        <Magnified mouseX={mouseX} label="Trash" onActivate={() => {}}>
+        <Magnified mouseX={mouseX} label="Trash" onActivate={() => play('trash')}>
           {(s) => <TrashIcon size={s} />}
         </Magnified>
       </motion.div>

@@ -5,6 +5,7 @@ import { useOSData } from './context';
 import { SkyStatus, type SkyState } from './Sky';
 import { OnlineStatus } from './Presence';
 import { clockTimeZone, HOME, sameTime } from './place';
+import { play } from './sound';
 
 interface MenuItem {
   label: string;
@@ -122,6 +123,7 @@ export function MenuBar({ sky }: { sky: SkyState }) {
                         disabled={item.disabled}
                         onClick={() => {
                           setOpenMenu(null);
+                          play('click');
                           item.action?.();
                         }}
                       >
@@ -138,6 +140,7 @@ export function MenuBar({ sky }: { sky: SkyState }) {
       </nav>
 
       <div className="os-status">
+        <SoundToggle />
         <OnlineStatus />
         <SkyStatus sky={sky} onOpen={() => useWindows.getState().setDashboard(true)} />
         <button type="button" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} aria-label="Toggle appearance">
@@ -154,5 +157,33 @@ export function MenuBar({ sky }: { sky: SkyState }) {
         </time>
       </div>
     </header>
+  );
+}
+
+/** Menu bar speaker: turns interface sounds on and off. */
+function SoundToggle() {
+  const on = useWindows((s) => s.soundOn);
+  const label = on ? 'Turn sounds off' : 'Turn sounds on';
+  return (
+    <button
+      type="button"
+      className="os-sound-toggle"
+      aria-pressed={on}
+      aria-label={label}
+      title={label}
+      onClick={() => {
+        useWindows.getState().setSound(!on);
+        if (!on) play('chime', { force: true });
+      }}
+    >
+      <svg viewBox="0 0 16 14" width="15" height="13" aria-hidden="true">
+        <path d="M1 5h3l4-3.5v11L4 9H1z" fill="currentColor" />
+        {on ? (
+          <path d="M10.5 4.5c1.2 1.3 1.2 3.7 0 5M12.6 2.6c2.2 2.4 2.2 6.4 0 8.8" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+        ) : (
+          <path d="M10.5 5l4 4M14.5 5l-4 4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+        )}
+      </svg>
+    </button>
   );
 }
