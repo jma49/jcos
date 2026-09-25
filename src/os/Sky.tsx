@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useReducedMotion } from 'motion/react';
 import { describe, localMinutes, useWeather, type Condition, type Weather } from './weather';
 import { deviceTimeZone, placeLabel, startLocating, usePlace, type Place } from './place';
+import { brightness } from './accent';
 
 // The desktop follows the sky over the visitor (see place.ts): the
 // wallpaper takes on the light of the hour there (dawn, golden hour, dusk,
@@ -78,6 +79,19 @@ export interface SkyState {
   minutes: number;
   sunrise: number;
   sunset: number;
+}
+
+/**
+ * How much the sky layers darken the wallpaper, as a factor on its
+ * brightness: the tint of the hour (when drawn) times the weather's gloom.
+ * Both are multiply blends, so this is close to what's on screen.
+ */
+export function skyDimming(sky: SkyState, tinted: boolean): number {
+  const [r, g, b, a] = sky.tint;
+  const tint = tinted ? 1 - a + a * brightness(r, g, b) : 1;
+  // The gloom layer's top colour, at its 0.9 alpha, faded in by the mood.
+  const gloom = MOOD[sky.condition].gloom * 0.9;
+  return tint * (1 - gloom + gloom * brightness(70, 78, 92));
 }
 
 /** The light and weather where the visitor is, rechecked every minute. */

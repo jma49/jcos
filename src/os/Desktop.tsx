@@ -7,12 +7,12 @@ import { Dashboard } from './Dashboard';
 import { Window } from './Window';
 import { Expose, exposeLayout } from './Expose';
 import { Screensaver } from './Screensaver';
-import { Sky, useSky } from './Sky';
+import { Sky, skyDimming, useSky } from './Sky';
 import { Presence } from './Presence';
 import { AppSwitcher } from './AppSwitcher';
 import { watchWindows } from './sound';
-import { ACCENTS, accentFromPicture, cachedAccent, DEFAULT_ACCENT } from './accent';
-import { accentForGenerated, backgroundFor, isPicture, SKY } from './wallpapers';
+import { ACCENTS, accentFromPicture, cachedAccent, cachedTopBrightness, DEFAULT_ACCENT, topBrightness } from './accent';
+import { accentForGenerated, backgroundFor, isPicture, SKY, topBrightnessOfGenerated } from './wallpapers';
 import { OSDataContext } from './context';
 import { apps, launch, rectOf } from './registry';
 import { DiskIcon, DocumentIcon, PhotosIcon } from './icons';
@@ -287,6 +287,26 @@ export default function Desktop({ data }: { data: OSData }) {
     // The dynamic sky's accent follows the hour, so it depends on the sky too.
   }, [accentChoice, wallpaper, chosen === SKY ? `${sky.minutes},${sky.condition}` : '']);
 
+  // The menu bar is see-through, so its text follows what's behind it: how
+  // bright the top of the picture is, darkened by the sky's tint and gloom.
+  const generatedTop = isPicture(chosen) ? null : topBrightnessOfGenerated(wallpaper, sky);
+  const [pictureTop, setPictureTop] = useState<number | null>(() => cachedTopBrightness(wallpaper));
+  useEffect(() => {
+    if (!isPicture(chosen)) return;
+    let live = true;
+    const known = cachedTopBrightness(wallpaper);
+    if (known !== null) return setPictureTop(known);
+    topBrightness(wallpaper).then(
+      (value) => live && setPictureTop(value),
+      () => live && setPictureTop(null)
+    );
+    return () => {
+      live = false;
+    };
+  }, [wallpaper, chosen]);
+  const top = (generatedTop ?? pictureTop ?? 0.4) * skyDimming(sky, chosen !== SKY);
+  const backdrop = top < 0.6 ? 'dark' : 'light';
+
   // Light or dark as the visitor chose; `system` follows the OS, `sun` the daylight where they are.
   const appearance = useWindows((s) => s.appearance);
   useEffect(() => {
@@ -364,6 +384,7 @@ export default function Desktop({ data }: { data: OSData }) {
         ref={root}
         className="os-root"
         data-glass={glass || undefined}
+        data-backdrop={backdrop}
         data-app-open={Object.values(windows).some((w) => !w.minimized) || undefined}
         onContextMenu={(e) => {
           // Only the empty desktop has this menu; windows keep the browser's.

@@ -260,11 +260,42 @@
   align-items: center;
   justify-content: space-between;
   padding: 0 8px 0 4px;
+  /* See-through: the desktop picture runs to the top edge. The text takes
+     the colour that reads on whatever is behind it (data-backdrop). */
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+  font-size: 14px;
+  transition: background-color 0.3s, box-shadow 0.3s, color 0.3s;
+}
+
+.os-root[data-backdrop='light'] .os-menubar {
+  color: #111;
+  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.35);
+}
+
+/* Over a zoomed window: the classic opaque bar, so the title bar under it doesn't show through. */
+.os-root .os-menubar[data-solid] {
+  color: var(--os-ink);
+  text-shadow: none;
   background: var(--os-pinstripe-soft), linear-gradient(var(--os-bar-top), var(--os-bar-bottom));
   backdrop-filter: blur(18px) saturate(1.3);
   -webkit-backdrop-filter: blur(18px) saturate(1.3);
   box-shadow: 0 1px 0 rgba(0, 0, 0, 0.32), 0 2px 6px rgba(0, 0, 0, 0.15);
-  font-size: 14px;
+}
+
+.os-menubar svg {
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.3));
+}
+
+.os-root[data-backdrop='light'] .os-menubar svg,
+.os-menubar[data-solid] svg {
+  filter: none;
+}
+
+/* Menus and popovers opened from the bar keep the normal ink. */
+.os-menubar .os-menu-list {
+  color: var(--os-ink);
+  text-shadow: none;
 }
 
 .os-menus,
@@ -293,14 +324,28 @@
   color: #fff;
 }
 
+/* The Aqua apple, recoloured with the accent: its own shading (luminosity)
+   over the accent (hue and saturation), cut to its shape. It follows the
+   desktop picture as the accent does. */
 .os-logo {
   display: block;
+  /* The apple fills about half of its icon; scaled up so it's about 15px tall. */
   width: 16px;
-  height: 16px;
+  height: 22px;
+  background: url('/os/icons/apple.png') center / 28px no-repeat, var(--os-accent);
+  background-blend-mode: luminosity;
+  -webkit-mask: url('/os/icons/apple.png') center / 28px no-repeat;
+  mask: url('/os/icons/apple.png') center / 28px no-repeat;
 }
 
 .os-menu-title[data-open='true'] .os-logo {
-  filter: brightness(0) invert(1);
+  background: #fff;
+}
+
+/* A halo so the apple reads on any picture (the mask would clip a shadow on the logo itself). */
+.os-menu-title:has(.os-logo) {
+  padding: 0 8px;
+  filter: drop-shadow(0 0 1px rgba(255, 255, 255, 0.55)) drop-shadow(0 1px 1px rgba(0, 0, 0, 0.35));
 }
 
 .os-menu-appname {
@@ -367,6 +412,10 @@
 
 .os-status button:hover {
   background: rgba(0, 0, 0, 0.08);
+}
+
+.os-root:not([data-backdrop='light']) .os-menubar:not([data-solid]) .os-status button:hover {
+  background: rgba(255, 255, 255, 0.16);
 }
 
 .os-status time {
@@ -4403,14 +4452,14 @@
   border-right-color: rgba(0, 0, 0, 0.1);
 }
 
-.os-root[data-glass] .os-menubar,
+.os-root[data-glass] .os-menubar[data-solid],
 .os-root[data-glass] .os-menu-list,
 .os-root[data-glass] .os-spotlight {
   backdrop-filter: blur(22px) saturate(1.8);
   -webkit-backdrop-filter: blur(22px) saturate(1.8);
 }
 
-.os-root[data-glass] .os-menubar {
+.os-root[data-glass] .os-menubar[data-solid] {
   box-shadow: 0 1px 0 rgba(0, 0, 0, 0.18);
 }
 
