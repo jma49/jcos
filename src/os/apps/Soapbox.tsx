@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { AlreadyPostedError, getSocial, REACTIONS, type Post, type Reaction, type Social } from '../social';
 import { clockTimeZone, usePlace } from '../place';
 import type { AppProps } from '../registry';
+import { play } from '../sound';
 
 // Soapbox: Jincheng's own notes and rants, sent from Telegram (see
 // supabase/functions/soapbox-bot). Visitors read, and leave one reaction
@@ -141,6 +142,7 @@ export default function Soapbox(_: AppProps) {
     setReacted(next);
     saveReacted(next);
     bump(1);
+    play('pop');
     try {
       await load.social.react(post.id, reaction);
     } catch (error) {

@@ -9,6 +9,7 @@ import { openProject } from './Projects';
 import { HOME, placeLabel, searchPlaces, type Place } from '../place';
 import { describe, getWeather } from '../weather';
 import { getSocial } from '../social';
+import { play } from '../sound';
 
 interface Line {
   id: number;
@@ -214,6 +215,7 @@ export default function Terminal({ win }: AppProps) {
       case 'exit':
         return useWindows.getState().close(win.id);
       default:
+        play('error');
         return print({ kind: 'error', content: `zsh: command not found: ${cmd}` });
     }
   };

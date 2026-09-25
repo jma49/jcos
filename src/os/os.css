@@ -1965,6 +1965,14 @@
   font-size: 12px;
 }
 
+.os-prefs-volume {
+  margin-top: 14px;
+}
+
+.os-prefs-volume input {
+  width: 200px;
+}
+
 .os-prefs-radios {
   display: grid;
   gap: 10px;
@@ -2643,7 +2651,7 @@
   height: 100%;
 }
 
-.os-online {
+.os-status .os-online {
   display: flex;
   align-items: center;
   gap: 4px;
