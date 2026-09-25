@@ -621,6 +621,50 @@
   background: radial-gradient(circle at 50% 75%, #fbfbfb, #cfcfcf 55%, #a4a4a4);
 }
 
+/* Pointing at a background window's buttons wakes them up, as on a Mac. */
+.os-window[data-focused='false'] .os-controls:hover .os-close {
+  background: radial-gradient(circle at 50% 75%, #ffb6a8, #e2322a 55%, #a61a13);
+}
+
+.os-window[data-focused='false'] .os-controls:hover .os-min {
+  background: radial-gradient(circle at 50% 75%, #fff0a8, #e9a92a 55%, #a86e0c);
+}
+
+.os-window[data-focused='false'] .os-controls:hover .os-max {
+  background: radial-gradient(circle at 50% 75%, #c8f5b0, #53b43c 55%, #2c7a1d);
+}
+
+/*
+ * Background windows recede: selections turn grey, pressed segments and
+ * selected cells turn graphite, and default buttons stop pulsing and go
+ * white. Only the front window shows the accent.
+ */
+.os-window[data-focused='false'] {
+  --os-select: #9a9a9a;
+  --os-select-grad: linear-gradient(#c2c2c2, #9a9a9a);
+  --os-gel: linear-gradient(#f2f2f2, #d2d2d2 45%, #b9b9b9 50%, #dedede);
+  --os-accent-rim: #5a5a5a;
+  --os-accent-shadow: rgba(0, 0, 0, 0.25);
+}
+
+:root[data-theme='dark'] .os-window[data-focused='false'] {
+  --os-select: #5c5c5c;
+  --os-select-grad: linear-gradient(#6e6e6e, #555);
+  --os-gel: linear-gradient(#8a8a8a, #6a6a6a 45%, #5a5a5a 50%, #727272);
+}
+
+.os-root .os-window[data-focused='false'] .os-button-primary {
+  animation: none;
+  background: linear-gradient(#ffffff, #f1f1f1 45%, #dedede 50%, #f4f4f4);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.35), 0 1px 1px rgba(0, 0, 0, 0.15);
+  color: #111;
+  text-shadow: none;
+}
+
+.os-window[data-focused='false'] .os-sidebar button[aria-pressed='true'] {
+  box-shadow: none;
+}
+
 .os-control::after {
   position: absolute;
   inset: 0;
