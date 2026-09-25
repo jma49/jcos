@@ -57,7 +57,8 @@ export type AppId =
   | 'project'
   | 'browser'
   | 'terminal'
-  | 'photos';
+  | 'photos'
+  | 'stickies';
 
 export interface Rect {
   x: number;

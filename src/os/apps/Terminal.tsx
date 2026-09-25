@@ -32,7 +32,7 @@ const COMMANDS: Record<string, string> = {
   exit: 'close this window'
 };
 
-const APP_TARGETS = ['about', 'resume', 'projects', 'terminal', 'browser'] as const;
+const APP_TARGETS = ['about', 'resume', 'projects', 'photos', 'stickies', 'terminal', 'browser'] as const;
 
 function neofetch(data: OSData): ReactNode {
   const art = [
@@ -119,7 +119,7 @@ export default function Terminal({ win }: AppProps) {
       case 'ls':
         if (arg === 'projects' || arg === 'projects/')
           return print({ content: data.projects.map((p) => `${p.slug}/`).join('   ') });
-        return print({ content: 'About.txt   Résumé   Projects/   Photos/   Terminal.app' });
+        return print({ content: 'About.txt   Résumé   Projects/   Photos/   Stickies.app   Terminal.app' });
       case 'projects':
         return print(
           ...data.projects.map((p) => ({

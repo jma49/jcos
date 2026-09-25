@@ -38,6 +38,7 @@ function DesktopIcons({ data }: { data: OSData }) {
     },
     { id: 'projects', label: 'Projects', Icon: apps.projects.Icon, open: (el) => openApp('projects', el) },
     { id: 'photos', label: 'Photos', Icon: PhotosIcon, open: (el) => openApp('photos', el) },
+    { id: 'stickies', label: 'Stickies', Icon: apps.stickies.Icon, open: (el) => openApp('stickies', el) },
     { id: 'terminal', label: 'Terminal', Icon: apps.terminal.Icon, open: (el) => openApp('terminal', el) }
   ];
 
@@ -293,7 +294,7 @@ export default function Desktop({ data }: { data: OSData }) {
   );
 }
 
-const DEEP_LINK_APPS: AppId[] = ['about', 'resume', 'projects', 'photos', 'terminal'];
+const DEEP_LINK_APPS: AppId[] = ['about', 'resume', 'projects', 'photos', 'stickies', 'terminal'];
 
 /** Handles links like /?open=resume or /?open=ocra. Returns whether it opened anything. */
 function openFromUrl(data: OSData): boolean {
