@@ -1967,6 +1967,35 @@
   letter-spacing: 0.02em;
 }
 
+/* ---------- Presence ---------- */
+
+.os-cursors {
+  position: absolute;
+  inset: 0;
+  z-index: 1200;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.os-cursor {
+  position: absolute;
+  filter: drop-shadow(0 1px 1.5px rgba(0, 0, 0, 0.35));
+  transition: left 0.1s linear, top 0.1s linear, opacity 0.6s ease;
+}
+
+.os-cursor[data-idle] {
+  opacity: 0;
+}
+
+.os-online {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 7px;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
 /* ---------- Stickies ---------- */
 
 .os-stickies {

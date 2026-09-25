@@ -3,6 +3,7 @@ import { apps, launch } from './registry';
 import { useFocusedId, useWindows } from './store';
 import { useOSData } from './context';
 import { SkyStatus, type SkyState } from './Sky';
+import { OnlineStatus } from './Presence';
 
 interface MenuItem {
   label: string;
@@ -129,6 +130,7 @@ export function MenuBar({ sky }: { sky: SkyState }) {
       </nav>
 
       <div className="os-status">
+        <OnlineStatus />
         <SkyStatus sky={sky} onOpen={() => useWindows.getState().setDashboard(true)} />
         <button type="button" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} aria-label="Toggle appearance">
           {theme === 'dark' ? '☀︎' : '☾'}
