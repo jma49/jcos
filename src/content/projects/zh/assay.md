@@ -6,7 +6,7 @@ status: live
 order: 2
 stack: [Next.js, TypeScript, PostgreSQL, MongoDB, Redis, Clerk]
 repo: https://github.com/jma49/Assay
-demo: https://sql-script-depoly.vercel.app/
+demo: https://assay-sql.vercel.app/
 cover: ../covers/assay.jpg
 ---
 
@@ -22,7 +22,7 @@ Assay 会定时对 PostgreSQL 数据库运行 SQL 检查，并标出哪些检查
 
 ## 演示
 
-[在线演示](https://sql-script-depoly.vercel.app/)里有一个 `demo` 库，包含客户、订单、支付和库存几张表，里面故意埋了一些数据问题；另外有 11 条检查专门把它们找出来，比如重复订单和负库存。
+[在线演示](https://assay-sql.vercel.app/)里有一个 `demo` 库，包含客户、订单、支付和库存几张表，里面故意埋了一些数据问题；另外有 11 条检查专门把它们找出来，比如重复订单和负库存。
 
 ## 技术栈
 

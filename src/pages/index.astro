@@ -46,7 +46,7 @@ const data: OSData = {
   skills: t.skills.groups.map((g) => ({ name: g.name, items: [...g.items] })),
   education: t.education.items.map((e) => ({ ...e })),
   projects,
-  photos: await getPhotos(),
+  photos: await getPhotos(profile.photography),
   wallpaper: wallpaper.src
 };
 

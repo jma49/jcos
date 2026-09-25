@@ -1,12 +1,15 @@
-# Re-captures project preview images after every change to main and
-# commits them back when they differ. See scripts/capture-previews.mjs.
+# Re-captures project preview images and refreshes the Unsplash photo
+# snapshot after every change to main and once a week, and commits them back
+# when they differ. See scripts/capture-previews.mjs and update-photos.mjs.
 name: Update project previews
 
 on:
   push:
     branches: [main]
     # The bot's own commit only touches these images; don't react to it.
-    paths-ignore: ['src/content/projects/covers/**', 'public/og.png']
+    paths-ignore: ['src/content/projects/covers/**', 'public/og.png', 'src/data/photos.json']
+  schedule:
+    - cron: '0 12 * * 1'
   workflow_dispatch:
 
 permissions:
@@ -34,16 +37,20 @@ jobs:
 
       - run: npx playwright install chromium
 
+      - run: npm run photos:update
+        env:
+          UNSPLASH_ACCESS_KEY: ${{ secrets.UNSPLASH_ACCESS_KEY }}
+
       - run: npm run preview:capture
 
       - name: Commit changed previews
         run: |
-          if [ -z "$(git status --porcelain -- src/content/projects/covers public/og.png)" ]; then
+          if [ -z "$(git status --porcelain -- src/content/projects/covers public/og.png src/data/photos.json)" ]; then
             echo "Previews are up to date."
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
-          git add src/content/projects/covers public/og.png
+          git add src/content/projects/covers public/og.png src/data/photos.json
           git commit -m "chore: update project previews"
           git push

@@ -4,6 +4,6 @@
     { "source": "/os", "destination": "/", "permanent": true },
     { "source": "/os/", "destination": "/", "permanent": true },
     { "source": "/zh", "destination": "/", "permanent": true },
-    { "source": "/zh/:path*", "destination": "/:path*", "permanent": true }
+    { "source": "/zh/(.*)", "destination": "/$1", "permanent": true }
   ]
 }
