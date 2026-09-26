@@ -1,5 +1,6 @@
 # Checks every pull request and every push to main: the types, the unit
-# tests and a production build, and the database's rules against a real Postgres.
+# tests, a production build with every app opened in a browser, and the
+# database's rules against a real Postgres.
 name: CI
 
 on:
@@ -16,7 +17,7 @@ concurrency:
 
 jobs:
   test:
-    name: Types, tests and build
+    name: Types, tests, build and apps
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -28,6 +29,8 @@ jobs:
       - run: npm run check
       - run: npm test
       - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:smoke
 
   database:
     name: Database rules
