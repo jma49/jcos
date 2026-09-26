@@ -1,11 +1,12 @@
 import { defineConfig } from 'vitest/config';
 
 // Unit tests (npm test): the parts of JM/OS with rules worth pinning down,
-// and the Soapbox bot. The database's rules are tested separately, against
-// Postgres (supabase/tests).
+// the Vercel Functions (tests/api/: Vercel would deploy a test inside api/
+// as a function), and the Soapbox bot. The database's rules are tested
+// separately, against Postgres (supabase/tests).
 export default defineConfig({
   test: {
-    include: ['src/**/*.test.ts', 'supabase/functions/**/*.test.mjs'],
+    include: ['src/**/*.test.ts', 'tests/**/*.test.ts', 'supabase/functions/**/*.test.mjs'],
     environment: 'node'
   }
 });

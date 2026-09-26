@@ -396,8 +396,9 @@ script, or a changed command.
 
 ## Tests
 
-`npm test` runs the unit tests (Vitest, `*.test.ts` next to the code,
-and each Edge Function's `*.test.mjs`); keep game rules and
+`npm test` runs the unit tests (Vitest: `*.test.ts` next to the code in
+`src/`, the Vercel Functions' in `tests/api/` since Vercel deploys every
+file under `api/`, and each Edge Function's `*.test.mjs`); keep game rules and
 other logic worth testing in plain modules without React (as
 `apps/spider/rules.ts` and `apps/pinball/table.ts` are). `npm run
 test:db` checks the database's rules (`supabase/tests/rules.sql`)
