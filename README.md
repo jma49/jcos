@@ -137,6 +137,15 @@ goes through.
 | `node scripts/build-portrait.mjs <photo>` | Crops `public/portrait.jpg` from the source photo. |
 | `bash scripts/setup-soapbox.sh` | Sets up the Soapbox bot's secrets, deploy and webhook. |
 
+## License
+
+Copyright (C) 2026 Jincheng Ma.
+
+JM/OS is free software under the **GNU Affero General Public License
+v3.0** ([LICENSE](LICENSE)). You may use, change and share it. If you
+run a changed version where others can use it over a network, you must
+offer them its source under the same license.
+
 ## Credits
 
 The icons, fonts and desktop pictures come from
