@@ -195,8 +195,8 @@ export function SoapboxSaver() {
   }, []);
 
   const quotes =
-    posts && posts.length
-      ? posts.map((p) => ({
+    posts && posts.some((p) => p.body.trim())
+      ? posts.filter((p) => p.body.trim()).map((p) => ({
           text: p.body,
           kind: p.kind === 'rant' ? 'Rant' : 'Note',
           meta: [new Date(p.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }), p.place]

@@ -113,6 +113,13 @@ export interface Presence {
 export const REACTIONS = ['👍', '😂', '🫂', '🔥'] as const;
 export type Reaction = (typeof REACTIONS)[number];
 
+/** A photo on a Soapbox post, in Supabase Storage. */
+export interface PostImage {
+  url: string;
+  width: number;
+  height: number;
+}
+
 /** A Soapbox post: Jincheng's own note or rant, sent from Telegram. */
 export interface Post {
   id: string;
@@ -121,6 +128,8 @@ export interface Post {
   place: string | null;
   weather: string | null;
   created_at: string;
+  /** Photos sent with it, in the order they were sent; none for most posts. */
+  images: PostImage[];
   /** How many of each reaction it has. */
   reactions: Partial<Record<Reaction, number>>;
 }
