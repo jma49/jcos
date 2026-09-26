@@ -72,6 +72,7 @@ export type AppId =
   | 'airdrop'
   | 'photobooth'
   | 'synth'
+  | 'aboutmac'
   | 'account'
   | 'welcome';
 

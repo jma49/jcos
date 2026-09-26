@@ -80,6 +80,7 @@ export function MenuBar({ sky }: { sky: SkyState }) {
 
   const menus: Record<string, MenuItem[]> = {
     '◐': [
+      { label: 'About This Mac', action: () => launch('aboutmac') },
       { label: `About ${data.name}`, action: () => launch('about') },
       { divider: true, label: '' },
       { label: 'System Preferences…', action: () => launch('preferences') },
