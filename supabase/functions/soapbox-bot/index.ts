@@ -73,8 +73,10 @@ async function db(path: string, init: RequestInit = {}) {
       ...init.headers
     }
   });
-  if (!res.ok) throw new Error(`${path}: ${res.status} ${await res.text()}`);
-  return res.status === 204 ? null : res.json();
+  const text = await res.text();
+  if (!res.ok) throw new Error(`${path}: ${res.status} ${text}`);
+  // return=minimal answers with no body at all (204, or 201 for an insert).
+  return text ? JSON.parse(text) : null;
 }
 
 async function reply(chatId: number, text: string, replyTo?: number) {
