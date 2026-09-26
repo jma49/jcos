@@ -17,6 +17,7 @@
     "photos:update": "node scripts/update-photos.mjs",
     "test": "vitest run",
     "test:db": "bash supabase/tests/run.sh",
+    "test:smoke": "node scripts/smoke.mjs",
     "perf": "node scripts/perf-audit.mjs"
   },
   "dependencies": {

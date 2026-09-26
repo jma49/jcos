@@ -403,8 +403,12 @@ other logic worth testing in plain modules without React (as
 test:db` checks the database's rules (`supabase/tests/rules.sql`)
 against a local Postgres, then races the per-member limits with
 overlapping sessions (`supabase/tests/race.sh`); add a check there with
-every new rule or migration. CI (`.github/workflows/ci.yml`) runs both,
-the type check (`npm run check`) and the build on every pull request.
+every new rule or migration. `npm run test:smoke` opens every app in a
+production build (run `npm run build` first) and fails on an uncaught
+error, a console error or a crashed window; a new app is covered once
+it's in the registry. CI (`.github/workflows/ci.yml`) runs all of
+these, the type check (`npm run check`) and the build on every pull
+request.
 
 ## Pitfalls
 
@@ -521,8 +525,8 @@ again.
   upgraded in one pull request. Adjacent bumps to the same file (the
   workflow actions) conflict once the first merges; redo the rest on
   `main` rather than merging `main` into each. Every major gets the
-  whole desktop opened in a browser, not only CI, which builds but
-  never runs the apps.
+  whole desktop used in a browser, not only CI, whose smoke test opens
+  each app but doesn't use it.
 - `pkill -f "<pattern>"` (and `pgrep -f`) also match the shell running
   them, since the pattern is in its own command line, and kill it
   mid-command. A bracketed character helps only if the rest of the
