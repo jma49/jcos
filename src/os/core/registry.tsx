@@ -5,7 +5,8 @@ import {
   AirDropIcon,
   PhotoBoothIcon,
   SynthIcon,
-  MacIcon,
+  FinderIcon,
+  AppleIcon,
   ChatIcon,
   AppletStoreIcon,
   CalculatorIcon,
@@ -52,6 +53,8 @@ export interface AppDefinition {
   applet?: boolean;
   /** Only opens for something (a project), never by name. */
   internal?: boolean;
+  /** A panel rather than an app (About This Mac, the welcome): no Dock icon while open. */
+  noDock?: boolean;
 }
 
 export const apps: Record<AppId, AppDefinition> = {
@@ -74,7 +77,7 @@ export const apps: Record<AppId, AppDefinition> = {
     Component: lazy(() => import('../apps/Resume'))
   },
   projects: {
-    dock: 1,
+    dock: 2,
     phoneDock: true,
     name: 'Projects',
     Icon: FolderIcon,
@@ -106,8 +109,6 @@ export const apps: Record<AppId, AppDefinition> = {
     Component: lazy(() => import('../apps/Browser'))
   },
   terminal: {
-    dock: 7,
-    phoneDock: true,
     inApplications: true,
     name: 'Terminal',
     Icon: TerminalIcon,
@@ -118,7 +119,7 @@ export const apps: Record<AppId, AppDefinition> = {
     Component: lazy(() => import('../apps/Terminal'))
   },
   photos: {
-    dock: 2,
+    dock: 3,
     phoneDock: true,
     inApplications: true,
     material: 'metal',
@@ -131,7 +132,6 @@ export const apps: Record<AppId, AppDefinition> = {
     Component: lazy(() => import('../apps/Photos'))
   },
   stickies: {
-    dock: 4,
     inApplications: true,
     name: 'Stickies',
     Icon: StickiesIcon,
@@ -142,7 +142,6 @@ export const apps: Record<AppId, AppDefinition> = {
     Component: lazy(() => import('../apps/Stickies'))
   },
   soapbox: {
-    dock: 5,
     inApplications: true,
     name: 'Soapbox',
     Icon: SoapboxIcon,
@@ -153,9 +152,10 @@ export const apps: Record<AppId, AppDefinition> = {
     Component: lazy(() => import('../apps/Soapbox'))
   },
   finder: {
+    dock: 1,
     material: 'metal',
     name: 'Finder',
-    Icon: DiskIcon,
+    Icon: FinderIcon,
     width: 760,
     height: 480,
     minWidth: 440,
@@ -204,7 +204,7 @@ export const apps: Record<AppId, AppDefinition> = {
     Component: lazy(() => import('../apps/Minesweeper'))
   },
   ipod: {
-    dock: 3,
+    dock: 4,
     inApplications: true,
     name: 'iPod',
     Icon: IPodIcon,
@@ -225,7 +225,8 @@ export const apps: Record<AppId, AppDefinition> = {
     Component: lazy(() => import('../apps/Karaoke'))
   },
   chat: {
-    dock: 6,
+    dock: 5,
+    phoneDock: true,
     inApplications: true,
     name: 'Chat',
     Icon: ChatIcon,
@@ -269,7 +270,8 @@ export const apps: Record<AppId, AppDefinition> = {
   },
   aboutmac: {
     name: 'About This Mac',
-    Icon: MacIcon,
+    Icon: AppleIcon,
+    noDock: true,
     width: 300,
     height: 420,
     minWidth: 280,
@@ -287,6 +289,7 @@ export const apps: Record<AppId, AppDefinition> = {
   },
   welcome: {
     internal: true,
+    noDock: true,
     name: 'Welcome',
     Icon: ProjectIcon,
     width: 580,
@@ -296,7 +299,7 @@ export const apps: Record<AppId, AppDefinition> = {
     Component: lazy(() => import('../apps/Welcome'))
   },
   preferences: {
-    dock: 8,
+    dock: 6,
     inApplications: true,
     name: 'System Preferences',
     Icon: PreferencesIcon,

@@ -85,7 +85,7 @@ export function Dock() {
   // run, as on a Mac: one per app, or one per window for project pages.
   const visiting: { key: string; app: AppId; label: string; id?: string }[] = [];
   for (const w of Object.values(windows)) {
-    if (dockApps.includes(w.app)) continue;
+    if (dockApps.includes(w.app) || apps[w.app].noDock) continue;
     if (w.app === 'project') visiting.push({ key: w.id, app: w.app, label: w.title, id: w.id });
     else if (!visiting.some((v) => v.app === w.app)) visiting.push({ key: w.app, app: w.app, label: apps[w.app].name });
   }
