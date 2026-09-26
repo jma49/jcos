@@ -144,3 +144,31 @@ select public.set_recovery_email('A@example.com');
 select pg_temp.act_as('service_role');
 select pg_temp.check(public.recovery_request('carol', repeat('5', 64)) is null, 'three links an hour to any one address, whoever asks');
 reset role;
+
+-- Security Advisor ------------------------------------------------------------
+
+select pg_temp.check(not has_function_privilege('anon', 'public.notes_by_member()', 'execute')
+  and not has_function_privilege('authenticated', 'public.chat_flood_guard()', 'execute')
+  and not has_function_privilege('authenticated', 'public.handle_new_account()', 'execute'), 'trigger functions can''t be called over the API');
+select pg_temp.check(not exists (select from pg_proc where proname = 'notes_one_per_visitor'), 'the old one-note-per-visitor function is gone');
+select pg_temp.check(not has_function_privilege('anon', 'public.my_reactions()', 'execute'), 'visitors can''t ask for members'' reactions');
+select pg_temp.act_as('anon');
+select pg_temp.check(public.username_available('someone_new') and not public.username_available('alice'), 'visitors can still check a username');
+reset role;
+
+-- Reactions, with the triggers' EXECUTE revoked: they still fire.
+select set_config('test.post', (select id::text from public.soapbox_posts where media_group_id = 'G'), false);
+select pg_temp.act_as('authenticated', '22222222-2222-2222-2222-222222222222');
+insert into public.soapbox_reactions (post_id, emoji) values (current_setting('test.post')::uuid, '🔥');
+reset role;
+select pg_temp.check((select visitor from public.soapbox_reactions where emoji = '🔥') = 'user:22222222-2222-2222-2222-222222222222', 'a member reacts as themselves');
+select set_config('request.headers', '{"x-real-ip":"203.0.113.9"}', false);
+select pg_temp.act_as('anon');
+insert into public.soapbox_reactions (post_id, emoji) values (current_setting('test.post')::uuid, '👍');
+reset role;
+select pg_temp.check((select count(*) from public.soapbox_reactions where visitor ~ '^[0-9a-f]{64}$') = 1, 'a visitor reacts, known by a salted address');
+update public.soapbox_posts set hidden = true where media_group_id = 'G';
+select pg_temp.act_as('authenticated', '33333333-3333-3333-3333-333333333333');
+select pg_temp.check(pg_temp.refused($$insert into public.soapbox_reactions (post_id, emoji) values (current_setting('test.post')::uuid, '😂')$$), 'no reacting to a hidden post');
+reset role;
+select set_config('request.headers', '', false);

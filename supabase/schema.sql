@@ -1048,3 +1048,31 @@ revoke all on function public.recovery_request(text, text) from public, anon, au
 grant execute on function public.recovery_request(text, text) to service_role;
 
 notify pgrst, 'reload schema';
+
+-- ---------------------------------------------------------------------
+-- Security Advisor findings (the same as
+-- supabase/migrations/20261003_advisor.sql, whose header explains them)
+
+drop function if exists public.notes_one_per_visitor();
+
+revoke all on function public.notes_flood_guard() from public, anon, authenticated;
+revoke all on function public.notes_by_member() from public, anon, authenticated;
+revoke all on function public.chat_flood_guard() from public, anon, authenticated;
+revoke all on function public.soapbox_reaction_visitor() from public, anon, authenticated;
+revoke all on function public.handle_new_account() from public, anon, authenticated;
+
+alter function public.username_available(text) security invoker;
+
+revoke all on function public.my_reactions() from public, anon;
+grant execute on function public.my_reactions() to authenticated;
+
+drop policy if exists "Anyone can react" on public.soapbox_reactions;
+create policy "Anyone can react"
+  on public.soapbox_reactions for insert
+  to anon, authenticated
+  with check (
+    exists (select 1 from public.soapbox_posts p where p.id = post_id)
+    and (auth.uid() is null or visitor = 'user:' || auth.uid())
+  );
+
+notify pgrst, 'reload schema';
