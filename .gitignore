@@ -22,3 +22,18 @@ pnpm-debug.log*
 
 # Supabase CLI state
 supabase/.temp/
+.env.local
+.env.*.local
+
+# Vercel CLI
+.vercel/
+
+# Supabase CLI state (per machine)
+supabase/.branches/
+
+# test and editor leftovers
+test-results/
+playwright-report/
+coverage/
+.idea/
+*.log
