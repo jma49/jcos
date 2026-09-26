@@ -13,7 +13,7 @@ import { getPhotos } from '../lib/photos';
 import type { OSData } from '../os/core/types';
 
 const t = content.en;
-const wallpaper = await getImage({ src: wallpaperSource, width: 2560, format: 'webp', quality: 82 });
+const wallpaper = await getImage({ src: wallpaperSource, width: 2560, format: 'webp', quality: 75 });
 const entries = await getProjects('en');
 
 const projects = await Promise.all(
