@@ -85,6 +85,7 @@ src/content/       projects (Markdown, one file per language) and their covers
 src/i18n/          the site's copy (English; the Chinese copy is kept for later)
 src/data/          songs, desktop pictures, the photo snapshot
 api/               Vercel Functions: geo, lyrics
+tests/api/         the Vercel Functions' unit tests (not in api/, or Vercel would deploy them)
 supabase/          schema, migrations, Edge Functions, database tests
 scripts/           preview capture, photo refresh, favicon and portrait builders, bot setup
 public/os/         icons, fonts and desktop pictures (from ryOS, see NOTICE)
