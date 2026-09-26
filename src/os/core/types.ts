@@ -73,6 +73,8 @@ export type AppId =
   | 'photobooth'
   | 'synth'
   | 'aboutmac'
+  | 'spider'
+  | 'pinball'
   | 'account'
   | 'welcome';
 

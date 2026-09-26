@@ -127,3 +127,105 @@
   color: var(--os-dim);
   font-size: 11px;
 }
+
+/* Photos on a post: one whole, more as a grid of squares, like a phone's. */
+.os-soapbox-pictures {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3px;
+  margin: 8px 0 6px;
+  overflow: hidden;
+  border-radius: 6px;
+}
+
+.os-soapbox-pictures[data-count='1'] {
+  grid-template-columns: 1fr;
+}
+
+.os-soapbox-pictures[data-count='3'] button:first-child {
+  grid-row: span 2;
+  aspect-ratio: auto;
+}
+
+.os-root .os-soapbox-pictures button {
+  display: block;
+  padding: 0;
+  aspect-ratio: 1;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.08);
+  cursor: zoom-in;
+}
+
+.os-soapbox-pictures[data-count='1'] button {
+  max-height: 380px;
+}
+
+.os-soapbox-pictures img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.os-soapbox-lightbox {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 16px;
+  background: rgba(10, 10, 12, 0.88);
+  cursor: zoom-out;
+  animation: os-soapbox-fade 0.15s ease-out;
+}
+
+@keyframes os-soapbox-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+.os-soapbox-lightbox img {
+  max-width: 100%;
+  min-height: 0;
+  flex: 0 1 auto;
+  object-fit: contain;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.5);
+  cursor: default;
+}
+
+.os-soapbox-lightbox p {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 12px;
+  cursor: default;
+}
+
+.os-root .os-soapbox-lightbox p button,
+.os-root .os-soapbox-lightbox-close {
+  color: #fff;
+  font-size: 13px;
+}
+
+.os-root .os-soapbox-lightbox-close {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  font-size: 22px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .os-soapbox-lightbox {
+    animation: none;
+  }
+}
+
+.os-soapbox {
+  position: relative;
+}

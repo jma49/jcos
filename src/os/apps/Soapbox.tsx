@@ -1,15 +1,17 @@
 import { useEffect, useState } from 'react';
-import { getSocial, REACTIONS, SocialError, type Post, type Reaction, type Social } from '../social/social';
+import { getSocial, REACTIONS, SocialError, type Post, type PostImage, type Reaction, type Social } from '../social/social';
 import { useAccount } from '../social/account';
 import { loadJSON, saveJSON } from '../core/storage';
 import { clockTimeZone, usePlace } from '../ambient/place';
 import type { AppProps } from '../core/registry';
 import { play } from '../core/sound';
+import { useFocusedId } from '../core/store';
 
 // Soapbox: Jincheng's own notes and rants, sent from Telegram (see
 // supabase/functions/soapbox-bot). Visitors read and react: members (signed
 // in) pick a reaction and can change it or take it back (click it again);
-// anyone else gets one per post, told apart by IP address.
+// anyone else gets one per post, told apart by IP address. Posts can carry
+// photos; clicking one shows it large.
 
 /** Which reaction this browser gave each post while signed out, so the buttons can show it. */
 const REACTED_KEY = 'os-soapbox-reacted';
@@ -38,13 +40,84 @@ function Linked({ text }: { text: string }) {
   );
 }
 
+/** A post's photos: one shown whole, more in a grid of squares. */
+function Pictures({ images, onOpen }: { images: PostImage[]; onOpen: (index: number) => void }) {
+  if (!images.length) return null;
+  const one = images.length === 1;
+  return (
+    <div className="os-soapbox-pictures" data-count={Math.min(images.length, 4)}>
+      {images.map((image, i) => (
+        <button
+          key={image.url}
+          type="button"
+          onClick={() => onOpen(i)}
+          aria-label={`Photo ${i + 1} of ${images.length}`}
+          style={one && image.width && image.height ? { aspectRatio: `${image.width} / ${image.height}` } : undefined}
+        >
+          <img src={image.url} alt="" loading="lazy" draggable={false} />
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/** A photo from a post, large, over the feed; the arrow keys step through the post's others. */
+function Lightbox({
+  images,
+  index,
+  front,
+  onStep,
+  onClose
+}: {
+  images: PostImage[];
+  index: number;
+  /** Whether Soapbox is the front window; only then do the keys belong to it. */
+  front: boolean;
+  onStep: (i: number) => void;
+  onClose: () => void;
+}) {
+  useEffect(() => {
+    if (!front) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+      else if (e.key === 'ArrowRight' && images.length > 1) onStep((index + 1) % images.length);
+      else if (e.key === 'ArrowLeft' && images.length > 1) onStep((index - 1 + images.length) % images.length);
+      else return;
+      e.preventDefault();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [front, images.length, index, onStep, onClose]);
+
+  return (
+    <div className="os-soapbox-lightbox" role="dialog" aria-label="Photo" onClick={onClose}>
+      <img src={images[index].url} alt="" onClick={(e) => e.stopPropagation()} />
+      {images.length > 1 && (
+        <p onClick={(e) => e.stopPropagation()}>
+          <button type="button" onClick={() => onStep((index - 1 + images.length) % images.length)} aria-label="Previous photo">
+            ◀
+          </button>
+          {index + 1} of {images.length}
+          <button type="button" onClick={() => onStep((index + 1) % images.length)} aria-label="Next photo">
+            ▶
+          </button>
+        </p>
+      )}
+      <button type="button" className="os-soapbox-lightbox-close" onClick={onClose} aria-label="Close">
+        ×
+      </button>
+    </div>
+  );
+}
+
 function PostCard({
   post,
   timeZone,
   mine,
   member,
   note,
-  onReact
+  onReact,
+  onOpenPicture
 }: {
   post: Post;
   timeZone: string;
@@ -54,6 +127,7 @@ function PostCard({
   /** Why the last reaction didn't go through, if it didn't. */
   note?: string;
   onReact: (reaction: Reaction) => void;
+  onOpenPicture: (index: number) => void;
 }) {
   const when = new Date(post.created_at);
   return (
@@ -65,9 +139,12 @@ function PostCard({
           {when.toLocaleTimeString('en-US', { timeZone, hour: 'numeric', minute: '2-digit' })}
         </time>
       </header>
-      <p className="os-soapbox-body">
-        <Linked text={post.body} />
-      </p>
+      {post.body.trim() && (
+        <p className="os-soapbox-body">
+          <Linked text={post.body} />
+        </p>
+      )}
+      <Pictures images={post.images} onOpen={onOpenPicture} />
       <footer>
         {(post.place || post.weather) && (
           <span className="os-soapbox-where">
@@ -102,9 +179,11 @@ function PostCard({
   );
 }
 
-export default function Soapbox(_: AppProps) {
+export default function Soapbox({ win }: AppProps) {
+  const front = useFocusedId() === win.id;
   const [load, setLoad] = useState<Load>({ state: 'loading' });
   const [filter, setFilter] = useState<Filter>('all');
+  const [viewing, setViewing] = useState<{ images: PostImage[]; index: number } | null>(null);
   const { account } = useAccount();
   /** Signed out: this browser's own reactions. Signed in: the member's, from the server. */
   const [reacted, setReacted] = useState(readReacted);
@@ -215,9 +294,19 @@ export default function Soapbox(_: AppProps) {
             member={Boolean(account)}
             note={notes[post.id]}
             onReact={(r) => react(post, r)}
+            onOpenPicture={(index) => setViewing({ images: post.images, index })}
           />
         ))}
       </div>
+      {viewing && (
+        <Lightbox
+          images={viewing.images}
+          index={viewing.index}
+          front={front}
+          onStep={(index) => setViewing({ ...viewing, index })}
+          onClose={() => setViewing(null)}
+        />
+      )}
     </div>
   );
 }

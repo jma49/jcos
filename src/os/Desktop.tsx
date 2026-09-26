@@ -79,15 +79,15 @@ export default function Desktop({ data }: { data: OSData }) {
   };
 
   // Once the desktop is up, open whatever ?open= names (an app or a project
-  // slug), or put back the windows of the last visit, or greet with About
-  // (and, the very first time, a welcome).
+  // slug), or put back the windows of the last visit, or greet with About.
+  // The very first time, the welcome comes alone, in the middle, and About
+  // follows once it's closed (Welcome.tsx).
   useEffect(() => {
     if (booting || Object.keys(useWindows.getState().windows).length > 0) return;
     const greet = () => {
-      launch('about');
-      if (load(WELCOMED_KEY)) return;
+      if (load(WELCOMED_KEY)) return launch('about');
       save(WELCOMED_KEY, '1');
-      launch('welcome');
+      launch('welcome', { center: true });
     };
     const t = setTimeout(() => openFromUrl(data) || restoreWindows() || greet(), reduced ? 0 : 250);
     return () => clearTimeout(t);

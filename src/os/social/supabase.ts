@@ -18,6 +18,7 @@ import {
   type ChatRoom,
   type Note,
   type Post,
+  type PostImage,
   type Reaction,
   type Social,
   type VisitorInfo
@@ -203,13 +204,14 @@ export function supabaseSocial(url: string, key: string): Social {
     },
 
     async listPosts() {
-      const { data: posts, error } = await client
-        .from('soapbox_posts')
-        .select('id, body, kind, place, weather, created_at')
-        .order('created_at', { ascending: false })
-        .limit(100);
+      const query = (columns: string) =>
+        client.from('soapbox_posts').select(columns).order('created_at', { ascending: false }).limit(100);
+      let { data: posts, error } = await query('id, body, kind, place, weather, images, created_at');
+      // A database without supabase/migrations/20260929_soapbox_images.sql has no images yet.
+      if (error) ({ data: posts, error } = await query('id, body, kind, place, weather, created_at'));
       if (error) throw new Error(error.message);
-      const ids = (posts ?? []).map((p) => p.id);
+      const rows = (posts ?? []) as unknown as (Omit<Post, 'reactions' | 'images'> & { images?: (PostImage & { message?: number })[] })[];
+      const ids = rows.map((p) => p.id);
       const { data: reactions } = ids.length
         ? await client.from('soapbox_reactions').select('post_id, emoji').in('post_id', ids)
         : { data: [] };
@@ -219,7 +221,12 @@ export function supabaseSocial(url: string, key: string): Social {
         tally[r.emoji as Reaction] = (tally[r.emoji as Reaction] ?? 0) + 1;
         counts.set(r.post_id, tally);
       }
-      return (posts ?? []).map((p) => ({ ...(p as Omit<Post, 'reactions'>), reactions: counts.get(p.id) ?? {} }));
+      return rows.map((p) => ({
+        ...p,
+        // An album's photos arrive in any order; the message they came from puts them back.
+        images: [...(p.images ?? [])].sort((a, b) => (a.message ?? 0) - (b.message ?? 0)).map(({ url, width, height }) => ({ url, width, height })),
+        reactions: counts.get(p.id) ?? {}
+      }));
     },
 
     async myReactions() {

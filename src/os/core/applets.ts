@@ -42,6 +42,22 @@ export const APPLETS: Applet[] = [
     added: '2026-09-26'
   },
   {
+    app: 'spider',
+    category: 'Games',
+    tagline: 'Two decks, ten columns, one suit at a time.',
+    description:
+      'Spider Solitaire, as it came with every PC. Build down from King to Ace; a full run of one suit leaves the table. One, two or four suits, drag or click to move, undo, hints (H) and your best score for each.',
+    added: '2026-09-27'
+  },
+  {
+    app: 'pinball',
+    category: 'Games',
+    tagline: 'A space pinball table, in the spirit of 3D Pinball.',
+    description:
+      'An original table in the spirit of 3D Pinball’s Space Cadet: a launch lane, pop bumpers, slingshots, drop targets and lane lights that raise your rank from Cadet to Admiral. Flippers on Z and / (or the arrow keys), Space to launch, three balls.',
+    added: '2026-09-27'
+  },
+  {
     app: 'synth',
     category: 'Utilities',
     tagline: 'A little synthesizer you play with your keyboard.',

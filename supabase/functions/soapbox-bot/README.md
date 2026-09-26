@@ -10,8 +10,9 @@ in with `supabase login`, then run `bash scripts/setup-soapbox.sh`. It
 asks for the token (without echoing it) and your user ID, and does steps
 4–6 plus the bot's command menu. The manual steps follow.
 
-1. **Database.** Run `supabase/migrations/20260926_soapbox.sql` in the
-   Supabase SQL editor.
+1. **Database.** Run `supabase/migrations/20260926_soapbox.sql`, then
+   `20260929_soapbox_images.sql` (photos, and the `soapbox` storage
+   bucket they go in), in the Supabase SQL editor.
 2. **Bot.** In Telegram, message [@BotFather](https://t.me/BotFather),
    send `/newbot`, and keep the token it gives you.
 3. **Your Telegram user ID.** Message [@userinfobot](https://t.me/userinfobot);
@@ -48,12 +49,22 @@ asks for the token (without echoing it) and your user ID, and does steps
 | Message | Does |
 | --- | --- |
 | any text | posts a note |
+| a photo | posts it; its caption is the text (`#rant` works there too) |
+| an album | posts all its photos as one post |
+| an image sent as a file | posts it (JPEG, PNG, WebP or GIF, up to 10 MB) |
 | `/rant <text>` or `#rant <text>` | posts a rant |
 | `/note <text>` | posts a note |
 | `/at <city>` | stamps later posts with that city and its weather (default San Jose) |
 | `/at` | shows the current city |
 | `/delete` | hides the post you reply to, or the latest one |
-| editing a message | edits its post |
+| editing a message or a caption | edits its post |
+
+Stickers, voice messages and videos are answered with a note that they
+can't go on the Soapbox. Photos are copied into the public `soapbox`
+bucket (Storage), so they stay up even if the Telegram message goes.
+
+After deploying a new version of the function, nothing else changes:
+the webhook and secrets stay as they are.
 
 Hidden posts stay in the table with `hidden = true`; flip it back in the
 Table editor to restore one.

@@ -43,7 +43,9 @@ export const DocumentsFolderIcon = pngIcon('documents');
 export const AirDropIcon = pngIcon('airdrop');
 export const PhotoBoothIcon = pngIcon('photo-booth');
 export const SynthIcon = pngIcon('synth');
-export const MacIcon = pngIcon('mac');
+/** Finder's face, as in the Dock. */
+export const FinderIcon = pngIcon('mac');
+export const AppleIcon = pngIcon('apple');
 
 /** The Music folder: a folder with a note on it, as in Mac OS X's home folder. */
 export function MusicFolderIcon({ size = 64 }: { size?: number }) {
@@ -59,6 +61,64 @@ export function MusicFolderIcon({ size = 64 }: { size?: number }) {
         />
       </svg>
     </span>
+  );
+}
+
+/** Spider Solitaire: two fanned cards, a spade on top. Drawn here. */
+export function SpiderIcon({ size = 64 }: { size?: number }) {
+  // Unique per instance, as for Stickies: a hidden copy's gradients can't be borrowed.
+  const id = `spider${useId().replace(/[^\w-]/g, '')}`;
+  return (
+    <svg className="os-icon" width={size} height={size} viewBox="0 0 64 64" aria-hidden="true">
+      <defs>
+        <linearGradient id={`${id}-back`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#5aa0e8" />
+          <stop offset="1" stopColor="#1f5fb8" />
+        </linearGradient>
+        <filter id={`${id}-shadow`} x="-20%" y="-20%" width="140%" height="140%">
+          <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" floodOpacity="0.35" />
+        </filter>
+      </defs>
+      <g filter={`url(#${id}-shadow)`}>
+        <rect x="10" y="10" width="30" height="42" rx="3" fill={`url(#${id}-back)`} stroke="#fff" strokeWidth="2" transform="rotate(-12 25 31)" />
+        <rect x="24" y="12" width="30" height="42" rx="3" fill="#fff" stroke="#bbb" transform="rotate(8 39 33)" />
+      </g>
+      <g transform="rotate(8 39 33)">
+        <text x="28" y="23" fontSize="9" fontWeight="700" fontFamily="Helvetica, Arial" fill="#111">A</text>
+        <path d="M39 26c-5 5-8 7-8 10.5a3.6 3.6 0 0 0 6.4 2.2L36 44h6l-1.4-5.3A3.6 3.6 0 0 0 47 36.5C47 33 44 31 39 26z" fill="#111" />
+      </g>
+    </svg>
+  );
+}
+
+/** Pinball: a silver ball over a flipper and a lit bumper. Drawn here. */
+export function PinballIcon({ size = 64 }: { size?: number }) {
+  // Unique per instance, as for Stickies: a hidden copy's gradients can't be borrowed.
+  const id = `pinball${useId().replace(/[^\w-]/g, '')}`;
+  return (
+    <svg className="os-icon" width={size} height={size} viewBox="0 0 64 64" aria-hidden="true">
+      <defs>
+        <linearGradient id={`${id}-table`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#1b2a6b" />
+          <stop offset="1" stopColor="#0a0f2e" />
+        </linearGradient>
+        <radialGradient id={`${id}-ball`} cx="0.35" cy="0.3" r="0.7">
+          <stop offset="0" stopColor="#fff" />
+          <stop offset="0.5" stopColor="#b9c0cc" />
+          <stop offset="1" stopColor="#4a5160" />
+        </radialGradient>
+        <radialGradient id={`${id}-bumper`} cx="0.5" cy="0.4" r="0.6">
+          <stop offset="0" stopColor="#ffe27a" />
+          <stop offset="1" stopColor="#e5484d" />
+        </radialGradient>
+      </defs>
+      <rect x="6" y="4" width="52" height="56" rx="10" fill={`url(#${id}-table)`} stroke="#8fa3ff" strokeWidth="1.5" />
+      <path d="M12 16l3 1-1 3 3 1-3 1 1 3-3-1-1 3-1-3-3 1 1-3-3-1 3-1-1-3z" fill="#ffe27a" opacity="0.8" transform="translate(30 -2) scale(0.8)" />
+      <circle cx="22" cy="22" r="7" fill={`url(#${id}-bumper)`} stroke="#fff" strokeWidth="1.5" />
+      <path d="M14 50l18-6" stroke="#e5484d" strokeWidth="5" strokeLinecap="round" />
+      <path d="M50 50l-10-4" stroke="#e5484d" strokeWidth="5" strokeLinecap="round" />
+      <circle cx="38" cy="34" r="6" fill={`url(#${id}-ball)`} />
+    </svg>
   );
 }
 

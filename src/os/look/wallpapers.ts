@@ -256,11 +256,21 @@ export function topBrightnessOfGenerated(value: string, sky: SkyInput): number |
 }
 
 /**
+ * Mac OS X's photographic desktop pictures: what the default picture moves
+ * on to, and what the Desktop Pictures screen saver shows. (Jincheng's own
+ * photos stay in Photos.)
+ */
+export const SCENIC: SetPicture[] = PICTURE_SETS.filter((set) =>
+  ['nature', 'landscapes', 'plants', 'nostalgia', 'black_and_white'].includes(set.id)
+).flatMap((set) => set.items);
+
+/**
  * The picture to show next when the desktop changes by itself: another one
  * from the collection the current one belongs to. The default picture moves
- * on to the photos; the dynamic ones (sky, cover) change anyway, so they stay.
+ * on to the scenic ones; the dynamic ones (sky, cover) change anyway, so
+ * they stay.
  */
-export function nextPicture(current: string | null, photos: string[]): string | null {
+export function nextPicture(current: string | null): string | null {
   let pool: string[];
   const set = setOf(current);
   if (set) pool = set.items.map((item) => item.value);
@@ -269,7 +279,7 @@ export function nextPicture(current: string | null, photos: string[]): string | 
   else if (current?.startsWith('dynamic:')) return null;
   // A picture of the visitor's own (from Photo Booth) stays put.
   else if (current?.startsWith('data:')) return null;
-  else pool = photos;
+  else pool = SCENIC.map((item) => item.value);
   const others = pool.filter((value) => value !== current);
   return others.length ? others[Math.floor(Math.random() * others.length)] : null;
 }

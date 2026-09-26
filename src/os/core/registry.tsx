@@ -5,7 +5,10 @@ import {
   AirDropIcon,
   PhotoBoothIcon,
   SynthIcon,
-  MacIcon,
+  FinderIcon,
+  AppleIcon,
+  SpiderIcon,
+  PinballIcon,
   ChatIcon,
   AppletStoreIcon,
   CalculatorIcon,
@@ -52,6 +55,8 @@ export interface AppDefinition {
   applet?: boolean;
   /** Only opens for something (a project), never by name. */
   internal?: boolean;
+  /** A panel rather than an app (About This Mac, the welcome): no Dock icon while open. */
+  noDock?: boolean;
 }
 
 export const apps: Record<AppId, AppDefinition> = {
@@ -74,7 +79,7 @@ export const apps: Record<AppId, AppDefinition> = {
     Component: lazy(() => import('../apps/Resume'))
   },
   projects: {
-    dock: 1,
+    dock: 2,
     phoneDock: true,
     name: 'Projects',
     Icon: FolderIcon,
@@ -106,8 +111,6 @@ export const apps: Record<AppId, AppDefinition> = {
     Component: lazy(() => import('../apps/Browser'))
   },
   terminal: {
-    dock: 7,
-    phoneDock: true,
     inApplications: true,
     name: 'Terminal',
     Icon: TerminalIcon,
@@ -118,7 +121,7 @@ export const apps: Record<AppId, AppDefinition> = {
     Component: lazy(() => import('../apps/Terminal'))
   },
   photos: {
-    dock: 2,
+    dock: 3,
     phoneDock: true,
     inApplications: true,
     material: 'metal',
@@ -131,7 +134,6 @@ export const apps: Record<AppId, AppDefinition> = {
     Component: lazy(() => import('../apps/Photos'))
   },
   stickies: {
-    dock: 4,
     inApplications: true,
     name: 'Stickies',
     Icon: StickiesIcon,
@@ -142,7 +144,6 @@ export const apps: Record<AppId, AppDefinition> = {
     Component: lazy(() => import('../apps/Stickies'))
   },
   soapbox: {
-    dock: 5,
     inApplications: true,
     name: 'Soapbox',
     Icon: SoapboxIcon,
@@ -153,9 +154,10 @@ export const apps: Record<AppId, AppDefinition> = {
     Component: lazy(() => import('../apps/Soapbox'))
   },
   finder: {
+    dock: 1,
     material: 'metal',
     name: 'Finder',
-    Icon: DiskIcon,
+    Icon: FinderIcon,
     width: 760,
     height: 480,
     minWidth: 440,
@@ -204,7 +206,7 @@ export const apps: Record<AppId, AppDefinition> = {
     Component: lazy(() => import('../apps/Minesweeper'))
   },
   ipod: {
-    dock: 3,
+    dock: 4,
     inApplications: true,
     name: 'iPod',
     Icon: IPodIcon,
@@ -225,7 +227,8 @@ export const apps: Record<AppId, AppDefinition> = {
     Component: lazy(() => import('../apps/Karaoke'))
   },
   chat: {
-    dock: 6,
+    dock: 5,
+    phoneDock: true,
     inApplications: true,
     name: 'Chat',
     Icon: ChatIcon,
@@ -267,9 +270,30 @@ export const apps: Record<AppId, AppDefinition> = {
     minHeight: 340,
     Component: lazy(() => import('../apps/Synth'))
   },
+  spider: {
+    applet: true,
+    name: 'Spider Solitaire',
+    Icon: SpiderIcon,
+    width: 760,
+    height: 560,
+    minWidth: 520,
+    minHeight: 400,
+    Component: lazy(() => import('../apps/Spider'))
+  },
+  pinball: {
+    applet: true,
+    name: 'Pinball',
+    Icon: PinballIcon,
+    width: 440,
+    height: 700,
+    minWidth: 340,
+    minHeight: 520,
+    Component: lazy(() => import('../apps/pinball/Pinball'))
+  },
   aboutmac: {
     name: 'About This Mac',
-    Icon: MacIcon,
+    Icon: AppleIcon,
+    noDock: true,
     width: 300,
     height: 420,
     minWidth: 280,
@@ -287,16 +311,17 @@ export const apps: Record<AppId, AppDefinition> = {
   },
   welcome: {
     internal: true,
+    noDock: true,
     name: 'Welcome',
     Icon: ProjectIcon,
-    width: 440,
-    height: 470,
-    minWidth: 360,
+    width: 580,
+    height: 450,
+    minWidth: 380,
     minHeight: 420,
     Component: lazy(() => import('../apps/Welcome'))
   },
   preferences: {
-    dock: 8,
+    dock: 6,
     inApplications: true,
     name: 'System Preferences',
     Icon: PreferencesIcon,
@@ -330,10 +355,11 @@ interface LaunchOptions {
   title?: string;
   origin?: Rect;
   props?: Record<string, string>;
+  center?: boolean;
 }
 
 /** Opens (or focuses) an app window with its registered defaults. */
-export function launch(app: AppId, { key, title, origin, props }: LaunchOptions = {}) {
+export function launch(app: AppId, { key, title, origin, props, center }: LaunchOptions = {}) {
   const def = apps[app];
   return useWindows.getState().open(app, {
     key,
@@ -341,7 +367,8 @@ export function launch(app: AppId, { key, title, origin, props }: LaunchOptions 
     width: def.width,
     height: def.height,
     origin,
-    props
+    props,
+    center
   });
 }
 

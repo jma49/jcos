@@ -4,8 +4,10 @@
 // only things JM/OS already has can arrive. Offers and answers travel as
 // signals over the presence channel (signals.ts); nothing is stored.
 //
-// Anyone on the desktop can send an offer, so a receiver only takes them
-// while discoverable, only for paths that exist, one at a time per sender
+// AirDrop is for members: only signed-in visitors see each other, send or
+// receive, and are shown by username. Anyone could still send an offer
+// over the channel, so a receiver only takes them while signed in and
+// discoverable, only for paths that exist, one at a time per sender
 // and a few at once, and names the sender from presence, not from what
 // the offer says.
 
@@ -18,7 +20,7 @@ import { play } from '../core/sound';
 import { load, save } from '../core/storage';
 import { useWindows } from '../core/store';
 import type { AppId, OSData } from '../core/types';
-import { whereFrom } from './Presence';
+import { useAccount } from './account';
 import { myPresenceId, onSignal, sendSignal } from './signals';
 import type { Visitor } from './types';
 
@@ -61,11 +63,12 @@ export function setDiscoverable(discoverable: Discoverable) {
   useAirDrop.setState({ discoverable });
 }
 
-/** How a visitor is shown in AirDrop: their username, or where they are. */
-export const labelOf = (v: Pick<Visitor, 'username' | 'city' | 'country'>) => v.username ?? whereFrom(v);
+/** How a visitor is shown in AirDrop: their username. */
+export const labelOf = (v: Pick<Visitor, 'username'>) => v.username ?? 'Someone';
 
-/** The people AirDrop can reach: everyone else on the desktop who's discoverable. */
-export const reachable = (visitors: Visitor[] | null) => (visitors ?? []).filter((v) => !v.self && v.airdrop !== false);
+/** The people AirDrop can reach: other signed-in members on the desktop who are discoverable. */
+export const reachable = (visitors: Visitor[] | null) =>
+  (visitors ?? []).filter((v) => !v.self && v.username && v.airdrop !== false && v.username !== useAccount.getState().account?.username);
 
 /** Opens AirDrop to share a place on Macintosh HD. */
 export function shareViaAirDrop(path: string) {
@@ -77,6 +80,7 @@ const update = (id: string, state: TransferState) =>
 
 /** Offers `node` to a visitor; the answer arrives in `sent`. */
 export function sendAirDrop(to: Visitor, node: FileNode) {
+  if (!useAccount.getState().account) return null;
   const id = crypto.randomUUID();
   if (!sendSignal('airdrop-offer', { to: to.id, id, path: node.path })) return null;
   useAirDrop.setState((s) => ({ sent: [...s.sent.slice(-19), { id, to: to.id, toLabel: labelOf(to), path: node.path, name: node.name, state: 'waiting' }] }));
@@ -100,11 +104,11 @@ export function startAirDrop(data: OSData) {
   onSignal('airdrop-offer', ({ from, payload }) => {
     const { to, id, path } = payload;
     if (to !== myPresenceId() || typeof id !== 'string' || typeof path !== 'string' || id.length > 64 || path.length > 300) return;
-    if (useAirDrop.getState().discoverable === 'none') return;
+    if (useAirDrop.getState().discoverable === 'none' || !useAccount.getState().account) return;
     if (pending.has(from) || pending.size >= MAX_PENDING) return;
     const sender = useWindows.getState().visitors?.find((v) => v.id === from);
     const node = find(buildDisk(data, allApplets()), path);
-    if (!sender || !node) return;
+    if (!sender?.username || !node) return;
 
     const answer = (accepted: boolean) => {
       pending.delete(from);

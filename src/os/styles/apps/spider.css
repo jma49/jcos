@@ -1,0 +1,184 @@
+/* ---------- Spider Solitaire ---------- */
+
+.os-spider {
+  position: relative;
+  user-select: none;
+}
+
+/* Green baize, as every card table on every computer had. */
+.os-spider-table {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: radial-gradient(ellipse at 50% 30%, #2f8a4a, #1d5e32 75%);
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.35);
+}
+
+.os-spider-columns {
+  --gap: 6px;
+  --cw: calc((100cqw - 11 * var(--gap)) / 10);
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: var(--gap);
+  padding: 10px var(--gap);
+  overflow-y: auto;
+  container-type: inline-size;
+}
+
+.os-spider-column {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(var(--cw) * 1.4);
+  border-radius: 5px;
+}
+
+.os-spider-column[data-empty] {
+  box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, 0.28);
+}
+
+.os-spider-column[data-lit] {
+  box-shadow: 0 0 0 2px #ffe066;
+}
+
+/* Cards overlap: face-down ones closely, face-up ones enough to read. */
+.os-spider-slot {
+  flex: none;
+  height: calc(var(--cw) * 0.32);
+  touch-action: none;
+}
+
+.os-spider-slot[data-down] {
+  height: calc(var(--cw) * 0.14);
+}
+
+.os-spider-slot:last-child {
+  height: calc(var(--cw) * 1.4);
+}
+
+.os-spider-slot[data-hidden] {
+  visibility: hidden;
+}
+
+.os-spider-slot:not([data-down]) {
+  cursor: grab;
+}
+
+.os-spider-slot[data-lit] .os-spider-card {
+  box-shadow: 0 0 0 2px #ffe066, 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+.os-spider-card {
+  position: relative;
+  display: block;
+  width: var(--cw, 60px);
+  height: calc(var(--cw, 60px) * 1.4);
+  border-radius: calc(var(--cw, 60px) * 0.08);
+  background: linear-gradient(#ffffff, #f1f1ee);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35), 0 1px 2px rgba(0, 0, 0, 0.3);
+  color: #111;
+  font-family: var(--os-ui);
+  overflow: hidden;
+}
+
+.os-spider-card[data-red] {
+  color: #c8261c;
+}
+
+/* The back: Aqua blue with a woven pattern. */
+.os-spider-card[data-back] {
+  background:
+    repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.14) 0 3px, transparent 3px 7px),
+    repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.14) 0 3px, transparent 3px 7px),
+    linear-gradient(#5aa0e8, #1f5fb8);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.4), inset 0 0 0 3px #fff, 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.os-spider-corner {
+  position: absolute;
+  top: 3%;
+  left: 7%;
+  font-size: calc(var(--cw, 60px) * 0.21);
+  font-weight: 700;
+  line-height: 1;
+  text-align: center;
+}
+
+.os-spider-pip {
+  position: absolute;
+  inset: 30% 0 0;
+  display: grid;
+  place-items: center;
+  font-size: calc(var(--cw, 60px) * 0.46);
+  line-height: 1;
+}
+
+.os-spider-bottom {
+  flex: none;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 10px 10px;
+  --cw: 42px;
+}
+
+.os-spider-done {
+  display: flex;
+}
+
+.os-spider-done-slot {
+  width: 20px;
+  height: calc(var(--cw) * 1.4);
+}
+
+.os-spider-done-slot:last-child {
+  width: var(--cw);
+}
+
+.os-root .os-spider-stock {
+  position: relative;
+  width: calc(var(--cw) + 40px);
+  height: calc(var(--cw) * 1.4);
+  padding: 0;
+}
+
+.os-spider-stock .os-spider-card {
+  position: absolute;
+  top: 0;
+}
+
+.os-root .os-spider-stock:disabled {
+  cursor: default;
+}
+
+/* The run being dragged, following the pointer. */
+.os-spider-drag {
+  position: absolute;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  width: var(--cw, 60px);
+  pointer-events: none;
+  filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.4));
+}
+
+.os-spider-won {
+  position: absolute;
+  inset: 40% 20% auto;
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  padding: 16px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.72);
+  color: #fff;
+  font-size: 12px;
+  text-align: center;
+}
+
+.os-spider-won strong {
+  font-size: 20px;
+}

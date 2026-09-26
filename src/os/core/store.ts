@@ -27,6 +27,8 @@ interface OpenOptions {
   height: number;
   origin?: Rect;
   props?: Record<string, string>;
+  /** Right in the middle of the screen, instead of cascading from it. */
+  center?: boolean;
 }
 
 /** Light, dark, the system's setting, or dark from sunset to sunrise where the visitor is. */
@@ -141,7 +143,7 @@ function savedSound(): { soundOn: boolean; volume: number } {
 }
 
 /** Where a new window goes: centred, then stepped down-right per open window. */
-export function placement(width: number, height: number, openCount: number) {
+export function placement(width: number, height: number, openCount: number, center = false) {
   const vw = window.innerWidth;
   const vh = window.innerHeight;
   if (isPhone()) {
@@ -152,6 +154,9 @@ export function placement(width: number, height: number, openCount: number) {
   const bottom = vh - DOCK_CLEARANCE;
   const w = Math.min(width, vw - 48);
   const h = Math.min(height, bottom - top);
+  if (center) {
+    return { x: Math.round((vw - w) / 2), y: Math.max(top, Math.round(top + (bottom - top - h) / 2)), width: w, height: h };
+  }
   const step = (openCount % 6) * 28;
   const x = Math.min(vw - w - 16, Math.max(16, Math.round((vw - w) / 2) - 84 + step));
   const y = Math.min(bottom - h, Math.max(top, Math.round((vh - h) / 2) - 60 + step));
@@ -174,11 +179,12 @@ export const useWindows = create<WindowStore>((set, get) => ({
   exposeOpen: false,
   screensaverOn: false,
   visitors: null,
-  wallpaper: load(WALLPAPER_KEY),
+  // Jincheng's photos were desktop pictures once; they're only in Photos now.
+  wallpaper: load(WALLPAPER_KEY)?.includes('images.unsplash.com') ? null : load(WALLPAPER_KEY),
   rotateWallpaper: load(ROTATE_KEY) !== '0',
   place: null,
 
-  open: (app, { key = app, title, width, height, origin, props }) => {
+  open: (app, { key = app, title, width, height, origin, props, center }) => {
     const existing = get().windows[key];
     if (existing) {
       set((s) => ({
@@ -187,7 +193,7 @@ export const useWindows = create<WindowStore>((set, get) => ({
       }));
       return key;
     }
-    const bounds = placement(width, height, get().order.length);
+    const bounds = placement(width, height, get().order.length, center);
     set((s) => ({
       windows: {
         ...s.windows,

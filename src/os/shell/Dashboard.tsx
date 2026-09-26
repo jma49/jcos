@@ -370,7 +370,13 @@ function SoapboxWidget() {
       <span className="os-widget-title">
         {post.kind === 'rant' ? '🔥 Latest rant' : '📝 Latest from Soapbox'} · {ago(post.created_at)} ago
       </span>
-      <span className="os-soapbox-bubble">{post.body.length > 180 ? `${post.body.slice(0, 180)}…` : post.body}</span>
+      <span className="os-soapbox-bubble">
+        {post.body.trim()
+          ? post.body.length > 180
+            ? `${post.body.slice(0, 180)}…`
+            : post.body
+          : `📷 ${post.images.length === 1 ? 'A photo' : `${post.images.length} photos`}`}
+      </span>
     </button>
   );
 }

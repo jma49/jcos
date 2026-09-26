@@ -106,7 +106,7 @@ export function MenuBar({ sky }: { sky: SkyState }) {
     View: [
       { label: 'Exposé', shortcut: 'F9', disabled: !focused, action: () => useWindows.getState().setExpose(true) },
       { label: 'Show Dashboard', action: () => useWindows.getState().setDashboard(true) },
-      { label: 'Start Screen Saver', disabled: data.photos.length === 0, action: () => useWindows.getState().setScreensaver(true) },
+      { label: 'Start Screen Saver', action: () => useWindows.getState().setScreensaver(true) },
       { divider: true, label: '' },
       { label: theme === 'dark' ? 'Light Appearance' : 'Dark Appearance', action: () => setTheme(theme === 'dark' ? 'light' : 'dark') }
     ],

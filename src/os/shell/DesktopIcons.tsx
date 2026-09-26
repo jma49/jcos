@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ComponentType } from 'react';
-import { apps, launch, rectOf } from '../core/registry';
-import { DiskIcon, DocumentIcon, PhotosIcon } from '../core/icons';
+import { apps, launch, launcherApps, mobileDockApps, rectOf } from '../core/registry';
+import { DiskIcon, DocumentIcon } from '../core/icons';
 import { MENU_BAR_HEIGHT, isPhone, useWindows, type IconPositions } from '../core/store';
 import type { AppId, OSData } from '../core/types';
 
@@ -19,6 +19,9 @@ export function DesktopIcons({ data }: { data: OSData }) {
   const openApp = (app: AppId, el: HTMLElement, extra: Parameters<typeof launch>[1] = {}) =>
     launch(app, { origin: rectOf(el), ...extra });
 
+  // The desktop keeps a few things, as a tidy Mac's does; everything else
+  // is in the Dock, Finder's Applications folder and Spotlight. A phone's
+  // home screen has no Finder, so it lists every app, as iOS does.
   const shortcuts: Shortcut[] = [
     { id: 'hd', label: 'Macintosh HD', Icon: DiskIcon, open: (el) => openApp('finder', el, { props: { path: '/' } }) },
     { id: 'about', label: 'About Me', Icon: apps.about.Icon, open: (el) => openApp('about', el) },
@@ -28,12 +31,15 @@ export function DesktopIcons({ data }: { data: OSData }) {
       Icon: DocumentIcon,
       open: (el) => openApp('resume', el)
     },
-    { id: 'projects', label: 'Projects', Icon: apps.projects.Icon, open: (el) => openApp('projects', el) },
-    { id: 'photos', label: 'Photos', Icon: PhotosIcon, open: (el) => openApp('photos', el) },
-    { id: 'stickies', label: 'Stickies', Icon: apps.stickies.Icon, open: (el) => openApp('stickies', el) },
-    { id: 'soapbox', label: 'Soapbox', Icon: apps.soapbox.Icon, open: (el) => openApp('soapbox', el) },
-    { id: 'terminal', label: 'Terminal', Icon: apps.terminal.Icon, open: (el) => openApp('terminal', el) }
+    { id: 'projects', label: 'Projects', Icon: apps.projects.Icon, open: (el) => openApp('projects', el) }
   ];
+
+  if (isPhone()) {
+    const home = new Set<AppId>(['about', 'resume', 'projects', 'finder', 'account', 'aboutmac', 'browser', ...mobileDockApps]);
+    for (const app of launcherApps.filter((a) => !home.has(a))) {
+      shortcuts.push({ id: app, label: apps[app].name, Icon: apps[app].Icon, open: (el) => openApp(app, el) });
+    }
+  }
 
   const positions = useWindows((s) => s.iconPositions);
   const items = useRef(new Map<string, HTMLLIElement>());

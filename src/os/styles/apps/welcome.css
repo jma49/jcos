@@ -1,39 +1,66 @@
 /* ---------- Welcome (a first visit) ---------- */
 
 .os-welcome {
-  padding: 22px 24px 18px;
+  padding: 22px 26px 18px;
   gap: 0;
+  overflow-y: auto;
   user-select: none;
+}
+
+.os-welcome header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--os-line-soft);
+}
+
+.os-welcome header img {
+  flex: none;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.25));
 }
 
 .os-welcome h2 {
   margin: 0;
   font-family: var(--os-display);
-  font-size: 30px;
+  font-size: 28px;
   font-weight: 400;
+  line-height: 1.1;
 }
 
 .os-welcome-lead {
-  margin: 6px 0 14px;
+  margin: 4px 0 0;
   color: var(--os-dim);
-  font-size: 13px;
+  font-size: 12.5px;
   line-height: 1.45;
 }
 
+/* Two columns of tips, filling the window. */
 .os-welcome ul {
+  flex: 1;
   display: grid;
-  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  align-content: center;
+  gap: 16px 22px;
   margin: 0;
-  padding: 0;
+  padding: 18px 0;
   list-style: none;
 }
 
 .os-welcome li {
   display: flex;
-  align-items: center;
-  gap: 12px;
-  font-size: 12.5px;
+  align-items: flex-start;
+  gap: 11px;
+  font-size: 12px;
   line-height: 1.4;
+  color: var(--os-dim);
+}
+
+.os-welcome li b {
+  display: block;
+  margin-bottom: 1px;
+  color: var(--os-ink);
+  font-size: 12.5px;
 }
 
 .os-welcome li .os-icon {
@@ -44,8 +71,31 @@
 
 .os-welcome footer {
   display: flex;
+  align-items: center;
   justify-content: flex-end;
   gap: 8px;
-  margin-top: auto;
-  padding-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--os-line-soft);
+}
+
+.os-welcome-here {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--os-dim);
+  font-size: 11px;
+}
+
+.os-welcome-here i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #b8f5a8, #2fa52a 70%);
+}
+
+@media (max-width: 767px), (max-height: 500px) and (pointer: coarse) {
+  .os-welcome ul {
+    align-content: start;
+  }
 }
