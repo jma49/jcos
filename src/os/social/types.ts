@@ -47,6 +47,8 @@ export interface VisitorInfo {
   username?: string;
   /** The chat room their Chat window shows (public rooms only). */
   room?: string;
+  /** False when they've turned AirDrop off. */
+  airdrop?: boolean;
 }
 
 const text = (value: unknown, max: number) => (typeof value === 'string' && value.trim() ? value.trim().slice(0, max) : undefined);
@@ -62,7 +64,8 @@ export function cleanInfo(raw: unknown, fallbackColor: string): VisitorInfo {
     city: text(info.city, 60),
     country: text(info.country, 2),
     username: username && USERNAME.test(username) ? username : undefined,
-    room: room && /^[a-z0-9-]+$/.test(room) ? room : undefined
+    room: room && /^[a-z0-9-]+$/.test(room) ? room : undefined,
+    airdrop: info.airdrop === false ? false : undefined
   };
 }
 

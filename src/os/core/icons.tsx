@@ -40,6 +40,7 @@ export const AccountIcon = pngIcon('account');
 export const ApplicationsFolderIcon = pngIcon('applications');
 export const AppletsFolderIcon = pngIcon('applets');
 export const DocumentsFolderIcon = pngIcon('documents');
+export const AirDropIcon = pngIcon('airdrop');
 
 /** Stickies: a stack of notes. Drawn here; ryOS has no Stickies icon. */
 export function StickiesIcon({ size = 64 }: { size?: number }) {

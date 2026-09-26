@@ -16,6 +16,7 @@ import { Sky, useSky } from './ambient/Sky';
 import { Presence } from './social/Presence';
 import { startAccount } from './social/account';
 import { startChatWatch } from './social/chatState';
+import { startAirDrop } from './social/airdrop';
 import { Notices } from './shell/Notices';
 import { useDesktopPicture } from './look/useDesktopPicture';
 import { useAppearance } from './look/useAppearance';
@@ -56,6 +57,7 @@ export default function Desktop({ data }: { data: OSData }) {
   useEffect(startAccount, []);
   // Unread counts, and alerts for private messages and @mentions.
   useEffect(startChatWatch, []);
+  useEffect(() => startAirDrop(data), [data]);
 
   const glass = useWindows((s) => s.glass);
   const picture = useDesktopPicture(data, sky, root);

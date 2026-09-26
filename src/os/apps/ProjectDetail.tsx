@@ -1,6 +1,7 @@
 import { useOSData } from '../core/context';
 import { launch } from '../core/registry';
 import type { AppProps } from '../core/registry';
+import { shareViaAirDrop } from '../social/airdrop';
 
 export default function ProjectDetail({ win }: AppProps) {
   const { projects } = useOSData();
@@ -26,6 +27,9 @@ export default function ProjectDetail({ win }: AppProps) {
             Source ↗
           </a>
         )}
+        <button type="button" className="os-button" onClick={() => shareViaAirDrop(`/Projects/${p.slug}`)} title="Share with someone on the desktop">
+          AirDrop…
+        </button>
         <span className="os-toolbar-meta">{meta}</span>
       </div>
       <article className="os-scroll os-project">

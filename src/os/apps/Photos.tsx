@@ -4,6 +4,7 @@ import type { AppProps } from '../core/registry';
 import { DOCK_CLEARANCE, MENU_BAR_HEIGHT, isPhone, useWindows } from '../core/store';
 import type { OSPhoto, WindowState } from '../core/types';
 import { Drawer } from '../shell/drawer';
+import { shareViaAirDrop } from '../social/airdrop';
 
 /** Title bar + toolbar height, and the dark margin around a photo in the viewer. */
 const CHROME = 23 + 36;
@@ -165,6 +166,9 @@ export default function Photos({ win }: AppProps) {
             onClick={() => useWindows.getState().setWallpaper(current.full)}
           >
             {wallpaper === current.full ? 'Desktop Picture ✓' : 'Set as Desktop'}
+          </button>
+          <button type="button" className="os-button" onClick={() => shareViaAirDrop(`/Pictures/${current.id}`)} title="Share with someone on the desktop">
+            AirDrop…
           </button>
           <a className="os-button" href={current.page} target="_blank" rel="noopener">
             Unsplash ↗

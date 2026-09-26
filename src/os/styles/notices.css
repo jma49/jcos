@@ -39,6 +39,18 @@
   height: 36px;
 }
 
+.os-notice-thumb {
+  max-width: 36px;
+  max-height: 36px;
+  border: 2px solid #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.os-notice-icon .os-chat-avatar {
+  width: 32px;
+  height: 32px;
+}
+
 .os-notice-text {
   flex: 1;
   min-width: 0;

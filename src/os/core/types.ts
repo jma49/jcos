@@ -69,6 +69,7 @@ export type AppId =
   | 'ipod'
   | 'karaoke'
   | 'chat'
+  | 'airdrop'
   | 'account'
   | 'welcome';
 

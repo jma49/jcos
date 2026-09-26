@@ -5,6 +5,7 @@ import type { Place } from '../ambient/place';
 import { useAccount } from './account';
 import { useChatState } from './chatState';
 import { connectSignals, deliverSignal } from './signals';
+import { useAirDrop } from './airdrop';
 import { isDM, type Account } from './types';
 
 /** A remote cursor fades out after this long without moving. */
@@ -25,14 +26,15 @@ export function flag(country?: string) {
 
 /**
  * What others see about this visitor: a colour, their city once located,
- * their username if they're signed in, and the public chat room they have
- * open (never a private conversation).
+ * their username if they're signed in, the public chat room they have
+ * open (never a private conversation) and whether AirDrop can reach them.
  */
 function infoFor(color: string, place: Place | null, account: Account | null, room: string | null): VisitorInfo {
   const info: VisitorInfo = { color };
   if (place && place.source !== 'fallback') Object.assign(info, { city: place.city, country: place.country });
   if (account) info.username = account.username;
   if (room && !isDM(room)) info.room = room;
+  if (useAirDrop.getState().discoverable === 'none') info.airdrop = false;
   return info;
 }
 
@@ -95,7 +97,8 @@ export function Presence() {
       const stops = [
         useWindows.subscribe((state, prev) => state.place !== prev.place && refresh()),
         useAccount.subscribe((state, prev) => state.account !== prev.account && refresh()),
-        useChatState.subscribe((state, prev) => state.room !== prev.room && refresh())
+        useChatState.subscribe((state, prev) => state.room !== prev.room && refresh()),
+        useAirDrop.subscribe((state, prev) => state.discoverable !== prev.discoverable && refresh())
       ];
       unsubscribe = () => stops.forEach((stop) => stop());
       if (!isPhone()) {
