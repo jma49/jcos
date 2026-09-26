@@ -88,7 +88,7 @@ export function supabaseSocial(url: string, key: string): Social {
   };
 
   /**
-   * Whether the database predates rooms (supabase/migrations/20260928_chat_rooms.sql
+   * Whether the database predates rooms (supabase/migrations/20260926071227_chat_rooms.sql
    * not run yet): then there's one room, the Lobby, and messages have no room.
    */
   let roomless = false;
@@ -247,7 +247,7 @@ export function supabaseSocial(url: string, key: string): Social {
       const query = (columns: string) =>
         client.from('soapbox_posts').select(columns).order('created_at', { ascending: false }).limit(100);
       let { data: posts, error } = await query('id, body, kind, place, weather, images, created_at');
-      // A database without supabase/migrations/20260929_soapbox_images.sql has no images yet.
+      // A database without supabase/migrations/20260926080833_soapbox_images.sql has no images yet.
       if (error) ({ data: posts, error } = await query('id, body, kind, place, weather, created_at'));
       if (error) throw new Error(error.message);
       const rows = (posts ?? []) as unknown as (Omit<Post, 'reactions' | 'images'> & { images?: (PostImage & { message?: number })[] })[];

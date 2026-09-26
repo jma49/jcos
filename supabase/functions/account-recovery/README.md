@@ -14,7 +14,7 @@ calls this function; it emails through [Resend](https://resend.com).
 
 ## Setup
 
-1. **Database.** Run `supabase/migrations/20261001_password_reset.sql` in
+1. **Database.** Run `supabase/migrations/20260926094533_password_reset.sql` in
    the Supabase SQL editor (`schema.sql` already includes it).
 2. **Resend.** Add and verify `majincheng.com` under Domains (it gives you
    DNS records to add), then create an API key with sending access.

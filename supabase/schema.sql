@@ -219,7 +219,7 @@ revoke all on public.soapbox_settings from anon, authenticated;
 
 -- ---------------------------------------------------------------------
 -- Accounts, member-only Stickies, changeable reactions and chat (the same
--- as supabase/migrations/20260927_accounts_chat.sql, whose header explains
+-- as supabase/migrations/20260926040851_accounts_chat.sql, whose header explains
 -- it). This replaces the one-note-per-visitor rule above: after it, only
 -- members can put notes up, three a day. Turn off Authentication ›
 -- Providers › Email › "Confirm email" too.
@@ -501,7 +501,7 @@ $$;
 
 -- ---------------------------------------------------------------------
 -- Chat rooms and private conversations (the same as
--- supabase/migrations/20260928_chat_rooms.sql, whose header explains them)
+-- supabase/migrations/20260926071227_chat_rooms.sql, whose header explains them)
 
 create table if not exists public.chat_rooms (
   id text primary key check (id ~ '^[a-z0-9-]{2,24}$'),
@@ -609,7 +609,7 @@ revoke all on function public.chat_activity() from public;
 grant execute on function public.chat_activity() to anon, authenticated;
 
 -- ---------------------------------------------------------------------
--- Soapbox photos (the same as supabase/migrations/20260929_soapbox_images.sql,
+-- Soapbox photos (the same as supabase/migrations/20260926080833_soapbox_images.sql,
 -- whose header explains them)
 
 alter table public.soapbox_posts add column if not exists images jsonb not null default '[]'::jsonb;
@@ -687,7 +687,7 @@ $$;
 notify pgrst, 'reload schema';
 
 -- ---------------------------------------------------------------------
--- Moderation by Telegram (the same as supabase/migrations/20260930_moderation.sql,
+-- Moderation by Telegram (the same as supabase/migrations/20260926091033_moderation.sql,
 -- whose header explains it)
 
 do $$
@@ -792,7 +792,7 @@ notify pgrst, 'reload schema';
 
 -- ---------------------------------------------------------------------
 -- Password reset through the recovery address (the same as
--- supabase/migrations/20261001_password_reset.sql, whose header explains it)
+-- supabase/migrations/20260926094533_password_reset.sql, whose header explains it)
 
 create table if not exists private.password_resets (
   id bigint generated always as identity primary key,
@@ -923,7 +923,7 @@ notify pgrst, 'reload schema';
 
 -- ---------------------------------------------------------------------
 -- Limits that hold under concurrency, and site-wide backstops (the same as
--- supabase/migrations/20261002_hardening.sql, whose header explains them)
+-- supabase/migrations/20260926095149_hardening.sql, whose header explains them)
 
 create index if not exists chat_messages_user_created on public.chat_messages (user_id, created_at desc);
 create index if not exists chat_messages_created on public.chat_messages (created_at desc);
@@ -1051,7 +1051,7 @@ notify pgrst, 'reload schema';
 
 -- ---------------------------------------------------------------------
 -- Security Advisor findings (the same as
--- supabase/migrations/20261003_advisor.sql, whose header explains them)
+-- supabase/migrations/20260926100511_advisor.sql, whose header explains them)
 
 drop function if exists public.notes_one_per_visitor();
 

@@ -4,7 +4,7 @@
 # Function and points Telegram's webhook at it.
 #
 # Needs: the Supabase CLI, logged in (`supabase login`), and the
-# migration supabase/migrations/20260926_soapbox.sql applied.
+# migration supabase/migrations/20260925123319_soapbox.sql applied.
 # Usage: bash scripts/setup-soapbox.sh
 # The bot token is read without echoing and never written to the repo.
 set -euo pipefail

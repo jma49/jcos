@@ -2,7 +2,7 @@
 --
 -- Run this once in the Supabase SQL editor of a project set up with an
 -- earlier supabase/schema.sql (schema.sql itself already includes it). It
--- needs 20260927_accounts_chat.sql and can be run again safely.
+-- needs 20260926040851_accounts_chat.sql and can be run again safely.
 --
 -- • Rooms: public.chat_rooms lists the public rooms, in order. Everyone can
 --   read them; add, rename or reorder rooms in the Table editor. The Lobby

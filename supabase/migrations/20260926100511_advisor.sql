@@ -23,7 +23,7 @@
 --   - Leaked password protection is an Auth setting (Pro plan): Auth >
 --     Attack Protection.
 --
--- Run this once in the Supabase SQL editor, after 20261002_hardening.sql
+-- Run this once in the Supabase SQL editor, after 20260926095149_hardening.sql
 -- (schema.sql itself already includes it). It can be run again safely.
 
 drop function if exists public.notes_one_per_visitor();

@@ -15,7 +15,7 @@
 -- 3. An index for the per-member chat check, which otherwise read every
 --    message ever sent, a little slower with each one.
 --
--- Run this once in the Supabase SQL editor, after 20261001_password_reset.sql
+-- Run this once in the Supabase SQL editor, after 20260926094533_password_reset.sql
 -- (schema.sql itself already includes it). It can be run again safely.
 
 create index if not exists chat_messages_user_created on public.chat_messages (user_id, created_at desc);

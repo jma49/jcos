@@ -11,7 +11,7 @@
 // nobody can learn which accounts have a recovery address. Links are
 // random, kept only as a hash, work once and for 30 minutes, and at most
 // three go out per account an hour (supabase/migrations/
-// 20261001_password_reset.sql). Mail goes through Resend. Setup is in
+// 20260926094533_password_reset.sql). Mail goes through Resend. Setup is in
 // supabase/functions/account-recovery/README.md.
 
 const env = (name: string) => {

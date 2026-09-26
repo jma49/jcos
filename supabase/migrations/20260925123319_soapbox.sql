@@ -3,7 +3,7 @@
 -- Run this once in the Supabase SQL editor of a project set up with an
 -- earlier supabase/schema.sql (schema.sql itself already includes it). It
 -- can be run again safely. It needs the `private.secrets` salt from
--- 20260925_one_note_per_visitor.sql.
+-- 20260925093143_one_note_per_visitor.sql.
 --
 -- Only the Telegram bot (supabase/functions/soapbox-bot, which uses the
 -- service role key) writes posts. Visitors can read them and leave one

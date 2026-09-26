@@ -155,7 +155,7 @@ const HELP = [
 // ---------- Moderation ----------
 //
 // The database sends each new Stickies note and public chat message here
-// (supabase/migrations/20260930_moderation.sql), signed with a secret it
+// (supabase/migrations/20260926091033_moderation.sql), signed with a secret it
 // made; the bot forwards it to the owner with a Hide button. The bot
 // tells the database where it lives the first time the owner writes to
 // it, and asks Telegram for button presses at the same time.
