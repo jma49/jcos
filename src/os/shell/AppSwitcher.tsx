@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { apps } from '../core/registry';
-import { isPhone, useWindows } from '../core/store';
+import { isPhone, useWindowList, useWindows } from '../core/store';
 
 // ⌥Tab: the window switcher. Hold ⌥ and press Tab to step through the open
 // windows, most recent first (⇧ steps back); let go of ⌥ to bring the
@@ -17,7 +17,8 @@ function recentWindows() {
 export function AppSwitcher() {
   const [ids, setIds] = useState<string[] | null>(null);
   const [index, setIndex] = useState(0);
-  const windows = useWindows((s) => s.windows);
+  const list = useWindowList();
+  const windows = Object.fromEntries(list.map((w) => [w.id, w]));
   // Mirrors of the state for the key listeners, which outlive renders.
   const current = useRef<string[] | null>(null);
   const at = useRef(0);

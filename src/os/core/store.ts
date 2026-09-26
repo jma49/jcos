@@ -1,4 +1,6 @@
+import { useMemo } from 'react';
 import { create } from 'zustand';
+import { useShallow } from 'zustand/react/shallow';
 import type { AppId, Rect, WindowState } from './types';
 import type { Place } from '../ambient/place';
 import type { Visitor } from '../social/social';
@@ -296,6 +298,28 @@ export const useWindows = create<WindowStore>((set, get) => ({
 }));
 
 /** The focused window: the frontmost one that isn't minimized. */
+/** An open window as the chrome sees it: no position or size. */
+export type WindowSummary = Pick<WindowState, 'id' | 'app' | 'title' | 'minimized' | 'maximized'>;
+
+/**
+ * The open windows without their positions or sizes, for the Dock, the
+ * menu bar and the app switcher: dragging or resizing a window, which
+ * updates the store every frame, doesn't re-render them.
+ */
+export function useWindowList(): WindowSummary[] {
+  const keys = useWindows(
+    useShallow((s) => Object.values(s.windows).map((w) => JSON.stringify([w.id, w.app, w.title, w.minimized, w.maximized])))
+  );
+  return useMemo(
+    () =>
+      keys.map((key) => {
+        const [id, app, title, minimized, maximized] = JSON.parse(key);
+        return { id, app, title, minimized, maximized };
+      }),
+    [keys]
+  );
+}
+
 export function useFocusedId() {
   return useWindows((s) => {
     for (let i = s.order.length - 1; i >= 0; i--) {

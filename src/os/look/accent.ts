@@ -117,8 +117,12 @@ const sampleUrl = (url: string) => (url.includes('images.unsplash.com') ? url.re
 /** A small copy of a picture, as RGBA pixels, for sampling. */
 async function pixels(url: string, size = 48) {
   const img = new Image();
-  img.crossOrigin = 'anonymous';
-  img.src = sampleUrl(url);
+  // Only another host's picture (Unsplash) needs CORS to be read back. On
+  // the site's own, crossOrigin would make the browser download it a
+  // second time, apart from the copy the desktop shows.
+  const src = sampleUrl(url);
+  if (new URL(src, location.href).origin !== location.origin) img.crossOrigin = 'anonymous';
+  img.src = src;
   await img.decode();
   const canvas = document.createElement('canvas');
   canvas.width = size;

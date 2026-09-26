@@ -4,7 +4,9 @@
     { "source": "/os", "destination": "/", "permanent": true },
     { "source": "/os/", "destination": "/", "permanent": true },
     { "source": "/zh", "destination": "/", "permanent": true },
-    { "source": "/zh/(.*)", "destination": "/$1", "permanent": true }
+    { "source": "/zh/(.*)", "destination": "/$1", "permanent": true },
+    { "source": "/Jincheng_Ma_Resume.pdf", "destination": "/?open=resume", "permanent": true },
+    { "source": "/Jincheng_Ma_Resume_CN.pdf", "destination": "/?open=resume", "permanent": true }
   ],
   "headers": [
     {

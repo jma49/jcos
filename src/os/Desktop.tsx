@@ -46,10 +46,9 @@ export default function Desktop({ data }: { data: OSData }) {
 }
 
 function Shell({ data }: { data: OSData }) {
-  const windows = useWindows((s) => s.windows);
-  const order = useWindows((s) => s.order);
-  const exposeOpen = useWindows((s) => s.exposeOpen);
-  const focusedId = useFocusedId();
+  // Only whether an app is open, not where: the windows themselves are
+  // <WindowLayer>'s, so dragging one doesn't re-render the whole desktop.
+  const appOpen = useWindows((s) => Object.values(s.windows).some((w) => !w.minimized));
   const sky = useSky();
   const [menuAt, setMenuAt] = useState<{ x: number; y: number } | null>(null);
   const closeMenu = useCallback(() => setMenuAt(null), []);
@@ -76,12 +75,6 @@ function Shell({ data }: { data: OSData }) {
 
   useAppearance(sky.daylight);
 
-  // Exposé only has something to show while a window is open.
-  const layout = exposeOpen ? exposeLayout(Object.values(windows)) : null;
-  const exposeEmpty = layout !== null && Object.keys(layout).length === 0;
-  useEffect(() => {
-    if (exposeEmpty) useWindows.getState().setExpose(false);
-  }, [exposeEmpty]);
 
   const finishBoot = () => {
     try {
@@ -114,7 +107,7 @@ function Shell({ data }: { data: OSData }) {
         className="os-root"
         data-glass={glass || undefined}
         data-backdrop={picture.backdrop}
-        data-app-open={Object.values(windows).some((w) => !w.minimized) || undefined}
+        data-app-open={appOpen || undefined}
         onContextMenu={(e) => {
           // Only the empty desktop has this menu; windows keep the browser's.
           const target = e.target as HTMLElement;
@@ -141,21 +134,7 @@ function Shell({ data }: { data: OSData }) {
         <Sky sky={sky} tinted={picture.tinted} />
         <MenuBar sky={sky} />
         <DesktopIcons data={data} />
-        <Expose layout={layout} />
-
-        {/* Render in opening order and stack with z-index: reordering DOM nodes
-            would reload any iframe inside a window. */}
-        <AnimatePresence>
-          {Object.values(windows).map((win) => (
-            <Window
-              key={win.id}
-              win={win}
-              focused={win.id === focusedId}
-              z={10 + order.indexOf(win.id)}
-              exposed={layout?.[win.id]}
-            />
-          ))}
-        </AnimatePresence>
+        <WindowLayer />
 
         <Dock />
         <Dashboard />
@@ -174,3 +153,36 @@ function Shell({ data }: { data: OSData }) {
   );
 }
 
+/** The open windows and Exposé: the one part of the desktop that follows every move of a window. */
+function WindowLayer() {
+  const windows = useWindows((s) => s.windows);
+  const order = useWindows((s) => s.order);
+  const exposeOpen = useWindows((s) => s.exposeOpen);
+  const focusedId = useFocusedId();
+
+  // Exposé only has something to show while a window is open.
+  const layout = exposeOpen ? exposeLayout(Object.values(windows)) : null;
+  const exposeEmpty = layout !== null && Object.keys(layout).length === 0;
+  useEffect(() => {
+    if (exposeEmpty) useWindows.getState().setExpose(false);
+  }, [exposeEmpty]);
+
+  return (
+    <>
+      <Expose layout={layout} />
+      {/* Render in opening order and stack with z-index: reordering DOM nodes
+          would reload any iframe inside a window. */}
+      <AnimatePresence>
+        {Object.values(windows).map((win) => (
+          <Window
+            key={win.id}
+            win={win}
+            focused={win.id === focusedId}
+            z={10 + order.indexOf(win.id)}
+            exposed={layout?.[win.id]}
+          />
+        ))}
+      </AnimatePresence>
+    </>
+  );
+}

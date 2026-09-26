@@ -39,6 +39,7 @@ npm run dev        # http://localhost:4321
 npm test           # unit tests (Vitest)
 npm run test:db    # database rules against a local Postgres (needs psql)
 npm run build      # -> dist/
+npm run perf       # load, drag and idle budgets, against `npx astro preview` (after a build)
 ```
 
 It runs without any setup. Without Supabase settings, `astro dev` uses an
@@ -111,15 +112,49 @@ issues.
 To report a security problem, please email the address on the résumé
 rather than opening an issue.
 
+## Performance
+
+A first visit downloads about 170 KB of JavaScript (gzipped), one
+desktop picture and two subset fonts. Everything else loads when it's
+first used: each app, the Supabase client and the screen savers.
+Dragging a window re-renders only that window. `npm run perf` checks
+these budgets:
+- what a first visit downloads;
+- the script time of a drag with six apps open;
+- the script time of an idle desktop.
+
+AGENTS.md has the rules and the self-audit every significant change
+goes through.
+
 ## Scripts
 
 | Command | Does |
 | --- | --- |
 | `npm run preview:capture` | Screenshots project pages into their covers, and the home page into `public/og.png`. CI runs it on every push to `main`. |
+| `npm run perf` | Measures a production build against the performance budgets (see AGENTS.md). |
 | `npm run photos:update` | Refreshes `src/data/photos.json` from Unsplash. |
 | `node scripts/build-favicon.mjs` | Regenerates the favicons from one vector mark. |
 | `node scripts/build-portrait.mjs <photo>` | Crops `public/portrait.jpg` from the source photo. |
 | `bash scripts/setup-soapbox.sh` | Sets up the Soapbox bot's secrets, deploy and webhook. |
+
+## License
+
+Copyright (C) 2026 Jincheng Ma.
+
+The code is free software under the **GNU Affero General Public License
+v3.0 or later** ([LICENSE](LICENSE)). You may use, change and share it.
+If you run a changed version where others can use it over a network,
+you must offer them its source under the same license.
+
+Jincheng's personal content is not covered by that license. All rights
+reserved. This means:
+- the bio, experience and other copy in `src/i18n/content.ts`;
+- the project write-ups in `src/content/projects/`;
+- the photos (`public/portrait.jpg` and those listed in
+  `src/data/photos.json`);
+- the Soapbox posts.
+
+To reuse the code for your own site, replace that content with yours.
 
 ## Credits
 

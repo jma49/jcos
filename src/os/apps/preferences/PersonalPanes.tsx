@@ -6,7 +6,8 @@ import { Group, Option, Segmented } from './controls';
 import { useWindows, type Appearance } from '../../core/store';
 import { choosePlace, clockTimeZone, HOME, placeLabel, usePlace, usesFahrenheit } from '../../ambient/place';
 import { PlaceSearch } from '../../ambient/PlaceSearch';
-import { SAVER_STYLES, SAVER_VIEWS } from '../../shell/Screensaver';
+import { SAVER_STYLES } from '../../shell/Screensaver';
+import { SAVER_VIEWS } from '../../shell/saverViews';
 import { ACCENTS, cachedAccent, type AccentChoice } from '../../look/accent';
 import {
   backgroundFor,

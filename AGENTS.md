@@ -9,8 +9,7 @@ descriptions, issues, code comments, documentation, and file names.
 
 The only exceptions are content that is Chinese by nature:
 - the Chinese copy of the site: the `zh` entries in
-  `src/i18n/content.ts`, `src/content/projects/zh/` and the Chinese
-  résumé PDF;
+  `src/i18n/content.ts` and `src/content/projects/zh/`;
 - proper names in data, such as song titles and artists in
   `src/data/songs.json`, which may also be quoted in the docs;
 - patterns that have to match Chinese text, such as the lyric credits in
@@ -311,6 +310,82 @@ Chinese project files; they will be used again.
 - Security headers are set in `vercel.json`. Dependabot proposes updates
   weekly; review majors (Astro, Vite) with a full build and the tests.
 
+## Performance
+
+- **Budgets** (checked by `npm run perf`, see below) for a first visit:
+  - at most 180 KB of JavaScript, gzipped;
+  - at most 1.1 MB of images and 250 KB of fonts;
+  - nothing downloaded twice.
+
+  Dragging a window with six apps open, and five idle seconds, stay
+  under the script time the script reports.
+- **Load only what the first screen needs.**
+  - Apps are lazy (`registry.tsx`).
+  - The Supabase client arrives by dynamic import (`social.ts`).
+  - The screen saver's views load on first use, or once the page is
+    idle (`saverViews.tsx`).
+
+  Anything new that isn't on screen at first paint follows the same
+  pattern.
+- **Subscribe to the narrowest slice of the store.** Dragging or
+  resizing a window updates `windows` every frame, and every component
+  that selects `s.windows` renders with it.
+  - The chrome reads `useWindowList()` (no positions).
+  - Booleans are selected as booleans.
+  - The windows render in their own `WindowLayer`.
+  - `Window` is memoized; keep its props stable.
+- **Assets:**
+  - Desktop pictures are WebP, at most 2560px, quality about 75.
+  - Icons are at most 160px.
+  - Fonts are subset to the scripts and symbols the interface uses:
+    Latin, punctuation, arrows, ⌘ ⌥ ⇧, ✓ and the variation selectors.
+    Other characters fall back to the system font. To subset a new
+    font, use fontTools and check that nothing the UI uses is lost.
+- **Idle means idle.** Timers and animation frames stop when nothing is
+  showing (a closed app, a hidden tab), and listeners are removed on
+  unmount. Presence withdraws the pointer when the tab is hidden, and
+  Realtime traffic stays throttled (`CURSOR_INTERVAL`).
+
+## Self-audit after significant changes
+
+Performance and security follow the practices in this file, not
+"whatever works". After every significant change, audit your own work
+before opening the pull request, so the change brings no new risk,
+vulnerability or bottleneck. Significant means any of these:
+- a new app or feature;
+- a table, function, policy or migration;
+- a new dependency or major upgrade, or a new third-party service or
+  secret;
+- anything that touches accounts, data, Realtime, the window manager or
+  the first load.
+
+**Security:**
+- Every new input is validated where it can't be bypassed (database
+  constraints, row-level security, the Edge Function), with a length
+  limit. Checks in the browser are a convenience.
+- New tables and functions follow the Security section.
+  - Run `npm run test:db` with checks for the new rules, and races for
+    any new limit.
+  - After the migration, run the Supabase Security Advisor. Any finding
+    left in place is explained in the migration.
+- Nothing secret reaches the browser, the repository or Vercel. Check
+  `git diff` for keys and tokens, and keep `.env.example` current.
+- What visitors write renders as text. Answers about accounts don't
+  reveal whether one exists, in their content or their timing.
+- `npm audit --omit=dev` reports nothing new. A new dependency is
+  worth its weight.
+
+**Performance:**
+- `npm run build`, then `npx astro preview` and `npm run perf`. Every
+  line is within budget; compare with the numbers before the change.
+- New code that isn't needed at first paint is lazy. New store
+  subscriptions are narrow. New timers and listeners stop and clean up.
+- New images are sized and compressed; new fonts are subset.
+
+**Record it.** The pull request says what was checked, with the numbers
+from `npm run perf`. Findings are fixed in the same pull request.
+Anything deliberately left goes to HANDOFF.md with the reason.
+
 ## README
 
 `README.md` is the project's front page: what JM/OS is, how to run and
@@ -450,8 +525,17 @@ again.
   never runs the apps.
 - `pkill -f "<pattern>"` (and `pgrep -f`) also match the shell running
   them, since the pattern is in its own command line, and kill it
-  mid-command. Put one character in brackets so the pattern can't match
-  itself: `pgrep -f "astro dev --port 440[0-9]"`.
+  mid-command. A bracketed character helps only if the rest of the
+  command doesn't contain a match either (`--port 4410` later in the
+  same line still matches `441[0-9]`). Stop a server by its port
+  instead: `fuser -k 4321/tcp`.
+- An image loaded with `crossOrigin = 'anonymous'` is a separate
+  request from the same image used as a CSS background. The accent
+  sampler downloaded the 900 KB desktop picture twice until it set
+  `crossOrigin` only for other hosts.
+- Hooks that do real work (`useSky`) must not sit in a component that
+  re-renders every frame. `Desktop` subscribed to `windows`, so a drag
+  recomputed the sun and the weather tint sixty times a second.
 - There's no Prettier config. Don't reformat whole files; it buries the
   change in the diff.
 - Wrapping a big JSX tree reindents all of it. Wrap through a small

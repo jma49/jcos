@@ -2,6 +2,7 @@
   "name": "jincheng-portfolio",
   "type": "module",
   "version": "1.0.0",
+  "license": "AGPL-3.0-or-later",
   "engines": {
     "node": ">=22.12.0"
   },
@@ -15,7 +16,8 @@
     "preview:capture": "node scripts/capture-previews.mjs",
     "photos:update": "node scripts/update-photos.mjs",
     "test": "vitest run",
-    "test:db": "bash supabase/tests/run.sh"
+    "test:db": "bash supabase/tests/run.sh",
+    "perf": "node scripts/perf-audit.mjs"
   },
   "dependencies": {
     "@astrojs/react": "^7.0.0",
