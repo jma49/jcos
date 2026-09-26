@@ -282,7 +282,13 @@ Chinese project files; they will be used again.
 - Functions that bypass row-level security are `security definer` with
   `set search_path = public`, and have `execute` revoked from `public`,
   `anon` and `authenticated` unless the site calls them. Ones only an
-  Edge Function calls are granted to `service_role` alone.
+  Edge Function calls are granted to `service_role` alone. Trigger
+  functions get `execute` revoked from all three (triggers still fire:
+  the right is only checked when a trigger is created). A function that
+  only reads what its caller may read anyway is `security invoker`.
+- Policies check something real: no `with check (true)`. Run Supabase's
+  Advisors › Security after each migration; the findings left on purpose
+  are listed in `supabase/migrations/20261003_advisor.sql`.
 - A limit that counts rows before inserting ("three a day") takes a
   transaction-scoped advisory lock for whoever it limits first
   (`pg_advisory_xact_lock`), or concurrent requests all get through.
@@ -416,6 +422,10 @@ again.
 - A Vitest `expect` inside a per-frame loop made the Pinball test time
   out. Use plain `throw` in hot loops, and give long simulations an
   explicit timeout.
+- A rule check run as `anon` or `authenticated` sees only the columns
+  granted to that role. Look test fixtures up (and read columns like
+  `visitor`) after `reset role`, or the check fails with "permission
+  denied" for the wrong reason.
 - The database test stubs need grants for `service_role` too, such as
   the `net` schema, or a check fails for the wrong reason.
 - Playwright here launches with
