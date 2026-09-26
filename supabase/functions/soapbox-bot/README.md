@@ -10,9 +10,9 @@ in with `supabase login`, then run `bash scripts/setup-soapbox.sh`. It
 asks for the token (without echoing it) and your user ID, and does steps
 4–6 plus the bot's command menu. The manual steps follow.
 
-1. **Database.** Run `supabase/migrations/20260926_soapbox.sql`, then
-   `20260929_soapbox_images.sql` (photos, and the `soapbox` storage
-   bucket they go in) and `20260930_moderation.sql` (notes and chat
+1. **Database.** Run `supabase/migrations/20260925123319_soapbox.sql`, then
+   `20260926080833_soapbox_images.sql` (photos, and the `soapbox` storage
+   bucket they go in) and `20260926091033_moderation.sql` (notes and chat
    messages sent to you), in the Supabase SQL editor.
 2. **Bot.** In Telegram, message [@BotFather](https://t.me/BotFather),
    send `/newbot`, and keep the token it gives you.
@@ -74,7 +74,7 @@ branch puts an old bot live.
 
 ## Moderation
 
-With `20260930_moderation.sql` run, every new Stickies note and every
+With `20260926091033_moderation.sql` run, every new Stickies note and every
 message in a public chat room (never a private conversation) is sent
 to you by the bot, with a **🙈 Hide** button that takes it down
 (`approved = false` for a note, `hidden = true` for a message) and

@@ -233,7 +233,7 @@ security and triggers in `supabase/schema.sql` do the enforcing.
   offers. Anyone can send anything there, so receivers check what
   arrives (`cleanInfo()` for presence).
 
-- **Moderation** (`supabase/migrations/20260930_moderation.sql`, the
+- **Moderation** (`supabase/migrations/20260926091033_moderation.sql`, the
   Soapbox bot): new Stickies notes and public chat messages go to the
   owner on Telegram through `pg_net`, signed with a secret in
   `private.secrets`, with Hide / Show again buttons; `/watch on|off`.
@@ -244,8 +244,8 @@ turn off "Confirm email", and set `PUBLIC_SUPABASE_URL` and
 for both Production and Preview. The names the Supabase integration for
 Vercel uses, `NEXT_PUBLIC_SUPABASE_URL` and
 `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, work as well. A project set up from
-an older schema needs the files in `supabase/migrations/`, run in date
-order. Test a migration against the live project inside `begin; …
+an older schema needs the files in `supabase/migrations/`, run in the
+order of their timestamped names. Test a migration against the live project inside `begin; …
 rollback;` first (`supabase db query --linked -f`).
 
 Without those variables, production hides these features, and `astro dev`
@@ -288,7 +288,7 @@ Chinese project files; they will be used again.
   only reads what its caller may read anyway is `security invoker`.
 - Policies check something real: no `with check (true)`. Run Supabase's
   Advisors › Security after each migration; the findings left on purpose
-  are listed in `supabase/migrations/20261003_advisor.sql`.
+  are listed in `supabase/migrations/20260926100511_advisor.sql`.
 - A limit that counts rows before inserting ("three a day") takes a
   transaction-scoped advisory lock for whoever it limits first
   (`pg_advisory_xact_lock`), or concurrent requests all get through.
@@ -343,6 +343,14 @@ again.
   raise notice … $$`.
 - PostgREST caches the schema. End a migration that adds functions or
   columns with `notify pgrst, 'reload schema';`.
+- Migrations are named `<UTC timestamp>_<what it does>.sql`, with the
+  time they're written as `YYYYMMDDHHMMSS`, the way `supabase migration
+  new` names them. They used to be named by date, and the date was
+  bumped for each new file: nine migrations written over two days ran
+  up to "20261003". They were renamed to their real commit times. The
+  project applies migrations by hand in the SQL editor, so a rename
+  changes nothing there. Before switching to `supabase db push`,
+  mark the ones already run with `supabase migration repair`.
 - Every migration must run twice without harm:
   - `if not exists` for tables and indexes;
   - `create or replace` for functions;

@@ -1,7 +1,7 @@
 // Tests for the account-recovery function (`npm test`, with Vitest):
 // index.ts is loaded with a stand-in for Deno, and the database, Supabase
 // Auth and Resend are replaced by an in-memory fake that follows the
-// rules of supabase/migrations/20261001_password_reset.sql.
+// rules of supabase/migrations/20260926094533_password_reset.sql.
 
 import { test, beforeEach, vi } from 'vitest';
 import assert from 'node:assert/strict';

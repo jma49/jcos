@@ -2,7 +2,7 @@
 --
 -- Run this once in the Supabase SQL editor of a project set up with an
 -- earlier supabase/schema.sql (schema.sql itself already includes it). It
--- needs 20260926_soapbox.sql and can be run again safely.
+-- needs 20260925123319_soapbox.sql and can be run again safely.
 --
 -- • soapbox_posts.images: the pictures, in order, as
 --   [{ "url", "width", "height", "message" }] (message: the Telegram

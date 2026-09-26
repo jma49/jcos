@@ -68,7 +68,7 @@ Function secrets:
 2. Turn off Authentication › Providers › Email › "Confirm email".
    Accounts are usernames, with addresses made from them.
 3. A project set up from an older schema instead runs the files in
-   `supabase/migrations/`, in date order.
+   `supabase/migrations/`, in the order of their timestamped names.
 4. Deploy the Edge Functions. Each has its own README:
    - `supabase/functions/soapbox-bot`: Telegram → Soapbox posts, plus
      moderation notices.
