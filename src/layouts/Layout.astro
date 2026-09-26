@@ -9,6 +9,8 @@ interface Props {
   /** Page title and description; default to the home page's. */
   title?: string;
   description?: string;
+  /** What the browser tab says, when it should be shorter than the title (link previews keep the title). */
+  tabTitle?: string;
 }
 
 const { lang, path = '/' } = Astro.props;
@@ -41,7 +43,7 @@ const personLd = {
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="generator" content={Astro.generator} />
 
-    <title>{title}</title>
+    <title>{Astro.props.tabTitle ?? title}</title>
     <meta name="description" content={description} />
     <meta name="author" content={profile.name[lang]} />
     <link rel="canonical" href={canonical} />
