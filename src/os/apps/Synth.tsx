@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import type { AppProps } from '../core/registry';
 import { useFocusedId, useWindows } from '../core/store';
 import { audio } from '../core/sound';
@@ -190,6 +190,16 @@ export default function Synth({ win }: AppProps) {
   };
 
   // Musical Typing while the Synth is in front; Z and X change octave.
+  // The keys act on the patch as it is now (a knob turned since the last
+  // octave change used to be undone by the next one). The listeners are
+  // set up again for each octave, which lets go of every held note, so
+  // none is left sounding at the old pitch.
+  const shiftOctave = useEffectEvent((next: number) => {
+    setOctave(next);
+    update({}, next);
+  });
+  const press = useEffectEvent((midi: number) => noteOn(midi));
+  const release = useEffectEvent((midi: number) => noteOff(midi));
   useEffect(() => {
     if (!front) return;
     const typing = (e: KeyboardEvent) => e.target instanceof HTMLElement && e.target.matches('input, textarea, select');
@@ -197,22 +207,20 @@ export default function Synth({ win }: AppProps) {
       if (e.metaKey || e.ctrlKey || e.altKey || typing(e)) return;
       if (e.code === 'KeyZ' || e.code === 'KeyX') {
         e.preventDefault();
-        const next = Math.min(6, Math.max(2, octave + (e.code === 'KeyX' ? 1 : -1)));
-        setOctave(next);
-        update({}, next);
+        shiftOctave(Math.min(6, Math.max(2, octave + (e.code === 'KeyX' ? 1 : -1))));
         return;
       }
       const n = KEYMAP[e.code];
       if (n === undefined) return;
       e.preventDefault();
-      if (!e.repeat) noteOn(base + n);
+      if (!e.repeat) press(base + n);
     };
     const up = (e: KeyboardEvent) => {
       const n = KEYMAP[e.code];
-      if (n !== undefined) noteOff(base + n);
+      if (n !== undefined) release(base + n);
     };
     // Leaving the window lets go of everything.
-    const blur = () => engine.current?.voices.forEach((_, m) => noteOff(m));
+    const blur = () => engine.current?.voices.forEach((_, m) => release(m));
     window.addEventListener('keydown', down);
     window.addEventListener('keyup', up);
     window.addEventListener('blur', blur);

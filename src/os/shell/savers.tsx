@@ -17,6 +17,8 @@ function useCanvas(
   const canvas = useRef<HTMLCanvasElement>(null);
   const draw = useRef(frame);
   draw.current = frame;
+  const restart = useRef(reset);
+  restart.current = reset;
 
   useEffect(() => {
     const el = canvas.current;
@@ -33,7 +35,7 @@ function useCanvas(
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.fillStyle = '#000';
       ctx.fillRect(0, 0, w, h);
-      reset?.(w, h);
+      restart.current?.(w, h);
     };
     resize();
     const observer = new ResizeObserver(resize);

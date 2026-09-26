@@ -171,8 +171,6 @@ ryOS (AGPL-3.0).
    geo, lyric parsing and window restore (#78); AGENTS.md split into
    `docs/agents/` (#80); the preview capture, broken since Astro 7, fixed
    (#81); pointers stop past 12 people on the desktop (crowd mode). Open:
-   - 18 `exhaustive-deps` warnings from `npm run lint`, left alone since
-     most effects deliberately run on one trigger; review one by one.
    - First-visit JavaScript went from 172 to 154 KB (LazyMotion, #85;
      the Dashboard and screen saver after the desktop settles, #86), and
      the budget from 180 to 160. The song and wallpaper catalogues (about

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useEffectEvent, useState } from 'react';
 import { AnimatePresence, m } from 'motion/react';
 import { DOCK_CLEARANCE, MENU_BAR_HEIGHT, isPhone, useWindows } from '../core/store';
 import type { Rect, WindowState } from '../core/types';
@@ -148,9 +148,12 @@ export function Expose({ layout }: { layout: Record<string, Rect> | null }) {
 
   // Start on the window that was in front.
   const open = layout !== null;
+  const pickFrontmost = useEffectEvent(() =>
+    setPicked([...useWindows.getState().order].reverse().find((id) => layout?.[id]) ?? null)
+  );
   useEffect(() => {
-    if (!open) return setPicked(null);
-    setPicked([...useWindows.getState().order].reverse().find((id) => layout?.[id]) ?? null);
+    if (open) pickFrontmost();
+    else setPicked(null);
   }, [open]);
 
   useEffect(() => {

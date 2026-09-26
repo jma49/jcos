@@ -235,7 +235,8 @@ export const Window = memo(function Window({ win, focused, z, exposed }: Props) 
       setGenie({ neck, dx: iconX - (rect.x + neck * rect.width), dy: dock.top + dock.height / 2 - (rect.y + rect.height) });
     }
   }
-  const map = useMemo(() => (genie ? genieMap(genie.neck) : null), [genie?.neck]);
+  const genieNeck = genie?.neck;
+  const map = useMemo(() => (genieNeck === undefined ? null : genieMap(genieNeck)), [genieNeck]);
   const warp = useMotionValue(0);
   const displacement = useRef<SVGFEDisplacementMapElement>(null);
   const filterId = `genie-${win.id.replace(/[^\w-]/g, '-')}`;

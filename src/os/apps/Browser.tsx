@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import type { AppProps } from '../core/registry';
 
 const HOME = 'https://ocra-nine.vercel.app/';
@@ -13,13 +13,16 @@ export default function Browser({ win }: AppProps) {
   const frame = useRef<HTMLIFrameElement>(null);
 
   // Opening a different demo in the same window navigates it.
+  const asked = win.props?.url;
+  const openAsked = useEffectEvent((next: string) => {
+    if (next === url) return;
+    setUrl(next);
+    setDraft(next);
+    setLoading(true);
+  });
   useEffect(() => {
-    if (win.props?.url && win.props.url !== url) {
-      setUrl(win.props.url);
-      setDraft(win.props.url);
-      setLoading(true);
-    }
-  }, [win.props?.url]);
+    if (asked) openAsked(asked);
+  }, [asked]);
 
   const go = (next: string) => {
     const withScheme = /^https?:\/\//i.test(next) ? next : `https://${next}`;
