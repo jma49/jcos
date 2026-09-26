@@ -64,7 +64,9 @@ can't go on the Soapbox. Photos are copied into the public `soapbox`
 bucket (Storage), so they stay up even if the Telegram message goes.
 
 After deploying a new version of the function, nothing else changes:
-the webhook and secrets stay as they are.
+the webhook and secrets stay as they are. Deploy from an up-to-date
+`main`: the CLI uploads the `index.ts` in your working copy, so an old
+branch puts an old bot live.
 
 Hidden posts stay in the table with `hidden = true`; flip it back in the
 Table editor to restore one.
