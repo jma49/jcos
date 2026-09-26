@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { useOSData } from '../core/context';
-import { MOBILE_BREAKPOINT, useWindows, type SaverStyle } from '../core/store';
+import { isPhone, useWindows, type SaverStyle } from '../core/store';
 import { useMusic } from '../media/music';
 import { clockTimeZone, usePlace } from '../ambient/place';
 import { describe, useWeather } from '../ambient/weather';
@@ -54,7 +54,7 @@ function shuffle<T>(items: T[]) {
  */
 function useIdle(minutes: number, onIdle: () => void) {
   useEffect(() => {
-    if (window.innerWidth < MOBILE_BREAKPOINT || minutes <= 0) return;
+    if (isPhone() || minutes <= 0) return;
     let timer = 0;
     const reset = () => {
       clearTimeout(timer);

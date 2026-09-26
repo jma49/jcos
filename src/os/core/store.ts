@@ -9,6 +9,16 @@ export const MENU_BAR_HEIGHT = 22;
 export const DOCK_CLEARANCE = 78;
 export const MOBILE_BREAKPOINT = 768;
 
+/**
+ * Phones get the iOS-style home screen and full-screen apps: anything
+ * narrower than MOBILE_BREAKPOINT, and a touch screen too short for windows
+ * (a phone held sideways). PHONE_QUERY is the same test for CSS; phone.css
+ * repeats it.
+ */
+export const PHONE_QUERY = `(max-width: ${MOBILE_BREAKPOINT - 1}px), (max-height: 500px) and (pointer: coarse)`;
+
+export const isPhone = () => typeof window !== 'undefined' && window.matchMedia(PHONE_QUERY).matches;
+
 interface OpenOptions {
   /** Windows with the same key are reused instead of duplicated. Defaults to the app id. */
   key?: string;
@@ -66,6 +76,8 @@ interface WindowStore {
   place: Place | null;
 
   open: (app: AppId, options: OpenOptions) => string;
+  /** Puts back windows from an earlier visit (see windowSession.ts), in their stacking order. */
+  restore: (windows: WindowState[], order: string[]) => void;
   close: (id: string) => void;
   focus: (id: string) => void;
   minimize: (id: string) => void;
@@ -129,10 +141,10 @@ function savedSound(): { soundOn: boolean; volume: number } {
 }
 
 /** Where a new window goes: centred, then stepped down-right per open window. */
-function placement(width: number, height: number, openCount: number) {
+export function placement(width: number, height: number, openCount: number) {
   const vw = window.innerWidth;
   const vh = window.innerHeight;
-  if (vw < MOBILE_BREAKPOINT) {
+  if (isPhone()) {
     return { x: 0, y: MENU_BAR_HEIGHT, width: vw, height: vh - MENU_BAR_HEIGHT };
   }
   // Keep the whole window between the menu bar and the Dock.
@@ -185,6 +197,9 @@ export const useWindows = create<WindowStore>((set, get) => ({
     }));
     return key;
   },
+
+  restore: (windows, order) =>
+    set({ windows: Object.fromEntries(windows.map((w) => [w.id, w])), order: order.filter((id) => windows.some((w) => w.id === id)) }),
 
   close: (id) =>
     set((s) => {

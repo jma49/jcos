@@ -1,6 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { PlaceSearch } from '../ambient/PlaceSearch';
 import { getSocial, type Post } from '../social/social';
+import { flag } from '../social/Presence';
 import { launch } from '../core/registry';
 import { AnimatePresence, motion } from 'motion/react';
 import { useWindows } from '../core/store';
@@ -374,6 +375,38 @@ function SoapboxWidget() {
   );
 }
 
+/** Where the people on the desktop right now are, by city. Hidden when it's just you. */
+function VisitorsWidget() {
+  const visitors = useWindows((s) => s.visitors) ?? [];
+  if (visitors.length < 2) return null;
+  const cities = new Map<string, { label: string; count: number; you: boolean }>();
+  for (const v of visitors) {
+    const key = v.city ? `${v.city}|${v.country ?? ''}` : '?';
+    const label = v.city ? `${flag(v.country)} ${v.city}`.trim() : 'Somewhere';
+    const row = cities.get(key) ?? { label, count: 0, you: false };
+    row.count += 1;
+    row.you ||= Boolean(v.self);
+    cities.set(key, row);
+  }
+  const rows = [...cities.values()].sort((a, b) => b.count - a.count || a.label.localeCompare(b.label)).slice(0, 6);
+  return (
+    <div className="os-widget os-widget-visitors">
+      <p className="os-widget-title">On the desktop now · {visitors.length}</p>
+      <ul>
+        {rows.map((r) => (
+          <li key={r.label}>
+            <span>
+              {r.label}
+              {r.you && <small> (you)</small>}
+            </span>
+            {r.count > 1 && <b>×{r.count}</b>}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 function StickyWidget({ children }: { children: ReactNode }) {
   return <div className="os-widget os-widget-sticky">{children}</div>;
 }
@@ -398,6 +431,7 @@ export function Dashboard() {
     { key: 'home', node: <HomeWidget email={data.email} /> },
     { key: 'github', node: <GitHubWidget user={githubUser} /> },
     { key: 'soapbox', node: <SoapboxWidget /> },
+    { key: 'visitors', node: <VisitorsWidget /> },
     {
       key: 'sticky',
       node: (

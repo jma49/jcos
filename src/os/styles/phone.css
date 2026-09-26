@@ -4,7 +4,7 @@
   display: none;
 }
 
-@media (max-width: 767px) {
+@media (max-width: 767px), (max-height: 500px) and (pointer: coarse) {
   .os-menus .os-menu:not(:first-child) {
     display: none;
   }
@@ -96,12 +96,35 @@
   .os-back {
     display: block;
     position: absolute;
-    left: 6px;
+    left: max(2px, env(safe-area-inset-left));
     top: 50%;
     translate: 0 -50%;
-    padding: 6px 10px;
-    color: #1a5cc8;
+    /* A thumb-sized target. */
+    padding: 10px 12px;
+    border-radius: 8px;
+    color: var(--os-accent);
     font-size: 15px;
+    transition: opacity 0.1s, background 0.1s;
+  }
+
+  .os-root .os-back:active {
+    background: color-mix(in srgb, var(--os-accent) 14%, transparent);
+    opacity: 0.6;
+  }
+
+  /* Clear of the notch and the home indicator (viewport-fit=cover). */
+  .os-menubar {
+    padding-left: max(4px, env(safe-area-inset-left));
+    padding-right: max(8px, env(safe-area-inset-right));
+  }
+
+  .os-body {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .os-window {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
   }
 
   /* The Dock is the home screen's; it steps aside while an app is open. */
@@ -115,7 +138,7 @@
   }
 
   .os-dock-wrap {
-    bottom: 10px;
+    bottom: calc(10px + env(safe-area-inset-bottom));
   }
 
   .os-dock {

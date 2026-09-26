@@ -138,7 +138,7 @@
   color: var(--os-dim);
 }
 
-@media (max-width: 767px) {
+@media (max-width: 767px), (max-height: 500px) and (pointer: coarse) {
   .os-sticky-draft {
     grid-column: 1 / -1;
   }

@@ -278,7 +278,7 @@
   color: #fff;
 }
 
-@media (max-width: 767px) {
+@media (max-width: 767px), (max-height: 500px) and (pointer: coarse) {
   .os-prefs-toolbar button {
     min-width: 0;
     flex: 1;
@@ -291,4 +291,16 @@
   .os-prefs-list {
     width: auto;
   }
+}
+
+/* A note that needs the visitor's attention, under a choice. */
+.os-prefs-hint {
+  margin-top: 3px;
+  color: #b0661a !important;
+}
+
+/* A button that reads as a link. */
+.os-root .os-link {
+  color: var(--os-accent);
+  text-decoration: underline;
 }

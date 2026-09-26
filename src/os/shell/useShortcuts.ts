@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { launch } from '../core/registry';
-import { MOBILE_BREAKPOINT, useWindows } from '../core/store';
+import { isPhone, useWindows } from '../core/store';
 
 /** The desktop's keys: F9 Exposé; ⌘K search; ⌥W / ⌥M / ⌥T for windows (the browser keeps ⌘W/⌘T). */
 export function useShortcuts() {
@@ -8,7 +8,7 @@ export function useShortcuts() {
     const onKey = (e: KeyboardEvent) => {
       const s = useWindows.getState();
       const top = [...s.order].reverse().find((id) => !s.windows[id]?.minimized);
-      if (e.key === 'F9' && window.innerWidth >= MOBILE_BREAKPOINT) {
+      if (e.key === 'F9' && !isPhone()) {
         e.preventDefault();
         s.setExpose(!s.exposeOpen);
       } else if (e.key === 'Escape' && s.exposeOpen) {

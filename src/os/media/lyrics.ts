@@ -49,8 +49,9 @@ const toCandidate = (e: Entry): Candidate | null => {
   return lines.filter((l) => l.text).length >= 6 ? { duration: e.duration, lines } : null;
 };
 
+/** A lyrics lookup that gives up after ten seconds: the song then shows the listening view. */
 async function getJson<T>(url: string): Promise<T | null> {
-  const res = await fetch(url);
+  const res = await fetch(url, { signal: AbortSignal.timeout(10_000) });
   return res.ok ? res.json() : null;
 }
 

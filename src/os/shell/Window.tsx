@@ -10,7 +10,7 @@ import {
 } from 'react';
 import { animate, motion, useMotionValue, useReducedMotion } from 'motion/react';
 import { apps } from '../core/registry';
-import { DOCK_CLEARANCE, MENU_BAR_HEIGHT, MOBILE_BREAKPOINT, useWindows } from '../core/store';
+import { DOCK_CLEARANCE, MENU_BAR_HEIGHT, isPhone, useWindows } from '../core/store';
 import { frameOf } from './Expose';
 import { GENIE_REACH, genieMap, genieSupported } from './genie';
 import { DrawerSlot } from './drawer';
@@ -115,7 +115,7 @@ export function Window({ win, focused, z, exposed }: Props) {
   const def = apps[win.app];
   const reduced = useReducedMotion();
   const start = useRef(win);
-  const isMobile = typeof window !== 'undefined' && window.innerWidth < MOBILE_BREAKPOINT;
+  const isMobile = isPhone();
 
   // A thrown window glides on, slows down and bounces off the screen edges.
   const glide = useRef(0);

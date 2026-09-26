@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { apps, launch } from '../core/registry';
-import { MOBILE_BREAKPOINT, useFocusedId, useWindows } from '../core/store';
+import { isPhone, useFocusedId, useWindows } from '../core/store';
 import { useOSData } from '../core/context';
 import { SkyStatus, type SkyState } from '../ambient/Sky';
 import { OnlineStatus } from '../social/Presence';
@@ -119,7 +119,7 @@ export function MenuBar({ sky }: { sky: SkyState }) {
 
   const timeZone = clockTimeZone(sky.place);
   // Phones have room for the time only.
-  const phone = window.innerWidth < MOBILE_BREAKPOINT;
+  const phone = isPhone();
   const clock = now.toLocaleString('en-US', {
     timeZone,
     ...(phone ? {} : { weekday: 'short', month: 'short', day: 'numeric' }),

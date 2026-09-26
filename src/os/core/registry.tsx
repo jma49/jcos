@@ -240,6 +240,16 @@ export const apps: Record<AppId, AppDefinition> = {
     minHeight: 400,
     Component: lazy(() => import('../apps/Account'))
   },
+  welcome: {
+    internal: true,
+    name: 'Welcome',
+    Icon: ProjectIcon,
+    width: 440,
+    height: 470,
+    minWidth: 360,
+    minHeight: 420,
+    Component: lazy(() => import('../apps/Welcome'))
+  },
   preferences: {
     dock: 8,
     inApplications: true,

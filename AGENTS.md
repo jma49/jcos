@@ -122,6 +122,12 @@ readers, crawlers and visitors without JavaScript.
   browser has installed (`os-applets`). Installed applets appear in
   Finder's Applets folder and Spotlight. To add one, write the app,
   register it, and add an entry to `APPLETS`.
+- Open windows survive a reload (`src/os/core/windowSession.ts`, saved in
+  `os-windows`); `?open=` wins, and a first visit gets About and a Welcome
+  window (`os-welcomed`).
+- Phones are anything narrower than 768px or a short touch screen (a phone
+  sideways): `isPhone()` and `PHONE_QUERY` in `src/os/core/store.ts`, and
+  the same media query in the stylesheets.
 - `src/os/core/registry.tsx`: every app's name, icon, default and minimum size,
   and lazily imported component. `dockApps` and `mobileDockApps` pick what
   the Dock keeps (other apps appear there while open); `launcherApps` is
@@ -136,24 +142,40 @@ readers, crawlers and visitors without JavaScript.
 - Deep links: `/?open=<app|project-slug|dashboard|screensaver>` opens that
   window.
 
-### Stickies and presence (Supabase)
+### Accounts, Stickies, Chat and presence (Supabase)
 
 The browser talks to Supabase directly with the public anon key; row-level
-security in `supabase/schema.sql` lets anyone add a note, which shows right
-away. Each visitor gets one note: the database keeps a salted hash of the
-poster's IP address, and the browser remembers it has posted. To set it
-up, create a Supabase project, run the schema in its SQL editor, and set `PUBLIC_SUPABASE_URL` and
+security and triggers in `supabase/schema.sql` do the enforcing.
+
+- **Accounts** (`src/os/social/`, `apps/Account.tsx`): a username and a
+  password, with an optional recovery address. They're Supabase Auth users
+  whose address is made from the username
+  (`<username>@users.majincheng.com`), so Authentication › Providers ›
+  Email › "Confirm email" must be off. `public.profiles` holds usernames;
+  recovery addresses sit in `private.recovery_emails`, out of the API's
+  reach. `social/account.ts` tells the interface who's signed in.
+- **Stickies**: members only, three notes in any 24 hours, signed with the
+  username; members can take their own down. Hide a note by setting
+  `approved` to false in the Table editor.
+- **Soapbox reactions**: members react as themselves and can change or take
+  back a reaction; everyone else gets one per post, by salted IP hash.
+- **Chat** (`apps/Chat.tsx`): one room, readable by anyone, written by
+  members, kept for good and delivered over Realtime. Hide a message with
+  `hidden`.
+
+To set it up, create a Supabase project, run the schema in its SQL editor,
+turn off "Confirm email", and set `PUBLIC_SUPABASE_URL` and
 `PUBLIC_SUPABASE_ANON_KEY` (see `.env.example`) in Vercel and in `.env`,
 for both Production and Preview. The names the Supabase integration for
 Vercel uses, `NEXT_PUBLIC_SUPABASE_URL` and
-`NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, work as well.
-Hide a note by setting `approved` to false in the Table editor. A project
-set up from an older schema also needs the files in `supabase/migrations/`,
-run in date order.
+`NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, work as well. A project set up from
+an older schema needs the files in `supabase/migrations/`, run in date
+order. Test a migration against the live project inside `begin; …
+rollback;` first (`supabase db query --linked -f`).
 
-Without those variables, production hides both features, and `astro dev`
-falls back to `src/os/social/social-local.ts`, which keeps notes in
-`localStorage` (one per browser) and shares presence between tabs of one
+Without those variables, production hides these features, and `astro dev`
+falls back to `src/os/social/local.ts`, which keeps accounts, notes and
+chat in `localStorage` and shares chat and presence between tabs of one
 browser.
 
 To add an app: add its id to `AppId` in `src/os/core/types.ts`, write the
