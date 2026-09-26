@@ -1,6 +1,6 @@
-# Checks every pull request and every push to main: the types, the unit
-# tests, a production build with every app opened in a browser, and the
-# database's rules against a real Postgres.
+# Checks every pull request and every push to main: the types, the rules
+# of React hooks, the unit tests, a production build with every app opened
+# in a browser, and the database's rules against a real Postgres.
 name: CI
 
 on:
@@ -27,6 +27,8 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run check
+      # Breaking the rules of hooks fails; missing effect dependencies only warn.
+      - run: npm run lint
       - run: npm test
       - run: npm run build
       - run: npx playwright install --with-deps chromium
