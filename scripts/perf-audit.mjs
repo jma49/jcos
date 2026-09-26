@@ -46,6 +46,16 @@ const sixWindows = () => {
   localStorage.setItem('os-windows', JSON.stringify({ windows, order: apps.map(([a]) => a) }));
 };
 
+/**
+ * Opens the desktop and waits for the network to go quiet, for at most ten
+ * seconds: with the iPod (YouTube), Chat and Photos open it may never be
+ * quiet on a CI runner, and what's measured has loaded by then.
+ */
+async function settle(page) {
+  await page.goto(URL_, { waitUntil: 'load' });
+  await page.waitForLoadState('networkidle', { timeout: 10_000 }).catch(() => {});
+}
+
 async function load() {
   const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
   const seen = [];
@@ -55,7 +65,7 @@ async function load() {
     seen.push({ path: new URL(res.url()).pathname, type: res.request().resourceType(), bytes: body?.length ?? 0, gzip: body ? gzipSync(body).length : 0 });
   });
   await page.addInitScript(() => sessionStorage.setItem('os-booted', '1'));
-  await page.goto(URL_, { waitUntil: 'networkidle' });
+  await settle(page);
   await page.waitForTimeout(3000);
   await page.close();
   const sum = (type, key = 'bytes') => seen.filter((r) => r.type === type).reduce((n, r) => n + r[key], 0);
@@ -72,7 +82,7 @@ async function load() {
 async function withSixWindows(run) {
   const page = await browser.newPage({ viewport: { width: 1400, height: 900 } });
   await page.addInitScript(sixWindows);
-  await page.goto(URL_, { waitUntil: 'networkidle' });
+  await settle(page);
   await page.waitForTimeout(2500);
   const cdp = await page.context().newCDPSession(page);
   await cdp.send('Performance.enable');
