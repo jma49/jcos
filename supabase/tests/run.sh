@@ -19,7 +19,7 @@ run() { psql -q -v ON_ERROR_STOP=1 -d "$DB" "$@" 2>&1 | grep -v -e 'NOTICE:.*ski
 
 run -c "$(grep -v '^create role' supabase/tests/stubs.sql)"
 run -1 -f supabase/schema.sql
-for f in supabase/migrations/20260928_chat_rooms.sql supabase/migrations/20260929_soapbox_images.sql supabase/migrations/20260930_moderation.sql; do
+for f in supabase/migrations/20260928_chat_rooms.sql supabase/migrations/20260929_soapbox_images.sql supabase/migrations/20260930_moderation.sql supabase/migrations/20261001_password_reset.sql; do
   run -1 -f "$f"
 done
 out=$(psql -q -t -v ON_ERROR_STOP=1 -d "$DB" -f supabase/tests/rules.sql 2>&1) || { echo "$out"; exit 1; }

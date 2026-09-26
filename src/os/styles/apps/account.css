@@ -131,6 +131,55 @@
   margin-top: 10px;
 }
 
+.os-account-lead {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.os-root .os-account-forgot {
+  justify-self: start;
+  font-size: 11px;
+}
+
+/* Signed in: the recovery address, under the actions. */
+.os-account-recovery {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  width: min(100%, 300px);
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--os-line-soft);
+}
+
+.os-account-recovery label {
+  display: grid;
+  gap: 4px;
+  width: 100%;
+  font-size: 12px;
+  text-align: left;
+}
+
+.os-account-recovery input {
+  height: 26px;
+  padding: 0 7px;
+  border: 1px solid rgba(0, 0, 0, 0.28);
+  border-radius: 2px;
+  background: var(--os-content);
+  color: var(--os-ink);
+  font: 13px var(--os-ui);
+  user-select: text;
+}
+
+.os-account-recovery .os-account-actions {
+  margin-top: 0;
+}
+
+.os-account-recovery small[data-bad] {
+  color: #cf4a40;
+}
+
 .os-account-note {
   margin: auto;
   color: var(--os-dim);

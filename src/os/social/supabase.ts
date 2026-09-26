@@ -49,6 +49,16 @@ export function supabaseSocial(url: string, key: string): Social {
     auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false, storageKey: 'os-auth' }
   });
 
+  /** Calls the account-recovery Edge Function (supabase/functions/account-recovery). */
+  const recovery = async (body: Record<string, string>) => {
+    const { data, error } = await client.functions.invoke('account-recovery', { body });
+    if (!error) return data as Record<string, unknown>;
+    const response = (error as { context?: unknown }).context;
+    const answer = response instanceof Response ? await response.json().catch(() => null) : null;
+    const message = typeof answer?.error === 'string' ? answer.error : 'Couldn’t reach the server. Try again in a moment.';
+    throw new SocialError(response instanceof Response && response.status === 410 ? 'expired' : 'failed', message);
+  };
+
   let current: Account | null = null;
   const listeners = new Set<(account: Account | null) => void>();
   client.auth.onAuthStateChange((_event, session) => {
@@ -161,6 +171,36 @@ export function supabaseSocial(url: string, key: string): Social {
       if (error) throw new SocialError('credentials', 'That username and password don’t match.');
       current = accountOf(data.user);
       return current!;
+    },
+
+    async requestReset(username) {
+      await recovery({ action: 'request', username: username.trim().toLowerCase() });
+    },
+
+    async checkReset(token) {
+      const { username } = (await recovery({ action: 'check', token })) as { username: string | null };
+      return username;
+    },
+
+    async resetPassword(token, password) {
+      const { username } = (await recovery({ action: 'reset', token, password })) as { username: string };
+      return this.signIn(username, password);
+    },
+
+    async recoveryEmail() {
+      member();
+      const { data, error } = await client.rpc('my_recovery_email');
+      if (error) throw refusal(error);
+      return (data as string | null) ?? null;
+    },
+
+    async setRecoveryEmail(email) {
+      member();
+      const { error } = await client.rpc('set_recovery_email', { p_email: email ?? '' });
+      if (error) {
+        if (error.code === '23514') throw new SocialError('invalid', 'That doesn’t look like an email address.');
+        throw refusal(error);
+      }
     },
 
     async signOut() {
