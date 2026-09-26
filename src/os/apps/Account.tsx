@@ -131,6 +131,8 @@ export default function Account({ win }: AppProps) {
   const [taken, setTaken] = useState(false);
   /** Forgot: the username a link was asked for. */
   const [sentFor, setSentFor] = useState<string | null>(null);
+  /** Seconds until another link can be asked for. */
+  const [cooldown, setCooldown] = useState(0);
   /** Reset: whose link this is (null when it no longer works; undefined while checking). */
   const [resetFor, setResetFor] = useState<string | null | undefined>(undefined);
   /** Signed in by choosing a new password. */
@@ -161,6 +163,31 @@ export default function Account({ win }: AppProps) {
     first.current?.focus();
   }, [tab]);
 
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const t = setTimeout(() => setCooldown((c) => c - 1), 1000);
+    return () => clearTimeout(t);
+  }, [cooldown]);
+
+  /** Asks for a reset link; the answer is the same whether or not one goes out. */
+  const sendLink = async (username: string) => {
+    const social = await getSocial();
+    if (!social || busy) return;
+    setBusy(true);
+    setError(null);
+    try {
+      await social.requestReset(username);
+      setSentFor(username);
+      setCooldown(60);
+      play('pop');
+    } catch (err) {
+      setError(messageOf(err));
+      play('error');
+    } finally {
+      setBusy(false);
+    }
+  };
+
   // A reset link: find out whose it is, and whether it still works.
   useEffect(() => {
     if (tab !== 'reset' || !token) return;
@@ -180,17 +207,12 @@ export default function Account({ win }: AppProps) {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (tab === 'forgot') return sendLink(name);
     const social = await getSocial();
     if (!social || busy) return;
     setBusy(true);
     setError(null);
     try {
-      if (tab === 'forgot') {
-        await social.requestReset(name);
-        setSentFor(name);
-        play('pop');
-        return;
-      }
       if (tab === 'reset') {
         await social.resetPassword(token ?? '', password);
         play('chime');
@@ -285,13 +307,29 @@ export default function Account({ win }: AppProps) {
         ))}
       </div>
       <div className="os-account-box" role="tabpanel">
-        {tab === 'forgot' && (
-          <p className="os-account-lead">
-            {sentFor
-              ? `If ${sentFor} has a recovery email, a link to choose a new password is on its way. It works once, for 30 minutes.`
-              : 'Enter your username, and a link to choose a new password goes to the recovery email you gave.'}
-          </p>
-        )}
+        {tab === 'forgot' &&
+          (sentFor ? (
+            <div className="os-account-sent" role="status">
+              <img src="/os/icons/mail.png" alt="" width={64} height={64} />
+              <h3>Check Your Email</h3>
+              <p>
+                If <strong>{sentFor}</strong> has a recovery email, a link to choose a new password is on its way. It works
+                once, for 30 minutes.
+              </p>
+              <small>Nothing after a few minutes? Look in your spam folder, or send it again.</small>
+              <button type="button" className="os-button" disabled={busy || cooldown > 0} onClick={() => sendLink(sentFor)}>
+                {cooldown > 0 ? `Send Again in ${cooldown}s` : busy ? 'Sending…' : 'Send Again'}
+              </button>
+            </div>
+          ) : (
+            <div className="os-account-intro">
+              <img src="/os/icons/mail.png" alt="" width={40} height={40} />
+              <p className="os-account-lead">
+                Forgot your password? Enter your username, and a link to choose a new one goes to the recovery email on your
+                account.
+              </p>
+            </div>
+          ))}
         {tab === 'reset' &&
           (resetFor === undefined ? (
             <p className="os-account-lead">Checking your link…</p>
@@ -369,7 +407,7 @@ export default function Account({ win }: AppProps) {
       <footer className="os-account-footer">
         <p role="alert">{error}</p>
         {(tab === 'forgot' || tab === 'reset') && (
-          <button type="button" className="os-button" onClick={() => setTab('sign-in')}>
+          <button type="button" className={`os-button${sentFor ? ' os-button-primary' : ''}`} onClick={() => setTab('sign-in')}>
             {sentFor ? 'Back to Sign In' : 'Cancel'}
           </button>
         )}

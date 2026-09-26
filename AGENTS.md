@@ -446,8 +446,10 @@ again.
   `main` rather than merging `main` into each. Every major gets the
   whole desktop opened in a browser, not only CI, which builds but
   never runs the apps.
-- `pkill -f "<pattern>"` also matches the shell running it when the
-  pattern is in its own command line; stop background servers by PID.
+- `pkill -f "<pattern>"` (and `pgrep -f`) also match the shell running
+  them, since the pattern is in its own command line, and kill it
+  mid-command. Put one character in brackets so the pattern can't match
+  itself: `pgrep -f "astro dev --port 440[0-9]"`.
 - There's no Prettier config. Don't reformat whole files; it buries the
   change in the diff.
 - Wrapping a big JSX tree reindents all of it. Wrap through a small
