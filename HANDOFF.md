@@ -171,15 +171,12 @@ ryOS (AGPL-3.0).
    project page describe JM/OS (#75, #77); tests for the lyrics relay,
    geo, lyric parsing and window restore (#78); AGENTS.md split into
    `docs/agents/` (#80); the preview capture, broken since Astro 7, fixed
-   (#81). Open:
+   (#81); pointers stop past 12 people on the desktop (crowd mode). Open:
    - 18 `exhaustive-deps` warnings from `npm run lint`, left alone since
      most effects deliberately run on one trigger; review one by one.
    - First-visit JavaScript is 172 of 180 KB. The next addition to the
      first screen needs something taken out (motion's `LazyMotion` is
      the largest candidate).
-   - Every visitor's cursor goes to every other over one Realtime
-     channel. Fine at today's traffic; with a crowd (the front page of
-     Hacker News), show a count instead of cursors past some number.
    - Considered and not done: a spec template for changes, `llms.txt` in
      robots.txt (no crawler reads it there), splitting the largest app
      components.
