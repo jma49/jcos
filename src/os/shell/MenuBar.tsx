@@ -97,7 +97,7 @@ export function MenuBar({ sky }: { sky: SkyState }) {
           ]
         : []),
       { divider: true, label: '' },
-      { label: 'Source on GitHub', action: () => window.open('https://github.com/jma49/Jincheng-Protafolio', '_blank') }
+      { label: 'Source on GitHub', action: () => window.open('https://github.com/jma49/jmos', '_blank') }
     ],
     File: [
       { label: 'New Terminal', shortcut: '⌥T', action: () => launch('terminal', { key: `terminal-${Date.now()}` }) },

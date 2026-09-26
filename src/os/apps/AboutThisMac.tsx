@@ -58,7 +58,7 @@ export default function AboutThisMac({ win }: AppProps) {
         <p className="os-aboutmac-update">
           {build === 'dev' ? 'This is a development build.' : 'Your software is up to date: build '}
           {build !== 'dev' && (
-            <a href={`https://github.com/jma49/Jincheng-Protafolio/commit/${build}`} target="_blank" rel="noopener">
+            <a href={`https://github.com/jma49/jmos/commit/${build}`} target="_blank" rel="noopener">
               {build}
             </a>
           )}

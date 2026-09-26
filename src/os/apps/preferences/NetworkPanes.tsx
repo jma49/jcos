@@ -49,7 +49,7 @@ export function SharingPane() {
   );
 }
 
-const REPO = 'jma49/Jincheng-Protafolio';
+const REPO = 'jma49/jmos';
 
 type Check =
   | { state: 'idle' | 'checking' | 'current' | 'failed' | 'unknown' }
