@@ -8,8 +8,13 @@
 export function GET(request: Request) {
   const header = (name: string) => {
     const value = request.headers.get(`x-vercel-ip-${name}`);
-    // City names are URI-encoded ("S%C3%A3o%20Paulo").
-    return value ? decodeURIComponent(value) : null;
+    if (!value) return null;
+    // City names are URI-encoded ("S%C3%A3o%20Paulo"); a malformed one is dropped.
+    try {
+      return decodeURIComponent(value).slice(0, 100);
+    } catch {
+      return null;
+    }
   };
 
   const latitude = Number(header('latitude'));

@@ -41,6 +41,10 @@ export async function GET(request: Request) {
   const artist = params.get('artist')?.trim() ?? '';
   const duration = Number(params.get('duration')) || 0;
   if (!title) return Response.json({ error: 'title is required' }, { status: 400 });
+  // Song titles and artists are short; anything longer isn't a lookup this site makes.
+  if (title.length > 200 || artist.length > 200 || duration < 0 || duration > 7200) {
+    return Response.json({ error: 'bad request' }, { status: 400, headers: { 'cache-control': 'public, s-maxage=86400' } });
+  }
 
   try {
     return await lookUp(title, artist, duration);
