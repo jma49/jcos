@@ -15,23 +15,24 @@
 // of its pixels change, so re-running on an unchanged site is a no-op, and
 // never when the page answers with an HTTP error.
 
-import { spawn, spawnSync } from 'node:child_process';
+import { spawnSync } from 'node:child_process';
 import { access, readdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, join, relative, resolve } from 'node:path';
 import { chromium } from 'playwright';
+import { serveDist } from './serve-dist.mjs';
 
 const ROOT = resolve(import.meta.dirname, '..');
 const PROJECTS = join(ROOT, 'src/content/projects');
-const PORT = 4329;
-const ORIGIN = `http://localhost:${PORT}`;
-const ASTRO = join(ROOT, 'node_modules/astro/astro.js');
+// Astro's own entry point, from its package.json (it moved in Astro 7).
+const ASTRO_PACKAGE = join(ROOT, 'node_modules/astro/package.json');
+const ASTRO = join(dirname(ASTRO_PACKAGE), JSON.parse(await readFile(ASTRO_PACKAGE, 'utf8')).bin.astro);
 
 const COVER = { width: 1440, height: 900, scale: 4 / 3 };
 const OG = { width: 1200, height: 630, scale: 1 };
 
 /** Every project Markdown file that sets both `cover` and `capture`, plus the OG image. */
 async function findTargets() {
-  const targets = new Map([[join(ROOT, 'public/og.png'), { url: `${ORIGIN}/`, ...OG }]]);
+  const targets = new Map([[join(ROOT, 'public/og.png'), { url: '/', ...OG }]]);
   for (const entry of await readdir(PROJECTS, { recursive: true })) {
     if (!entry.endsWith('.md')) continue;
     const file = join(PROJECTS, entry);
@@ -42,28 +43,9 @@ async function findTargets() {
     if (!cover || !capture) continue;
     // Languages share one cover, so capture each image once.
     const out = resolve(dirname(file), cover);
-    targets.set(out, { url: capture.startsWith('/') ? ORIGIN + capture : capture, ...COVER });
+    targets.set(out, { url: capture, ...COVER });
   }
   return targets;
-}
-
-/** Serves dist/ with `astro preview` and resolves once it responds. */
-async function startServer() {
-  // Run astro directly (not through npx) so kill() stops the server itself.
-  const server = spawn(process.execPath, [ASTRO, 'preview', '--port', String(PORT)], {
-    cwd: ROOT,
-    stdio: 'ignore'
-  });
-  for (let i = 0; i < 60; i++) {
-    try {
-      await fetch(ORIGIN);
-      return server;
-    } catch {
-      await new Promise((r) => setTimeout(r, 500));
-    }
-  }
-  server.kill();
-  throw new Error(`astro preview did not start on port ${PORT}`);
 }
 
 /**
@@ -138,11 +120,11 @@ try {
   const build = spawnSync(process.execPath, [ASTRO, 'build'], { cwd: ROOT, stdio: 'inherit' });
   if (build.status !== 0) throw new Error('astro build failed');
 
-  if ([...targets.values()].some(({ url }) => url.startsWith(ORIGIN))) {
-    server = await startServer();
-  }
+  // Site paths are captured from the build, served in this process.
+  if ([...targets.values()].some(({ url }) => url.startsWith('/'))) server = await serveDist();
 
-  for (const [out, { url, width, height, scale }] of targets) {
+  for (const [out, { url: target, width, height, scale }] of targets) {
+    const url = target.startsWith('/') ? new URL(target, server.url).href : target;
     // Reduced motion also skips the JM/OS boot screen.
     const context = await browser.newContext({
       viewport: { width, height },
@@ -188,5 +170,5 @@ try {
   }
 } finally {
   await browser.close();
-  server?.kill();
+  server?.close();
 }
