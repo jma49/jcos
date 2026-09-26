@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { apps } from './registry';
-import { MOBILE_BREAKPOINT, useWindows } from './store';
+import { apps } from '../core/registry';
+import { MOBILE_BREAKPOINT, useWindows } from '../core/store';
 
 // ⌥Tab: the window switcher. Hold ⌥ and press Tab to step through the open
 // windows, most recent first (⇧ steps back); let go of ⌥ to bring the

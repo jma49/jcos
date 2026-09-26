@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
-import { getSocial, type Post } from './social';
-import { useOSData } from './context';
-import { plain } from './apps/inline';
+import { getSocial, type Post } from '../social/social';
+import { useOSData } from '../core/context';
+import { plain } from '../apps/inline';
 
 // More screen savers: Flurry (after Mac OS X's), Soapbox (Jincheng's posts,
 // in the manner of "Word of the Day") and a bouncing JM. Each fills its

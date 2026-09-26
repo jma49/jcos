@@ -1,10 +1,10 @@
 import { useRef } from 'react';
 import { motion, useMotionValue, useSpring, useTransform, type MotionValue } from 'motion/react';
-import { apps, dockApps, launch, mobileDockApps, rectOf } from './registry';
-import { DashboardIcon, TrashIcon } from './icons';
-import { useWindows } from './store';
-import { play } from './sound';
-import type { AppId } from './types';
+import { apps, dockApps, launch, mobileDockApps, rectOf } from '../core/registry';
+import { DashboardIcon, TrashIcon } from '../core/icons';
+import { useWindows } from '../core/store';
+import { play } from '../core/sound';
+import type { AppId } from '../core/types';
 
 const BASE = 50;
 const PEAK = 78;

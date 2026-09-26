@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useReducedMotion } from 'motion/react';
 import { describe, localMinutes, useWeather, type Condition, type Weather } from './weather';
 import { deviceTimeZone, placeLabel, startLocating, usePlace, type Place } from './place';
-import { brightness } from './accent';
+import { brightness } from '../look/accent';
 
 // The desktop follows the sky over the visitor (see place.ts): the
 // wallpaper takes on the light of the hour there (dawn, golden hour, dusk,

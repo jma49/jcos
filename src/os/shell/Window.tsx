@@ -9,12 +9,12 @@ import {
   type ReactNode
 } from 'react';
 import { animate, motion, useMotionValue, useReducedMotion } from 'motion/react';
-import { apps } from './registry';
-import { DOCK_CLEARANCE, MENU_BAR_HEIGHT, MOBILE_BREAKPOINT, useWindows } from './store';
+import { apps } from '../core/registry';
+import { DOCK_CLEARANCE, MENU_BAR_HEIGHT, MOBILE_BREAKPOINT, useWindows } from '../core/store';
 import { frameOf } from './Expose';
 import { GENIE_REACH, genieMap, genieSupported } from './genie';
 import { DrawerSlot } from './drawer';
-import type { Rect, WindowState } from './types';
+import type { Rect, WindowState } from '../core/types';
 
 type Edge = 'e' | 's' | 'se' | 'w' | 'sw';
 

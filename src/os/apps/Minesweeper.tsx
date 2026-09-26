@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import type { AppProps } from '../registry';
-import { play } from '../sound';
-import { DOCK_CLEARANCE, MENU_BAR_HEIGHT, MOBILE_BREAKPOINT, useWindows } from '../store';
+import type { AppProps } from '../core/registry';
+import { play } from '../core/sound';
+import { DOCK_CLEARANCE, MENU_BAR_HEIGHT, MOBILE_BREAKPOINT, useWindows } from '../core/store';
 
 // Minesweeper. The first click is always safe (mines are laid after it),
 // right-click or long-press flags, and clicking a number whose flags are

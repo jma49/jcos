@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
-import { apps, launch } from './registry';
-import { MOBILE_BREAKPOINT, useFocusedId, useWindows } from './store';
-import { useOSData } from './context';
-import { SkyStatus, type SkyState } from './Sky';
-import { OnlineStatus } from './Presence';
+import { apps, launch } from '../core/registry';
+import { MOBILE_BREAKPOINT, useFocusedId, useWindows } from '../core/store';
+import { useOSData } from '../core/context';
+import { SkyStatus, type SkyState } from '../ambient/Sky';
+import { OnlineStatus } from '../social/Presence';
 import { NowPlaying } from './NowPlaying';
-import { clockTimeZone, HOME, sameTime } from './place';
-import { play } from './sound';
-import { useMusic } from './music';
+import { clockTimeZone, HOME, sameTime } from '../ambient/place';
+import { play } from '../core/sound';
+import { useMusic } from '../media/music';
 
 interface MenuItem {
   label: string;

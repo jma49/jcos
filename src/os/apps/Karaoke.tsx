@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
-import type { AppProps } from '../registry';
-import { useFocusedId } from '../store';
-import { lineAt, useLyrics, type LyricLine } from '../lyrics';
-import { albumOf, ALBUMS, coverOf, currentTime, formatTime, lyricOffset, seek, seekBy, SONGS, tracksOf, useClock, useKeys, useMusic, usePlayer, type Song } from '../music';
+import type { AppProps } from '../core/registry';
+import { useFocusedId } from '../core/store';
+import { lineAt, useLyrics, type LyricLine } from '../media/lyrics';
+import { albumOf, ALBUMS, coverOf, currentTime, formatTime, lyricOffset, seek, seekBy, SONGS, tracksOf, useClock, useKeys, useMusic, usePlayer, type Song } from '../media/music';
 
 // Karaoke: the song's video fills the window and its lyrics sweep across in
 // time, one line at a time (lrclib has line timings, not word timings, so a

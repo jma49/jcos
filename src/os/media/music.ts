@@ -7,8 +7,8 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { create } from 'zustand';
-import { useWindows } from './store';
-import library from '../data/songs.json' with { type: 'json' };
+import { useWindows } from '../core/store';
+import library from '../../data/songs.json' with { type: 'json' };
 
 export interface Song {
   /** The YouTube video id. */

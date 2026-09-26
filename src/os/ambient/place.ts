@@ -5,7 +5,7 @@
 // Order: `?place=<city>` in the URL (for demos, not saved), then a city the
 // visitor picked, then their IP location, then San Jose as a last resort.
 
-import { useWindows } from './store';
+import { useWindows } from '../core/store';
 
 export interface Place {
   city: string;

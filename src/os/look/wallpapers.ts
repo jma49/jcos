@@ -4,8 +4,8 @@
 // that's playing). backgroundFor() turns it into CSS.
 
 import { accentFromPixels, brightness } from './accent';
-import catalogue from '../data/wallpapers.json' with { type: 'json' };
-import type { Condition } from './weather';
+import catalogue from '../../data/wallpapers.json' with { type: 'json' };
+import type { Condition } from '../ambient/weather';
 
 export interface SolidColor {
   id: string;

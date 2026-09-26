@@ -1,8 +1,8 @@
 import { create } from 'zustand';
 import type { AppId, Rect, WindowState } from './types';
-import type { Place } from './place';
-import type { Visitor } from './social';
-import type { AccentChoice } from './accent';
+import type { Place } from '../ambient/place';
+import type { Visitor } from '../social/social';
+import type { AccentChoice } from '../look/accent';
 
 export const MENU_BAR_HEIGHT = 22;
 export const DOCK_CLEARANCE = 78;

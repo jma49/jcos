@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
-import { useOSData } from '../context';
-import type { AppProps } from '../registry';
-import { DOCK_CLEARANCE, MENU_BAR_HEIGHT, MOBILE_BREAKPOINT, useWindows } from '../store';
-import type { OSPhoto, WindowState } from '../types';
-import { Drawer } from '../drawer';
+import { useOSData } from '../core/context';
+import type { AppProps } from '../core/registry';
+import { DOCK_CLEARANCE, MENU_BAR_HEIGHT, MOBILE_BREAKPOINT, useWindows } from '../core/store';
+import type { OSPhoto, WindowState } from '../core/types';
+import { Drawer } from '../shell/drawer';
 
 /** Title bar + toolbar height, and the dark margin around a photo in the viewer. */
 const CHROME = 23 + 36;

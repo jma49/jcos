@@ -46,7 +46,7 @@ export const apps: Record<AppId, AppDefinition> = {
     height: 520,
     minWidth: 360,
     minHeight: 280,
-    Component: lazy(() => import('./apps/About'))
+    Component: lazy(() => import('../apps/About'))
   },
   resume: {
     name: 'Résumé',
@@ -55,7 +55,7 @@ export const apps: Record<AppId, AppDefinition> = {
     height: 760,
     minWidth: 420,
     minHeight: 320,
-    Component: lazy(() => import('./apps/Resume'))
+    Component: lazy(() => import('../apps/Resume'))
   },
   projects: {
     name: 'Projects',
@@ -64,7 +64,7 @@ export const apps: Record<AppId, AppDefinition> = {
     height: 460,
     minWidth: 420,
     minHeight: 280,
-    Component: lazy(() => import('./apps/Projects'))
+    Component: lazy(() => import('../apps/Projects'))
   },
   project: {
     name: 'Project',
@@ -73,7 +73,7 @@ export const apps: Record<AppId, AppDefinition> = {
     height: 640,
     minWidth: 380,
     minHeight: 300,
-    Component: lazy(() => import('./apps/ProjectDetail'))
+    Component: lazy(() => import('../apps/ProjectDetail'))
   },
   browser: {
     material: 'metal',
@@ -83,7 +83,7 @@ export const apps: Record<AppId, AppDefinition> = {
     height: 700,
     minWidth: 420,
     minHeight: 300,
-    Component: lazy(() => import('./apps/Browser'))
+    Component: lazy(() => import('../apps/Browser'))
   },
   terminal: {
     name: 'Terminal',
@@ -92,7 +92,7 @@ export const apps: Record<AppId, AppDefinition> = {
     height: 420,
     minWidth: 360,
     minHeight: 220,
-    Component: lazy(() => import('./apps/Terminal'))
+    Component: lazy(() => import('../apps/Terminal'))
   },
   photos: {
     material: 'metal',
@@ -102,7 +102,7 @@ export const apps: Record<AppId, AppDefinition> = {
     height: 680,
     minWidth: 420,
     minHeight: 320,
-    Component: lazy(() => import('./apps/Photos'))
+    Component: lazy(() => import('../apps/Photos'))
   },
   stickies: {
     name: 'Stickies',
@@ -111,7 +111,7 @@ export const apps: Record<AppId, AppDefinition> = {
     height: 540,
     minWidth: 360,
     minHeight: 320,
-    Component: lazy(() => import('./apps/Stickies'))
+    Component: lazy(() => import('../apps/Stickies'))
   },
   soapbox: {
     name: 'Soapbox',
@@ -120,7 +120,7 @@ export const apps: Record<AppId, AppDefinition> = {
     height: 600,
     minWidth: 360,
     minHeight: 300,
-    Component: lazy(() => import('./apps/Soapbox'))
+    Component: lazy(() => import('../apps/Soapbox'))
   },
   finder: {
     material: 'metal',
@@ -130,7 +130,7 @@ export const apps: Record<AppId, AppDefinition> = {
     height: 480,
     minWidth: 440,
     minHeight: 300,
-    Component: lazy(() => import('./apps/Finder'))
+    Component: lazy(() => import('../apps/Finder'))
   },
   appstore: {
     name: 'Applet Store',
@@ -139,7 +139,7 @@ export const apps: Record<AppId, AppDefinition> = {
     height: 540,
     minWidth: 420,
     minHeight: 360,
-    Component: lazy(() => import('./apps/AppletStore'))
+    Component: lazy(() => import('../apps/AppletStore'))
   },
   calculator: {
     material: 'metal',
@@ -149,7 +149,7 @@ export const apps: Record<AppId, AppDefinition> = {
     height: 360,
     minWidth: 230,
     minHeight: 340,
-    Component: lazy(() => import('./apps/Calculator'))
+    Component: lazy(() => import('../apps/Calculator'))
   },
   tilegame: {
     name: 'Tile Game',
@@ -158,7 +158,7 @@ export const apps: Record<AppId, AppDefinition> = {
     height: 470,
     minWidth: 360,
     minHeight: 450,
-    Component: lazy(() => import('./apps/TileGame'))
+    Component: lazy(() => import('../apps/TileGame'))
   },
   minesweeper: {
     name: 'Minesweeper',
@@ -167,7 +167,7 @@ export const apps: Record<AppId, AppDefinition> = {
     height: 470,
     minWidth: 300,
     minHeight: 360,
-    Component: lazy(() => import('./apps/Minesweeper'))
+    Component: lazy(() => import('../apps/Minesweeper'))
   },
   ipod: {
     name: 'iPod',
@@ -176,7 +176,7 @@ export const apps: Record<AppId, AppDefinition> = {
     height: 492,
     minWidth: 300,
     minHeight: 492,
-    Component: lazy(() => import('./apps/IPod'))
+    Component: lazy(() => import('../apps/ipod/IPod'))
   },
   karaoke: {
     name: 'Karaoke',
@@ -185,7 +185,7 @@ export const apps: Record<AppId, AppDefinition> = {
     height: 500,
     minWidth: 460,
     minHeight: 320,
-    Component: lazy(() => import('./apps/Karaoke'))
+    Component: lazy(() => import('../apps/Karaoke'))
   },
   preferences: {
     name: 'System Preferences',
@@ -194,7 +194,7 @@ export const apps: Record<AppId, AppDefinition> = {
     height: 560,
     minWidth: 480,
     minHeight: 360,
-    Component: lazy(() => import('./apps/Preferences'))
+    Component: lazy(() => import('../apps/Preferences'))
   }
 };
 

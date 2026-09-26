@@ -1,15 +1,15 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { useOSData } from '../context';
-import { launch } from '../registry';
-import { useWindows } from '../store';
-import type { AppProps } from '../registry';
-import type { OSData } from '../types';
+import { useOSData } from '../core/context';
+import { launch } from '../core/registry';
+import { useWindows } from '../core/store';
+import type { AppProps } from '../core/registry';
+import type { OSData } from '../core/types';
 import { plain } from './inline';
 import { openProject } from './Projects';
-import { HOME, placeLabel, searchPlaces, type Place } from '../place';
-import { describe, getWeather } from '../weather';
-import { getSocial } from '../social';
-import { play } from '../sound';
+import { HOME, placeLabel, searchPlaces, type Place } from '../ambient/place';
+import { describe, getWeather } from '../ambient/weather';
+import { getSocial } from '../social/social';
+import { play } from '../core/sound';
 
 interface Line {
   id: number;

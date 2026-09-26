@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
-import { useOSData } from './context';
-import { MOBILE_BREAKPOINT, useWindows, type SaverStyle } from './store';
-import { useMusic } from './music';
-import { clockTimeZone, usePlace } from './place';
-import { describe, useWeather } from './weather';
-import type { OSPhoto } from './types';
+import { useOSData } from '../core/context';
+import { MOBILE_BREAKPOINT, useWindows, type SaverStyle } from '../core/store';
+import { useMusic } from '../media/music';
+import { clockTimeZone, usePlace } from '../ambient/place';
+import { describe, useWeather } from '../ambient/weather';
+import type { OSPhoto } from '../core/types';
 import { Bounce, Flurry, SoapboxSaver } from './savers';
 
 export const SAVER_STYLES: { style: SaverStyle; name: string; blurb: string }[] = [

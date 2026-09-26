@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import type { AppProps } from '../registry';
+import type { AppProps } from '../core/registry';
 
 const HOME = 'https://ocra-nine.vercel.app/';
 

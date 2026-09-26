@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useOSData } from '../context';
-import type { AppProps } from '../registry';
-import { useFocusedId, useWindows } from '../store';
-import { useInstalledApplets } from '../applets';
-import { buildDisk, find, type FileNode } from '../files';
-import { DiskIcon } from '../icons';
-import { Drawer } from '../drawer';
+import { useOSData } from '../core/context';
+import type { AppProps } from '../core/registry';
+import { useFocusedId, useWindows } from '../core/store';
+import { useInstalledApplets } from '../core/applets';
+import { buildDisk, find, type FileNode } from '../core/files';
+import { DiskIcon } from '../core/icons';
+import { Drawer } from '../shell/drawer';
 
 // Finder over Macintosh HD (files.ts): a sidebar of places, back and
 // forward, icon or list views, a search field that looks through the

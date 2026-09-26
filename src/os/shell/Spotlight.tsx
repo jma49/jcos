@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useRef, useState, type ComponentType } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { apps, launch, launcherApps } from './registry';
-import { APPLETS, useInstalledApplets } from './applets';
-import { useWindows } from './store';
-import { useOSData } from './context';
+import { apps, launch, launcherApps } from '../core/registry';
+import { APPLETS, useInstalledApplets } from '../core/applets';
+import { useWindows } from '../core/store';
+import { useOSData } from '../core/context';
 
 interface Result {
   id: string;

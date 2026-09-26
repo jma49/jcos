@@ -10,7 +10,7 @@ import wallpaperSource from '../assets/os/stones.jpg';
 import { content, profile } from '../i18n/content';
 import { formatMonth, getProjects, projectHref } from '../lib/projects';
 import { getPhotos } from '../lib/photos';
-import type { OSData } from '../os/types';
+import type { OSData } from '../os/core/types';
 
 const t = content.en;
 const wallpaper = await getImage({ src: wallpaperSource, width: 2560, format: 'webp', quality: 82 });

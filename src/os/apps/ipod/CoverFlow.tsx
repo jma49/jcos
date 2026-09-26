@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { animate, motion, useMotionValue, useMotionValueEvent, useReducedMotion, useTransform, type MotionValue } from 'motion/react';
-import { albumNamed, coverOf, SONGS, tracksOf } from '../../music';
+import { albumNamed, coverOf, SONGS, tracksOf } from '../../media/music';
 import type { ScreenInput } from './input';
 
 // Cover Flow, as on the iPod classic: the albums stand in a row, the one in

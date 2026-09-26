@@ -1,6 +1,6 @@
-import { useOSData } from '../context';
-import { launch } from '../registry';
-import type { AppProps } from '../registry';
+import { useOSData } from '../core/context';
+import { launch } from '../core/registry';
+import type { AppProps } from '../core/registry';
 
 export default function ProjectDetail({ win }: AppProps) {
   const { projects } = useOSData();

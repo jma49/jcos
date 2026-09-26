@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { SONGS, useMusic } from '../../music';
-import { play } from '../../sound';
+import { SONGS, useMusic } from '../../media/music';
+import { play } from '../../core/sound';
 import type { ScreenInput } from './input';
 
 // Music Quiz: a few seconds of a song from the library, four titles, one

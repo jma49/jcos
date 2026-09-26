@@ -1,11 +1,11 @@
 import { useEffect, useState, type ReactNode } from 'react';
-import { PlaceSearch } from './PlaceSearch';
-import { getSocial, type Post } from './social';
-import { launch } from './registry';
+import { PlaceSearch } from '../ambient/PlaceSearch';
+import { getSocial, type Post } from '../social/social';
+import { launch } from '../core/registry';
 import { AnimatePresence, motion } from 'motion/react';
-import { useWindows } from './store';
-import { useOSData } from './context';
-import { describe as describeWeather, useWeather } from './weather';
+import { useWindows } from '../core/store';
+import { useOSData } from '../core/context';
+import { describe as describeWeather, useWeather } from '../ambient/weather';
 import {
   choosePlace,
   clockTimeZone,
@@ -16,7 +16,7 @@ import {
   wallClock,
   type Place,
   type WallClock
-} from './place';
+} from '../ambient/place';
 
 // Tiger-style Dashboard: an overlay of widgets that zoom in over a dimmed
 // desktop. The clock, calendar and weather are the visitor's; one widget

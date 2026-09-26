@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
-import { AlreadyPostedError, getSocial, REACTIONS, type Post, type Reaction, type Social } from '../social';
-import { clockTimeZone, usePlace } from '../place';
-import type { AppProps } from '../registry';
-import { play } from '../sound';
+import { AlreadyPostedError, getSocial, REACTIONS, type Post, type Reaction, type Social } from '../social/social';
+import { clockTimeZone, usePlace } from '../ambient/place';
+import type { AppProps } from '../core/registry';
+import { play } from '../core/sound';
 
 // Soapbox: Jincheng's own notes and rants, sent from Telegram (see
 // supabase/functions/soapbox-bot). Visitors read, and leave one reaction

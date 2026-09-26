@@ -1,15 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { AppProps } from '../registry';
-import { launch } from '../registry';
-import { useFocusedId } from '../store';
-import { lineAt, useLyrics } from '../lyrics';
-import { albumNamed, albumOf, coverOf, formatTime, lyricOffset, SONGS, tracksOf, useClock, useKeys, useMusic, usePlayer, type Repeat } from '../music';
-import { play as playSound } from '../sound';
-import { CoverFlow } from './ipod/CoverFlow';
-import { Brick } from './ipod/Brick';
-import { Quiz } from './ipod/Quiz';
-import { Marquee } from './ipod/Marquee';
-import type { ScreenInput } from './ipod/input';
+import type { AppProps } from '../../core/registry';
+import { launch } from '../../core/registry';
+import { useFocusedId } from '../../core/store';
+import { lineAt, useLyrics } from '../../media/lyrics';
+import { albumNamed, albumOf, coverOf, formatTime, lyricOffset, SONGS, tracksOf, useClock, useKeys, useMusic, usePlayer, type Repeat } from '../../media/music';
+import { play as playSound } from '../../core/sound';
+import { CoverFlow } from './CoverFlow';
+import { Brick } from './Brick';
+import { Quiz } from './Quiz';
+import { Marquee } from './Marquee';
+import type { ScreenInput } from './input';
 
 // An iPod with a click wheel. Drag round the wheel (or scroll, or use the
 // arrow keys) to move through the menus; MENU goes back, the centre button
