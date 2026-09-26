@@ -210,6 +210,11 @@ security and triggers in `supabase/schema.sql` do the enforcing.
   offers. Anyone can send anything there, so receivers check what
   arrives (`cleanInfo()` for presence).
 
+- **Moderation** (`supabase/migrations/20260930_moderation.sql`, the
+  Soapbox bot): new Stickies notes and public chat messages go to the
+  owner on Telegram through `pg_net`, signed with a secret in
+  `private.secrets`, with Hide / Show again buttons; `/watch on|off`.
+
 To set it up, create a Supabase project, run the schema in its SQL editor,
 turn off "Confirm email", and set `PUBLIC_SUPABASE_URL` and
 `PUBLIC_SUPABASE_ANON_KEY` (see `.env.example`) in Vercel and in `.env`,
@@ -243,6 +248,17 @@ pictures, accent), `media/` (music, lyrics), `social/` (Supabase),
 The Chinese site is offline for now: `/zh/*` redirects to the English
 paths (`vercel.json`). Keep the `zh` content in `content.ts` and the
 Chinese project files; they will be used again.
+
+## Tests
+
+`npm test` runs the unit tests (Vitest, `*.test.ts` next to the code,
+and `supabase/functions/soapbox-bot/bot.test.mjs`); keep game rules and
+other logic worth testing in plain modules without React (as
+`apps/spider/rules.ts` and `apps/pinball/table.ts` are). `npm run
+test:db` checks the database's rules (`supabase/tests/rules.sql`)
+against a local Postgres; add a check there with every new rule or
+migration. CI (`.github/workflows/ci.yml`) runs both and the build on
+every pull request.
 
 ## Commits
 

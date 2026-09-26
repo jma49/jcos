@@ -278,7 +278,7 @@ export const apps: Record<AppId, AppDefinition> = {
     height: 560,
     minWidth: 520,
     minHeight: 400,
-    Component: lazy(() => import('../apps/Spider'))
+    Component: lazy(() => import('../apps/spider/Spider'))
   },
   pinball: {
     applet: true,

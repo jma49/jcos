@@ -13,6 +13,8 @@
 //   /at <city>        stamp later posts with this city and its weather
 //   /at               show the current city
 //   /delete           hide the post you reply to, or the latest one
+//   /watch on|off     new Stickies notes and public chat messages sent
+//                     here with a Hide button (on by default)
 //   /help             this list
 //
 // Editing a message (or a photo's caption) in Telegram edits its post.
@@ -73,8 +75,10 @@ async function db(path: string, init: RequestInit = {}) {
       ...init.headers
     }
   });
-  if (!res.ok) throw new Error(`${path}: ${res.status} ${await res.text()}`);
-  return res.status === 204 ? null : res.json();
+  const text = await res.text();
+  if (!res.ok) throw new Error(`${path}: ${res.status} ${text}`);
+  // return=minimal answers with no body at all (204, or 201 for an insert).
+  return text ? JSON.parse(text) : null;
 }
 
 async function reply(chatId: number, text: string, replyTo?: number) {
@@ -143,9 +147,110 @@ const HELP = [
   '/note <text>: post it as a note',
   '/at <city>: stamp posts with that city and its weather',
   '/delete: hide the post you reply to, or the latest one',
+  '/watch on|off: send me new Stickies notes and chat messages to hide',
   '',
   'Edit a message to edit its post.'
 ].join('\n');
+
+// ---------- Moderation ----------
+//
+// The database sends each new Stickies note and public chat message here
+// (supabase/migrations/20260930_moderation.sql), signed with a secret it
+// made; the bot forwards it to the owner with a Hide button. The bot
+// tells the database where it lives the first time the owner writes to
+// it, and asks Telegram for button presses at the same time.
+
+const SELF_URL = `${SUPABASE_URL}/functions/v1/soapbox-bot`;
+let registered = false;
+
+async function watching(): Promise<boolean> {
+  const rows = await db('soapbox_settings?name=eq.watch&select=value');
+  return rows?.[0]?.value !== false;
+}
+
+async function setWatching(on: boolean) {
+  await db('soapbox_settings', {
+    method: 'POST',
+    headers: { prefer: 'resolution=merge-duplicates,return=minimal' },
+    body: JSON.stringify({ name: 'watch', value: on })
+  });
+  await db('rpc/moderation_register', { method: 'POST', body: JSON.stringify({ p_url: on ? SELF_URL : null }) });
+}
+
+/** Once per instance: make sure notices come here, and that Telegram sends the buttons' presses. */
+async function register() {
+  if (registered) return;
+  registered = true;
+  try {
+    if (await watching()) await db('rpc/moderation_register', { method: 'POST', body: JSON.stringify({ p_url: SELF_URL }) });
+    await telegram('setWebhook', {
+      url: SELF_URL,
+      secret_token: WEBHOOK_SECRET,
+      allowed_updates: ['message', 'edited_message', 'callback_query']
+    });
+  } catch (error) {
+    // Without the moderation migration there's nothing to register; posting still works.
+    console.error(error);
+    registered = false;
+  }
+}
+
+interface Notice {
+  kind: 'note' | 'chat';
+  id: string;
+  author: string | null;
+  text: string;
+  room?: string;
+}
+
+const VALID_ID: Record<Notice['kind'], RegExp> = { note: /^[0-9a-f-]{36}$/, chat: /^\d{1,19}$/ };
+
+const describe = (n: Pick<Notice, 'kind' | 'author' | 'room'>) =>
+  n.kind === 'note' ? `📝 New Stickies note from ${n.author || 'someone'}` : `💬 ${n.author || 'Someone'} in #${n.room}`;
+
+const buttons = (kind: Notice['kind'], id: string, hidden: boolean) => ({
+  inline_keyboard: [[hidden ? { text: '↩︎ Show again', callback_data: `show:${kind}:${id}` } : { text: '🙈 Hide', callback_data: `hide:${kind}:${id}` }]]
+});
+
+/** A new note or chat message from the database: to the owner, with a Hide button. */
+async function notice(n: Notice) {
+  if (!VALID_ID[n.kind]?.test(n.id)) return;
+  await telegram('sendMessage', {
+    chat_id: OWNER_ID,
+    text: `${describe(n)}\n\n${String(n.text).slice(0, 1000)}`,
+    reply_markup: buttons(n.kind, n.id, false),
+    link_preview_options: { is_disabled: true }
+  });
+}
+
+interface Callback {
+  id: string;
+  from: { id: number };
+  data?: string;
+  message?: { chat: { id: number }; message_id: number; text?: string };
+}
+
+/** Hide or Show again, pressed on a notice. */
+async function press(cb: Callback) {
+  const [action, kind, id] = (cb.data ?? '').split(':') as ['hide' | 'show', Notice['kind'], string];
+  if (!['hide', 'show'].includes(action) || !VALID_ID[kind]?.test(id)) return telegram('answerCallbackQuery', { callback_query_id: cb.id });
+  const hide = action === 'hide';
+  if (kind === 'note') {
+    await db(`notes?id=eq.${id}`, { method: 'PATCH', headers: { prefer: 'return=minimal' }, body: JSON.stringify({ approved: !hide }) });
+  } else {
+    await db(`chat_messages?id=eq.${id}`, { method: 'PATCH', headers: { prefer: 'return=minimal' }, body: JSON.stringify({ hidden: hide }) });
+  }
+  await telegram('answerCallbackQuery', { callback_query_id: cb.id, text: hide ? 'Hidden' : 'Shown again' });
+  if (cb.message) {
+    const original = (cb.message.text ?? '').replace(/\n\n(🙈 Hidden|↩︎ Shown again)$/, '');
+    await telegram('editMessageText', {
+      chat_id: cb.message.chat.id,
+      message_id: cb.message.message_id,
+      text: `${original}\n\n${hide ? '🙈 Hidden' : '↩︎ Shown again'}`,
+      reply_markup: buttons(kind, id, hide)
+    });
+  }
+}
 
 interface PhotoSize {
   file_id: string;
@@ -301,6 +406,13 @@ async function handle(message: Message, edited: boolean) {
 
   if (/^\/(start|help)\b/i.test(text)) return reply(chat, HELP);
 
+  const watch = text.match(/^\/watch(?:@\w+)?\b\s*(on|off)?\s*$/i);
+  if (watch) {
+    if (watch[1]) await setWatching(watch[1].toLowerCase() === 'on');
+    const on = watch[1] ? watch[1].toLowerCase() === 'on' : await watching();
+    return reply(chat, on ? '👀 New Stickies notes and public chat messages come here, with a Hide button. /watch off to stop.' : 'Not sending notes and chat messages here. /watch on to start.');
+  }
+
   const at = text.match(/^\/at(?:@\w+)?\b\s*(.*)$/i);
   if (at) {
     if (!at[1]) {
@@ -386,13 +498,36 @@ async function postPicture(message: Message, caption: string) {
 }
 
 Deno.serve(async (request) => {
-  if (request.method !== 'POST' || request.headers.get('x-telegram-bot-api-secret-token') !== WEBHOOK_SECRET) {
+  if (request.method !== 'POST') return new Response('Not found', { status: 404 });
+
+  // A notice from the database, signed with the secret it made.
+  const signature = request.headers.get('x-moderation-secret');
+  if (signature) {
+    try {
+      const ok = await db('rpc/moderation_check', { method: 'POST', body: JSON.stringify({ p_secret: signature }) });
+      if (ok !== true) return new Response('Not found', { status: 404 });
+      await notice(await request.json());
+    } catch (error) {
+      console.error(error);
+    }
+    return new Response('ok');
+  }
+
+  if (request.headers.get('x-telegram-bot-api-secret-token') !== WEBHOOK_SECRET) {
     return new Response('Not found', { status: 404 });
   }
   const update = await request.json();
+
+  if (update.callback_query) {
+    const cb: Callback = update.callback_query;
+    if (cb.from?.id === OWNER_ID) await press(cb).catch((error) => console.error(error));
+    return new Response('ok');
+  }
+
   const message: Message | undefined = update.message ?? update.edited_message;
   // Everyone but the owner is ignored, silently.
   if (message && message.from?.id === OWNER_ID) {
+    await register();
     try {
       await handle(message, Boolean(update.edited_message));
     } catch (error) {
