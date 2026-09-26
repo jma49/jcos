@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
 import { useOSData } from '../../core/context';
 import type { AppProps } from '../../core/registry';
 import { launch } from '../../core/registry';
@@ -78,8 +78,9 @@ export default function Finder({ win }: AppProps) {
 
   // Opening Finder again at another place (e.g. from the desktop) goes there.
   const asked = win.props?.path;
+  const goAsked = useEffectEvent((next: string) => next !== history[at] && go(next));
   useEffect(() => {
-    if (asked && asked !== history[at]) go(asked);
+    if (asked) goAsked(asked);
   }, [asked]);
 
   /** Shows a folder; `replace` doesn't add a step to Back (column view's clicks). */

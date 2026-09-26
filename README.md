@@ -138,7 +138,7 @@ significant change goes through.
 | --- | --- |
 | `npm run check` | Type-checks the site (`astro check`). CI runs it on every pull request. |
 | `npm run preview:capture` | Screenshots project pages into their covers, and the home page into `public/og.png`. CI runs it on every push to `main`. |
-| `npm run lint` | Checks the rules of React hooks (ESLint, hooks rules only). CI runs it on every pull request. |
+| `npm run lint` | Checks the rules of React hooks and effects' dependencies (ESLint, hooks rules only). CI runs it on every pull request. |
 | `npm run perf` | Measures a production build against the performance budgets (see `docs/agents/performance.md`). |
 | `npm run photos:update` | Refreshes `src/data/photos.json` from Unsplash. |
 | `node scripts/build-favicon.mjs` | Regenerates the favicons from one vector mark. |

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
 import type { AppProps } from '../../core/registry';
 import { play } from '../../core/sound';
 import { useFocusedId } from '../../core/store';
@@ -61,14 +61,16 @@ export default function Spider({ win }: AppProps) {
     return true;
   };
 
-  useEffect(() => {
-    if (!won) return;
+  const onWon = useEffectEvent(() => {
     play('chime');
     if (game.score > (best[suits] ?? 0)) {
       const next = { ...best, [suits]: game.score };
       setBest(next);
       saveJSON(SETTINGS_KEY, { suits, best: next });
     }
+  });
+  useEffect(() => {
+    if (won) onWon();
   }, [won]);
 
   const restart = (n: Suits = suits) => {

@@ -28,7 +28,6 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run check
-      # Breaking the rules of hooks fails; missing effect dependencies only warn.
       - run: npm run lint
       - run: npm test
       - run: npm run build

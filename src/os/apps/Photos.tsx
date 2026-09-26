@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
+import { useEffect, useEffectEvent, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { useOSData } from '../core/context';
 import type { AppProps } from '../core/registry';
 import { DOCK_CLEARANCE, MENU_BAR_HEIGHT, isPhone, useWindows } from '../core/store';
@@ -92,14 +92,20 @@ export default function Photos({ win }: AppProps) {
 
   // Opened for a particular photo (from Finder): show it.
   const asked = win.props?.photo;
-  useEffect(() => {
-    const index = asked ? photos.findIndex((p) => p.id === asked) : -1;
+  const showAsked = useEffectEvent((id: string) => {
+    const index = photos.findIndex((p) => p.id === id);
     if (index >= 0) show(index);
+  });
+  useEffect(() => {
+    if (asked) showAsked(asked);
   }, [asked]);
 
   // Fit the window to whichever photo is showing.
-  useEffect(() => {
+  const fitToCurrent = useEffectEvent(() => {
     if (current) resize(fitTo(current));
+  });
+  useEffect(() => {
+    fitToCurrent();
   }, [current?.id]);
 
   const show = (index: number) => {
@@ -117,15 +123,16 @@ export default function Photos({ win }: AppProps) {
 
   const step = (delta: number) => setOpen((i) => (i === null ? i : (i + delta + photos.length) % photos.length));
 
+  const onKey = useEffectEvent((e: KeyboardEvent) => {
+    if (e.key === 'ArrowRight') step(1);
+    else if (e.key === 'ArrowLeft') step(-1);
+    else if (e.key === 'Escape') backToLibrary();
+  });
   useEffect(() => {
     if (open === null) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowRight') step(1);
-      else if (e.key === 'ArrowLeft') step(-1);
-      else if (e.key === 'Escape') backToLibrary();
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    const listener = (e: KeyboardEvent) => onKey(e);
+    window.addEventListener('keydown', listener);
+    return () => window.removeEventListener('keydown', listener);
   }, [open]);
 
   if (photos.length === 0) {

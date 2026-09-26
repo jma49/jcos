@@ -15,7 +15,8 @@ import {
   type ChatActivity,
   type ChatMessage,
   type ChatRoom,
-  type Social
+  type Social,
+  type Visitor
 } from '../social/social';
 import { useAccount } from '../social/account';
 import { hue, markRead, mentions, showRoom, useChatState } from '../social/chatState';
@@ -102,9 +103,12 @@ function Unread({ count, dot }: { count: number; dot: boolean }) {
   return null;
 }
 
+/** No one on the desktop yet: one array, so it doesn't change from render to render. */
+const NOBODY: Visitor[] = [];
+
 export default function Chat({ win }: AppProps) {
   const { account } = useAccount();
-  const visitors = useWindows((s) => s.visitors) ?? [];
+  const visitors = useWindows((s) => s.visitors ?? NOBODY);
   const front = useFocusedId() === win.id;
   const unread = useChatState((s) => s.unread);
   const readAt = useChatState((s) => s.read);
@@ -134,6 +138,9 @@ export default function Chat({ win }: AppProps) {
   const follow = useRef(true);
   const roomRef = useRef(room);
   roomRef.current = room;
+  // A nudge's notification can be clicked long after it arrived: it opens the conversation as things are then.
+  const startDMRef = useRef(startDM);
+  startDMRef.current = startDM;
   const lastTyping = useRef(0);
   const lastNudge = useRef(0);
   const nudgesFrom = useRef<Record<string, number>>({});
@@ -262,7 +269,7 @@ export default function Chat({ win }: AppProps) {
       play('chime');
       setNudged(true);
       setTimeout(() => setNudged(false), 800);
-      notify({ title: `${name} nudged you`, body: 'Say something back?', onClick: () => startDM(name) });
+      notify({ title: `${name} nudged you`, body: 'Say something back?', onClick: () => startDMRef.current(name) });
     });
     const tick = setInterval(
       () =>
@@ -368,16 +375,16 @@ export default function Chat({ win }: AppProps) {
   const here = visitors.filter((v) => v.room === room);
   const hereNames = [...new Set(here.flatMap((v) => (v.username ? [v.username] : [])))];
   const guests = here.filter((v) => !v.username).length;
-  const online = new Set(visitors.flatMap((v) => (v.username ? [v.username] : [])));
+  const online = useMemo(() => new Set(visitors.flatMap((v) => (v.username ? [v.username] : []))), [visitors]);
 
   // @mention suggestions: people in the conversation and on the desktop.
-  const at = /(^|\s)@([a-z0-9_]*)$/i.exec(draft);
+  const mention = /(^|\s)@([a-z0-9_]*)$/i.exec(draft)?.[2].toLowerCase() ?? null;
+  const myName = account?.username;
   const suggestions = useMemo(() => {
-    if (!at) return [];
-    const q = at[2].toLowerCase();
+    if (mention === null) return [];
     const known = [...new Set([...messages.map((m) => m.username).reverse(), ...online])];
-    return known.filter((n) => n !== account?.username && n.startsWith(q)).slice(0, 5);
-  }, [at?.[2], messages, visitors, account]);
+    return known.filter((n) => n !== myName && n.startsWith(mention)).slice(0, 5);
+  }, [mention, messages, online, myName]);
   const complete = (name: string) => {
     setDraft(draft.replace(/@([a-z0-9_]*)$/i, `@${name} `));
     input.current?.focus();
