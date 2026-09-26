@@ -1,0 +1,63 @@
+/* ---------- Calculator ---------- */
+
+.os-calc {
+  gap: 10px;
+  padding: 12px;
+  background: linear-gradient(#e9e9e9, #cfcfcf);
+  outline: none;
+}
+
+.os-calc-lcd {
+  display: grid;
+  justify-items: end;
+  padding: 6px 10px;
+  border-radius: 5px;
+  background: linear-gradient(#e4ecd7, #c9d6b3);
+  box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.45);
+  color: #1d2616;
+  font: 30px/1.1 var(--os-mono);
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.os-calc-lcd small {
+  font-size: 11px;
+  opacity: 0.65;
+}
+
+.os-calc-keys {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 7px;
+}
+
+.os-calc-keys button {
+  border-radius: 12px;
+  background: linear-gradient(#ffffff, #f1f1f1 45%, #dedede 50%, #f4f4f4);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.35), 0 1px 1px rgba(0, 0, 0, 0.15);
+  color: #111;
+  font-size: 17px;
+}
+
+.os-calc-keys button[data-kind='fn'] {
+  background: linear-gradient(#f4f4f4, #dcdcdc 45%, #c8c8c8 50%, #e2e2e2);
+}
+
+.os-calc-keys button[data-kind='op'],
+.os-calc-keys button[data-kind='eq'] {
+  background: linear-gradient(#ffd9a8, #ffab4a 45%, #ff9420 50%, #ffc47a);
+  box-shadow: inset 0 0 0 1px rgba(140, 70, 0, 0.5), 0 1px 1px rgba(0, 0, 0, 0.15);
+  color: #fff;
+  text-shadow: 0 -1px 0 rgba(120, 50, 0, 0.4);
+}
+
+.os-calc-keys button[data-wide] {
+  grid-column: span 2;
+}
+
+.os-calc-keys button:active,
+.os-calc-keys button[data-active] {
+  background: var(--os-gel-pressed);
+  color: #fff;
+}

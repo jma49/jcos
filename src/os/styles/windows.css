@@ -1,0 +1,888 @@
+/* ---------- Windows ---------- */
+
+.os-window {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  border-radius: 6px 6px 4px 4px;
+  background: var(--os-pinstripe), var(--os-window);
+  box-shadow: var(--os-shadow-quiet);
+  /* Not clipped, so a drawer can hang off the edge; the title bar and body round their own corners. */
+  transform-origin: center;
+  will-change: transform;
+}
+
+.os-window > .os-titlebar {
+  border-top-left-radius: inherit;
+  border-top-right-radius: inherit;
+}
+
+.os-window > .os-body {
+  overflow: hidden;
+  border-bottom-left-radius: inherit;
+  border-bottom-right-radius: inherit;
+}
+
+/* ---------- Drawers ---------- */
+
+/* Where a window's drawer lives: along its right edge, under the title bar. */
+.os-drawer-slot {
+  position: absolute;
+  z-index: -1;
+  top: 34px;
+  bottom: 14px;
+  left: 100%;
+  width: 0;
+}
+
+.os-drawer {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -6px;
+  width: var(--drawer-width, 240px);
+  padding: 8px 8px 8px 14px;
+  border-radius: 0 7px 7px 0;
+  background: var(--os-pinstripe), var(--os-window);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3), 0 8px 22px rgba(0, 0, 0, 0.3);
+  /* Tucked under the window until opened. */
+  transform: translateX(-100%);
+  visibility: hidden;
+  transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1), visibility 0s linear 0.28s;
+}
+
+.os-drawer[data-open] {
+  transform: none;
+  visibility: visible;
+  transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.os-window[data-material='metal'] .os-drawer {
+  background: var(--os-metal);
+}
+
+.os-root[data-glass] .os-drawer {
+  background: var(--os-window);
+  backdrop-filter: blur(24px) saturate(1.8);
+  -webkit-backdrop-filter: blur(24px) saturate(1.8);
+}
+
+/* The drawer's content sits in an inset pane, like the window's. */
+.os-drawer-inner {
+  height: 100%;
+  overflow: auto;
+  padding: 12px;
+  border-radius: 4px;
+  background: var(--os-content);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3), inset 0 1px 2px rgba(0, 0, 0, 0.15);
+  font-size: 12px;
+  user-select: text;
+}
+
+/* Mirrored when there's no room on the right. */
+.os-drawer-slot[data-side='left'] {
+  left: auto;
+  right: 100%;
+}
+
+.os-drawer-slot[data-side='left'] .os-drawer {
+  left: auto;
+  right: -6px;
+  padding: 8px 14px 8px 8px;
+  border-radius: 7px 0 0 7px;
+  transform: translateX(100%);
+}
+
+.os-drawer-slot[data-side='left'] .os-drawer[data-open] {
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .os-drawer,
+  .os-drawer[data-open] {
+    transition: none;
+  }
+}
+
+/* "Get Info"-style content for drawers. */
+.os-info h3 {
+  margin: 8px 0 4px;
+  font-size: 13px;
+}
+
+.os-info-preview {
+  display: block;
+  width: 100%;
+  max-height: 150px;
+  object-fit: contain;
+  border: 3px solid #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+}
+
+.os-info-description {
+  margin: 0 0 8px;
+  color: var(--os-dim);
+  line-height: 1.4;
+}
+
+.os-info dl {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 3px 8px;
+  margin: 0 0 10px;
+}
+
+.os-info dt {
+  color: var(--os-faint);
+  text-align: right;
+}
+
+.os-info dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.os-file-info-icon {
+  display: grid;
+  place-items: center;
+  height: 110px;
+}
+
+.os-file-info h3 {
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.os-info-swatch {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  vertical-align: -1px;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.3);
+}
+
+.os-info a {
+  color: var(--os-select);
+}
+
+/* No room either side (maximized or very wide windows): slide over the window's content. */
+.os-drawer-slot[data-side='inside'] {
+  z-index: 5;
+  top: 60px;
+  bottom: 1px;
+  left: auto;
+  right: 1px;
+  width: min(260px, 86vw);
+  overflow: hidden;
+  /* Over the window's content: only an open drawer takes the pointer. */
+  pointer-events: none;
+}
+
+.os-drawer-slot[data-side='inside'] .os-drawer[data-open] {
+  pointer-events: auto;
+}
+
+.os-drawer-slot[data-side='inside'] .os-drawer {
+  left: 0;
+  width: 100%;
+  padding-left: 8px;
+  border-radius: 6px 0 0 0;
+  transform: translateX(100%);
+}
+
+.os-drawer-slot[data-side='inside'] .os-drawer[data-open] {
+  transform: none;
+}
+
+/* Phones: windows fill the screen, so the drawer always slides over the content. */
+@media (max-width: 767px) {
+  .os-drawer-slot,
+  .os-drawer-slot[data-side] {
+    z-index: 5;
+    top: 44px;
+    bottom: 0;
+    left: auto;
+    right: 0;
+    width: min(300px, 86vw);
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  .os-drawer,
+  .os-drawer-slot[data-side] .os-drawer {
+    left: 0;
+    right: auto;
+    width: 100%;
+    border-radius: 0;
+    transform: translateX(100%);
+  }
+
+  .os-drawer-slot[data-side] .os-drawer[data-open] {
+    transform: none;
+    pointer-events: auto;
+  }
+}
+
+/* Holds a window's Genie filter; takes no space. */
+.os-genie-defs {
+  position: absolute;
+  width: 0;
+  height: 0;
+}
+
+.os-window[data-focused='true'] {
+  box-shadow: var(--os-shadow);
+}
+
+/* ---------- Finder toolbar: action menu and search ---------- */
+
+.os-finder-action {
+  position: relative;
+}
+
+.os-root .os-finder-gear {
+  gap: 3px;
+  padding: 0 8px;
+  font-size: 9px;
+}
+
+.os-finder-action-menu {
+  top: 26px;
+  z-index: 5;
+  min-width: 200px;
+  border-radius: 5px;
+}
+
+.os-menu-check {
+  display: inline-block;
+  width: 16px;
+}
+
+.os-search-field {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 170px;
+  height: 22px;
+  margin-left: auto;
+  padding: 0 8px;
+  border-radius: 11px;
+  background: #fff;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.35), 0 1px 0 rgba(255, 255, 255, 0.6);
+  color: #777;
+}
+
+.os-search-field input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: none;
+  color: #111;
+  font: inherit;
+  font-size: 12px;
+}
+
+.os-search-field:focus-within {
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.35), 0 0 0 3px var(--os-focus);
+}
+
+:root[data-theme='dark'] .os-search-field {
+  background: #2a2a2a;
+  color: #aaa;
+}
+
+:root[data-theme='dark'] .os-search-field input {
+  color: #eee;
+}
+
+.os-sidebar-divider {
+  margin: 6px 12px;
+  border: 0;
+  border-top: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.os-finder-empty {
+  margin: 0;
+  padding: 24px;
+  color: var(--os-faint);
+  text-align: center;
+}
+
+/* ---------- Brushed metal windows ---------- */
+
+.os-window[data-material='metal'] {
+  background: var(--os-metal);
+  border-radius: 8px;
+}
+
+/* One continuous sheet of metal: title bar and toolbar are part of it. */
+.os-window[data-material='metal'] .os-titlebar,
+.os-window[data-material='metal'] .os-toolbar {
+  background: transparent;
+  border-bottom: 0;
+  box-shadow: none;
+}
+
+.os-window[data-material='metal'] .os-titlebar {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75);
+}
+
+.os-window[data-material='metal'] .os-title,
+.os-window[data-material='metal'] .os-toolbar-meta {
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+/* Background metal windows go pale, like Tiger's. */
+.os-window[data-material='metal'][data-focused='false'] {
+  background: var(--os-metal-grain), linear-gradient(#f0f0f0, #dcdcdc 38%, #d2d2d2);
+}
+
+:root[data-theme='dark'] .os-window[data-material='metal'] .os-title,
+:root[data-theme='dark'] .os-window[data-material='metal'] .os-toolbar-meta {
+  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.5);
+}
+
+:root[data-theme='dark'] .os-window[data-material='metal'][data-focused='false'] {
+  background: var(--os-metal-grain), linear-gradient(#4a4a4a, #3e3e3e);
+}
+
+/* Content sits in panes set into the metal. */
+.os-window[data-material='metal'] .os-finder {
+  gap: 6px;
+  padding: 0 7px 7px;
+  background: transparent;
+}
+
+.os-window[data-material='metal'] .os-finder .os-sidebar,
+.os-window[data-material='metal'] .os-finder .os-finder-main,
+.os-window[data-material='metal'] .os-browser iframe,
+.os-window[data-material='metal'] .os-photo-stage {
+  border-radius: 4px;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.45), inset 0 1px 2px rgba(0, 0, 0, 0.2), 0 1px 0 rgba(255, 255, 255, 0.5);
+  overflow: hidden;
+}
+
+.os-window[data-material='metal'] .os-finder .os-sidebar {
+  border-right: 0;
+}
+
+/* Finder's toolbar spans both panes, on the metal. */
+.os-finder-app > .os-finder {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+}
+
+.os-window[data-material='metal'] .os-browser iframe {
+  width: auto;
+  margin: 0 7px 7px;
+}
+
+.os-window[data-material='metal'] .os-photo-viewer {
+  background: transparent;
+}
+
+.os-window[data-material='metal'] .os-photo-stage {
+  margin: 0 7px 7px;
+  background: #1a1a1a;
+}
+
+/* Apps that take keys themselves focus their root; no ring around the whole window. */
+.os-root .os-calc:focus-visible,
+.os-root .os-tiles:focus-visible {
+  outline: none;
+}
+
+.os-window[data-material='metal'] .os-calc {
+  background: transparent;
+}
+
+.os-titlebar {
+  position: relative;
+  flex: none;
+  height: 23px;
+  display: grid;
+  place-items: center;
+  padding: 0 78px;
+  background: var(--os-pinstripe-soft), linear-gradient(var(--os-title-top), var(--os-title-bottom));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  border-bottom: 1px solid #9c9c9c;
+}
+
+.os-window[data-focused='false'] .os-titlebar {
+  background: var(--os-pinstripe-soft), linear-gradient(var(--os-title-inactive-top), var(--os-title-inactive-bottom));
+  border-bottom-color: #c8c8c8;
+}
+
+.os-title {
+  margin: 0;
+  overflow: hidden;
+  max-width: 100%;
+  font-size: 13px;
+  font-weight: 400;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+.os-window[data-focused='false'] .os-title {
+  color: var(--os-faint);
+}
+
+/* Aqua traffic lights: glossy gel buttons. */
+.os-controls {
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  translate: 0 -50%;
+  display: flex;
+  gap: 8px;
+}
+
+.os-control {
+  position: relative;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.35), 0 1px 1px rgba(255, 255, 255, 0.6);
+}
+
+/* Specular highlight across the top of each gel. */
+.os-control::before {
+  content: '';
+  position: absolute;
+  top: 1px;
+  left: 3px;
+  right: 3px;
+  height: 5px;
+  border-radius: 50%;
+  background: linear-gradient(rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.1));
+}
+
+.os-close {
+  background: radial-gradient(circle at 50% 75%, #ffb6a8, #e2322a 55%, #a61a13);
+}
+
+.os-min {
+  background: radial-gradient(circle at 50% 75%, #fff0a8, #e9a92a 55%, #a86e0c);
+}
+
+.os-max {
+  background: radial-gradient(circle at 50% 75%, #c8f5b0, #53b43c 55%, #2c7a1d);
+}
+
+.os-window[data-focused='false'] .os-control {
+  background: radial-gradient(circle at 50% 75%, #fbfbfb, #cfcfcf 55%, #a4a4a4);
+}
+
+/* Pointing at a background window's buttons wakes them up, as on a Mac. */
+.os-window[data-focused='false'] .os-controls:hover .os-close {
+  background: radial-gradient(circle at 50% 75%, #ffb6a8, #e2322a 55%, #a61a13);
+}
+
+.os-window[data-focused='false'] .os-controls:hover .os-min {
+  background: radial-gradient(circle at 50% 75%, #fff0a8, #e9a92a 55%, #a86e0c);
+}
+
+.os-window[data-focused='false'] .os-controls:hover .os-max {
+  background: radial-gradient(circle at 50% 75%, #c8f5b0, #53b43c 55%, #2c7a1d);
+}
+
+/*
+ * Background windows recede: selections turn grey, pressed segments and
+ * selected cells turn graphite, and default buttons stop pulsing and go
+ * white. Only the front window shows the accent.
+ */
+.os-window[data-focused='false'] {
+  --os-select: #9a9a9a;
+  --os-select-grad: linear-gradient(#c2c2c2, #9a9a9a);
+  --os-gel: linear-gradient(#f2f2f2, #d2d2d2 45%, #b9b9b9 50%, #dedede);
+  --os-accent-rim: #5a5a5a;
+  --os-accent-shadow: rgba(0, 0, 0, 0.25);
+}
+
+:root[data-theme='dark'] .os-window[data-focused='false'] {
+  --os-select: #5c5c5c;
+  --os-select-grad: linear-gradient(#6e6e6e, #555);
+  --os-gel: linear-gradient(#8a8a8a, #6a6a6a 45%, #5a5a5a 50%, #727272);
+}
+
+.os-root .os-window[data-focused='false'] .os-button-primary {
+  animation: none;
+  background: linear-gradient(#ffffff, #f1f1f1 45%, #dedede 50%, #f4f4f4);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.35), 0 1px 1px rgba(0, 0, 0, 0.15);
+  color: #111;
+  text-shadow: none;
+}
+
+.os-window[data-focused='false'] .os-sidebar button[aria-pressed='true'] {
+  box-shadow: none;
+}
+
+.os-control::after {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font: 700 10px/1 var(--os-ui);
+  color: rgba(60, 0, 0, 0.7);
+  opacity: 0;
+}
+
+.os-close::after {
+  content: '×';
+}
+
+.os-min::after {
+  content: '–';
+}
+
+.os-max::after {
+  content: '+';
+}
+
+.os-controls:hover .os-control::after {
+  opacity: 1;
+}
+
+.os-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+}
+
+.os-resize {
+  position: absolute;
+  z-index: 2;
+}
+
+.os-resize-e {
+  top: 12px;
+  bottom: 12px;
+  right: -3px;
+  width: 8px;
+  cursor: ew-resize;
+}
+
+.os-resize-w {
+  top: 12px;
+  bottom: 12px;
+  left: -3px;
+  width: 8px;
+  cursor: ew-resize;
+}
+
+.os-resize-s {
+  left: 12px;
+  right: 12px;
+  bottom: -3px;
+  height: 8px;
+  cursor: ns-resize;
+}
+
+.os-resize-se {
+  right: -3px;
+  bottom: -3px;
+  width: 16px;
+  height: 16px;
+  cursor: nwse-resize;
+}
+
+.os-resize-sw {
+  left: -3px;
+  bottom: -3px;
+  width: 16px;
+  height: 16px;
+  cursor: nesw-resize;
+}
+
+/* The Aqua spinner: twelve fading bars. */
+.os-loading {
+  position: relative;
+  width: 24px;
+  height: 24px;
+  margin: auto;
+  animation: os-spin 0.9s steps(12) infinite;
+  background: conic-gradient(from 0deg, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.05));
+  mask: repeating-conic-gradient(#000 0 18deg, transparent 18deg 30deg), radial-gradient(circle, transparent 5px, #000 5.5px);
+  mask-composite: intersect;
+  border-radius: 50%;
+}
+
+.os-loading span {
+  display: none;
+}
+
+@keyframes os-spin {
+  to {
+    rotate: 360deg;
+  }
+}
+
+/* ---------- Shared app chrome ---------- */
+
+.os-app {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  user-select: text;
+}
+
+.os-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+/* Unified toolbar: continues the title bar's gradient. */
+.os-toolbar {
+  position: relative;
+  flex: none;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 10px;
+  margin-top: -1px;
+  background: var(--os-pinstripe-soft), linear-gradient(var(--os-title-bottom), #bdbdbd);
+  border-bottom: 1px solid #8e8e8e;
+  user-select: none;
+}
+
+.os-window[data-focused='false'] .os-toolbar {
+  background: linear-gradient(var(--os-title-inactive-bottom), #dadada);
+  border-bottom-color: #b5b5b5;
+}
+
+:root[data-theme='dark'] .os-toolbar {
+  background: linear-gradient(var(--os-title-bottom), #333);
+}
+
+.os-toolbar-meta {
+  margin-left: auto;
+  overflow: hidden;
+  color: var(--os-dim);
+  font-size: 11px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+/* Aqua pill buttons. */
+.os-root .os-button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 14px;
+  border-radius: 11px;
+  background: linear-gradient(#ffffff, #f1f1f1 45%, #dedede 50%, #f4f4f4);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.35), 0 1px 1px rgba(0, 0, 0, 0.15);
+  color: #111;
+  font-size: 12px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.os-root .os-button:active {
+  background: var(--os-gel-pressed);
+}
+
+/*
+ * Aqua gloss: every gel control gets a bright specular band across its
+ * top half and a soft glow along its bottom edge. Both sit under the
+ * label (isolation + z-index: -1) so text stays crisp.
+ */
+.os-root .os-button,
+.os-root .os-segmented,
+.os-root select {
+  isolation: isolate;
+}
+
+.os-root .os-button::before,
+.os-root .os-segmented::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  top: 1px;
+  left: 5px;
+  right: 5px;
+  height: 48%;
+  border-radius: 10px 10px 5px 5px / 10px 10px 4px 4px;
+  background: linear-gradient(rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.25));
+  pointer-events: none;
+}
+
+.os-root .os-button::after,
+.os-root .os-segmented::after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  bottom: 0;
+  left: 12%;
+  right: 12%;
+  height: 45%;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at 50% 100%, rgba(255, 255, 255, 0.7), transparent 70%);
+  pointer-events: none;
+}
+
+.os-root .os-segmented {
+  position: relative;
+}
+
+/* Pressed segments carry their own gel, so the shared shine goes over them. */
+.os-root .os-segmented::before {
+  z-index: 1;
+  opacity: 0.55;
+}
+
+.os-root .os-segmented button {
+  position: relative;
+}
+
+/* Pop-up menus (selects): a white gel with the accent's arrow cap on the right. */
+.os-root select {
+  appearance: none;
+  height: 22px;
+  padding: 0 30px 0 10px;
+  border: 0;
+  border-radius: 6px;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='7' height='11'%3E%3Cpath d='M3.5 0L7 4H0zM3.5 11L0 7h7z' fill='white'/%3E%3C/svg%3E") right 7px center / 7px 11px no-repeat,
+    var(--os-gel) right / 21px 100% no-repeat,
+    linear-gradient(rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.2) 48%, transparent 50%),
+    linear-gradient(#ffffff, #f1f1f1 45%, #dedede 50%, #f4f4f4);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.35), 0 1px 1px rgba(0, 0, 0, 0.15);
+  color: #111;
+  font: inherit;
+  font-size: 12px;
+}
+
+/* Checkboxes and radios: white gels that fill with the accent when on. */
+.os-root input[type='checkbox'],
+.os-root input[type='radio'] {
+  appearance: none;
+  flex: none;
+  width: 14px;
+  height: 14px;
+  margin: 1px 0 0;
+  border-radius: 3px;
+  background: linear-gradient(#ffffff, #f1f1f1 45%, #dcdcdc 50%, #f6f6f6);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.4), inset 0 1px 2px rgba(0, 0, 0, 0.12);
+}
+
+.os-root input[type='radio'] {
+  border-radius: 50%;
+}
+
+.os-root input[type='checkbox']:checked {
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12'%3E%3Cpath d='M2 6.5l2.6 2.8L10 2.5' fill='none' stroke='%23111' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 11px no-repeat, var(--os-gel);
+  box-shadow: inset 0 0 0 1px var(--os-accent-rim);
+}
+
+.os-root input[type='radio']:checked {
+  background: radial-gradient(circle, #1b1b1b 0 2.4px, transparent 2.9px), var(--os-gel);
+  box-shadow: inset 0 0 0 1px var(--os-accent-rim);
+}
+
+/* Sliders: a recessed track and a glossy white thumb. */
+.os-root input[type='range'] {
+  appearance: none;
+  height: 16px;
+  background: transparent;
+}
+
+.os-root input[type='range']::-webkit-slider-runnable-track {
+  height: 5px;
+  border-radius: 3px;
+  background: linear-gradient(#9a9a9a, #d4d4d4);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.45);
+}
+
+.os-root input[type='range']::-moz-range-track {
+  height: 5px;
+  border-radius: 3px;
+  background: linear-gradient(#9a9a9a, #d4d4d4);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.45);
+}
+
+.os-root input[type='range']::-webkit-slider-thumb {
+  appearance: none;
+  width: 15px;
+  height: 15px;
+  margin-top: -5px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 30%, #fff, #e4e4e4 55%, #bdbdbd);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+.os-root input[type='range']::-moz-range-thumb {
+  width: 15px;
+  height: 15px;
+  border: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 30%, #fff, #e4e4e4 55%, #bdbdbd);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+.os-root input:disabled {
+  opacity: 0.5;
+}
+
+.os-root .os-button-primary {
+  background: var(--os-gel);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--os-accent-rim) 55%, transparent), 0 1px 1px rgba(0, 0, 0, 0.2);
+  /* Aqua's default buttons have black labels on the gel. */
+  color: #111;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
+  animation: os-throb 1.6s ease-in-out infinite alternate;
+}
+
+/* Default buttons pulse, as in Aqua. */
+@keyframes os-throb {
+  to {
+    filter: brightness(1.12) saturate(1.1);
+  }
+}
+
+.os-icon-button {
+  width: 30px;
+  justify-content: center;
+  padding: 0 !important;
+  font-size: 14px !important;
+}
+
+.os-segmented {
+  display: inline-flex;
+  border-radius: 11px;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.35), 0 1px 1px rgba(0, 0, 0, 0.15);
+  background: linear-gradient(#ffffff, #f1f1f1 45%, #dedede 50%, #f4f4f4);
+  overflow: hidden;
+}
+
+.os-segmented button {
+  height: 22px;
+  padding: 0 14px;
+  font-size: 12px;
+  color: #111;
+}
+
+.os-segmented button + button {
+  box-shadow: inset 1px 0 0 rgba(0, 0, 0, 0.25);
+}
+
+.os-segmented button[aria-pressed='true'] {
+  background: var(--os-gel);
+  color: #111;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+.os-empty {
+  display: grid;
+  place-items: center;
+  color: var(--os-faint);
+}

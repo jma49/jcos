@@ -1,0 +1,7 @@
+/* ---------- Desktop context menu ---------- */
+
+.os-context-menu {
+  position: fixed;
+  z-index: 1100;
+  border-radius: 5px;
+}

@@ -1,0 +1,461 @@
+/* ---------- Dashboard ---------- */
+
+.os-dashboard {
+  position: absolute;
+  inset: 0;
+  z-index: 1500;
+  display: grid;
+  place-items: center;
+  background: rgba(0, 0, 0, 0.45);
+  overflow: auto;
+}
+
+.os-dashboard-board {
+  position: relative;
+  width: min(940px, 100%);
+  height: 640px;
+}
+
+.os-dashboard-slot {
+  position: absolute;
+}
+
+.os-slot-clock {
+  left: 40px;
+  top: 30px;
+}
+
+.os-slot-calendar {
+  left: 250px;
+  top: 40px;
+}
+
+.os-slot-weather {
+  right: 40px;
+  top: 30px;
+}
+
+.os-slot-github {
+  left: 120px;
+  top: 270px;
+}
+
+.os-slot-sticky {
+  right: 30px;
+  top: 290px;
+}
+
+.os-slot-soapbox {
+  left: 300px;
+  top: 490px;
+}
+
+.os-slot-home {
+  left: 480px;
+  top: 270px;
+}
+
+.os-widget {
+  color: #fff;
+  font-size: 12px;
+  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.45));
+}
+
+.os-widget-title {
+  margin: 0 0 8px;
+  font-weight: 700;
+  font-size: 12px;
+  opacity: 0.85;
+}
+
+.os-widget-muted {
+  margin: 0;
+  opacity: 0.6;
+}
+
+.os-widget-clock {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+}
+
+.os-widget-clock svg {
+  width: 160px;
+  height: 160px;
+}
+
+.os-widget-clock span {
+  font-weight: 700;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+.os-widget-calendar {
+  display: flex;
+  overflow: hidden;
+  border-radius: 12px;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.25);
+}
+
+.os-cal-page {
+  width: 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: linear-gradient(#fff, #e9e9e9);
+  color: #222;
+}
+
+.os-cal-page span {
+  width: 100%;
+  padding: 5px 0;
+  text-align: center;
+  background: linear-gradient(#ef6a5b, #c9261b);
+  color: #fff;
+  font-weight: 700;
+}
+
+.os-cal-page strong {
+  font-family: var(--os-display);
+  font-size: 72px;
+  font-weight: 400;
+  line-height: 1.2;
+}
+
+.os-cal-month {
+  width: 190px;
+  padding: 8px 10px;
+  background: linear-gradient(#4a4a4a, #232323);
+}
+
+.os-cal-month p {
+  margin: 0 0 6px;
+  text-align: center;
+  font-weight: 700;
+}
+
+.os-cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+  text-align: center;
+  font-size: 11px;
+}
+
+.os-cal-grid b {
+  opacity: 0.6;
+}
+
+.os-cal-grid span[data-today] {
+  border-radius: 3px;
+  background: #d8302a;
+  font-weight: 700;
+}
+
+.os-widget-weather {
+  position: relative;
+  width: 230px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: linear-gradient(#5aa4ea, #1f5fb3);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+.os-weather-city {
+  margin: 0;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.os-weather-now {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 4px 0;
+}
+
+.os-weather-icon {
+  font-size: 40px;
+}
+
+.os-weather-now strong {
+  font-size: 48px;
+  font-weight: 400;
+  line-height: 1;
+}
+
+.os-weather-now small {
+  margin-left: 2px;
+  font-size: 16px;
+  vertical-align: top;
+  opacity: 0.8;
+}
+
+.os-weather-forecast {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  margin: 10px 0 0;
+  padding: 8px 0 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.3);
+  list-style: none;
+  text-align: center;
+}
+
+.os-weather-forecast li {
+  display: grid;
+  gap: 2px;
+}
+
+.os-weather-forecast li span:first-child {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+
+.os-weather-forecast li span:nth-child(2) {
+  font-size: 18px;
+}
+
+/* The "i" that flips a widget over, as on Tiger's widgets. */
+.os-widget-info {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 16px;
+  height: 16px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.25);
+  color: #fff;
+  font: italic 700 10px/1 Georgia, serif;
+  cursor: pointer;
+  opacity: 0.6;
+}
+
+.os-widget-weather:hover .os-widget-info,
+.os-widget-info:focus-visible {
+  opacity: 1;
+}
+
+.os-weather-back {
+  display: grid;
+  gap: 8px;
+}
+
+.os-weather-back .os-place-search input {
+  width: 100%;
+  padding: 4px 8px;
+  border: 1px solid rgba(0, 0, 0, 0.35);
+  border-radius: 10px;
+  font: inherit;
+  color: #111;
+}
+
+.os-place-search ul {
+  min-height: 20px;
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.os-place-search li button {
+  width: 100%;
+  padding: 3px 6px;
+  border: 0;
+  border-radius: 4px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.os-weather-back .os-place-search li button:hover,
+.os-weather-back .os-place-search li button:focus-visible {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.os-place-note {
+  padding: 3px 6px;
+  opacity: 0.7;
+}
+
+.os-weather-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.os-weather-actions button {
+  padding: 2px 10px;
+  border: 1px solid rgba(0, 0, 0, 0.3);
+  border-radius: 10px;
+  background: linear-gradient(#fff, #d8d8d8);
+  color: #111;
+  font: inherit;
+  cursor: pointer;
+}
+
+.os-widget-home {
+  width: 220px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: linear-gradient(#3b4658, #161b25);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+.os-home-now {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.os-home-now div {
+  display: grid;
+}
+
+.os-home-now strong {
+  white-space: nowrap;
+  font-size: 24px;
+  font-weight: 400;
+  line-height: 1.1;
+}
+
+.os-home-now span {
+  opacity: 0.8;
+}
+
+.os-home-offset {
+  margin: 8px 0 2px;
+  font-weight: 700;
+}
+
+.os-home-status {
+  margin: 0 0 8px;
+  opacity: 0.8;
+  line-height: 1.35;
+}
+
+.os-widget-home a {
+  color: #9cc7ff;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.os-widget-home a:hover {
+  text-decoration: underline;
+}
+
+.os-weather-note {
+  margin: 0;
+  opacity: 0.9;
+}
+
+.os-widget-github {
+  width: 330px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: linear-gradient(rgba(60, 60, 60, 0.95), rgba(25, 25, 25, 0.95));
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+}
+
+.os-widget-github ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.os-widget-github li {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 5px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.os-widget-github li span {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.os-widget-github time {
+  flex: none;
+  opacity: 0.55;
+}
+
+.os-widget-soapbox {
+  display: grid;
+  gap: 6px;
+  width: 360px;
+  padding: 0;
+  color: #fff;
+  font: inherit;
+  font-size: 12px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.os-widget-soapbox .os-widget-title {
+  margin: 0;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+/* An Aqua speech bubble, like the Soapbox icon's. */
+.os-soapbox-bubble {
+  position: relative;
+  padding: 10px 14px;
+  border-radius: 16px;
+  background: linear-gradient(#8fd0ff, #3a95ee 50%, #1b62c9);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--os-accent-rim) 50%, transparent), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  font-size: 13px;
+  line-height: 1.4;
+  white-space: pre-wrap;
+  text-shadow: 0 -1px 0 var(--os-accent-shadow);
+}
+
+.os-soapbox-bubble::after {
+  content: '';
+  position: absolute;
+  left: 22px;
+  bottom: -9px;
+  border: 10px solid transparent;
+  border-top-color: #1b62c9;
+  border-bottom: 0;
+}
+
+.os-widget-soapbox[data-kind='rant'] .os-soapbox-bubble {
+  background: linear-gradient(#ffc38a, #f0703c 50%, #d8402f);
+  box-shadow: inset 0 0 0 1px rgba(120, 30, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  text-shadow: 0 -1px 0 rgba(120, 30, 0, 0.35);
+}
+
+.os-widget-soapbox[data-kind='rant'] .os-soapbox-bubble::after {
+  border-top-color: #d8402f;
+}
+
+.os-widget-soapbox:hover .os-soapbox-bubble {
+  filter: brightness(1.06);
+}
+
+@media (max-width: 767px) {
+  .os-widget-soapbox {
+    width: min(360px, 92vw);
+  }
+}
+
+.os-widget-sticky {
+  width: 200px;
+  min-height: 170px;
+  padding: 14px;
+  background: linear-gradient(#fff6a8, #f7e36a);
+  color: #3a3000;
+  font-family: 'Marker Felt', 'Comic Sans MS', var(--os-ui);
+  font-size: 14px;
+  line-height: 1.45;
+  box-shadow: inset 0 -12px 20px -16px rgba(120, 90, 0, 0.5);
+  rotate: 2deg;
+}

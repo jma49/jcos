@@ -1,0 +1,52 @@
+/* ---------- Screensaver ---------- */
+
+.os-screensaver {
+  position: fixed;
+  inset: 0;
+  z-index: 4000;
+  overflow: hidden;
+  background: #000;
+  cursor: none;
+}
+
+.os-screensaver-slide {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+}
+
+.os-screensaver-backdrop {
+  position: absolute;
+  inset: -60px;
+  background: center / cover no-repeat;
+  filter: blur(48px) brightness(0.55) saturate(1.2);
+}
+
+.os-screensaver-slide img {
+  position: relative;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
+}
+
+.os-screensaver-caption {
+  position: absolute;
+  left: 40px;
+  bottom: 34px;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 13px;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.6);
+}
+
+.os-screensaver-caption strong {
+  font-size: 18px;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+}

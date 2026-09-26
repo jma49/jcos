@@ -1,0 +1,122 @@
+/* ---------- Soapbox ---------- */
+
+.os-soapbox-feed {
+  display: grid;
+  align-content: start;
+  gap: 14px;
+  padding: 16px 18px 22px;
+  background:
+    linear-gradient(90deg, transparent 29px, rgba(233, 139, 128, 0.35) 29px, rgba(233, 139, 128, 0.35) 30px, transparent 30px),
+    #f7f3e8;
+}
+
+:root[data-theme='dark'] .os-soapbox-feed {
+  background: #2a2826;
+}
+
+.os-soapbox-post {
+  position: relative;
+  padding: 12px 14px 10px 16px;
+  border-radius: 6px;
+  background: #fffef9;
+  color: #222;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.12), 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.os-soapbox-post::before {
+  content: '';
+  position: absolute;
+  inset: 8px auto 8px 0;
+  width: 3px;
+  border-radius: 0 2px 2px 0;
+  background: linear-gradient(#8fd0ff, #1b62c9);
+}
+
+.os-soapbox-post[data-kind='rant'] {
+  background: #fff8f2;
+}
+
+.os-soapbox-post[data-kind='rant']::before {
+  background: linear-gradient(#ffb36b, #e5484d);
+}
+
+:root[data-theme='dark'] .os-soapbox-post {
+  background: #353230;
+  color: #eee;
+}
+
+:root[data-theme='dark'] .os-soapbox-post[data-kind='rant'] {
+  background: #3b302b;
+}
+
+.os-soapbox-post header,
+.os-soapbox-post footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 11px;
+}
+
+.os-soapbox-kind {
+  font-weight: 700;
+}
+
+.os-soapbox-post time,
+.os-soapbox-where {
+  color: var(--os-faint);
+}
+
+.os-soapbox-body {
+  margin: 8px 0 10px;
+  font-size: 14px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  user-select: text;
+}
+
+.os-soapbox-body a {
+  color: var(--os-select);
+}
+
+.os-soapbox-reactions {
+  display: flex;
+  gap: 4px;
+  margin-left: auto;
+}
+
+.os-soapbox-reactions button {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  height: 20px;
+  padding: 0 7px;
+  border-radius: 10px;
+  background: linear-gradient(#ffffff, #eeeeee);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.2);
+  font-size: 12px;
+  color: #333;
+}
+
+.os-soapbox-reactions button:disabled {
+  cursor: default;
+  opacity: 0.75;
+}
+
+.os-soapbox-reactions button[data-mine] {
+  background: linear-gradient(color-mix(in srgb, var(--os-accent) 25%, white), color-mix(in srgb, var(--os-accent) 55%, white));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--os-accent-rim) 45%, transparent);
+  opacity: 1;
+}
+
+.os-soapbox-reactions b {
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.os-soapbox-empty {
+  margin: 40px 0;
+  text-align: center;
+  color: var(--os-faint);
+}

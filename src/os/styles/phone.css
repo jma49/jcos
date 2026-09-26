@@ -1,0 +1,183 @@
+/* ---------- Small screens: an iOS-style home screen ---------- */
+
+.os-back {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .os-menus .os-menu:not(:first-child) {
+    display: none;
+  }
+
+  /* One line, whatever fits: the app name gives way, and the speaker and
+     appearance switches (both in System Preferences) step aside. */
+  .os-menubar {
+    white-space: nowrap;
+  }
+
+  .os-menus {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .os-menus .os-menu:first-child {
+    min-width: 0;
+  }
+
+  .os-menu-appname {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .os-status {
+    flex: none;
+  }
+
+  .os-status .os-sound-toggle,
+  .os-status .os-theme-toggle {
+    display: none;
+  }
+
+  /* iOS zooms into any text field under 16px when it's focused, and the
+     desktop doesn't scroll back. */
+  html .os-root input:not([type='range'], [type='checkbox'], [type='radio']),
+  html .os-root textarea,
+  html .os-root select {
+    font-size: 16px;
+  }
+
+  .os-status time {
+    font-size: 12px;
+  }
+
+  /* Home screen: a four-column grid of large icons. */
+  .os-desktop-icons {
+    inset: 34px 10px auto;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px 4px;
+  }
+
+  .os-desktop-icons button {
+    width: 100%;
+  }
+
+  .os-desktop-icons .os-icon {
+    width: 60px;
+    height: 60px;
+  }
+
+  .os-desktop-icons span {
+    font-size: 11px;
+  }
+
+  /* Apps are full screen with a tall title bar and a Home button. */
+  .os-window,
+  .os-window[data-focused='true'] {
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .os-titlebar {
+    height: 44px;
+    padding: 0 90px;
+  }
+
+  .os-title {
+    font-size: 15px;
+    font-weight: 700;
+  }
+
+  .os-controls,
+  .os-resize {
+    display: none;
+  }
+
+  .os-back {
+    display: block;
+    position: absolute;
+    left: 6px;
+    top: 50%;
+    translate: 0 -50%;
+    padding: 6px 10px;
+    color: #1a5cc8;
+    font-size: 15px;
+  }
+
+  /* The Dock is the home screen's; it steps aside while an app is open. */
+  .os-root[data-app-open] .os-dock-wrap {
+    display: none;
+  }
+
+  .os-dock-item:not([data-mobile]),
+  .os-dock-divider {
+    display: none;
+  }
+
+  .os-dock-wrap {
+    bottom: 10px;
+  }
+
+  .os-dock {
+    gap: 14px;
+    height: 76px;
+    padding: 0 14px 12px;
+    border-radius: 26px;
+  }
+
+  .os-dock-label {
+    display: none;
+  }
+
+  .os-finder-grid {
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  }
+
+  .os-sidebar {
+    display: none;
+  }
+
+  .os-document,
+  .os-project {
+    padding: 22px 20px 32px;
+  }
+
+  .os-photo-bar input {
+    display: none;
+  }
+
+  /* Dashboard widgets stack in a scrolling column. */
+  .os-dashboard {
+    place-items: start center;
+    padding: 40px 0;
+  }
+
+  .os-dashboard-board {
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+  }
+
+  .os-dashboard-slot {
+    position: static;
+  }
+
+  .os-widget-github {
+    width: min(330px, 92vw);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .os-progress[data-loading='true'] {
+    animation: none;
+    transform: scaleX(0.6);
+  }
+
+  .os-root .os-button-primary,
+  .os-loading,
+  .os-boot-bar {
+    animation: none;
+  }
+}

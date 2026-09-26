@@ -1,0 +1,88 @@
+/* ---------- Terminal ---------- */
+
+.os-terminal {
+  background: rgba(10, 10, 10, 0.94);
+  color: #e0e0e0;
+  font-family: var(--os-mono);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.os-term-screen {
+  padding: 8px 10px 20px;
+}
+
+.os-term-line {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 7px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.os-term-prompt {
+  color: #7ee787;
+  flex: none;
+}
+
+.os-term-error {
+  color: #ff8b7a;
+}
+
+/* A terminal shows its caret, not a focus ring. */
+.os-root .os-term-line input:focus-visible {
+  outline: none;
+}
+
+.os-term-line input {
+  flex: 1;
+  min-width: 40px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  caret-color: #7ee787;
+  outline: none;
+}
+
+.os-term-table {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0 18px;
+}
+
+.os-term-table div {
+  display: contents;
+}
+
+.os-term-table b,
+.os-term-line b {
+  color: #f2cc60;
+  font-weight: 400;
+}
+
+.os-neofetch {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 22px;
+  padding: 6px 0;
+}
+
+.os-neofetch pre {
+  margin: 0;
+  color: #5fa8ff;
+  font: inherit;
+  line-height: 1.2;
+}
+
+.os-swatches {
+  display: flex;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.os-swatches span {
+  width: 18px;
+  height: 12px;
+}
