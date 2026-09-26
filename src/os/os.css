@@ -4986,6 +4986,12 @@
   inset: 0;
   perspective: 340px;
   transform-style: preserve-3d;
+  touch-action: none;
+  cursor: grab;
+}
+
+.os-cf-stage:active {
+  cursor: grabbing;
 }
 
 .os-cf-cover {
@@ -4995,7 +5001,6 @@
   width: 92px;
   height: 92px;
   object-fit: cover;
-  transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
   -webkit-box-reflect: below 1px linear-gradient(transparent 55%, rgba(255, 255, 255, 0.28));
 }
 
@@ -5019,6 +5024,18 @@
 
 .os-cf-caption strong {
   font-size: 11px;
+}
+
+/* A new album's name fades up as it comes to the front. */
+.os-cf-caption {
+  animation: os-cf-caption 0.25s ease-out;
+}
+
+@keyframes os-cf-caption {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
 }
 
 .os-cf-caption span {
@@ -5117,11 +5134,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .os-cf-cover {
-    transition: none;
-  }
-
-  .os-cf-back {
+  .os-cf-back,
+  .os-cf-caption {
     animation: none;
   }
 }

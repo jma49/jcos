@@ -340,7 +340,8 @@ export default function IPod({ win }: AppProps) {
   return (
     <div className="os-app os-ipod-app">
       <div className="os-ipod" data-look={prefs.look} aria-label="iPod">
-        <div className="os-ipod-screen" data-now={now || undefined} data-dim={dim || undefined}>
+        {/* Touching the screen (dragging Cover Flow, clicking a row) is a touch too. */}
+        <div className="os-ipod-screen" data-now={now || undefined} data-dim={dim || undefined} onPointerDown={wake} onWheel={wake}>
           <header className="os-ipod-header">
             <span className="os-ipod-state" aria-hidden="true">
               {music.playing ? '▶' : music.owner ? '❚❚' : ''}
