@@ -1,4 +1,4 @@
-import { useEffect, useState, type RefObject } from 'react';
+import { useEffect, useEffectEvent, useState, type RefObject } from 'react';
 import { skyDimming, type SkyState } from '../ambient/Sky';
 import { useWindows } from '../core/store';
 import type { OSData } from '../core/types';
@@ -28,12 +28,16 @@ export function useDesktopPicture(data: OSData, sky: SkyState, root: RefObject<H
 
   // The accent colour follows the desktop picture unless a fixed one was chosen.
   const accentChoice = useWindows((s) => s.accent);
+  // The dynamic sky's accent follows the hour, so it depends on the sky too;
+  // other pictures don't change with it.
+  const skyKey = chosen === SKY ? `${sky.minutes},${sky.condition}` : '';
+  const generatedAccent = useEffectEvent(() => accentForGenerated(wallpaper, sky));
   useEffect(() => {
     const el = root.current;
     if (!el) return;
     const apply = (color: string) => el.style.setProperty('--os-accent', color);
     if (accentChoice !== 'auto') return apply(ACCENTS[accentChoice].color);
-    if (!sampled) return apply(accentForGenerated(wallpaper, sky) ?? DEFAULT_ACCENT);
+    if (!sampled) return apply(generatedAccent() ?? DEFAULT_ACCENT);
     let live = true;
     const known = cachedAccent(wallpaper);
     if (known) return apply(known);
@@ -44,8 +48,7 @@ export function useDesktopPicture(data: OSData, sky: SkyState, root: RefObject<H
     return () => {
       live = false;
     };
-    // The dynamic sky's accent follows the hour, so it depends on the sky too.
-  }, [accentChoice, wallpaper, chosen === SKY ? `${sky.minutes},${sky.condition}` : '']);
+  }, [root, accentChoice, wallpaper, sampled, skyKey]);
 
   // The menu bar is see-through, so its text follows what's behind it: how
   // bright the top of the picture is, darkened by the sky's tint and gloom.
