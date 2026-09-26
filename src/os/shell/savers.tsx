@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { AnimatePresence, motion } from 'motion/react';
+import { AnimatePresence, m } from 'motion/react';
 import { getSocial, type Post } from '../social/social';
 import { useOSData } from '../core/context';
 import { plain } from '../core/inline';
@@ -211,7 +211,7 @@ export function SoapboxSaver() {
     <div className="os-saver-quote-stage">
       <AnimatePresence mode="wait">
         {posts !== null && quote && (
-          <motion.figure
+          <m.figure
             key={index}
             className="os-saver-quote"
             initial={{ opacity: 0, y: 12 }}
@@ -222,7 +222,7 @@ export function SoapboxSaver() {
             <span className="os-saver-quote-kind">{quote.kind}</span>
             <blockquote>{quote.text}</blockquote>
             <figcaption>{quote.meta}</figcaption>
-          </motion.figure>
+          </m.figure>
         )}
       </AnimatePresence>
     </div>

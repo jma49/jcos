@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { AnimatePresence, motion } from 'motion/react';
+import { AnimatePresence, m } from 'motion/react';
 import type { SaverStyle } from '../core/store';
 import { clockTimeZone, usePlace } from '../ambient/place';
 import { describe, useWeather } from '../ambient/weather';
@@ -85,7 +85,7 @@ function Saver({ onStop, children }: { onStop: () => void; children: ReactNode }
   }, [onStop]);
 
   return (
-    <motion.div
+    <m.div
       className="os-screensaver"
       role="presentation"
       initial={{ opacity: 0 }}
@@ -94,7 +94,7 @@ function Saver({ onStop, children }: { onStop: () => void; children: ReactNode }
       transition={{ duration: 1.2 }}
     >
       {children}
-    </motion.div>
+    </m.div>
   );
 }
 
@@ -122,7 +122,7 @@ function Slideshow() {
   return (
     <>
       <AnimatePresence initial={false}>
-        <motion.div
+        <m.div
           key={`${photo.value}-${index}`}
           className="os-screensaver-slide"
           initial={{ opacity: 0 }}
@@ -132,14 +132,14 @@ function Slideshow() {
         >
           {/* A blurred copy fills the screen so portrait photos aren't cropped. */}
           <div className="os-screensaver-backdrop" style={{ backgroundImage: `url(${photo.value})` }} />
-          <motion.img
+          <m.img
             src={photo.value}
             alt=""
             initial={reduced ? false : drift.from}
             animate={reduced ? undefined : drift.to}
             transition={{ duration: (SLIDE_MS + 1600) / 1000, ease: 'linear' }}
           />
-        </motion.div>
+        </m.div>
       </AnimatePresence>
       <p className="os-screensaver-caption">
         <strong>{photo.name}</strong>
@@ -246,7 +246,7 @@ function DriftingClock() {
 
   return (
     <div className="os-saver-clock-stage">
-      <motion.div
+      <m.div
         className="os-saver-clock"
         animate={{ left: `${spot.x}%`, top: `${spot.y}%` }}
         transition={{ duration: 2.4, ease: 'easeInOut' }}
@@ -259,7 +259,7 @@ function DriftingClock() {
             {w ? `${describe(w.condition).icon} ${w.temp}°${w.unit}` : ''}
           </span>
         )}
-      </motion.div>
+      </m.div>
     </div>
   );
 }

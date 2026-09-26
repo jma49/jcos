@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type ComponentType } from 'react';
-import { AnimatePresence, motion } from 'motion/react';
+import { AnimatePresence, m } from 'motion/react';
 import { apps, launch, launcherApps } from '../core/registry';
 import { APPLETS, useInstalledApplets } from '../core/applets';
 import { useWindows } from '../core/store';
@@ -86,7 +86,7 @@ export function Spotlight() {
   return (
     <AnimatePresence>
       {open && (
-        <motion.div
+        <m.div
           className="os-spotlight-backdrop"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -94,7 +94,7 @@ export function Spotlight() {
           transition={{ duration: 0.12 }}
           onPointerDown={(e) => e.target === e.currentTarget && setSpotlight(false)}
         >
-          <motion.div
+          <m.div
             className="os-spotlight"
             role="dialog"
             aria-label="Search"
@@ -136,8 +136,8 @@ export function Spotlight() {
                 ))}
               </ul>
             )}
-          </motion.div>
-        </motion.div>
+          </m.div>
+        </m.div>
       )}
     </AnimatePresence>
   );

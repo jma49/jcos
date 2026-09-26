@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { animate, motion, useMotionValue, useMotionValueEvent, useTransform, type MotionValue } from 'motion/react';
+import { animate, m, useMotionValue, useMotionValueEvent, useTransform, type MotionValue } from 'motion/react';
 import { albumNamed, coverOf, SONGS, tracksOf } from '../../media/library';
 import type { ScreenInput } from './input';
 import { useReduceMotion } from '../../core/system';
@@ -61,7 +61,7 @@ function Cover({ album, index, pos, onPick }: { album: FlowAlbum; index: number;
   const zIndex = useTransform(pos, (p) => 100 - Math.round(Math.abs(index - p) * 10));
   const opacity = useTransform(pos, (p) => (Math.abs(index - p) > 5.5 ? 0 : 1));
   return (
-    <motion.img
+    <m.img
       className="os-cf-cover"
       src={album.cover}
       alt={album.title}

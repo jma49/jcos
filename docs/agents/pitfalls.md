@@ -62,6 +62,11 @@ again.
 
 ## The desktop
 
+- With `LazyMotion`, a value one `animate` target has and the next
+  leaves out goes back to its `initial`. Windows in Exposé shrank to
+  their opening size because the Exposé target lacked the `scaleX` and
+  `scaleY` the shown target had. Give every target of a component the
+  same keys.
 - Motion's `useReducedMotion()` only knows the device. Use
   `useReduceMotion()` from `core/system.ts`, which honours System
   Preferences.
