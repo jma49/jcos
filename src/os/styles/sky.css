@@ -70,3 +70,15 @@
 .os-status .os-sky-status span {
   font-size: 11px;
 }
+
+/* Night Shift: a warm wash over everything, even the menu bar and the boot
+   screen, that lets every click through. */
+.os-night-shift {
+  position: absolute;
+  inset: 0;
+  z-index: 9000;
+  pointer-events: none;
+  background: rgb(255, 150, 40);
+  opacity: var(--warmth, 0.26);
+  mix-blend-mode: multiply;
+}

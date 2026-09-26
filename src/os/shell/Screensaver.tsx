@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
+import { AnimatePresence, motion } from 'motion/react';
 import { isPhone, useWindows, type SaverStyle } from '../core/store';
 import { useMusic } from '../media/music';
 import { clockTimeZone, usePlace } from '../ambient/place';
 import { describe, useWeather } from '../ambient/weather';
 import { SCENIC } from '../look/wallpapers';
 import { Bounce, Flurry, SoapboxSaver } from './savers';
+import { useReduceMotion } from '../core/system';
 
 export const SAVER_STYLES: { style: SaverStyle; name: string; blurb: string }[] = [
   { style: 'photos', name: 'Desktop Pictures', blurb: 'A slow pan across Mac OS X’s desktop pictures.' },
@@ -143,7 +144,7 @@ function Saver({ onStop, children }: { onStop: () => void; children: ReactNode }
  * Burns screen saver did. (Jincheng's own photos stay in Photos.)
  */
 function Slideshow() {
-  const reduced = useReducedMotion();
+  const reduced = useReduceMotion();
   const deck = useMemo(() => shuffle(SCENIC), []);
   const [index, setIndex] = useState(0);
   const photo = deck[index % deck.length];
@@ -191,7 +192,7 @@ function Slideshow() {
 /** Stars streaming out from the middle of the screen. Also used as a preview in System Preferences. */
 function Starfield() {
   const canvas = useRef<HTMLCanvasElement>(null);
-  const reduced = useReducedMotion();
+  const reduced = useReduceMotion();
 
   useEffect(() => {
     const el = canvas.current;

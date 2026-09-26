@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
+import { AnimatePresence, MotionConfig, motion } from 'motion/react';
 import { Dock } from './shell/Dock';
 import { MenuBar } from './shell/MenuBar';
 import { Spotlight } from './shell/Spotlight';
@@ -28,12 +28,24 @@ import { restoreWindows, saveWindowsAsTheyChange } from './core/windowSession';
 import { load, save } from './core/storage';
 import { isPhone, useFocusedId, useWindows } from './core/store';
 import type { OSData } from './core/types';
+import { useReduceMotion, useSystem } from './core/system';
+import { NightShift } from './shell/NightShift';
 import './os.css';
 
 /** Set once the first visit's welcome has been shown. */
 const WELCOMED_KEY = 'os-welcomed';
 
 export default function Desktop({ data }: { data: OSData }) {
+  // Animations follow Displays in System Preferences, or the device's own setting.
+  const motionChoice = useSystem((s) => s.motion);
+  return (
+    <MotionConfig reducedMotion={motionChoice === 'system' ? 'user' : motionChoice === 'reduce' ? 'always' : 'never'}>
+      <Shell data={data} />
+    </MotionConfig>
+  );
+}
+
+function Shell({ data }: { data: OSData }) {
   const windows = useWindows((s) => s.windows);
   const order = useWindows((s) => s.order);
   const exposeOpen = useWindows((s) => s.exposeOpen);
@@ -41,7 +53,7 @@ export default function Desktop({ data }: { data: OSData }) {
   const sky = useSky();
   const [menuAt, setMenuAt] = useState<{ x: number; y: number } | null>(null);
   const closeMenu = useCallback(() => setMenuAt(null), []);
-  const reduced = useReducedMotion();
+  const reduced = useReduceMotion();
   const root = useRef<HTMLDivElement>(null);
   const [booting, setBooting] = useState(() => {
     try {
@@ -156,6 +168,7 @@ export default function Desktop({ data }: { data: OSData }) {
 
         <AnimatePresence>{booting && !reduced && <Boot onDone={finishBoot} />}</AnimatePresence>
         {booting && reduced && <BootSkip onDone={finishBoot} />}
+        <NightShift sky={sky} />
       </div>
     </OSDataContext.Provider>
   );

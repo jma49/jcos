@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
-import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
+import { AnimatePresence, motion } from 'motion/react';
 import { getSocial, type Post } from '../social/social';
 import { useOSData } from '../core/context';
 import { plain } from '../apps/inline';
+import { useReduceMotion } from '../core/system';
 
 // More screen savers: Flurry (after Mac OS X's), Soapbox (Jincheng's posts,
 // in the manner of "Word of the Day") and a bouncing JM. Each fills its
@@ -76,7 +77,7 @@ const makeStream = (hue: number): Stream => ({
 
 /** Flurry: glowing wisps of colour winding around the centre, as in Mac OS X. */
 export function Flurry() {
-  const reduced = useReducedMotion();
+  const reduced = useReduceMotion();
   const streams = useRef<Stream[]>([]);
   const time = useRef(0);
   const TRAIL = 150;
@@ -133,7 +134,7 @@ const BOUNCE_COLORS = ['#ff5f57', '#febc2e', '#28c840', '#3a95ee', '#a05cf0', '#
 
 /** A bouncing JM, changing colour at every wall. Hitting a corner is an event. */
 export function Bounce() {
-  const reduced = useReducedMotion();
+  const reduced = useReduceMotion();
   const pos = useRef({ x: 40, y: 40, vx: 1, vy: 1, color: 0, flash: 0 });
 
   return useCanvas(

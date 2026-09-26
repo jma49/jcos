@@ -3,14 +3,21 @@ import { motion, useMotionValue, useSpring, useTransform, type MotionValue } fro
 import { apps, dockApps, launch, mobileDockApps, rectOf } from '../core/registry';
 import { DashboardIcon, TrashIcon } from '../core/icons';
 import { useWindows } from '../core/store';
+import { DOCK_MAGNIFY, DOCK_SIZES, useSystem } from '../core/system';
 import { play } from '../core/sound';
 import type { AppId } from '../core/types';
 import { useChatBadge } from '../social/chatState';
 import { ContextMenu, type ContextMenuItem } from './ContextMenu';
 
-const BASE = 50;
-const PEAK = 78;
+/** How far from the pointer icons start to grow. */
 const REACH = 150;
+
+/** The Dock's resting and magnified icon sizes, from System Preferences. */
+function useDockSizes() {
+  const base = DOCK_SIZES[useSystem((s) => s.dockSize)];
+  const magnify = useSystem((s) => s.magnify);
+  return { base, peak: magnify ? base + DOCK_MAGNIFY : base };
+}
 
 /** One Dock slot that grows as the pointer gets closer (macOS-style magnification). */
 function Magnified({
@@ -38,11 +45,12 @@ function Magnified({
   mobile?: boolean;
 }) {
   const ref = useRef<HTMLButtonElement>(null);
+  const { base, peak } = useDockSizes();
   const distance = useTransform(mouseX, (x) => {
     const r = ref.current?.getBoundingClientRect();
     return r ? x - (r.left + r.width / 2) : Infinity;
   });
-  const target = useTransform(distance, [-REACH, 0, REACH], [BASE, PEAK, BASE], { clamp: true });
+  const target = useTransform(distance, [-REACH, 0, REACH], [base, peak, base], { clamp: true });
   const size = useSpring(target, { stiffness: 380, damping: 28, mass: 0.4 });
 
   return (
@@ -63,7 +71,7 @@ function Magnified({
     >
       <span className="os-dock-label">{label}</span>
       <motion.span className="os-dock-icon" style={{ width: size, height: size }}>
-        {children(PEAK)}
+        {children(peak)}
       </motion.span>
       {running && <span className="os-dock-dot" />}
       {badge ? (
@@ -77,6 +85,7 @@ function Magnified({
 
 export function Dock() {
   const mouseX = useMotionValue(Infinity);
+  const { base } = useDockSizes();
   const windows = useWindows((s) => s.windows);
   const running = new Set(Object.values(windows).map((w) => w.app));
   const chatBadge = useChatBadge();
@@ -130,6 +139,7 @@ export function Dock() {
     <nav className="os-dock-wrap" aria-label="Dock">
       <motion.div
         className="os-dock"
+        style={{ '--dock-icon': `${base}px` } as React.CSSProperties}
         onMouseMove={(e) => mouseX.set(e.clientX)}
         onMouseLeave={() => mouseX.set(Infinity)}
       >

@@ -12,7 +12,7 @@
   display: flex;
   align-items: flex-end;
   gap: 4px;
-  height: 62px;
+  height: calc(var(--dock-icon, 50px) + 12px);
   padding: 0 8px 6px;
   border-radius: 18px;
   background: linear-gradient(rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0.2));

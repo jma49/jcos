@@ -10,6 +10,7 @@ import { play } from '../core/sound';
 import { useMusic } from '../media/music';
 import { useAccount } from '../social/account';
 import { getSocial } from '../social/social';
+import { useSystem } from '../core/system';
 
 interface MenuItem {
   label: string;
@@ -37,6 +38,8 @@ export function MenuBar({ sky }: { sky: SkyState }) {
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const barRef = useRef<HTMLElement>(null);
   const now = useClock();
+  const clock24 = useSystem((s) => s.clock24);
+  const clockDate = useSystem((s) => s.clockDate);
 
   const focused = focusedId ? windows[focusedId] : null;
   const appName = focused ? apps[focused.app].name : 'Finder';
@@ -119,17 +122,19 @@ export function MenuBar({ sky }: { sky: SkyState }) {
   };
 
   const timeZone = clockTimeZone(sky.place);
-  // Phones have room for the time only.
+  // Phones have room for the time only. Date & Time in System Preferences
+  // picks a 24-hour clock and whether the date shows.
   const phone = isPhone();
   const clock = now.toLocaleString('en-US', {
     timeZone,
-    ...(phone ? {} : { weekday: 'short', month: 'short', day: 'numeric' }),
-    hour: 'numeric',
-    minute: '2-digit'
+    ...(phone || !clockDate ? {} : { weekday: 'short', month: 'short', day: 'numeric' }),
+    hour: clock24 ? '2-digit' : 'numeric',
+    minute: '2-digit',
+    hourCycle: clock24 ? 'h23' : 'h12'
   });
   const homeClock = sameTime(timeZone, HOME.timeZone, now)
     ? undefined
-    : `${now.toLocaleTimeString('en-US', { timeZone: HOME.timeZone, hour: 'numeric', minute: '2-digit' })} for Jincheng in ${HOME.city}`;
+    : `${now.toLocaleTimeString('en-US', { timeZone: HOME.timeZone, hour: 'numeric', minute: '2-digit', hourCycle: clock24 ? 'h23' : 'h12' })} for Jincheng in ${HOME.city}`;
 
   // See-through over the desktop; solid when a window runs up under it: a
   // zoomed one, or any app on a phone, where apps are full screen.
