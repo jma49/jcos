@@ -2,7 +2,7 @@
 // Finder. Nothing here is real storage; every file opens an app.
 
 import type { ComponentType } from 'react';
-import { apps, launch, rectOf } from './registry';
+import { applicationApps, apps, launch, rectOf } from './registry';
 import {
   ApplicationsFolderIcon,
   AppletsFolderIcon,
@@ -29,8 +29,6 @@ export interface FileNode {
   open?: (el: Element | null) => void;
 }
 
-/** Apps in /Applications, alphabetically. */
-const APPLICATIONS: AppId[] = ['appstore', 'ipod', 'karaoke', 'photos', 'preferences', 'soapbox', 'stickies', 'terminal', 'browser'];
 
 const appFile = (dir: string, app: AppId, kind = 'Application'): FileNode => ({
   path: `${dir}/${apps[app].name}`,
@@ -88,7 +86,7 @@ export function buildDisk(data: OSData, applets: AppId[]): FileNode {
     kind: 'Volume',
     Icon: FolderIcon,
     children: [
-      folder('Applications', ApplicationsFolderIcon, APPLICATIONS.map((a) => appFile('/Applications', a)).sort(byName)),
+      folder('Applications', ApplicationsFolderIcon, applicationApps.map((a) => appFile('/Applications', a)).sort(byName)),
       folder('Applets', AppletsFolderIcon, applets.filter((a) => a in apps).map((a) => appFile('/Applets', a, 'Applet')).sort(byName)),
       folder('Documents', DocumentsFolderIcon, documents),
       folder('Pictures', PhotosIcon, photos),

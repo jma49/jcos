@@ -15,7 +15,7 @@ import { ACCENTS, accentFromPicture, cachedAccent, cachedTopBrightness, DEFAULT_
 import { accentForGenerated, backgroundFor, COVER, isPicture, isPixelTile, nextPicture, SKY, topBrightnessOfGenerated } from './look/wallpapers';
 import { coverOf, SONGS, useMusic } from './media/music';
 import { OSDataContext } from './core/context';
-import { apps, launch, rectOf } from './core/registry';
+import { apps, launch, openableApps, rectOf } from './core/registry';
 import { DiskIcon, DocumentIcon, PhotosIcon } from './core/icons';
 import { MENU_BAR_HEIGHT, MOBILE_BREAKPOINT, useFocusedId, useWindows, type IconPositions } from './core/store';
 import type { AppId, OSData } from './core/types';
@@ -476,8 +476,6 @@ export default function Desktop({ data }: { data: OSData }) {
   );
 }
 
-const DEEP_LINK_APPS: AppId[] = ['about', 'resume', 'projects', 'photos', 'stickies', 'soapbox', 'terminal', 'preferences', 'minesweeper', 'finder', 'appstore', 'calculator', 'tilegame', 'ipod', 'karaoke'];
-
 /** Handles links like /?open=resume or /?open=ocra. Returns whether it opened anything. */
 function openFromUrl(data: OSData): boolean {
   const target = new URLSearchParams(window.location.search).get('open')?.toLowerCase();
@@ -490,7 +488,7 @@ function openFromUrl(data: OSData): boolean {
     useWindows.getState().setScreensaver(true);
     return true;
   }
-  if ((DEEP_LINK_APPS as string[]).includes(target)) {
+  if ((openableApps as string[]).includes(target)) {
     launch(target as AppId);
     return true;
   }

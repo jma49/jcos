@@ -36,6 +36,16 @@ export interface AppDefinition {
   material?: 'metal';
   /** Loaded on first open, so the desktop itself stays small. */
   Component: LazyExoticComponent<ComponentType<AppProps>>;
+  /** Kept in the Dock, at this position from the left. */
+  dock?: number;
+  /** Also in the phone's four-slot Dock (with the Dashboard). */
+  phoneDock?: boolean;
+  /** Listed in Finder's Applications folder. */
+  inApplications?: boolean;
+  /** Installed from the Applet Store (see applets.ts) rather than always there. */
+  applet?: boolean;
+  /** Only opens for something (a project), never by name. */
+  internal?: boolean;
 }
 
 export const apps: Record<AppId, AppDefinition> = {
@@ -58,6 +68,8 @@ export const apps: Record<AppId, AppDefinition> = {
     Component: lazy(() => import('../apps/Resume'))
   },
   projects: {
+    dock: 1,
+    phoneDock: true,
     name: 'Projects',
     Icon: FolderIcon,
     width: 700,
@@ -67,6 +79,7 @@ export const apps: Record<AppId, AppDefinition> = {
     Component: lazy(() => import('../apps/Projects'))
   },
   project: {
+    internal: true,
     name: 'Project',
     Icon: ProjectIcon,
     width: 640,
@@ -76,6 +89,7 @@ export const apps: Record<AppId, AppDefinition> = {
     Component: lazy(() => import('../apps/ProjectDetail'))
   },
   browser: {
+    inApplications: true,
     material: 'metal',
     name: 'Browser',
     Icon: BrowserIcon,
@@ -86,6 +100,9 @@ export const apps: Record<AppId, AppDefinition> = {
     Component: lazy(() => import('../apps/Browser'))
   },
   terminal: {
+    dock: 6,
+    phoneDock: true,
+    inApplications: true,
     name: 'Terminal',
     Icon: TerminalIcon,
     width: 640,
@@ -95,6 +112,9 @@ export const apps: Record<AppId, AppDefinition> = {
     Component: lazy(() => import('../apps/Terminal'))
   },
   photos: {
+    dock: 2,
+    phoneDock: true,
+    inApplications: true,
     material: 'metal',
     name: 'Photos',
     Icon: PhotosIcon,
@@ -105,6 +125,8 @@ export const apps: Record<AppId, AppDefinition> = {
     Component: lazy(() => import('../apps/Photos'))
   },
   stickies: {
+    dock: 4,
+    inApplications: true,
     name: 'Stickies',
     Icon: StickiesIcon,
     width: 720,
@@ -114,6 +136,8 @@ export const apps: Record<AppId, AppDefinition> = {
     Component: lazy(() => import('../apps/Stickies'))
   },
   soapbox: {
+    dock: 5,
+    inApplications: true,
     name: 'Soapbox',
     Icon: SoapboxIcon,
     width: 560,
@@ -133,6 +157,7 @@ export const apps: Record<AppId, AppDefinition> = {
     Component: lazy(() => import('../apps/Finder'))
   },
   appstore: {
+    inApplications: true,
     name: 'Applet Store',
     Icon: AppletStoreIcon,
     width: 680,
@@ -142,6 +167,7 @@ export const apps: Record<AppId, AppDefinition> = {
     Component: lazy(() => import('../apps/AppletStore'))
   },
   calculator: {
+    applet: true,
     material: 'metal',
     name: 'Calculator',
     Icon: CalculatorIcon,
@@ -152,6 +178,7 @@ export const apps: Record<AppId, AppDefinition> = {
     Component: lazy(() => import('../apps/Calculator'))
   },
   tilegame: {
+    applet: true,
     name: 'Tile Game',
     Icon: TileGameIcon,
     width: 380,
@@ -161,6 +188,7 @@ export const apps: Record<AppId, AppDefinition> = {
     Component: lazy(() => import('../apps/TileGame'))
   },
   minesweeper: {
+    applet: true,
     name: 'Minesweeper',
     Icon: MinesweeperIcon,
     width: 400,
@@ -170,6 +198,8 @@ export const apps: Record<AppId, AppDefinition> = {
     Component: lazy(() => import('../apps/Minesweeper'))
   },
   ipod: {
+    dock: 3,
+    inApplications: true,
     name: 'iPod',
     Icon: IPodIcon,
     width: 300,
@@ -179,6 +209,7 @@ export const apps: Record<AppId, AppDefinition> = {
     Component: lazy(() => import('../apps/ipod/IPod'))
   },
   karaoke: {
+    inApplications: true,
     name: 'Karaoke',
     Icon: KaraokeIcon,
     width: 760,
@@ -188,6 +219,8 @@ export const apps: Record<AppId, AppDefinition> = {
     Component: lazy(() => import('../apps/Karaoke'))
   },
   preferences: {
+    dock: 7,
+    inApplications: true,
     name: 'System Preferences',
     Icon: PreferencesIcon,
     width: 660,
@@ -198,14 +231,22 @@ export const apps: Record<AppId, AppDefinition> = {
   }
 };
 
+const appIds = Object.keys(apps) as AppId[];
+
 /** Apps kept in the Dock, left to right. Others show up there while they're open. */
-export const dockApps: AppId[] = ['projects', 'photos', 'ipod', 'stickies', 'soapbox', 'terminal', 'preferences'];
+export const dockApps = appIds.filter((id) => apps[id].dock).sort((a, b) => apps[a].dock! - apps[b].dock!);
 
-/** Every app Spotlight can open by name (applets are listed separately). */
-export const launcherApps: AppId[] = ['about', 'resume', 'projects', 'photos', 'ipod', 'karaoke', 'stickies', 'soapbox', 'terminal', 'browser', 'finder', 'appstore', 'preferences'];
+/** Dock apps that also appear in the phone's Dock. */
+export const mobileDockApps = appIds.filter((id) => apps[id].phoneDock);
 
-/** Dock apps that also appear in the four-slot Dock on phones. */
-export const mobileDockApps: AppId[] = ['projects', 'photos', 'terminal'];
+/** Every app that opens by name: from the Terminal's `open` and `?open=`. */
+export const openableApps = appIds.filter((id) => !apps[id].internal);
+
+/** What Spotlight lists as applications (applets are listed separately). */
+export const launcherApps = openableApps.filter((id) => !apps[id].applet);
+
+/** Finder's Applications folder. */
+export const applicationApps = appIds.filter((id) => apps[id].inApplications);
 
 interface LaunchOptions {
   key?: string;
