@@ -14,6 +14,23 @@ const IDLE_MS = 4000;
 /** And is forgotten after this long, in case its "gone" never arrived. */
 const STALE_MS = 30_000;
 
+/**
+ * Past this many people, pointers stop: every visitor's pointer goes to
+ * every other, so the messages grow with the square of the crowd. Everyone
+ * sees about the same count, so they all stop together, and the desktop
+ * shows how many are here instead. Pointers come back once the crowd is
+ * down to CALM, a little lower, so a count hovering at the limit doesn't
+ * switch them on and off.
+ */
+export const CROWD = 12;
+export const CALM = 10;
+
+/** Whether pointers are off, given how many are here and whether they were. */
+export const isCrowded = (count: number, wasCrowded: boolean) => (wasCrowded ? count > CALM : count > CROWD);
+
+/** The most people the menu bar's list names; the rest are counted. */
+const LISTED = 30;
+
 interface Cursor {
   x: number;
   y: number;
@@ -57,6 +74,7 @@ export function Presence() {
   const [now, setNow] = useState(() => Date.now());
   const cursorCount = useRef(0);
   cursorCount.current = Object.keys(cursors).length;
+  const crowded = useWindows((s) => s.crowded);
 
   useEffect(() => {
     let channel: Channel | null = null;
@@ -66,6 +84,7 @@ export function Presence() {
     const color = CURSOR_COLORS[Math.floor(Math.random() * CURSOR_COLORS.length)];
 
     const send = (x: number, y: number) => {
+      if (useWindows.getState().crowded) return;
       const wait = CURSOR_INTERVAL - (performance.now() - last);
       clearTimeout(queued);
       if (wait > 0) {
@@ -102,9 +121,21 @@ export function Presence() {
     getSocial().then((social) => {
       if (!social || cancelled) return;
       channel = social.joinPresence(currentInfo(color), {
-        onVisitors: (visitors) => useWindows.getState().setVisitors(visitors),
+        onVisitors: (visitors) => {
+          const { crowded, setVisitors, setCrowded } = useWindows.getState();
+          setVisitors(visitors);
+          const now = isCrowded(visitors.length, crowded);
+          if (now === crowded) return;
+          setCrowded(now);
+          // Take this pointer off everyone's screen, and theirs off this one.
+          if (now) {
+            withdraw();
+            setCursors({});
+          }
+        },
         onCursor: (id, x, y, c) =>
           setCursors((all) => {
+            if (useWindows.getState().crowded) return all;
             if (x < 0) {
               const { [id]: _gone, ...rest } = all;
               return rest;
@@ -162,6 +193,7 @@ export function Presence() {
       channel?.leave();
       connectSignals(null);
       useWindows.getState().setVisitors(null);
+      useWindows.getState().setCrowded(false);
     };
   }, []);
 
@@ -180,7 +212,7 @@ export function Presence() {
 
   return (
     <div className="os-cursors" aria-hidden="true">
-      {Object.entries(showPointers ? cursors : {}).map(([id, c]) => {
+      {Object.entries(showPointers && !crowded ? cursors : {}).map(([id, c]) => {
         if (mine(id)) return null;
         const where = whereIs(id);
         return (
@@ -218,6 +250,7 @@ function describeVisitor(v: Visitor) {
 /** Menu bar item: how many people are on the desktop; click for where they are. */
 export function OnlineStatus() {
   const visitors = useWindows((s) => s.visitors);
+  const crowded = useWindows((s) => s.crowded);
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -238,6 +271,7 @@ export function OnlineStatus() {
   const label = online === 1 ? 'Just you on this desktop' : `${online} people on this desktop right now`;
   // You first, then everyone else.
   const sorted = [...visitors].sort((a, b) => Number(!!b.self) - Number(!!a.self));
+  const unlisted = sorted.length - LISTED;
 
   return (
     <div ref={ref} className="os-online-wrap">
@@ -260,13 +294,15 @@ export function OnlineStatus() {
       {open && (
         <div className="os-online-list os-menu-list" role="dialog" aria-label="People on this desktop">
           <p>{online === 1 ? 'Just you here right now' : `${online} people here right now`}</p>
+          {crowded && <p className="os-online-note">Pointers are hidden while more than {CROWD} people are here.</p>}
           <ul>
-            {sorted.map((v) => (
+            {sorted.slice(0, LISTED).map((v) => (
               <li key={v.id}>
                 <i style={{ background: v.color }} aria-hidden="true" />
                 {describeVisitor(v)}
               </li>
             ))}
+            {unlisted > 0 && <li className="os-online-more">and {unlisted} more</li>}
           </ul>
         </div>
       )}
