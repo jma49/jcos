@@ -11,6 +11,7 @@ import { Sky, skyDimming, useSky } from './ambient/Sky';
 import { Presence } from './social/Presence';
 import { AppSwitcher } from './shell/AppSwitcher';
 import { watchWindows } from './core/sound';
+import { startAccount } from './social/account';
 import { ACCENTS, accentFromPicture, cachedAccent, cachedTopBrightness, DEFAULT_ACCENT, topBrightness } from './look/accent';
 import { accentForGenerated, backgroundFor, COVER, isPicture, isPixelTile, nextPicture, SKY, topBrightnessOfGenerated } from './look/wallpapers';
 import { coverOf, SONGS, useMusic } from './media/music';
@@ -272,6 +273,8 @@ export default function Desktop({ data }: { data: OSData }) {
   });
 
   useEffect(watchWindows, []);
+  // Whether someone's signed in (the social backend loads on its own, after the desktop).
+  useEffect(startAccount, []);
 
   // The accent colour follows the desktop picture unless a fixed one was chosen.
   const accentChoice = useWindows((s) => s.accent);

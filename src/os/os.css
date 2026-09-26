@@ -40,5 +40,7 @@
 @import './styles/marquee.css';
 @import './styles/apps/ipod-views.css';
 @import './styles/apps/karaoke.css';
+@import './styles/apps/account.css';
+@import './styles/apps/chat.css';
 @import './styles/phone.css';
 @import './styles/glass.css';

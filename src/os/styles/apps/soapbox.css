@@ -120,3 +120,10 @@
   text-align: center;
   color: var(--os-faint);
 }
+
+/* Why a reaction didn't go through. */
+.os-soapbox-refused {
+  margin: 6px 0 0;
+  color: var(--os-dim);
+  font-size: 11px;
+}
