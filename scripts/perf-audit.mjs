@@ -2,8 +2,8 @@
 // after a significant change (docs/agents/self-audit.md). Run it against a
 // production build:
 //
-//   npm run build && npx astro preview --port 4321 &
-//   npm run perf                      # or: node scripts/perf-audit.mjs <url>
+//   npm run build && npm run perf     # serves dist/ itself
+//   node scripts/perf-audit.mjs <url> # or measures a running site
 //
 // It reports three things, each compared with its budget:
 //   load  what a first visit downloads (initial JS gzip, images, fonts)
@@ -12,12 +12,19 @@
 //   idle  script time over five quiet seconds with the same six apps
 //
 // Numbers vary by machine; compare runs on the same one, before and
-// after a change. It exits non-zero when a budget is exceeded.
+// after a change. It exits non-zero when a budget is exceeded. In CI
+// (CI=true), where shared runners make script times noisy, drag and idle
+// are reported but only the download budgets can fail it.
 
 import { chromium } from 'playwright';
 import { gzipSync } from 'node:zlib';
+import { serveDist } from './serve-dist.mjs';
 
-const URL_ = process.argv[2] ?? 'http://localhost:4321/';
+const server = process.argv[2] ? null : await serveDist();
+const URL_ = process.argv[2] ?? server.url;
+/** Budgets that measure time, not bytes: too noisy to fail CI on. */
+const TIMED = new Set(['dragScriptMs', 'idleScriptMs']);
+const strict = (key) => !(process.env.CI && TIMED.has(key));
 const BUDGET = {
   initialJsGzipKB: 180,
   imagesKB: 1100,
@@ -39,6 +46,16 @@ const sixWindows = () => {
   localStorage.setItem('os-windows', JSON.stringify({ windows, order: apps.map(([a]) => a) }));
 };
 
+/**
+ * Opens the desktop and waits for the network to go quiet, for at most ten
+ * seconds: with the iPod (YouTube), Chat and Photos open it may never be
+ * quiet on a CI runner, and what's measured has loaded by then.
+ */
+async function settle(page) {
+  await page.goto(URL_, { waitUntil: 'load' });
+  await page.waitForLoadState('networkidle', { timeout: 10_000 }).catch(() => {});
+}
+
 async function load() {
   const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
   const seen = [];
@@ -48,7 +65,7 @@ async function load() {
     seen.push({ path: new URL(res.url()).pathname, type: res.request().resourceType(), bytes: body?.length ?? 0, gzip: body ? gzipSync(body).length : 0 });
   });
   await page.addInitScript(() => sessionStorage.setItem('os-booted', '1'));
-  await page.goto(URL_, { waitUntil: 'networkidle' });
+  await settle(page);
   await page.waitForTimeout(3000);
   await page.close();
   const sum = (type, key = 'bytes') => seen.filter((r) => r.type === type).reduce((n, r) => n + r[key], 0);
@@ -65,7 +82,7 @@ async function load() {
 async function withSixWindows(run) {
   const page = await browser.newPage({ viewport: { width: 1400, height: 900 } });
   await page.addInitScript(sixWindows);
-  await page.goto(URL_, { waitUntil: 'networkidle' });
+  await settle(page);
   await page.waitForTimeout(2500);
   const cdp = await page.context().newCDPSession(page);
   await cdp.send('Performance.enable');
@@ -91,12 +108,14 @@ const idle = () => withSixWindows((page) => page.waitForTimeout(5000));
 
 const result = { ...(await load()), dragScriptMs: await drag(), idleScriptMs: await idle() };
 await browser.close();
+server?.close();
 
 let over = false;
 for (const [key, budget] of Object.entries(BUDGET)) {
   const ok = result[key] <= budget;
-  over ||= !ok;
-  console.log(`${ok ? 'ok  ' : 'OVER'} ${key.padEnd(16)} ${String(result[key]).padStart(6)}  (budget ${budget})`);
+  if (strict(key)) over ||= !ok;
+  const mark = ok ? 'ok  ' : strict(key) ? 'OVER' : 'slow';
+  console.log(`${mark} ${key.padEnd(16)} ${String(result[key]).padStart(6)}  (budget ${budget}${strict(key) ? '' : ', reported only'})`);
 }
 const twice = result.fetchedTwice.length === 0;
 over ||= !twice;

@@ -113,7 +113,12 @@ again.
   from inside the repository to find the `playwright` package.
 - Astro 7's `astro preview` starts a server in the background and
   answers "already running" while one is up, still serving whatever
-  `dist/` holds. Stop it with `npx astro preview stop`.
+  `dist/` holds. Stop it with `npx astro preview stop`. The scripts serve
+  `dist/` themselves (`scripts/serve-dist.mjs`) for this reason.
+- Astro 7 moved its entry point to `bin/astro.mjs`. The preview capture
+  ran `node_modules/astro/astro.js` and failed on every push for a day
+  before anyone noticed; it reads the path from astro's `package.json`
+  now. Check a workflow's runs after upgrading what it calls.
 - Dependabot opens one pull request per package. Packages that move
   together (Astro with `@astrojs/*`, React with its types) are
   upgraded in one pull request. Adjacent bumps to the same file (the

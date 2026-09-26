@@ -65,14 +65,15 @@ issues.
 | --- | --- |
 | any code | `npm run check` (types), `npm run lint` (hooks), `npm test` |
 | an app, the shell or anything a visitor sees | `npm run build`, then `npm run test:smoke`; open it in a browser too |
-| the first load, a dependency, or anything per frame | `npm run build`, `npx astro preview`, `npm run perf`: every line within budget |
+| the first load, a dependency, or anything per frame | `npm run build`, then `npm run perf`: every line within budget |
 | the schema, a migration, a policy or a limit | `npm run test:db`, with a check (and a race for a limit) for the new rule; then the Supabase Security Advisor |
 | an Edge Function | `npm test` (its `*.test.mjs`) |
 | a project's cover or the home page's look | `npm run preview:capture` |
 
 CI (`.github/workflows/ci.yml`) runs the type check, the lint, the unit
-tests, the build, the smoke test and the database tests on every pull
-request.
+tests, the build, the smoke test, the download budgets of `npm run perf`
+(script times are only reported there, since shared runners are noisy)
+and the database tests on every pull request.
 
 - Unit tests (Vitest) are `*.test.ts` next to the code in `src/`; the
   Vercel Functions' are in `tests/api/`, since Vercel deploys every file

@@ -1,6 +1,7 @@
 # Checks every pull request and every push to main: the types, the rules
 # of React hooks, the unit tests, a production build with every app opened
-# in a browser, and the database's rules against a real Postgres.
+# in a browser and measured against the performance budgets, and the
+# database's rules against a real Postgres.
 name: CI
 
 on:
@@ -17,7 +18,7 @@ concurrency:
 
 jobs:
   test:
-    name: Types, tests, build and apps
+    name: Types, tests, build, apps and budgets
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -33,6 +34,8 @@ jobs:
       - run: npm run build
       - run: npx playwright install --with-deps chromium
       - run: npm run test:smoke
+      # Download budgets fail the build; script times are only reported here.
+      - run: npm run perf
 
   database:
     name: Database rules
