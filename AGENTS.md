@@ -114,9 +114,19 @@ readers, crawlers and visitors without JavaScript.
   card to control it; it also feeds the Media Session API. The Dynamic
   desktop picture `dynamic:cover` shows the playing song's cover,
   blurred.
-- `src/os/core/files.ts` and `apps/Finder.tsx`: Macintosh HD, a read-only
+- `src/os/core/files.ts` and `apps/finder/`: Macintosh HD, a read-only
   file system built from the content (Applications, Applets, Documents,
-  Pictures, Projects), browsed in Finder with icon and list views.
+  Music, Pictures, Projects), browsed in Finder with icon, list and
+  column views, Quick Look (Space), keyboard navigation and a
+  right-click menu. A file's `look` is what Quick Look shows.
+- `src/os/social/airdrop.ts` and `apps/AirDrop.tsx`: AirDrop between
+  visitors on the desktop. Only a Macintosh HD path is sent, and the
+  receiver looks it up on its own disk, so only JM/OS's own content can
+  arrive; offers go over presence signals and must be accepted. Finder
+  (right-click, drag onto AirDrop), Photos and project windows share.
+- `src/os/core/notices.ts` and `shell/Notices.tsx`: Growl-style
+  notifications (chat mentions, AirDrop offers). `shell/ContextMenu.tsx`
+  is the right-click menu the desktop and Finder share.
 - `src/os/core/applets.ts` and `apps/AppletStore.tsx`: the Applet Store's
   catalog (Minesweeper, Tile Game, Calculator) and which applets this
   browser has installed (`os-applets`). Installed applets appear in
@@ -159,9 +169,21 @@ security and triggers in `supabase/schema.sql` do the enforcing.
   `approved` to false in the Table editor.
 - **Soapbox reactions**: members react as themselves and can change or take
   back a reaction; everyone else gets one per post, by salted IP hash.
-- **Chat** (`apps/Chat.tsx`): one room, readable by anyone, written by
-  members, kept for good and delivered over Realtime. Hide a message with
-  `hidden`.
+- **Chat** (`apps/Chat.tsx`, `social/chatState.ts`): public rooms listed
+  in `public.chat_rooms` (add one in the Table editor) and private
+  conversations between two members (rooms named
+  `dm:<account id>:<account id>`, smaller id first, readable only by
+  those two). Rooms are readable by anyone and written by members; kept
+  for good and delivered over Realtime. Hide a message with `hidden`.
+  Typing, nudges, @mentions and unread counts live in the browser; a
+  signed-in member gets a notification and a Dock badge for private
+  messages and mentions while Chat is closed.
+- **Presence and signals** (`social/Presence.tsx`, `social/signals.ts`):
+  one Realtime channel carries who's on the desktop (city, username,
+  open chat room, whether AirDrop can reach them), their cursors, and
+  signals: short-lived messages such as typing, nudges and AirDrop
+  offers. Anyone can send anything there, so receivers check what
+  arrives (`cleanInfo()` for presence).
 
 To set it up, create a Supabase project, run the schema in its SQL editor,
 turn off "Confirm email", and set `PUBLIC_SUPABASE_URL` and
