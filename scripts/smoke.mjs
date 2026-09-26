@@ -9,49 +9,15 @@
 // AppBoundary's crash panel. Network failures are ignored: dist/ is served
 // without the /api functions or Supabase, and third parties can be slow.
 
-import { createServer } from 'node:http';
-import { readFile, readdir, stat } from 'node:fs/promises';
-import { extname, join, normalize } from 'node:path';
+import { readFile, readdir } from 'node:fs/promises';
+import { join } from 'node:path';
 import { chromium } from 'playwright';
+import { serveDist } from './serve-dist.mjs';
 
 const ROOT = new URL('..', import.meta.url).pathname;
-const DIST = join(ROOT, 'dist');
 /** How long an app gets to load its code and settle. */
 const SETTLE = 2500;
 const PARALLEL = 4;
-
-const TYPES = {
-  '.html': 'text/html; charset=utf-8',
-  '.js': 'text/javascript',
-  '.css': 'text/css',
-  '.json': 'application/json',
-  '.svg': 'image/svg+xml',
-  '.png': 'image/png',
-  '.jpg': 'image/jpeg',
-  '.webp': 'image/webp',
-  '.avif': 'image/avif',
-  '.ico': 'image/x-icon',
-  '.woff2': 'font/woff2',
-  '.txt': 'text/plain; charset=utf-8',
-  '.xml': 'application/xml'
-};
-
-/** Serves dist/ as Vercel would, minus the functions. */
-function serve() {
-  const server = createServer(async (req, res) => {
-    const path = normalize(decodeURIComponent(new URL(req.url, 'http://x').pathname));
-    let file = join(DIST, path);
-    try {
-      if ((await stat(file)).isDirectory()) file = join(file, 'index.html');
-      const body = await readFile(file);
-      res.writeHead(200, { 'Content-Type': TYPES[extname(file)] ?? 'application/octet-stream' });
-      res.end(body);
-    } catch {
-      res.writeHead(404).end();
-    }
-  });
-  return new Promise((resolve) => server.listen(0, '127.0.0.1', () => resolve(server)));
-}
 
 /** Every app ?open= can name, read from the registry's entries. */
 async function targets() {
@@ -66,8 +32,8 @@ async function targets() {
 
 const ignored = /Failed to load resource|net::ERR_|ERR_NAME_NOT_RESOLVED/;
 
-const server = await serve();
-const base = `http://127.0.0.1:${server.address().port}`;
+const server = await serveDist();
+const base = server.url.replace(/\/$/, '');
 const browser = await chromium.launch(process.env.PLAYWRIGHT_CHROMIUM ? { executablePath: process.env.PLAYWRIGHT_CHROMIUM } : {});
 const failures = [];
 
