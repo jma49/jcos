@@ -28,8 +28,10 @@ vulnerability or bottleneck. Significant means any of these:
   worth its weight.
 
 **Performance:**
-- `npm run build`, then `npx astro preview` and `npm run perf`. Every
-  line is within budget; compare with the numbers before the change.
+- `npm run build`, then `npm run perf` (it serves `dist/` itself). Every
+  line is within budget; compare with the numbers before the change. CI
+  checks the download budgets, but only a run on your machine checks
+  the script times.
 - New code that isn't needed at first paint is lazy. New store
   subscriptions are narrow. New timers and listeners stop and clean up.
 - New images are sized and compressed; new fonts are subset.
