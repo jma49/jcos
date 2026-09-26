@@ -46,8 +46,6 @@ export const APPLETS: Applet[] = [
 /** The applet the store's banner shows. */
 export const FEATURED: AppId = 'tilegame';
 
-export const isApplet = (app: AppId) => APPLETS.some((a) => a.app === app);
-
 export function useInstalledApplets() {
   return useWindows((s) => s.applets);
 }

@@ -31,7 +31,7 @@ interface Candidate {
 const API = 'https://lrclib.net/api';
 
 /** "[01:23.45] text" lines into sorted LyricLines; a line may carry several stamps. */
-export function parseLrc(lrc: string): LyricLine[] {
+function parseLrc(lrc: string): LyricLine[] {
   const lines: LyricLine[] = [];
   for (const raw of lrc.split(/\r?\n/)) {
     const stamps = [...raw.matchAll(/\[(\d+):(\d+(?:\.\d+)?)\]/g)];

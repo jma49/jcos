@@ -7,7 +7,7 @@ import { usesFahrenheit, type Place } from './place';
 
 export type Condition = 'clear' | 'cloudy' | 'overcast' | 'fog' | 'drizzle' | 'rain' | 'snow' | 'storm';
 
-export interface Forecast {
+interface Forecast {
   /** "2026-09-26" */
   date: string;
   high: number;
@@ -30,7 +30,7 @@ export interface Weather {
 }
 
 /** WMO weather codes grouped into what the desktop can show. */
-export const CONDITIONS: { codes: number[]; condition: Condition; label: string; icon: string }[] = [
+const CONDITIONS: { codes: number[]; condition: Condition; label: string; icon: string }[] = [
   { codes: [0], condition: 'clear', label: 'Clear', icon: '☀️' },
   { codes: [1, 2], condition: 'cloudy', label: 'Partly Cloudy', icon: '⛅' },
   { codes: [3], condition: 'overcast', label: 'Overcast', icon: '☁️' },
@@ -60,7 +60,7 @@ export function localMinutes(timeZone: string, date = new Date()) {
 }
 
 /** How long a forecast is reused before it's fetched again. */
-export const WEATHER_TTL = 30 * 60_000;
+const WEATHER_TTL = 30 * 60_000;
 
 const cache = new Map<string, { at: number; request: Promise<Weather> }>();
 

@@ -192,7 +192,7 @@ function Slideshow({ photos, name }: { photos: OSPhoto[]; name: string }) {
 }
 
 /** Stars streaming out from the middle of the screen. Also used as a preview in System Preferences. */
-export function Starfield() {
+function Starfield() {
   const canvas = useRef<HTMLCanvasElement>(null);
   const reduced = useReducedMotion();
 
@@ -267,7 +267,7 @@ export function Starfield() {
 }
 
 /** The time and weather where the visitor is, moving every few seconds. Also a preview in System Preferences. */
-export function DriftingClock() {
+function DriftingClock() {
   const place = usePlace();
   const weather = useWeather(place);
   const [now, setNow] = useState(() => new Date());

@@ -9,7 +9,7 @@ export const MENU_BAR_HEIGHT = 22;
 export const DOCK_CLEARANCE = 78;
 export const MOBILE_BREAKPOINT = 768;
 
-export interface OpenOptions {
+interface OpenOptions {
   /** Windows with the same key are reused instead of duplicated. Defaults to the app id. */
   key?: string;
   title: string;

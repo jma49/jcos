@@ -91,7 +91,7 @@ export const PATTERNS: Pattern[] = [
 ];
 
 /** A picture in one of the sets below: what's stored, its name and a thumbnail. */
-export interface SetPicture {
+interface SetPicture {
   value: string;
   name: string;
   thumb: string;
@@ -162,7 +162,7 @@ const SKY_STOPS = (sunrise: number, sunset: number): [number, Rgb, Rgb][] => [
 const mix = (a: Rgb, b: Rgb, t: number): Rgb => [0, 1, 2].map((i) => a[i] + (b[i] - a[i]) * t) as Rgb;
 
 /** Top and horizon colours of the sky at a time of day, greyed by the weather. */
-export function skyColors(minutes: number, sunrise: number, sunset: number, condition: Condition): [Rgb, Rgb] {
+function skyColors(minutes: number, sunrise: number, sunset: number, condition: Condition): [Rgb, Rgb] {
   const stops = SKY_STOPS(sunrise, sunset);
   let top = stops[0][1];
   let bottom = stops[0][2];

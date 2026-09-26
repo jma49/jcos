@@ -47,7 +47,7 @@ export interface Visitor {
 
 export type VisitorInfo = Omit<Visitor, 'id' | 'self'>;
 
-export interface PresenceHandlers {
+interface PresenceHandlers {
   /** Everyone on the desktop, this visitor included. */
   onVisitors: (visitors: Visitor[]) => void;
   /** Another visitor's pointer, as fractions of their viewport; x < 0 means it left the page. */

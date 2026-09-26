@@ -14,7 +14,7 @@ import type { ScreenInput } from './input';
 // cover passing the middle turns towards you and away again smoothly
 // instead of jumping between places.
 
-export interface FlowAlbum {
+interface FlowAlbum {
   title: string;
   artist: string;
   cover: string;
@@ -22,7 +22,7 @@ export interface FlowAlbum {
 }
 
 /** Every album a song comes from: whole albums in track order, then singles' albums. */
-export function flowAlbums(): FlowAlbum[] {
+function flowAlbums(): FlowAlbum[] {
   const titles = [...new Set(SONGS.map((s) => s.album).filter((a): a is string => !!a))];
   return titles
     .map((title) => {

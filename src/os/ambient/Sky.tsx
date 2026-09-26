@@ -22,7 +22,7 @@ const GOLDEN: RGBA = [255, 160, 55, 0.26];
 const DUSK: RGBA = [110, 60, 145, 0.36];
 
 /** The wallpaper tint at a time of day, eased between the light of sunrise and sunset. */
-export function tintAt(minutes: number, sunrise: number, sunset: number): RGBA {
+function tintAt(minutes: number, sunrise: number, sunset: number): RGBA {
   const stops: [number, RGBA][] = [
     [sunrise - 60, NIGHT],
     [sunrise, DAWN],
