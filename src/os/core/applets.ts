@@ -50,6 +50,14 @@ export const APPLETS: Applet[] = [
     added: '2026-09-27'
   },
   {
+    app: 'pinball',
+    category: 'Games',
+    tagline: 'A space pinball table, in the spirit of 3D Pinball.',
+    description:
+      'An original table in the spirit of 3D Pinball’s Space Cadet: a launch lane, pop bumpers, slingshots, drop targets and lane lights that raise your rank from Cadet to Admiral. Flippers on Z and / (or the arrow keys), Space to launch, three balls.',
+    added: '2026-09-27'
+  },
+  {
     app: 'synth',
     category: 'Utilities',
     tagline: 'A little synthesizer you play with your keyboard.',

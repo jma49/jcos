@@ -8,6 +8,7 @@ import {
   FinderIcon,
   AppleIcon,
   SpiderIcon,
+  PinballIcon,
   ChatIcon,
   AppletStoreIcon,
   CalculatorIcon,
@@ -278,6 +279,16 @@ export const apps: Record<AppId, AppDefinition> = {
     minWidth: 520,
     minHeight: 400,
     Component: lazy(() => import('../apps/Spider'))
+  },
+  pinball: {
+    applet: true,
+    name: 'Pinball',
+    Icon: PinballIcon,
+    width: 440,
+    height: 700,
+    minWidth: 340,
+    minHeight: 520,
+    Component: lazy(() => import('../apps/pinball/Pinball'))
   },
   aboutmac: {
     name: 'About This Mac',

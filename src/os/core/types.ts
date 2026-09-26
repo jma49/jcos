@@ -74,6 +74,7 @@ export type AppId =
   | 'synth'
   | 'aboutmac'
   | 'spider'
+  | 'pinball'
   | 'account'
   | 'welcome';
 
