@@ -6,8 +6,9 @@
 //   node scripts/perf-audit.mjs <url> # or measures a running site
 //
 // It reports three things, each compared with its budget:
-//   load  what a first visit downloads (initial JS gzip, images, fonts)
-//         and whether anything is fetched twice
+//   load  what a first visit downloads before the desktop settles
+//         (initial JS gzip, images, fonts) and whether anything is
+//         fetched twice
 //   drag  script time while dragging a window with six apps open
 //   idle  script time over five quiet seconds with the same six apps
 //
@@ -56,11 +57,22 @@ async function settle(page) {
   await page.waitForLoadState('networkidle', { timeout: 10_000 }).catch(() => {});
 }
 
+/**
+ * The first load is what's asked for before the desktop settles: eight
+ * seconds after it starts, afterSettled() (src/os/core/warmUp.ts) fetches
+ * the Dashboard and the screen saver ahead, and those aren't the first
+ * screen's. Requests are counted up to seven seconds after navigation,
+ * whatever the machine's speed.
+ */
+const FIRST_LOAD_MS = 7000;
+
 async function load() {
   const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
   const seen = [];
+  const start = Date.now();
   page.on('response', async (res) => {
     if (new URL(res.url()).origin !== new URL(URL_).origin) return;
+    if (res.request().timing().startTime - start > FIRST_LOAD_MS) return;
     const body = await res.body().catch(() => null);
     seen.push({ path: new URL(res.url()).pathname, type: res.request().resourceType(), bytes: body?.length ?? 0, gzip: body ? gzipSync(body).length : 0 });
   });
