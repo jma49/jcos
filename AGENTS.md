@@ -7,9 +7,18 @@ Guidance for coding agents working in this repository.
 Write everything in English: commit messages, pull request titles and
 descriptions, issues, code comments, documentation, and file names.
 
-The only exception is the Chinese copy of the site itself, the `zh`
-entries in `src/i18n/content.ts` and the Chinese résumé PDF. Keep those
-in Chinese.
+The only exceptions are content that is Chinese by nature:
+- the Chinese copy of the site: the `zh` entries in
+  `src/i18n/content.ts`, `src/content/projects/zh/` and the Chinese
+  résumé PDF;
+- proper names in data, such as song titles and artists in
+  `src/data/songs.json`, which may also be quoted in the docs;
+- patterns that have to match Chinese text, such as the lyric credits in
+  `api/lyrics.ts`.
+
+File and folder names are English and ASCII. Before committing, check
+that nothing else slipped in, for example with a search for CJK
+characters over `git ls-files`.
 
 ## Site structure
 
@@ -199,7 +208,10 @@ security and triggers in `supabase/schema.sql` do the enforcing.
   (`<username>@users.majincheng.com`), so Authentication › Providers ›
   Email › "Confirm email" must be off. `public.profiles` holds usernames;
   recovery addresses sit in `private.recovery_emails`, out of the API's
-  reach. `social/account.ts` tells the interface who's signed in.
+  reach. `social/account.ts` tells the interface who's signed in. A
+  forgotten password is reset with a one-time link emailed to the
+  recovery address by `supabase/functions/account-recovery` (Resend;
+  setup in its README); the link opens `/?open=account&reset=<token>`.
 - **Stickies**: members only, three notes in any 24 hours, signed with the
   username; members can take their own down. Hide a note by setting
   `approved` to false in the Table editor.
@@ -261,16 +273,172 @@ The Chinese site is offline for now: `/zh/*` redirects to the English
 paths (`vercel.json`). Keep the `zh` content in `content.ts` and the
 Chinese project files; they will be used again.
 
+## Security
+
+- The browser holds only the public key; the database enforces every
+  rule. A new table gets row-level security, `revoke all` from `anon`
+  and `authenticated`, and column-level grants for exactly what the site
+  reads and writes.
+- Functions that bypass row-level security are `security definer` with
+  `set search_path = public`, and have `execute` revoked from `public`,
+  `anon` and `authenticated` unless the site calls them. Ones only an
+  Edge Function calls are granted to `service_role` alone.
+- A limit that counts rows before inserting ("three a day") takes a
+  transaction-scoped advisory lock for whoever it limits first
+  (`pg_advisory_xact_lock`), or concurrent requests all get through.
+  Add a race for it in `supabase/tests/race.sh`, and a site-wide cap
+  where many accounts together could flood it.
+- Private data (recovery addresses, reset tokens, secrets) lives in the
+  `private` schema, which the API doesn't expose. Keep tokens as hashes.
+- Secrets (service role, Telegram, Resend) exist only as Supabase Edge
+  Function secrets; nothing server-side goes in `PUBLIC_*` variables,
+  Vercel or the repository. `.env` is ignored; `.env.example` lists
+  what's safe.
+- Presence and signals are unauthenticated claims: check shape and
+  size, tie a name to the sender's own presence, and throttle anything
+  that notifies.
+- Anything a visitor wrote renders as text: links only for `http(s)`,
+  never `dangerouslySetInnerHTML` (project Markdown, built at build time,
+  is the one exception).
+- Security headers are set in `vercel.json`. Dependabot proposes updates
+  weekly; review majors (Astro, Vite) with a full build and the tests.
+
+## README
+
+`README.md` is the project's front page: what JM/OS is, how to run and
+configure it, the backend setup, the layout, security and scripts. Update
+it in the same pull request as any major change: a new part of the
+desktop, a new service, secret or setup step, a new top-level folder or
+script, or a changed command.
+
 ## Tests
 
 `npm test` runs the unit tests (Vitest, `*.test.ts` next to the code,
-and `supabase/functions/soapbox-bot/bot.test.mjs`); keep game rules and
+and each Edge Function's `*.test.mjs`); keep game rules and
 other logic worth testing in plain modules without React (as
 `apps/spider/rules.ts` and `apps/pinball/table.ts` are). `npm run
 test:db` checks the database's rules (`supabase/tests/rules.sql`)
-against a local Postgres; add a check there with every new rule or
-migration. CI (`.github/workflows/ci.yml`) runs both and the build on
-every pull request.
+against a local Postgres, then races the per-member limits with
+overlapping sessions (`supabase/tests/race.sh`); add a check there with
+every new rule or migration. CI (`.github/workflows/ci.yml`) runs both
+and the build on every pull request.
+
+## Pitfalls
+
+Mistakes this project has already made, kept here so they aren't made
+again.
+
+### Supabase and the database
+
+- The SQL editor runs a script as one transaction. One failing statement
+  (a `storage.buckets` insert some projects refuse) rolled back
+  everything before it, and the next call failed with PGRST202 (no such
+  function). Wrap optional steps in `do $$ … exception when others then
+  raise notice … $$`.
+- PostgREST caches the schema. End a migration that adds functions or
+  columns with `notify pgrst, 'reload schema';`.
+- Every migration must run twice without harm:
+  - `if not exists` for tables and indexes;
+  - `create or replace` for functions;
+  - `drop … if exists` before `create policy` and `create trigger`;
+  - `on conflict` for seed rows.
+
+  `run.sh` reruns the latest migrations over the schema to prove it.
+- Counting rows before an insert is not a limit under concurrency. Six
+  notes sent at once all got through a "three a day" check. Take
+  `pg_advisory_xact_lock` first (see Security).
+- A count needs an index that matches its `where`. The per-member chat
+  limit scanned every message ever sent.
+- Supabase Auth needs "Confirm email" off, or sign-up returns no
+  session.
+- The publishable key isn't a JWT. Edge Functions the browser calls
+  before sign-in are deployed with `--no-verify-jwt` and check their
+  input themselves.
+- The Vercel integration names the variables
+  `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`.
+  `social.ts` reads those as well as `PUBLIC_SUPABASE_*`.
+
+### Edge Functions and the Telegram bot
+
+- A PostgREST insert with `return=minimal` answers 201 or 204 with an
+  empty body. `JSON.parse('')` threw, and `/at` failed. Read the text,
+  and parse only when there is some.
+- Deploy functions from `main` after merging. The bot once ran code from
+  an old branch.
+- The `soapbox` bucket can be missing even after the migration. The bot
+  makes it on `NoSuchBucket` and retries the upload.
+- Buttons need `callback_query` in the webhook's `allowed_updates`. The
+  bot registers the webhook itself; keep that list in `index.ts`,
+  `scripts/setup-soapbox.sh` and the README the same.
+- Owner-facing errors say why, with the upstream status and message.
+  "Something went wrong" alone cost a round trip each time.
+- Visitor-facing answers must not reveal anything:
+  - Password reset answers the same whether or not a link went out.
+  - It sends the mail after answering (`EdgeRuntime.waitUntil`), so
+    timing doesn't tell either.
+
+### The desktop
+
+- Motion's `useReducedMotion()` only knows the device. Use
+  `useReduceMotion()` from `core/system.ts`, which honours System
+  Preferences.
+- A keyboard handler must check that its window is the front one.
+  Photos' lightbox and Pinball once took keys meant for other windows.
+  Pinball's restart moved from N to F2 so typing elsewhere can't
+  trigger it.
+- Release pointer capture on `pointerup` and `pointercancel`. Pinball's
+  flippers stuck otherwise.
+- Anything kept in window `props` is saved in `os-windows` and survives
+  a reload. Don't leave one-time values there: the reset token is
+  cleared once used.
+- Launching an open window again with the same props doesn't navigate
+  it. Compare against the props last acted on, as Preferences does.
+- YouTube's chrome must never show; see the iPod and Karaoke notes
+  above. Chrome delays playback in background tabs.
+- Jincheng's own photos appear only in Photos, never as the desktop
+  picture or the screen saver.
+- Unsplash blocks Vercel's build servers. Photos come from the snapshot
+  in `src/data/photos.json`, or from the API with
+  `UNSPLASH_ACCESS_KEY`.
+
+### Games
+
+- Pinball's flippers leave a gap the ball can't get stuck in.
+- Pockets always kick the ball out.
+- The ball saver works once per ball.
+- Lanes re-arm after a completed set.
+- The canvas follows its window's size.
+- `table.test.ts` plays the table with bots; run it after any change to
+  the table or physics.
+
+### Tests and tooling
+
+- A Vitest `expect` inside a per-frame loop made the Pinball test time
+  out. Use plain `throw` in hot loops, and give long simulations an
+  explicit timeout.
+- The database test stubs need grants for `service_role` too, such as
+  the `net` schema, or a check fails for the wrong reason.
+- Playwright here launches with
+  `executablePath: '/opt/pw-browsers/chromium'`. A throwaway script must
+  run from inside the repository to find the `playwright` package.
+- There's no Prettier config. Don't reformat whole files; it buries the
+  change in the diff.
+- Wrapping a big JSX tree reindents all of it. Wrap through a small
+  outer component instead, as `Desktop` wraps `Shell` in `MotionConfig`.
+
+### Git and pull requests
+
+- Check `git status` and `git diff --cached` before committing. A staged
+  rename from other work once rode along in an unrelated fix.
+- After scripting an edit to a doc, read the paragraph back. A
+  replacement once spliced two sentences together.
+- After a pull request merges, start the branch again from `main`.
+  Never stack new work on merged history.
+- Local tool state stays untracked: `supabase/.temp/`, `.vercel/`,
+  `.env`. One file under `supabase/.temp/` was once committed despite
+  `.gitignore`.
+- When a file, script or asset is no longer used, delete it in the same
+  change that makes it unused, and update the README and AGENTS.md.
 
 ## Commits
 

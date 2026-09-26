@@ -1,10 +1,11 @@
 Third-party assets
 
-The JM/OS desktop at /os uses assets copied from ryOS
+The JM/OS desktop (the home page) uses assets copied from ryOS
 (https://github.com/ryokun6/ryos), which is distributed under the
 GNU Affero General Public License v3.0:
 
-  public/os/icons/*        Mac OS X–style icons (from public/icons/macosx)
+  public/os/icons/*        Mac OS X–style icons (from public/icons/macosx,
+                           including its control-panels)
   public/os/fonts/*        Lucida Grande, Apple Garamond and Monaco font files
   src/assets/os/stones.jpg Desktop wallpaper (from public/wallpapers/photos/nature)
   public/os/wallpapers/*   Desktop pictures and tiles (from public/wallpapers;

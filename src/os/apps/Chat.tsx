@@ -38,6 +38,14 @@ const TYPING_EVERY = 2500;
 /** At most one nudge this often, each way. */
 const NUDGE_EVERY = 15_000;
 
+/**
+ * Whether a signal's sender is on the desktop as `username`. Signals can
+ * say anything, so a name in one only counts if it's the name the sender's
+ * own presence carries: one connection can't pose as many people.
+ */
+const sentBy = (from: string, username: unknown) =>
+  typeof username === 'string' && useWindows.getState().visitors?.some((v) => v.id === from && v.username === username) === true;
+
 const day = (iso: string) => new Date(iso).toDateString();
 
 function dayLabel(iso: string) {
@@ -236,18 +244,20 @@ export default function Chat({ win }: AppProps) {
 
   // Who's typing, and nudges from the other member of a private conversation.
   useEffect(() => {
-    const stopTyping = onSignal('chat-typing', ({ payload }) => {
+    const stopTyping = onSignal('chat-typing', ({ from, payload }) => {
       const { room: r, username } = payload;
-      if (typeof r !== 'string' || typeof username !== 'string' || r !== roomRef.current) return;
+      if (typeof r !== 'string' || typeof username !== 'string' || r !== roomRef.current || !sentBy(from, username)) return;
       if (username === useAccount.getState().account?.username) return;
       setTyping((all) => ({ ...all, [username.slice(0, 20)]: Date.now() }));
     });
-    const stopNudge = onSignal('chat-nudge', ({ payload }) => {
+    const stopNudge = onSignal('chat-nudge', ({ from: sender, payload }) => {
       const me = useAccount.getState().account;
       const { to, from } = payload;
-      if (!me || to !== me.username || typeof from !== 'string') return;
+      if (!me || to !== me.username || typeof from !== 'string' || !sentBy(sender, from)) return;
       const name = from.slice(0, 20);
-      if (Date.now() - (nudgesFrom.current[name] ?? 0) < NUDGE_EVERY) return;
+      // One nudge per person per 15 seconds, and at most one every 3 seconds from anyone.
+      const last = Math.max(0, ...Object.values(nudgesFrom.current));
+      if (Date.now() - (nudgesFrom.current[name] ?? 0) < NUDGE_EVERY || Date.now() - last < 3000) return;
       nudgesFrom.current[name] = Date.now();
       play('chime');
       setNudged(true);

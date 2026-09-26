@@ -105,3 +105,42 @@ select pg_temp.act_as('authenticated', '11111111-1111-1111-1111-111111111111');
 insert into public.chat_messages (body, room) values ('after off', 'music');
 reset role;
 select pg_temp.check((select count(*) from net.calls) = 0, '/watch off stops notices');
+
+-- Password reset ------------------------------------------------------------
+
+select pg_temp.act_as('anon');
+select pg_temp.check(pg_temp.refused($$select public.recovery_request('alice', repeat('a', 64))$$), 'visitors can''t ask the database for a link');
+select pg_temp.check(pg_temp.refused($$select public.recovery_consume(repeat('a', 64))$$), 'visitors can''t use a link themselves');
+select pg_temp.check(pg_temp.refused($$select public.my_recovery_email()$$), 'visitors have no recovery address to read');
+select pg_temp.act_as('authenticated', '22222222-2222-2222-2222-222222222222');
+select pg_temp.check(pg_temp.refused($$select public.recovery_check(repeat('a', 64))$$), 'members can''t look links up');
+select pg_temp.check(public.my_recovery_email() is null, 'bob has no recovery address yet');
+select public.set_recovery_email(' bob@example.com ');
+select pg_temp.check(public.my_recovery_email() = 'bob@example.com', 'a member sets their own recovery address');
+select pg_temp.check(pg_temp.refused($$select public.set_recovery_email('not an address')$$), 'recovery addresses are checked');
+select public.set_recovery_email('');
+select pg_temp.check(public.my_recovery_email() is null, 'and can remove it');
+reset role;
+
+select pg_temp.act_as('service_role');
+select pg_temp.check(public.recovery_request('bob', repeat('b', 64)) is null, 'no link for an account without a recovery address');
+select pg_temp.check(public.recovery_request('nobody', repeat('b', 64)) is null, 'no link for an account that doesn''t exist');
+select pg_temp.check(public.recovery_request(' Alice ', repeat('1', 64)) = 'a@example.com', 'a link goes to the recovery address');
+select pg_temp.check(pg_temp.refused($$select public.recovery_request('alice', 'short')$$), 'only token hashes are kept');
+select public.recovery_request('alice', repeat('2', 64));
+select pg_temp.check(public.recovery_request('alice', repeat('3', 64)) is not null, 'three links an hour');
+select pg_temp.check(public.recovery_request('alice', repeat('4', 64)) is null, 'but not a fourth');
+select pg_temp.check(public.recovery_check(repeat('1', 64)) = 'alice', 'a link says whose it is');
+select pg_temp.check((select username from public.recovery_consume(repeat('2', 64))) = 'alice', 'a link can be used');
+select pg_temp.check(not exists (select from public.recovery_consume(repeat('2', 64))), 'only once');
+select pg_temp.check(public.recovery_check(repeat('1', 64)) is null, 'and using one retires the others');
+reset role;
+update private.password_resets set used_at = null, expires_at = now() - interval '1 minute' where token_hash = repeat('3', 64);
+select pg_temp.act_as('service_role');
+select pg_temp.check(not exists (select from public.recovery_consume(repeat('3', 64))), 'an expired link doesn''t work');
+reset role;
+select pg_temp.act_as('authenticated', '33333333-3333-3333-3333-333333333333');
+select public.set_recovery_email('A@example.com');
+select pg_temp.act_as('service_role');
+select pg_temp.check(public.recovery_request('carol', repeat('5', 64)) is null, 'three links an hour to any one address, whoever asks');
+reset role;

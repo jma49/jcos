@@ -188,7 +188,7 @@ export interface ChatHandlers {
  * (one reaction per visitor), `taken` (username), `credentials` (wrong
  * username or password), `invalid` (a bad username, password or note).
  */
-export type Refusal = 'signed-out' | 'limit' | 'already' | 'taken' | 'credentials' | 'invalid' | 'failed';
+export type Refusal = 'signed-out' | 'limit' | 'already' | 'taken' | 'credentials' | 'invalid' | 'expired' | 'failed';
 
 export class SocialError extends Error {
   constructor(
@@ -210,6 +210,20 @@ export interface Social {
   signUp: (username: string, password: string, recoveryEmail?: string) => Promise<Account>;
   signIn: (username: string, password: string) => Promise<Account>;
   signOut: () => Promise<void>;
+
+  /**
+   * Emails a link to choose a new password, if the account has a recovery
+   * address. Answers the same whether or not it has one.
+   */
+  requestReset: (username: string) => Promise<void>;
+  /** Whose a reset link is, or null once it has expired or been used. */
+  checkReset: (token: string) => Promise<string | null>;
+  /** Sets a new password with a reset link, then signs in with it. */
+  resetPassword: (token: string, password: string) => Promise<Account>;
+  /** The signed-in member's recovery address, or null. */
+  recoveryEmail: () => Promise<string | null>;
+  /** Sets the signed-in member's recovery address, or removes it with null. */
+  setRecoveryEmail: (email: string | null) => Promise<void>;
 
   /** The newest visible notes. */
   listNotes: () => Promise<Note[]>;

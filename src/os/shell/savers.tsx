@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { getSocial, type Post } from '../social/social';
 import { useOSData } from '../core/context';
-import { plain } from '../apps/inline';
+import { plain } from '../core/inline';
 import { useReduceMotion } from '../core/system';
 
 // More screen savers: Flurry (after Mac OS X's), Soapbox (Jincheng's posts,

@@ -32,6 +32,7 @@ const REACTIONS_KEY = 'os-dev-reactions';
 const USERS_KEY = 'os-dev-users';
 const SESSION_KEY = 'os-dev-session';
 const CHAT_KEY = 'os-dev-chat';
+const RESETS_KEY = 'os-dev-resets';
 
 /** Stand-in Soapbox posts; the real ones come from the Telegram bot. */
 const SAMPLE_POSTS: Omit<Post, 'reactions'>[] = [
@@ -89,6 +90,15 @@ const EXPIRE = 5000;
 
 interface StoredUser extends Account {
   password: string;
+  recovery?: string;
+}
+
+/** A password reset link; the stand-in "emails" it to the console. */
+interface StoredReset {
+  token: string;
+  username: string;
+  expires: number;
+  used?: boolean;
 }
 
 /** Reactions by post, then by who: an account id, or 'browser' for someone signed out. */
@@ -107,6 +117,9 @@ export function localSocial(): Social {
     if (!current) throw new SocialError('signed-out', 'Sign in first.');
     return current;
   };
+
+  const resets = () => loadJSON<StoredReset[]>(RESETS_KEY, []);
+  const liveReset = (token: string) => resets().find((r) => r.token === token && !r.used && r.expires > Date.now());
 
   const notes = () => loadJSON<Note[]>(NOTES_KEY, []);
   /** Every message this browser has, including private ones; messages from before rooms are the Lobby's. */
@@ -142,12 +155,12 @@ export function localSocial(): Social {
       return USERNAME.test(name) && !users().some((u) => u.username === name);
     },
 
-    async signUp(username, password) {
+    async signUp(username, password, recoveryEmail) {
       const name = username.trim().toLowerCase();
       if (!USERNAME.test(name)) throw new SocialError('invalid', 'A username is 3 to 20 letters, digits or underscores.');
       if (password.length < PASSWORD_MIN) throw new SocialError('invalid', `A password needs at least ${PASSWORD_MIN} characters.`);
       if (!(await this.usernameAvailable(name))) throw new SocialError('taken', 'That username is taken.');
-      const user = { id: crypto.randomUUID(), username: name, password };
+      const user: StoredUser = { id: crypto.randomUUID(), username: name, password, recovery: recoveryEmail?.trim() || undefined };
       saveJSON(USERS_KEY, [...users(), user]);
       become({ id: user.id, username: name });
       return current!;
@@ -162,6 +175,39 @@ export function localSocial(): Social {
 
     async signOut() {
       become(null);
+    },
+
+    async requestReset(username) {
+      const user = users().find((u) => u.username === username.trim().toLowerCase());
+      if (!user?.recovery) return;
+      const token = crypto.randomUUID().replace(/-/g, '').padEnd(43, 'x');
+      saveJSON(RESETS_KEY, [...resets(), { token, username: user.username, expires: Date.now() + 30 * 60_000 }]);
+      console.info(`[social] A reset link for ${user.username}, "sent" to ${user.recovery}: ${location.origin}/?open=account&reset=${token}`);
+    },
+
+    async checkReset(token) {
+      return liveReset(token)?.username ?? null;
+    },
+
+    async resetPassword(token, password) {
+      if (password.length < PASSWORD_MIN) throw new SocialError('invalid', `A password needs at least ${PASSWORD_MIN} characters.`);
+      const link = liveReset(token);
+      if (!link) throw new SocialError('expired', 'This link has expired or has already been used. Ask for a new one.');
+      saveJSON(RESETS_KEY, resets().map((r) => (r.username === link.username ? { ...r, used: true } : r)));
+      saveJSON(USERS_KEY, users().map((u) => (u.username === link.username ? { ...u, password } : u)));
+      return this.signIn(link.username, password);
+    },
+
+    async recoveryEmail() {
+      const me = member();
+      return users().find((u) => u.id === me.id)?.recovery ?? null;
+    },
+
+    async setRecoveryEmail(email) {
+      const me = member();
+      const address = email?.trim() || undefined;
+      if (address && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(address)) throw new SocialError('invalid', 'That doesn’t look like an email address.');
+      saveJSON(USERS_KEY, users().map((u) => (u.id === me.id ? { ...u, recovery: address } : u)));
     },
 
     async listNotes() {

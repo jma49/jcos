@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useOSData } from '../core/context';
-import { Inline } from './inline';
+import { Inline } from '../core/inline';
 
 export default function About() {
   const data = useOSData();
