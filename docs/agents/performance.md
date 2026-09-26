@@ -10,8 +10,11 @@
 - **Load only what the first screen needs.**
   - Apps are lazy (`registry.tsx`).
   - The Supabase client arrives by dynamic import (`social.ts`).
-  - The screen saver's views load on first use, or once the page is
-    idle (`saverViews.tsx`).
+  - The Dashboard and the screen saver's views load on first use, or
+    once the desktop has settled (`afterSettled()` in
+    `core/warmUp.ts`, eight seconds in and idle), so they're instant by
+    the time anyone reaches for them. The Dashboard also starts loading
+    when the pointer reaches the menu bar or the Dock.
   - Motion is loaded lean: `Desktop.tsx` wraps everything in
     `<LazyMotion features={domAnimation} strict>`, so animate with `m.div`
     and friends, never `motion.div` (strict mode throws). `domAnimation`
