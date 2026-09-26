@@ -34,7 +34,10 @@ security and triggers in `supabase/schema.sql` do the enforcing.
   open chat room, whether AirDrop can reach them), their cursors, and
   signals: short-lived messages such as typing, nudges and AirDrop
   offers. Anyone can send anything there, so receivers check what
-  arrives (`cleanInfo()` for presence).
+  arrives (`cleanInfo()` for presence). Past `CROWD` (12) people, every
+  visitor stops sending and drawing pointers, since pointer traffic grows
+  with the square of the crowd; they come back at `CALM` (10). The menu
+  bar's list names the first 30.
 
 - **Moderation** (`supabase/migrations/20260926091033_moderation.sql`, the
   Soapbox bot): new Stickies notes and public chat messages go to the

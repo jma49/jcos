@@ -71,9 +71,21 @@
 }
 
 .os-online-list ul {
+  max-height: 60vh;
   margin: 0;
   padding: 0;
+  overflow-y: auto;
   list-style: none;
+}
+
+/* Why pointers are gone while the desktop is crowded (CROWD in Presence.tsx). */
+.os-online-list .os-online-note {
+  max-width: 220px;
+  font-weight: 400;
+}
+
+.os-online-list .os-online-more {
+  opacity: 0.6;
 }
 
 .os-online-list li {

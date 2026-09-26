@@ -72,6 +72,8 @@ interface WindowStore {
   screensaverOn: boolean;
   /** People on the desktop right now, this visitor included; null until known. */
   visitors: Visitor[] | null;
+  /** Too many people here for pointers (see CROWD in Presence.tsx). */
+  crowded: boolean;
   /** A photo URL chosen as the desktop picture, or null for the default. */
   wallpaper: string | null;
   /** Show another picture from the same collection each time the visitor comes back to the tab. */
@@ -105,6 +107,7 @@ interface WindowStore {
   setExpose: (open: boolean) => void;
   setScreensaver: (on: boolean) => void;
   setVisitors: (visitors: Visitor[] | null) => void;
+  setCrowded: (crowded: boolean) => void;
   setWallpaper: (url: string | null) => void;
   setRotateWallpaper: (on: boolean) => void;
   setPlace: (place: Place) => void;
@@ -181,6 +184,7 @@ export const useWindows = create<WindowStore>((set, get) => ({
   exposeOpen: false,
   screensaverOn: false,
   visitors: null,
+  crowded: false,
   // Jincheng's photos were desktop pictures once; they're only in Photos now.
   wallpaper: load(WALLPAPER_KEY)?.includes('images.unsplash.com') ? null : load(WALLPAPER_KEY),
   rotateWallpaper: load(ROTATE_KEY) !== '0',
@@ -286,6 +290,7 @@ export const useWindows = create<WindowStore>((set, get) => ({
   setExpose: (exposeOpen) => set({ exposeOpen }),
   setScreensaver: (screensaverOn) => set({ screensaverOn }),
   setVisitors: (visitors) => set({ visitors }),
+  setCrowded: (crowded) => set({ crowded }),
   setWallpaper: (wallpaper) => {
     save(WALLPAPER_KEY, wallpaper);
     set({ wallpaper });
