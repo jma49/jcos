@@ -7,6 +7,7 @@ import {
   SynthIcon,
   FinderIcon,
   AppleIcon,
+  SpiderIcon,
   ChatIcon,
   AppletStoreIcon,
   CalculatorIcon,
@@ -267,6 +268,16 @@ export const apps: Record<AppId, AppDefinition> = {
     minWidth: 520,
     minHeight: 340,
     Component: lazy(() => import('../apps/Synth'))
+  },
+  spider: {
+    applet: true,
+    name: 'Spider Solitaire',
+    Icon: SpiderIcon,
+    width: 760,
+    height: 560,
+    minWidth: 520,
+    minHeight: 400,
+    Component: lazy(() => import('../apps/Spider'))
   },
   aboutmac: {
     name: 'About This Mac',

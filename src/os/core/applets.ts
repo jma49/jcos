@@ -42,6 +42,14 @@ export const APPLETS: Applet[] = [
     added: '2026-09-26'
   },
   {
+    app: 'spider',
+    category: 'Games',
+    tagline: 'Two decks, ten columns, one suit at a time.',
+    description:
+      'Spider Solitaire, as it came with every PC. Build down from King to Ace; a full run of one suit leaves the table. One, two or four suits, drag or click to move, undo, hints (H) and your best score for each.',
+    added: '2026-09-27'
+  },
+  {
     app: 'synth',
     category: 'Utilities',
     tagline: 'A little synthesizer you play with your keyboard.',
