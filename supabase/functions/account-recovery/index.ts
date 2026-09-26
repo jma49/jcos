@@ -12,7 +12,10 @@
 // random, kept only as a hash, work once and for 30 minutes, and at most
 // three go out per account an hour (supabase/migrations/
 // 20260926094533_password_reset.sql). Mail goes through Resend. Setup is in
-// supabase/functions/account-recovery/README.md.
+// supabase/functions/account-recovery/README.md; the email itself is in
+// email.ts.
+
+import { resetEmail } from './email.ts';
 
 const env = (name: string) => {
   const value = Deno.env.get(name);
@@ -71,26 +74,12 @@ function inBackground(work: Promise<unknown>) {
   runtime?.waitUntil?.(work);
 }
 
-const escape = (text: string) => text.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
-
 async function sendLink(to: string, username: string, token: string) {
-  const link = `${SITE}/?open=account&reset=${token}`;
-  const text = [
-    `Someone (hopefully you) asked to reset the password of ${username} on JM/OS.`,
-    '',
-    `Choose a new one here: ${link}`,
-    '',
-    'The link works once, for 30 minutes. If you didn’t ask, ignore this email and nothing changes.'
-  ].join('\n');
-  const html = `<div style="font:14px/1.5 -apple-system,Helvetica,Arial,sans-serif;color:#222;max-width:480px">
-<p>Someone (hopefully you) asked to reset the password of <strong>${escape(username)}</strong> on JM/OS.</p>
-<p><a href="${escape(link)}" style="display:inline-block;padding:8px 18px;border-radius:14px;background:#2a6fdb;color:#fff;text-decoration:none">Choose a New Password</a></p>
-<p style="color:#666;font-size:12px">The link works once, for 30 minutes. If you didn’t ask, ignore this email and nothing changes.</p>
-</div>`;
+  const { subject, text, html } = resetEmail({ username, link: `${SITE}/?open=account&reset=${token}`, site: SITE });
   const res = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: { authorization: `Bearer ${RESEND_KEY}`, 'content-type': 'application/json' },
-    body: JSON.stringify({ from: FROM, to: [to], subject: 'Reset your JM/OS password', text, html })
+    body: JSON.stringify({ from: FROM, to: [to], subject, text, html })
   });
   if (!res.ok) throw new Error(`resend: ${res.status} ${(await res.text()).slice(0, 200)}`);
 }

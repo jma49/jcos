@@ -35,6 +35,22 @@ calls this function; it emails through [Resend](https://resend.com).
    supabase functions deploy account-recovery --no-verify-jwt
    ```
 
+## The email
+
+`email.ts` holds the subject, the plain-text version and the HTML: a Mac OS
+X window with the Keychain icon and an Aqua button, in inline styles and
+tables so mail clients render it. Clients that drop gradients (Gmail,
+Outlook) fall back to flat colours. The icon loads from the live site
+(`/os/icons/keychain.png`).
+
+To see a change before deploying:
+
+```sh
+node supabase/functions/account-recovery/preview.mjs   # writes reset-email-preview.html
+```
+
+Then redeploy the function for the new email to go out.
+
 ## Trying it
 
 Sign in, add a recovery address in the Account window, sign out, then

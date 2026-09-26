@@ -87,6 +87,8 @@ test('a link goes to the recovery address, and only its hash is kept', async () 
   assert.deepEqual(world.mail[0].to, ['alice@example.com']);
   assert.match(world.mail[0].text, /https:\/\/www\.majincheng\.com\/\?open=account&reset=[\w-]{43}\n/);
   assert.match(world.mail[0].html, /Choose a New Password/);
+  assert.equal(world.mail[0].subject, 'Keychain Access wants a new password for alice');
+  assert.match(world.mail[0].html, /src="https:\/\/www\.majincheng\.com\/os\/icons\/keychain\.png"/);
   const token = tokenInMail();
   assert.equal(world.links[0].hash, sha256(token));
   assert.ok(!JSON.stringify(world.links).includes(token));
@@ -135,6 +137,15 @@ test('a link names its account, sets the password once, and then stops working',
   assert.match(again.body.error, /expired or has already been used/);
   assert.equal(world.passwords[ALICE], 'new secret');
   assert.deepEqual((await call({ action: 'check', token })).body, { username: null });
+});
+
+test('the email escapes what it puts in the page', async () => {
+  const { resetEmail } = await import('./email.ts');
+  const mail = resetEmail({ username: '<b>x</b>', link: 'https://x.test/?a=1&b="2"', site: 'https://x.test' });
+  assert.ok(!mail.html.includes('<b>x</b>'));
+  assert.match(mail.html, /&lt;b&gt;x&lt;\/b&gt;/);
+  assert.match(mail.html, /href="https:\/\/x\.test\/\?a=1&amp;b=&quot;2&quot;"/);
+  assert.match(mail.text, /\nhttps:\/\/x\.test\/\?a=1&b="2"\n/);
 });
 
 test('made-up and malformed tokens get nowhere', async () => {
