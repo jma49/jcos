@@ -141,10 +141,20 @@ goes through.
 
 Copyright (C) 2026 Jincheng Ma.
 
-JM/OS is free software under the **GNU Affero General Public License
-v3.0** ([LICENSE](LICENSE)). You may use, change and share it. If you
-run a changed version where others can use it over a network, you must
-offer them its source under the same license.
+The code is free software under the **GNU Affero General Public License
+v3.0 or later** ([LICENSE](LICENSE)). You may use, change and share it.
+If you run a changed version where others can use it over a network,
+you must offer them its source under the same license.
+
+Jincheng's personal content is not covered by that license. All rights
+reserved. This means:
+- the bio, experience and other copy in `src/i18n/content.ts`;
+- the project write-ups in `src/content/projects/`;
+- the photos (`public/portrait.jpg` and those listed in
+  `src/data/photos.json`);
+- the Soapbox posts.
+
+To reuse the code for your own site, replace that content with yours.
 
 ## Credits
 
