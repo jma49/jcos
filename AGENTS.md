@@ -102,7 +102,14 @@ readers, crawlers and visitors without JavaScript.
   tweak it shows, and set `lyrics` to an lrclib id if the search picks
   the wrong entry. Prefer album audio (a "Topic" or label upload) over
   music videos, whose edits don't match the lyrics' timing. Visitors'
-  own timing tweaks live in `os-lyric-offsets`.
+  own timing tweaks live in `os-lyric-offsets`. YouTube's own chrome must
+  never show: players go in a `.os-player-frame` (300px taller than the
+  space, so the title bar and logo are cut off) and the app covers the
+  video with the artwork until `usePlayer`'s `live` is true.
+- `src/os/apps/ipod/`: the iPod's full-screen views (Cover Flow, Brick,
+  Music Quiz), which take the wheel through a `ScreenInput`, and the
+  `Marquee` used for long titles. The iPod's own settings (theme,
+  backlight, artwork or video) live in `os-ipod`.
 - `src/os/NowPlaying.tsx`: the menu bar's ♫ while a song is on, with a
   card to control it; it also feeds the Media Session API. The Dynamic
   desktop picture `dynamic:cover` shows the playing song's cover,
