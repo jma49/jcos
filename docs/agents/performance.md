@@ -1,6 +1,8 @@
 # Performance
 
-- **Budgets** (checked by `npm run perf`; see [self-audit.md](self-audit.md)) for a first visit:
+- **Budgets** (checked by `npm run perf`; see [self-audit.md](self-audit.md)) for a first visit,
+  meaning what's requested in the first seven seconds, before the
+  desktop settles and fetches ahead:
   - at most 160 KB of JavaScript, gzipped (154 today; react-dom alone
     is 67);
   - at most 1.1 MB of images and 250 KB of fonts;
