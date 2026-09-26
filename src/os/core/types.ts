@@ -70,6 +70,7 @@ export type AppId =
   | 'karaoke'
   | 'chat'
   | 'airdrop'
+  | 'photobooth'
   | 'account'
   | 'welcome';
 

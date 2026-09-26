@@ -3,6 +3,7 @@ import {
   AboutIcon,
   AccountIcon,
   AirDropIcon,
+  PhotoBoothIcon,
   ChatIcon,
   AppletStoreIcon,
   CalculatorIcon,
@@ -241,6 +242,17 @@ export const apps: Record<AppId, AppDefinition> = {
     minWidth: 380,
     minHeight: 400,
     Component: lazy(() => import('../apps/AirDrop'))
+  },
+  photobooth: {
+    inApplications: true,
+    material: 'metal',
+    name: 'Photo Booth',
+    Icon: PhotoBoothIcon,
+    width: 640,
+    height: 620,
+    minWidth: 420,
+    minHeight: 460,
+    Component: lazy(() => import('../apps/PhotoBooth'))
   },
   account: {
     name: 'Account',
