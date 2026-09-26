@@ -1,10 +1,10 @@
 ---
-title: majincheng.com
-description: This site. A bilingual personal page built with Astro that ships almost no JavaScript.
+title: JM/OS
+description: "This site: a Mac OS X–style desktop in the browser, with accounts, chat and a guestbook on Supabase."
 date: 2026-09
 status: live
 order: 3
-stack: [Astro, TypeScript, Tailwind CSS, Vercel]
+stack: [Astro, React, TypeScript, Supabase, Vercel]
 repo: https://github.com/jma49/jmos
 cover: ../covers/majincheng-com.jpg
 capture: /
