@@ -1,6 +1,8 @@
 import { lazy, type ComponentType, type LazyExoticComponent } from 'react';
 import {
   AboutIcon,
+  AccountIcon,
+  ChatIcon,
   AppletStoreIcon,
   CalculatorIcon,
   TileGameIcon,
@@ -100,7 +102,7 @@ export const apps: Record<AppId, AppDefinition> = {
     Component: lazy(() => import('../apps/Browser'))
   },
   terminal: {
-    dock: 6,
+    dock: 7,
     phoneDock: true,
     inApplications: true,
     name: 'Terminal',
@@ -218,8 +220,28 @@ export const apps: Record<AppId, AppDefinition> = {
     minHeight: 320,
     Component: lazy(() => import('../apps/Karaoke'))
   },
+  chat: {
+    dock: 6,
+    inApplications: true,
+    name: 'Chat',
+    Icon: ChatIcon,
+    width: 560,
+    height: 600,
+    minWidth: 360,
+    minHeight: 340,
+    Component: lazy(() => import('../apps/Chat'))
+  },
+  account: {
+    name: 'Account',
+    Icon: AccountIcon,
+    width: 420,
+    height: 470,
+    minWidth: 380,
+    minHeight: 400,
+    Component: lazy(() => import('../apps/Account'))
+  },
   preferences: {
-    dock: 7,
+    dock: 8,
     inApplications: true,
     name: 'System Preferences',
     Icon: PreferencesIcon,

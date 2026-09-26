@@ -8,6 +8,8 @@ import { NowPlaying } from './NowPlaying';
 import { clockTimeZone, HOME, sameTime } from '../ambient/place';
 import { play } from '../core/sound';
 import { useMusic } from '../media/music';
+import { useAccount } from '../social/account';
+import { getSocial } from '../social/social';
 
 interface MenuItem {
   label: string;
@@ -53,6 +55,8 @@ export function MenuBar({ sky }: { sky: SkyState }) {
     };
   }, [openMenu]);
 
+  const accounts = useAccount();
+
   // The iPod and Karaoke add a Controls menu while they're in front.
   const music = useMusic();
   const player = focused?.app === 'ipod' || focused?.app === 'karaoke' ? focused.app : null;
@@ -80,6 +84,14 @@ export function MenuBar({ sky }: { sky: SkyState }) {
       { divider: true, label: '' },
       { label: 'System Preferences…', action: () => launch('preferences') },
       { label: 'Applet Store…', action: () => launch('appstore') },
+      ...(accounts.available
+        ? [
+            { divider: true, label: '' },
+            accounts.account
+              ? { label: `Sign Out ${accounts.account.username}…`, action: () => getSocial().then((s) => s?.signOut()) }
+              : { label: 'Sign In…', action: () => launch('account') }
+          ]
+        : []),
       { divider: true, label: '' },
       { label: 'Source on GitHub', action: () => window.open('https://github.com/jma49/Jincheng-Protafolio', '_blank') }
     ],
@@ -169,6 +181,16 @@ export function MenuBar({ sky }: { sky: SkyState }) {
       </nav>
 
       <div className="os-status">
+        {accounts.account && (
+          // Tiger's fast user switching: who's signed in, at the right of the bar.
+          <button type="button" className="os-account-status" onClick={() => launch('account')} title="Your account">
+            <svg viewBox="0 0 12 12" width="11" height="11" aria-hidden="true">
+              <circle cx="6" cy="3.6" r="2.6" fill="currentColor" />
+              <path d="M1 11.5c0-2.9 2.2-4.6 5-4.6s5 1.7 5 4.6z" fill="currentColor" />
+            </svg>
+            <span>{accounts.account.username}</span>
+          </button>
+        )}
         <NowPlaying />
         <SoundToggle />
         <OnlineStatus />

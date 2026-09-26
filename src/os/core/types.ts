@@ -67,7 +67,9 @@ export type AppId =
   | 'calculator'
   | 'tilegame'
   | 'ipod'
-  | 'karaoke';
+  | 'karaoke'
+  | 'chat'
+  | 'account';
 
 export interface Rect {
   x: number;

@@ -143,3 +143,44 @@
     grid-column: 1 / -1;
   }
 }
+
+/* The draft is signed with the member's username. */
+.os-sticky-signature {
+  margin: 0;
+  font-size: 13px;
+  text-align: right;
+  opacity: 0.7;
+}
+
+/* A member's own notes can be taken down: a small × that shows on hover. */
+.os-root .os-sticky-remove {
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  width: 18px;
+  height: 18px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: inherit;
+  font-size: 14px;
+  line-height: 1;
+  opacity: 0;
+  transition: opacity 0.15s, background 0.15s;
+}
+
+.os-sticky:hover .os-sticky-remove,
+.os-root .os-sticky-remove:focus-visible {
+  opacity: 0.6;
+}
+
+.os-root .os-sticky-remove:hover {
+  background: rgba(0, 0, 0, 0.12);
+  opacity: 1;
+}
+
+@media (hover: none) {
+  .os-root .os-sticky-remove {
+    opacity: 0.5;
+  }
+}

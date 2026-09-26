@@ -1,22 +1,9 @@
 import { useEffect, useState, type CSSProperties, type FormEvent } from 'react';
-import {
-  AlreadyPostedError,
-  getSocial,
-  NAME_MAX,
-  NOTE_COLORS,
-  NOTE_MAX,
-  type Note,
-  type NoteColor,
-  type Social
-} from '../social/social';
+import { getSocial, NOTE_COLORS, NOTE_MAX, NOTES_PER_DAY, SocialError, type Note, type NoteColor, type Social } from '../social/social';
+import { useAccount } from '../social/account';
 import type { AppProps } from '../core/registry';
+import { launch } from '../core/registry';
 import { play } from '../core/sound';
-
-/**
- * Remembers that this browser has left its one note, so the button can say
- * so up front. The database enforces the limit by IP address as well.
- */
-const POSTED_KEY = 'os-stickies-posted';
 
 type Load = { state: 'loading' } | { state: 'offline' } | { state: 'ready'; social: Social; notes: Note[] };
 type Draft = { state: 'idle' | 'writing' | 'sending' } | { state: 'error'; message: string };
@@ -28,27 +15,18 @@ function tilt(id: string) {
   return ((hash % 7) - 3) * 0.6;
 }
 
-function postedBefore() {
-  try {
-    return localStorage.getItem(POSTED_KEY) === '1';
-  } catch {
-    return false;
-  }
-}
-
-function rememberPosted() {
-  try {
-    localStorage.setItem(POSTED_KEY, '1');
-  } catch {}
-}
-
-/** Mac OS X Stickies as a guestbook: everyone's notes on a wall, and one blank note per visitor. */
+/**
+ * Mac OS X Stickies as a guestbook: everyone's notes on a wall. Members
+ * (signed in) can put up three a day, signed with their username, and take
+ * their own down.
+ */
 export default function Stickies(_: AppProps) {
+  const { account } = useAccount();
   const [load, setLoad] = useState<Load>({ state: 'loading' });
   const [draft, setDraft] = useState<Draft>({ state: 'idle' });
-  const [posted, setPosted] = useState(postedBefore);
+  /** How many more notes the member can put up today; null until known. */
+  const [left, setLeft] = useState<number | null>(null);
   const [body, setBody] = useState('');
-  const [name, setName] = useState('');
   const [color, setColor] = useState<NoteColor>('yellow');
   // A field people never see; bots that fill every input give themselves away.
   const [trap, setTrap] = useState('');
@@ -70,26 +48,40 @@ export default function Stickies(_: AppProps) {
     };
   }, []);
 
+  // A member's allowance for today, whenever they sign in or post.
+  const social = load.state === 'ready' ? load.social : null;
+  useEffect(() => {
+    if (!social || !account) return setLeft(null);
+    social.notesLeft().then(setLeft, () => setLeft(null));
+  }, [social, account]);
+
   const submit = async (e: FormEvent) => {
     e.preventDefault();
-    if (load.state !== 'ready' || !body.trim() || posted) return;
+    if (load.state !== 'ready' || !body.trim() || left === 0) return;
     if (trap) return setDraft({ state: 'idle' });
     setDraft({ state: 'sending' });
     try {
-      await load.social.postNote({ body: body.trim(), name: name.trim(), color });
-      rememberPosted();
-      setPosted(true);
+      await load.social.postNote({ body: body.trim(), color });
       play('pop');
       setBody('');
       setDraft({ state: 'idle' });
+      setLeft(await load.social.notesLeft());
       // Show the new note in its place on the wall.
       setLoad({ ...load, notes: await load.social.listNotes() });
     } catch (error) {
-      if (error instanceof AlreadyPostedError) {
-        rememberPosted();
-        setPosted(true);
-      }
+      if (error instanceof SocialError && error.reason === 'limit') setLeft(0);
       setDraft({ state: 'error', message: error instanceof Error ? error.message : 'Couldn’t post the note.' });
+    }
+  };
+
+  const takeDown = async (note: Note) => {
+    if (load.state !== 'ready') return;
+    try {
+      await load.social.deleteNote(note.id);
+      play('trash');
+      setLoad({ ...load, notes: load.notes.filter((n) => n.id !== note.id) });
+    } catch {
+      play('error');
     }
   };
 
@@ -113,16 +105,22 @@ export default function Stickies(_: AppProps) {
   return (
     <div className="os-app os-stickies">
       <div className="os-toolbar">
-        <button
-          type="button"
-          className="os-button"
-          onClick={() => setDraft({ state: 'writing' })}
-          disabled={writing || posted}
-        >
-          {posted ? 'Note Posted ✓' : 'New Note'}
-        </button>
+        {account ? (
+          <button type="button" className="os-button" onClick={() => setDraft({ state: 'writing' })} disabled={writing || left === 0}>
+            New Note
+          </button>
+        ) : (
+          <button type="button" className="os-button" onClick={() => launch('account', { props: { then: 'stickies' } })}>
+            Sign In to Leave a Note…
+          </button>
+        )}
         <span className="os-toolbar-meta">
-          {load.notes.length} note{load.notes.length === 1 ? '' : 's'} · one per visitor
+          {load.notes.length} note{load.notes.length === 1 ? '' : 's'}
+          {account && left !== null
+            ? left > 0
+              ? ` · ${left} of ${NOTES_PER_DAY} left today`
+              : ' · that’s your three for today'
+            : ' · members can leave three a day'}
         </span>
       </div>
 
@@ -138,13 +136,7 @@ export default function Stickies(_: AppProps) {
               autoFocus
               required
             />
-            <input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              maxLength={NAME_MAX}
-              placeholder="Your name (optional)"
-              aria-label="Your name"
-            />
+            <p className="os-sticky-signature">— {account?.username}</p>
             <input
               className="os-sticky-trap"
               value={trap}
@@ -176,7 +168,7 @@ export default function Stickies(_: AppProps) {
               <button
                 type="submit"
                 className="os-button os-button-primary"
-                disabled={draft.state === 'sending' || !body.trim() || posted}
+                disabled={draft.state === 'sending' || !body.trim() || left === 0}
               >
                 {draft.state === 'sending' ? 'Posting…' : 'Post'}
               </button>
@@ -187,6 +179,11 @@ export default function Stickies(_: AppProps) {
 
         {load.notes.map((note) => (
           <article key={note.id} className="os-sticky" data-color={note.color} style={{ '--tilt': `${tilt(note.id)}deg` } as CSSProperties}>
+            {account && note.user_id === account.id && (
+              <button type="button" className="os-sticky-remove" onClick={() => takeDown(note)} aria-label="Take this note down" title="Take down">
+                ×
+              </button>
+            )}
             <p>{note.body}</p>
             <footer>
               {note.name ? `— ${note.name}` : ''}

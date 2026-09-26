@@ -1,0 +1,151 @@
+/* ---------- Account (sign in, or make an account) ---------- */
+
+.os-account {
+  padding: 18px 20px 16px;
+  gap: 0;
+  user-select: none;
+}
+
+/* Aqua tabs sitting on the edge of their box. */
+.os-account-tabs {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  gap: 4px;
+  padding: 0 10px;
+}
+
+.os-root .os-account-tabs button {
+  flex: 1;
+  height: 26px;
+  border-radius: 7px 7px 0 0;
+  background: linear-gradient(#fbfbfb, #e3e3e3);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.22), inset 0 1px 0 #fff;
+  font-size: 13px;
+}
+
+.os-root .os-account-tabs button[aria-selected='true'] {
+  background: var(--os-gel);
+  box-shadow: inset 0 0 0 1px var(--os-accent-rim), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+.os-account-box {
+  display: grid;
+  gap: 14px;
+  margin-top: -1px;
+  padding: 18px 18px 16px;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-top: 3px solid color-mix(in srgb, var(--os-accent) 55%, white);
+  border-radius: 0 0 4px 4px;
+  background: rgba(255, 255, 255, 0.45);
+}
+
+:root[data-theme='dark'] .os-account-box {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.os-account-box label {
+  display: grid;
+  gap: 4px;
+  font-size: 12px;
+}
+
+.os-account-box input {
+  height: 26px;
+  padding: 0 7px;
+  border: 1px solid rgba(0, 0, 0, 0.28);
+  border-radius: 2px;
+  background: var(--os-content);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.18);
+  color: var(--os-ink);
+  font: 13px var(--os-ui);
+  user-select: text;
+}
+
+.os-account-box input:focus {
+  outline: 3px solid var(--os-focus);
+  outline-offset: 0;
+}
+
+.os-account-box input[aria-invalid] {
+  border-color: #cf4a40;
+}
+
+.os-account-box small {
+  color: var(--os-faint);
+  font-size: 11px;
+}
+
+.os-account-box small[data-bad] {
+  color: #cf4a40;
+}
+
+.os-account-footer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: auto;
+  padding-top: 14px;
+}
+
+.os-account-footer p {
+  flex: 1;
+  margin: 0;
+  color: #cf4a40;
+  font-size: 12px;
+}
+
+.os-account-footer .os-button {
+  height: 26px;
+  padding: 0 18px;
+  border-radius: 13px;
+  font-size: 13px;
+}
+
+.os-account-footer .os-button:disabled {
+  opacity: 0.55;
+  animation: none;
+}
+
+.os-account-signed-in {
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-align: center;
+}
+
+.os-account-signed-in p {
+  margin: 4px 0 0;
+  font-size: 14px;
+}
+
+.os-account-signed-in small {
+  max-width: 30ch;
+  color: var(--os-dim);
+  font-size: 12px;
+}
+
+.os-account-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.os-account-note {
+  margin: auto;
+  color: var(--os-dim);
+}
+
+/* Who's signed in, at the right of the menu bar. */
+.os-status .os-account-status {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+}
+
+@media (max-width: 767px) {
+  .os-status .os-account-status span {
+    display: none;
+  }
+}

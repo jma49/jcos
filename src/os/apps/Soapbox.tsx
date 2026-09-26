@@ -1,32 +1,24 @@
 import { useEffect, useState } from 'react';
-import { AlreadyPostedError, getSocial, REACTIONS, type Post, type Reaction, type Social } from '../social/social';
+import { getSocial, REACTIONS, SocialError, type Post, type Reaction, type Social } from '../social/social';
+import { useAccount } from '../social/account';
+import { loadJSON, saveJSON } from '../core/storage';
 import { clockTimeZone, usePlace } from '../ambient/place';
 import type { AppProps } from '../core/registry';
 import { play } from '../core/sound';
 
 // Soapbox: Jincheng's own notes and rants, sent from Telegram (see
-// supabase/functions/soapbox-bot). Visitors read, and leave one reaction
-// per post.
+// supabase/functions/soapbox-bot). Visitors read and react: members (signed
+// in) pick a reaction and can change it or take it back (click it again);
+// anyone else gets one per post, told apart by IP address.
 
-/** Which reaction this browser gave each post, so the buttons can show it. */
+/** Which reaction this browser gave each post while signed out, so the buttons can show it. */
 const REACTED_KEY = 'os-soapbox-reacted';
 
 type Filter = 'all' | 'note' | 'rant';
 type Load = { state: 'loading' } | { state: 'offline' } | { state: 'ready'; social: Social; posts: Post[] };
 
-function readReacted(): Record<string, Reaction> {
-  try {
-    return JSON.parse(localStorage.getItem(REACTED_KEY) ?? '{}');
-  } catch {
-    return {};
-  }
-}
-
-function saveReacted(reacted: Record<string, Reaction>) {
-  try {
-    localStorage.setItem(REACTED_KEY, JSON.stringify(reacted));
-  } catch {}
-}
+const readReacted = () => loadJSON<Record<string, Reaction>>(REACTED_KEY, {});
+const saveReacted = (reacted: Record<string, Reaction>) => saveJSON(REACTED_KEY, reacted);
 
 /** Links in a post become clickable; everything else stays plain text. */
 function Linked({ text }: { text: string }) {
@@ -50,11 +42,17 @@ function PostCard({
   post,
   timeZone,
   mine,
+  member,
+  note,
   onReact
 }: {
   post: Post;
   timeZone: string;
   mine: Reaction | undefined;
+  /** Signed in: reactions can be changed and taken back. */
+  member: boolean;
+  /** Why the last reaction didn't go through, if it didn't. */
+  note?: string;
   onReact: (reaction: Reaction) => void;
 }) {
   const when = new Date(post.created_at);
@@ -86,10 +84,11 @@ function PostCard({
                 key={r}
                 type="button"
                 data-mine={mine === r || undefined}
-                disabled={Boolean(mine)}
+                aria-pressed={mine === r}
+                disabled={!member && Boolean(mine)}
                 onClick={() => onReact(r)}
                 aria-label={`${r} ${count}`}
-                title={mine ? 'You’ve reacted to this one' : 'React'}
+                title={member ? (mine === r ? 'Take your reaction back' : mine ? 'Change your reaction' : 'React') : mine ? 'Sign in to change your reaction' : 'React'}
               >
                 {r}
                 {count > 0 && <b>{count}</b>}
@@ -98,6 +97,7 @@ function PostCard({
           })}
         </span>
       </footer>
+      {note && <p className="os-soapbox-refused">{note}</p>}
     </article>
   );
 }
@@ -105,7 +105,10 @@ function PostCard({
 export default function Soapbox(_: AppProps) {
   const [load, setLoad] = useState<Load>({ state: 'loading' });
   const [filter, setFilter] = useState<Filter>('all');
+  const { account } = useAccount();
+  /** Signed out: this browser's own reactions. Signed in: the member's, from the server. */
   const [reacted, setReacted] = useState(readReacted);
+  const [notes, setNotes] = useState<Record<string, string>>({});
   const timeZone = clockTimeZone(usePlace());
 
   useEffect(() => {
@@ -125,34 +128,60 @@ export default function Soapbox(_: AppProps) {
     };
   }, []);
 
+  // A member's own reactions follow them to any device.
+  const social = load.state === 'ready' ? load.social : null;
+  useEffect(() => {
+    if (!social) return;
+    if (!account) return setReacted(readReacted());
+    social.myReactions().then(setReacted, () => {});
+  }, [social, account]);
+
+  /** Adds `by` to a post's count of `reaction` on screen. */
+  const bump = (postId: string, reaction: Reaction, by: number) =>
+    setLoad((l) =>
+      l.state !== 'ready'
+        ? l
+        : {
+            ...l,
+            posts: l.posts.map((p) =>
+              p.id === postId ? { ...p, reactions: { ...p.reactions, [reaction]: Math.max(0, (p.reactions[reaction] ?? 0) + by) } } : p
+            )
+          }
+    );
+
   const react = async (post: Post, reaction: Reaction) => {
-    if (load.state !== 'ready' || reacted[post.id]) return;
-    const bump = (by: number) =>
-      setLoad((l) =>
-        l.state !== 'ready'
-          ? l
-          : {
-              ...l,
-              posts: l.posts.map((p) =>
-                p.id === post.id ? { ...p, reactions: { ...p.reactions, [reaction]: (p.reactions[reaction] ?? 0) + by } } : p
-              )
-            }
-      );
-    const next = { ...reacted, [post.id]: reaction };
-    setReacted(next);
-    saveReacted(next);
-    bump(1);
-    play('pop');
+    if (load.state !== 'ready') return;
+    const before = reacted[post.id];
+    if (!account && before) return;
+    // Clicking your own reaction again takes it back (members only).
+    const next = account && before === reaction ? null : reaction;
+    const update = (value: Reaction | null) => {
+      setReacted((all) => {
+        const { [post.id]: _old, ...rest } = all;
+        const result = value ? { ...rest, [post.id]: value } : rest;
+        if (!account) saveReacted(result);
+        return result;
+      });
+    };
+    // Show it straight away; undo if the server says no.
+    if (before) bump(post.id, before, -1);
+    if (next) bump(post.id, next, 1);
+    update(next);
+    setNotes(({ [post.id]: _gone, ...rest }) => rest);
+    play(next ? 'pop' : 'click');
     try {
-      await load.social.react(post.id, reaction);
+      await load.social.react(post.id, next);
     } catch (error) {
-      // Already reacted from this address (another browser): keep the lock, drop the count.
-      bump(-1);
-      if (!(error instanceof AlreadyPostedError)) {
-        const { [post.id]: _undo, ...rest } = next;
-        setReacted(rest);
-        saveReacted(rest);
-      }
+      if (next) bump(post.id, next, -1);
+      if (before) bump(post.id, before, 1);
+      const already = error instanceof SocialError && error.reason === 'already';
+      update(before ?? null);
+      setNotes((all) => ({
+        ...all,
+        [post.id]: already
+          ? 'Someone on your network already reacted to this one. Sign in to pick your own.'
+          : 'That didn’t go through. Try again in a moment.'
+      }));
     }
   };
 
@@ -178,7 +207,15 @@ export default function Soapbox(_: AppProps) {
           <p className="os-soapbox-empty">{total === 0 ? 'Nothing on the Soapbox yet.' : 'Nothing here with this filter.'}</p>
         )}
         {posts.map((post) => (
-          <PostCard key={post.id} post={post} timeZone={timeZone} mine={reacted[post.id]} onReact={(r) => react(post, r)} />
+          <PostCard
+            key={post.id}
+            post={post}
+            timeZone={timeZone}
+            mine={reacted[post.id]}
+            member={Boolean(account)}
+            note={notes[post.id]}
+            onReact={(r) => react(post, r)}
+          />
         ))}
       </div>
     </div>
