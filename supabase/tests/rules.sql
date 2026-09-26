@@ -139,3 +139,8 @@ update private.password_resets set used_at = null, expires_at = now() - interval
 select pg_temp.act_as('service_role');
 select pg_temp.check(not exists (select from public.recovery_consume(repeat('3', 64))), 'an expired link doesn''t work');
 reset role;
+select pg_temp.act_as('authenticated', '33333333-3333-3333-3333-333333333333');
+select public.set_recovery_email('A@example.com');
+select pg_temp.act_as('service_role');
+select pg_temp.check(public.recovery_request('carol', repeat('5', 64)) is null, 'three links an hour to any one address, whoever asks');
+reset role;
