@@ -11,6 +11,8 @@ import { useSystem } from '../core/system';
 
 /** A remote cursor fades out after this long without moving. */
 const IDLE_MS = 4000;
+/** And is forgotten after this long, in case its "gone" never arrived. */
+const STALE_MS = 30_000;
 
 interface Cursor {
   x: number;
@@ -48,10 +50,13 @@ const currentInfo = (color: string) =>
  * Joins the desktop's presence channel: lists who's here, and from where,
  * for the menu bar, and draws other visitors' pointers labelled with their
  * city. Phones are counted but don't send a pointer, since they have none.
+ * A member's own other tabs and devices don't show as cursors.
  */
 export function Presence() {
   const [cursors, setCursors] = useState<Record<string, Cursor>>({});
   const [now, setNow] = useState(() => Date.now());
+  const cursorCount = useRef(0);
+  cursorCount.current = Object.keys(cursors).length;
 
   useEffect(() => {
     let channel: Channel | null = null;
@@ -74,6 +79,24 @@ export function Presence() {
       if (e.pointerType === 'mouse' && useSystem.getState().sharePointer) send(e.clientX / window.innerWidth, e.clientY / window.innerHeight);
     };
     const onOut = (e: PointerEvent) => !e.relatedTarget && send(-1, -1);
+    /** Takes the pointer off others' screens now, skipping the throttle. */
+    const withdraw = () => {
+      clearTimeout(queued);
+      last = performance.now();
+      channel?.moveCursor(-1, -1);
+    };
+    // Switching to another tab (or away from the browser) withdraws the
+    // pointer, so it doesn't sit frozen on everyone else's screen, or on
+    // this visitor's own other tab. Coming back drops cursors that went
+    // quiet while this tab wasn't looking.
+    const onVisibility = () => {
+      if (document.hidden) return withdraw();
+      const cutoff = Date.now() - IDLE_MS;
+      setCursors((all) => {
+        const kept = Object.entries(all).filter(([, c]) => c.at > cutoff);
+        return kept.length === Object.keys(all).length ? all : Object.fromEntries(kept);
+      });
+    };
 
     let unsubscribe = () => {};
     getSocial().then((social) => {
@@ -112,11 +135,21 @@ export function Presence() {
       if (!isPhone()) {
         window.addEventListener('pointermove', onMove);
         document.addEventListener('pointerout', onOut);
+        document.addEventListener('visibilitychange', onVisibility);
+        window.addEventListener('pagehide', withdraw);
       }
     });
 
-    // Re-render now and then so idle cursors fade.
-    const tick = setInterval(() => setNow(Date.now()), 1000);
+    // Re-render now and then so idle cursors fade, and forget stale ones;
+    // nothing to do while no one else's pointer is showing.
+    const tick = setInterval(() => {
+      setCursors((all) => {
+        const cutoff = Date.now() - STALE_MS;
+        const kept = Object.entries(all).filter(([, c]) => c.at > cutoff);
+        return kept.length === Object.keys(all).length ? all : Object.fromEntries(kept);
+      });
+      setNow((n) => (cursorCount.current ? Date.now() : n));
+    }, 1000);
     return () => {
       cancelled = true;
       unsubscribe();
@@ -124,6 +157,8 @@ export function Presence() {
       clearTimeout(queued);
       window.removeEventListener('pointermove', onMove);
       document.removeEventListener('pointerout', onOut);
+      document.removeEventListener('visibilitychange', onVisibility);
+      window.removeEventListener('pagehide', withdraw);
       channel?.leave();
       connectSignals(null);
       useWindows.getState().setVisitors(null);
@@ -132,6 +167,9 @@ export function Presence() {
 
   const visitors = useWindows((s) => s.visitors);
   const showPointers = useSystem((s) => s.showPointers);
+  const me = useAccount((s) => s.account?.username);
+  /** This member's own other tabs and devices: their pointer is theirs, not someone else's. */
+  const mine = (id: string) => !!me && visitors?.some((v) => v.id === id && v.username === me);
   const whereIs = (id: string) => {
     const v = visitors?.find((v) => v.id === id);
     if (!v) return null;
@@ -143,6 +181,7 @@ export function Presence() {
   return (
     <div className="os-cursors" aria-hidden="true">
       {Object.entries(showPointers ? cursors : {}).map(([id, c]) => {
+        if (mine(id)) return null;
         const where = whereIs(id);
         return (
           <div
