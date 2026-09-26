@@ -69,7 +69,8 @@ export type AppId =
   | 'ipod'
   | 'karaoke'
   | 'chat'
-  | 'account';
+  | 'account'
+  | 'welcome';
 
 export interface Rect {
   x: number;

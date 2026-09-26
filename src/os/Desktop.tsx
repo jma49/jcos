@@ -22,9 +22,13 @@ import { OSDataContext } from './core/context';
 import { launch } from './core/registry';
 import { openFromUrl } from './core/deepLink';
 import { restoreWindows, saveWindowsAsTheyChange } from './core/windowSession';
+import { load, save } from './core/storage';
 import { isPhone, useFocusedId, useWindows } from './core/store';
 import type { OSData } from './core/types';
 import './os.css';
+
+/** Set once the first visit's welcome has been shown. */
+const WELCOMED_KEY = 'os-welcomed';
 
 export default function Desktop({ data }: { data: OSData }) {
   const windows = useWindows((s) => s.windows);
@@ -69,10 +73,17 @@ export default function Desktop({ data }: { data: OSData }) {
   };
 
   // Once the desktop is up, open whatever ?open= names (an app or a project
-  // slug), or put back the windows of the last visit, or greet with About.
+  // slug), or put back the windows of the last visit, or greet with About
+  // (and, the very first time, a welcome).
   useEffect(() => {
     if (booting || Object.keys(useWindows.getState().windows).length > 0) return;
-    const t = setTimeout(() => openFromUrl(data) || restoreWindows() || launch('about'), reduced ? 0 : 250);
+    const greet = () => {
+      launch('about');
+      if (load(WELCOMED_KEY)) return;
+      save(WELCOMED_KEY, '1');
+      launch('welcome');
+    };
+    const t = setTimeout(() => openFromUrl(data) || restoreWindows() || greet(), reduced ? 0 : 250);
     return () => clearTimeout(t);
   }, [booting, reduced, data]);
 

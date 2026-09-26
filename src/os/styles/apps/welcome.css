@@ -1,0 +1,51 @@
+/* ---------- Welcome (a first visit) ---------- */
+
+.os-welcome {
+  padding: 22px 24px 18px;
+  gap: 0;
+  user-select: none;
+}
+
+.os-welcome h2 {
+  margin: 0;
+  font-family: var(--os-display);
+  font-size: 30px;
+  font-weight: 400;
+}
+
+.os-welcome-lead {
+  margin: 6px 0 14px;
+  color: var(--os-dim);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.os-welcome ul {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.os-welcome li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 12.5px;
+  line-height: 1.4;
+}
+
+.os-welcome li .os-icon {
+  flex: none;
+  width: 32px;
+  height: 32px;
+}
+
+.os-welcome footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 16px;
+}
