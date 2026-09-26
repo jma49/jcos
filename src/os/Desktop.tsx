@@ -22,7 +22,7 @@ import { OSDataContext } from './core/context';
 import { launch } from './core/registry';
 import { openFromUrl } from './core/deepLink';
 import { restoreWindows, saveWindowsAsTheyChange } from './core/windowSession';
-import { MOBILE_BREAKPOINT, useFocusedId, useWindows } from './core/store';
+import { isPhone, useFocusedId, useWindows } from './core/store';
 import type { OSData } from './core/types';
 import './os.css';
 
@@ -90,7 +90,7 @@ export default function Desktop({ data }: { data: OSData }) {
           // Only the empty desktop has this menu; windows keep the browser's.
           const target = e.target as HTMLElement;
           if (target !== e.currentTarget && !target.matches('.os-wallpaper, .os-desktop-icons')) return;
-          if (window.innerWidth < MOBILE_BREAKPOINT) return;
+          if (isPhone()) return;
           e.preventDefault();
           setMenuAt({ x: e.clientX, y: e.clientY });
         }}

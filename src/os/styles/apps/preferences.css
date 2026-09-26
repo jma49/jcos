@@ -278,7 +278,7 @@
   color: #fff;
 }
 
-@media (max-width: 767px) {
+@media (max-width: 767px), (max-height: 500px) and (pointer: coarse) {
   .os-prefs-toolbar button {
     min-width: 0;
     flex: 1;

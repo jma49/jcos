@@ -196,7 +196,7 @@
 }
 
 /* Phones: windows fill the screen, so the drawer always slides over the content. */
-@media (max-width: 767px) {
+@media (max-width: 767px), (max-height: 500px) and (pointer: coarse) {
   .os-drawer-slot,
   .os-drawer-slot[data-side] {
     z-index: 5;

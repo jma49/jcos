@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type ComponentType } from 'react';
 import { apps, launch, rectOf } from '../core/registry';
 import { DiskIcon, DocumentIcon, PhotosIcon } from '../core/icons';
-import { MENU_BAR_HEIGHT, MOBILE_BREAKPOINT, useWindows, type IconPositions } from '../core/store';
+import { MENU_BAR_HEIGHT, isPhone, useWindows, type IconPositions } from '../core/store';
 import type { AppId, OSData } from '../core/types';
 
 // The icons down the right of the desktop: a double-click (a tap on a
@@ -57,7 +57,7 @@ export function DesktopIcons({ data }: { data: OSData }) {
   };
 
   const startDrag = (id: string, e: React.PointerEvent<HTMLButtonElement>) => {
-    if (e.button !== 0 || e.pointerType === 'touch' || window.innerWidth < MOBILE_BREAKPOINT) return;
+    if (e.button !== 0 || e.pointerType === 'touch' || isPhone()) return;
     const el = items.current.get(id);
     if (!el) return;
     const start = { x: e.clientX, y: e.clientY };
@@ -88,7 +88,7 @@ export function DesktopIcons({ data }: { data: OSData }) {
   };
 
   // Free-form positions only apply on desktops; phones keep the grid.
-  const free = positions && viewport.w >= MOBILE_BREAKPOINT ? positions : null;
+  const free = positions && !isPhone() ? positions : null;
 
   return (
     <ul className="os-desktop-icons" onPointerDown={(e) => e.target === e.currentTarget && setSelected(null)}>

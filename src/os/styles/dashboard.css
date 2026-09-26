@@ -441,7 +441,7 @@
   filter: brightness(1.06);
 }
 
-@media (max-width: 767px) {
+@media (max-width: 767px), (max-height: 500px) and (pointer: coarse) {
   .os-widget-soapbox {
     width: min(360px, 92vw);
   }

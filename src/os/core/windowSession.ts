@@ -5,7 +5,7 @@
 
 import { apps } from './registry';
 import { loadJSON, saveJSON } from './storage';
-import { DOCK_CLEARANCE, MENU_BAR_HEIGHT, MOBILE_BREAKPOINT, placement, useWindows } from './store';
+import { DOCK_CLEARANCE, MENU_BAR_HEIGHT, isPhone, placement, useWindows } from './store';
 import type { WindowState } from './types';
 
 const KEY = 'os-windows';
@@ -20,7 +20,7 @@ function fit(win: WindowState, index: number): WindowState {
   const { origin: _drop, ...rest } = win;
   const vw = window.innerWidth;
   const vh = window.innerHeight;
-  if (vw < MOBILE_BREAKPOINT) return { ...rest, ...placement(win.width, win.height, index) };
+  if (isPhone()) return { ...rest, ...placement(win.width, win.height, index) };
   const width = Math.min(win.width, vw - 32);
   const height = Math.min(win.height, vh - MENU_BAR_HEIGHT - DOCK_CLEARANCE);
   return {

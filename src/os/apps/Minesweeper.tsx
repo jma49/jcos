@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { AppProps } from '../core/registry';
 import { play } from '../core/sound';
-import { DOCK_CLEARANCE, MENU_BAR_HEIGHT, MOBILE_BREAKPOINT, useWindows } from '../core/store';
+import { DOCK_CLEARANCE, MENU_BAR_HEIGHT, isPhone, useWindows } from '../core/store';
 import { loadSettings, saveJSON } from '../core/storage';
 
 // Minesweeper. The first click is always safe (mines are laid after it),
@@ -95,7 +95,7 @@ export default function Minesweeper({ win }: AppProps) {
 
   /** Grows or shrinks the window to fit a level's board, within the screen. */
   const fitWindow = (next: Level) => {
-    if (window.innerWidth < MOBILE_BREAKPOINT || win.maximized) return;
+    if (isPhone() || win.maximized) return;
     const { cols: c, rows: r } = LEVELS[next];
     const width = Math.min(window.innerWidth - 32, Math.max(400, c * 25 + 60));
     const height = Math.min(window.innerHeight - MENU_BAR_HEIGHT - DOCK_CLEARANCE, r * 25 + 190);

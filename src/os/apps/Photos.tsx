@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { useOSData } from '../core/context';
 import type { AppProps } from '../core/registry';
-import { DOCK_CLEARANCE, MENU_BAR_HEIGHT, MOBILE_BREAKPOINT, useWindows } from '../core/store';
+import { DOCK_CLEARANCE, MENU_BAR_HEIGHT, isPhone, useWindows } from '../core/store';
 import type { OSPhoto, WindowState } from '../core/types';
 import { Drawer } from '../shell/drawer';
 
@@ -83,7 +83,7 @@ export default function Photos({ win }: AppProps) {
   /** Resize the window with a short transition (skipped on phones and when maximized). */
   const resize = (bounds: Pick<WindowState, 'x' | 'y' | 'width' | 'height'>) => {
     const w = useWindows.getState().windows[win.id];
-    if (!w || w.maximized || window.innerWidth < MOBILE_BREAKPOINT) return;
+    if (!w || w.maximized || isPhone()) return;
     const el = root.current?.closest('.os-window');
     el?.classList.add('os-window-fitting');
     setTimeout(() => el?.classList.remove('os-window-fitting'), 400);

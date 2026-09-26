@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { DOCK_CLEARANCE, MENU_BAR_HEIGHT, MOBILE_BREAKPOINT, useWindows } from '../core/store';
+import { DOCK_CLEARANCE, MENU_BAR_HEIGHT, isPhone, useWindows } from '../core/store';
 import type { Rect, WindowState } from '../core/types';
 
 const PAD = 48;
@@ -95,7 +95,7 @@ function useHotCorner() {
         armed = true;
         return;
       }
-      if (!armed || timer || window.innerWidth < MOBILE_BREAKPOINT) return;
+      if (!armed || timer || isPhone()) return;
       timer = window.setTimeout(() => {
         armed = false;
         timer = 0;

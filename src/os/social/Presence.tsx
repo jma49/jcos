@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { CURSOR_COLORS, CURSOR_INTERVAL, getSocial, type Presence as Channel, type Visitor, type VisitorInfo } from './social';
-import { MOBILE_BREAKPOINT, useWindows } from '../core/store';
+import { isPhone, useWindows } from '../core/store';
 import type { Place } from '../ambient/place';
 
 /** A remote cursor fades out after this long without moving. */
@@ -78,7 +78,7 @@ export function Presence() {
       unsubscribe = useWindows.subscribe((state, prev) => {
         if (state.place !== prev.place) channel?.update(infoFor(color, state.place));
       });
-      if (window.innerWidth >= MOBILE_BREAKPOINT) {
+      if (!isPhone()) {
         window.addEventListener('pointermove', onMove);
         document.addEventListener('pointerout', onOut);
       }
