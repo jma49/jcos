@@ -31,7 +31,7 @@ interface Candidate {
 const API = 'https://lrclib.net/api';
 
 /** "[01:23.45] text" lines into sorted LyricLines; a line may carry several stamps. */
-function parseLrc(lrc: string): LyricLine[] {
+export function parseLrc(lrc: string): LyricLine[] {
   const lines: LyricLine[] = [];
   for (const raw of lrc.split(/\r?\n/)) {
     const stamps = [...raw.matchAll(/\[(\d+):(\d+(?:\.\d+)?)\]/g)];
@@ -42,7 +42,7 @@ function parseLrc(lrc: string): LyricLine[] {
   return lines.sort((a, b) => a.time - b.time);
 }
 
-const toCandidate = (e: Entry): Candidate | null => {
+export const toCandidate = (e: Entry): Candidate | null => {
   if (!e.syncedLyrics) return null;
   const lines = parseLrc(e.syncedLyrics);
   // A handful of lines is a placeholder or a test upload, not lyrics.
@@ -88,7 +88,7 @@ function candidates(song: Song): Promise<Candidate[]> {
 }
 
 /** The entry to use: the one closest in length to the video, else lrclib's first. */
-function pick(list: Candidate[], duration: number): LyricLine[] | null {
+export function pick(list: Candidate[], duration: number): LyricLine[] | null {
   if (!list.length) return null;
   if (!duration) return list[0].lines;
   return [...list].sort((a, b) => Math.abs(a.duration - duration) - Math.abs(b.duration - duration))[0].lines;
