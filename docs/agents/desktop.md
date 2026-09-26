@@ -133,7 +133,8 @@ pictures, accent), `media/` (music, lyrics), `social/` (Supabase),
   register it, and add an entry to `APPLETS`.
 - Open windows survive a reload (`src/os/core/windowSession.ts`, saved in
   `os-windows`); `?open=` wins. A first visit gets the Welcome window
-  alone, centred (`os-welcomed`), and About once it's closed.
+  alone, centred (`os-welcomed`); otherwise the desktop starts clear.
+  Nothing opens About by itself.
 - The home page's browser tab says "Jincheng" (`tabTitle` in
   `Layout.astro`); link previews keep the full title.
 - Phones are anything narrower than 768px or a short touch screen (a phone
