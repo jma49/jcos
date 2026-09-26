@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
-import { useReducedMotion } from 'motion/react';
 import { describe, localMinutes, useWeather, type Condition, type Weather } from './weather';
 import { deviceTimeZone, placeLabel, startLocating, usePlace, type Place } from './place';
 import { brightness } from '../look/accent';
+import { useReduceMotion } from '../core/system';
 
 // The desktop follows the sky over the visitor (see place.ts): the
 // wallpaper takes on the light of the hour there (dawn, golden hour, dusk,
@@ -227,7 +227,7 @@ function Lightning() {
 
 /** The tint and weather layers, drawn over the wallpaper and under everything else. */
 export function Sky({ sky, tinted = true }: { sky: SkyState; tinted?: boolean }) {
-  const reduced = useReducedMotion();
+  const reduced = useReduceMotion();
   const mood = MOOD[sky.condition];
   const [r, g, b, a] = sky.tint;
 

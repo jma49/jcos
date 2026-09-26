@@ -57,6 +57,8 @@ export interface AppDefinition {
   internal?: boolean;
   /** A panel rather than an app (About This Mac, the welcome): no Dock icon while open. */
   noDock?: boolean;
+  /** Opened from a menu (System Preferences, from the Apple menu), so not listed as an app. */
+  menuOnly?: boolean;
 }
 
 export const apps: Record<AppId, AppDefinition> = {
@@ -321,15 +323,15 @@ export const apps: Record<AppId, AppDefinition> = {
     Component: lazy(() => import('../apps/Welcome'))
   },
   preferences: {
-    dock: 6,
-    inApplications: true,
+    menuOnly: true,
+    noDock: true,
     name: 'System Preferences',
     Icon: PreferencesIcon,
-    width: 660,
-    height: 560,
+    width: 668,
+    height: 540,
     minWidth: 480,
-    minHeight: 360,
-    Component: lazy(() => import('../apps/Preferences'))
+    minHeight: 380,
+    Component: lazy(() => import('../apps/preferences/Preferences'))
   }
 };
 
@@ -344,8 +346,8 @@ export const mobileDockApps = appIds.filter((id) => apps[id].phoneDock);
 /** Every app that opens by name: from the Terminal's `open` and `?open=`. */
 export const openableApps = appIds.filter((id) => !apps[id].internal);
 
-/** What Spotlight lists as applications (applets are listed separately). */
-export const launcherApps = openableApps.filter((id) => !apps[id].applet);
+/** What Spotlight and a phone's home screen list as applications (applets are listed separately). */
+export const launcherApps = openableApps.filter((id) => !apps[id].applet && !apps[id].menuOnly);
 
 /** Finder's Applications folder. */
 export const applicationApps = appIds.filter((id) => apps[id].inApplications);

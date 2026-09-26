@@ -47,6 +47,43 @@ export const SynthIcon = pngIcon('synth');
 export const FinderIcon = pngIcon('mac');
 export const AppleIcon = pngIcon('apple');
 
+// System Preferences panes.
+export const DesktopPaneIcon = pngIcon('desktop-screen-saver');
+export const AppearancePaneIcon = pngIcon('appearance-pane');
+export const DateTimePaneIcon = pngIcon('international');
+export const DisplaysPaneIcon = pngIcon('displays');
+export const SoundPaneIcon = pngIcon('sound');
+export const AccountsPaneIcon = pngIcon('users');
+export const SharingPaneIcon = pngIcon('screen-sharing');
+export const SoftwareUpdatePaneIcon = pngIcon('software-update');
+export const BackupPaneIcon = pngIcon('backup-restore');
+
+/** The Dock pane: a glass shelf with three icons on it, as Tiger's. Drawn here. */
+export function DockPaneIcon({ size = 64 }: { size?: number }) {
+  // Unique per instance, as for Stickies: a hidden copy's gradients can't be borrowed.
+  const id = `dockpane${useId().replace(/[^\w-]/g, '')}`;
+  return (
+    <svg className="os-icon" width={size} height={size} viewBox="0 0 64 64" aria-hidden="true">
+      <defs>
+        <linearGradient id={`${id}-screen`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#7fb6f0" />
+          <stop offset="1" stopColor="#2b62b8" />
+        </linearGradient>
+        <linearGradient id={`${id}-shelf`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#fff" stopOpacity="0.95" />
+          <stop offset="1" stopColor="#c9d3de" stopOpacity="0.9" />
+        </linearGradient>
+      </defs>
+      <rect x="4" y="8" width="56" height="44" rx="4" fill={`url(#${id}-screen)`} stroke="#1d4687" strokeWidth="1.5" />
+      <path d="M8 44h48l4 10H4z" fill={`url(#${id}-shelf)`} stroke="#8795a6" strokeWidth="1" />
+      <rect x="13" y="33" width="11" height="11" rx="2.5" fill="#e5484d" stroke="#fff" strokeWidth="1" />
+      <rect x="26.5" y="30" width="11" height="14" rx="2.5" fill="#30a46c" stroke="#fff" strokeWidth="1" />
+      <rect x="40" y="33" width="11" height="11" rx="2.5" fill="#ffc53d" stroke="#fff" strokeWidth="1" />
+      <circle cx="32" cy="50" r="1.3" fill="#3b4656" />
+    </svg>
+  );
+}
+
 /** The Music folder: a folder with a note on it, as in Mac OS X's home folder. */
 export function MusicFolderIcon({ size = 64 }: { size?: number }) {
   return (

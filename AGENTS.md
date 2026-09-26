@@ -36,11 +36,22 @@ readers, crawlers and visitors without JavaScript.
   `wallpapers.ts`), Flurry, Soapbox (the latest posts in large type), Starfield,
   Clock or Bounce, after the idle time chosen in System Preferences (two
   minutes by default).
-- `src/os/apps/Preferences.tsx`: System Preferences: desktop picture,
-  screen saver, appearance (light, dark, automatic, or follow the sun
-  where the visitor is) and place. Choices live in `localStorage`
-  (`os-wallpaper`, `os-wallpaper-rotate`, `os-screensaver`, `theme`,
-  `os-place`).
+- `src/os/apps/preferences/`: System Preferences, as Leopard's: a Show
+  All grid of panes in three rows (`panes.ts`, which also gives the words
+  its search field and Spotlight find them by), back and forward, and a
+  window titled after the pane. It opens from the Apple menu only
+  (`menuOnly` in the registry): no Dock icon, not in Applications or on a
+  phone's home screen. Panes: Appearance (light, dark, automatic, or
+  follow the sun where the visitor is), Desktop & Screen Saver, Dock
+  (size, magnification), Date & Time (place, 24-hour clock), Displays
+  (Night Shift, motion), Sound, Accounts, Sharing (city, pointer, AirDrop),
+  Software Update (compares the build with `main` on GitHub) and Backup &
+  Restore (`backup.ts`: every `os-*` setting to a file and back, and a
+  reset). Choices live in `localStorage` (`os-wallpaper`,
+  `os-wallpaper-rotate`, `os-screensaver`, `theme`, `os-place`, and
+  `os-system` for the rest, in `src/os/core/system.ts`). Animations ask
+  `useReduceMotion()` there rather than motion's `useReducedMotion()`, so
+  the Displays pane's choice wins over the device's.
 - The desktop picture changes to another from the same collection each
   time the visitor leaves the tab and comes back (`useDesktopPicture.ts`,
   `nextPicture()` in `wallpapers.ts`); the default moves on to `SCENIC`.
@@ -234,7 +245,8 @@ To add an app: add its id to `AppId` in `src/os/core/types.ts`, write the
 component in `src/os/apps/` (a folder for one with several parts), its
 styles in `src/os/styles/apps/` (imported from `os.css`), and register it
 in `src/os/core/registry.tsx`. The entry says where it appears: `dock`
-(its position), `phoneDock`, `inApplications`, `applet` or `internal`;
+(its position), `phoneDock`, `inApplications`, `applet`, `menuOnly` or
+`internal`;
 Spotlight, the Terminal and `?open=` pick it up by itself. Add a desktop
 shortcut in `Desktop.tsx` if it needs one. Anything remembered in the
 browser goes through `src/os/core/storage.ts`.

@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
-import { animate, motion, useMotionValue, useMotionValueEvent, useReducedMotion, useTransform, type MotionValue } from 'motion/react';
+import { animate, motion, useMotionValue, useMotionValueEvent, useTransform, type MotionValue } from 'motion/react';
 import { albumNamed, coverOf, SONGS, tracksOf } from '../../media/library';
 import type { ScreenInput } from './input';
+import { useReduceMotion } from '../../core/system';
 
 // Cover Flow, as on the iPod classic: the albums stand in a row, the one in
 // front faces you and the rest turn away, each over its reflection. Turn
@@ -86,7 +87,7 @@ export function CoverFlow({
   const [at, setAt] = useState(first);
   const [flipped, setFlipped] = useState(false);
   const [track, setTrack] = useState(0);
-  const reduced = useReducedMotion();
+  const reduced = useReduceMotion();
   const album = ALBUMS[at];
   /** Set while the row is being dragged, so the click that ends a drag doesn't count. */
   const dragging = useRef(false);

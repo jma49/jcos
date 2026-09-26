@@ -8,13 +8,14 @@ import {
   type PointerEvent as ReactPointerEvent,
   type ReactNode
 } from 'react';
-import { animate, motion, useMotionValue, useReducedMotion } from 'motion/react';
+import { animate, motion, useMotionValue } from 'motion/react';
 import { apps } from '../core/registry';
 import { DOCK_CLEARANCE, MENU_BAR_HEIGHT, isPhone, useWindows } from '../core/store';
 import { frameOf } from './Expose';
 import { GENIE_REACH, genieMap, genieSupported } from './genie';
 import { DrawerSlot } from './drawer';
 import type { Rect, WindowState } from '../core/types';
+import { useReduceMotion } from '../core/system';
 
 type Edge = 'e' | 's' | 'se' | 'w' | 'sw';
 
@@ -113,7 +114,7 @@ export function Window({ win, focused, z, exposed }: Props) {
   const drawerSide =
     win.maximized || (roomRight < DRAWER_ROOM && win.x < DRAWER_ROOM) ? 'inside' : roomRight >= DRAWER_ROOM ? 'right' : 'left';
   const def = apps[win.app];
-  const reduced = useReducedMotion();
+  const reduced = useReduceMotion();
   const start = useRef(win);
   const isMobile = isPhone();
 

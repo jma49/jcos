@@ -1,31 +1,125 @@
-/* ---------- System Preferences ---------- */
+/* ---------- System Preferences (Leopard: Show All, back and forward, search) ---------- */
 
 .os-prefs-toolbar {
-  height: auto;
-  gap: 2px;
-  padding: 4px 8px 3px;
+  gap: 8px;
 }
 
-.os-prefs-toolbar button {
+.os-prefs-find {
+  position: relative;
+  margin-left: auto;
+}
+
+.os-prefs-find .os-search-field {
+  margin-left: 0;
+}
+
+/* What the search field finds, under it. */
+.os-root .os-prefs-results {
+  top: 26px;
+  right: 0;
+  left: auto;
+  z-index: 5;
+  min-width: 190px;
+  border-radius: 5px;
+}
+
+.os-prefs-results button {
+  font-size: 12px;
+}
+
+.os-prefs-results li[aria-selected='true'] button {
+  background: color-mix(in srgb, var(--os-accent) 18%, transparent);
+}
+
+.os-prefs-noresult {
+  padding: 2px 20px;
+  color: var(--os-dim);
+  font-size: 12px;
+}
+
+/* Show All: a band per row of panes, as Leopard's. */
+.os-prefs-pane[data-view='all'] {
+  padding: 0;
+}
+
+.os-prefs-all {
+  display: grid;
+}
+
+.os-prefs-row-section {
+  display: grid;
+  padding: 8px 14px 10px;
+  border-bottom: 1px solid var(--os-line-soft);
+}
+
+.os-prefs-row-section:nth-child(even) {
+  background: rgba(0, 0, 0, 0.035);
+}
+
+:root[data-theme='dark'] .os-prefs-row-section:nth-child(even) {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.os-prefs-row-section h3 {
+  margin: 0 0 4px;
+  color: var(--os-dim);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.os-prefs-row-section ul {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 96px);
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.os-prefs-all button {
+  position: relative;
   display: grid;
   justify-items: center;
-  gap: 1px;
-  min-width: 84px;
-  padding: 3px 6px 2px;
-  border-radius: 5px;
-  color: #111;
+  gap: 4px;
+  width: 96px;
+  padding: 6px 2px 4px;
+  border-radius: 6px;
+  color: var(--os-ink);
   font-size: 11px;
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+  line-height: 1.2;
+  text-align: center;
+  transition: opacity 0.2s ease;
 }
 
-:root[data-theme='dark'] .os-prefs-toolbar button {
-  color: #eee;
-  text-shadow: none;
+.os-prefs-all button .os-icon {
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.25));
 }
 
-.os-prefs-toolbar button[aria-selected='true'] {
-  background: rgba(0, 0, 0, 0.14);
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.25);
+.os-prefs-all button:hover,
+.os-prefs-all button:focus-visible {
+  background: color-mix(in srgb, var(--os-accent) 14%, transparent);
+}
+
+/* Searching dims every pane and lights up the ones it finds. */
+.os-prefs-all[data-searching] button:not([data-found]) {
+  opacity: 0.3;
+}
+
+.os-prefs-all button[data-found]::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  top: -6px;
+  left: 50%;
+  translate: -50% 0;
+  width: 62px;
+  height: 62px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.95) 35%, color-mix(in srgb, var(--os-accent) 30%, transparent) 60%, transparent 72%);
+}
+
+.os-prefs-all ul li {
+  isolation: isolate;
 }
 
 .os-prefs-pane {
@@ -34,15 +128,224 @@
   color: var(--os-ink);
 }
 
-.os-prefs-section + .os-prefs-section {
-  margin-top: 18px;
-  padding-top: 14px;
-  border-top: 1px solid var(--os-line-soft);
+.os-prefs-section + .os-prefs-section,
+.os-prefs-section + .os-prefs-note {
+  margin-top: 14px;
 }
 
 .os-prefs-section h3 {
-  margin: 0 0 10px;
-  font-size: 13px;
+  margin: 0 0 6px 2px;
+  font-size: 12px;
+}
+
+/* A group of settings, recessed into the window as Leopard's are. */
+.os-prefs-box {
+  padding: 12px 14px;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.045);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.14), inset 0 0 0 1px rgba(0, 0, 0, 0.08);
+}
+
+:root[data-theme='dark'] .os-prefs-box {
+  background: rgba(255, 255, 255, 0.04);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+
+.os-prefs-box > :last-child {
+  margin-bottom: 0;
+}
+
+/* Label on the left, right-aligned; the control beside it. */
+.os-prefs-form {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  align-items: center;
+  justify-items: start;
+  gap: 10px 10px;
+  font-size: 12px;
+}
+
+.os-prefs-form > span,
+.os-prefs-form > label {
+  justify-self: end;
+}
+
+.os-prefs-slider input[type='range'] {
+  width: 180px;
+}
+
+.os-prefs-slider small {
+  color: var(--os-dim);
+  font-size: 11px;
+}
+
+.os-prefs-radios + .os-prefs-note,
+.os-prefs-row + .os-prefs-note {
+  margin-top: 10px;
+}
+
+/* Tabs across the top of a pane (Desktop & Screen Saver). */
+.os-prefs-tabs {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+.os-prefs-radios label[data-disabled] {
+  opacity: 0.5;
+}
+
+/* Date & Time: a clock beside the facts. */
+.os-prefs-place {
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+}
+
+.os-prefs-clock {
+  flex: none;
+  width: 104px;
+  height: 104px;
+  color: #222;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.25));
+}
+
+.os-prefs-clock-rim {
+  fill: #cfcfcf;
+  stroke: #8a8a8a;
+  stroke-width: 1;
+}
+
+.os-prefs-clock-face {
+  fill: #fff;
+  stroke: #b5b5b5;
+  stroke-width: 1;
+}
+
+.os-prefs-clock-tick {
+  stroke: #333;
+}
+
+:root[data-theme='dark'] .os-prefs-clock {
+  color: #eee;
+}
+
+:root[data-theme='dark'] .os-prefs-clock-rim {
+  fill: #555;
+  stroke: #222;
+}
+
+:root[data-theme='dark'] .os-prefs-clock-face {
+  fill: #1d1d1f;
+  stroke: #444;
+}
+
+:root[data-theme='dark'] .os-prefs-clock-tick {
+  stroke: #ddd;
+}
+
+/* Dock: a strip of desktop with the Dock on it, at the chosen size. */
+.os-prefs-dock-preview {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  height: 92px;
+  margin-bottom: 12px;
+  border-radius: 4px;
+  background: linear-gradient(color-mix(in srgb, var(--os-accent) 55%, #0b1a3a), color-mix(in srgb, var(--os-accent) 30%, #e8eef6));
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+}
+
+.os-prefs-dock-shelf {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: calc(var(--size) + 8px);
+  margin-bottom: 4px;
+  padding: 0 6px 4px;
+  border-radius: 10px;
+  background: linear-gradient(rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.22));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6), 0 0 0 0.5px rgba(0, 0, 0, 0.22);
+  transition: height 0.2s ease;
+}
+
+.os-prefs-dock-shelf > span {
+  display: block;
+  transition: width 0.2s ease, height 0.2s ease;
+}
+
+.os-prefs-dock-shelf .os-icon {
+  width: 100%;
+  height: 100%;
+}
+
+/* Accounts. */
+.os-prefs-account {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 12px;
+}
+
+.os-prefs-account > div {
+  display: grid;
+  flex: 1;
+  gap: 2px;
+}
+
+.os-prefs-account strong {
+  font-size: 14px;
+}
+
+.os-prefs-account small {
+  color: var(--os-dim);
+}
+
+.os-prefs-avatar {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(hsl(var(--hue) 70% 70%), hsl(var(--hue) 60% 45%));
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3), inset 0 0 0 2px #fff;
+  color: #fff;
+  font-size: 21px;
+  font-weight: 700;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.os-prefs-perks,
+.os-prefs-changes {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding-left: 18px;
+  list-style: disc;
+  font-size: 12px;
+}
+
+.os-prefs-changes {
+  margin-bottom: 10px;
+  color: var(--os-dim);
+}
+
+/* Software Update. */
+.os-prefs-update {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.os-prefs-update > div {
+  flex: 1;
+  min-width: 0;
+}
+
+.os-prefs-update a {
+  color: var(--os-accent);
+  font-family: ui-monospace, Menlo, monospace;
 }
 
 .os-prefs-pictures {
@@ -279,9 +582,21 @@
 }
 
 @media (max-width: 767px), (max-height: 500px) and (pointer: coarse) {
-  .os-prefs-toolbar button {
-    min-width: 0;
-    flex: 1;
+  .os-prefs-find .os-search-field {
+    width: 120px;
+  }
+
+  .os-prefs-row-section ul {
+    grid-template-columns: repeat(auto-fill, minmax(86px, 1fr));
+  }
+
+  .os-prefs-all button {
+    width: auto;
+  }
+
+  .os-prefs-place {
+    flex-direction: column;
+    align-items: center;
   }
 
   .os-prefs-saver-body {

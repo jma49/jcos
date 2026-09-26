@@ -7,6 +7,7 @@ import { useChatState } from './chatState';
 import { connectSignals, deliverSignal } from './signals';
 import { useAirDrop } from './airdrop';
 import { isDM, type Account } from './types';
+import { useSystem } from '../core/system';
 
 /** A remote cursor fades out after this long without moving. */
 const IDLE_MS = 4000;
@@ -25,13 +26,15 @@ export function flag(country?: string) {
 }
 
 /**
- * What others see about this visitor: a colour, their city once located,
- * their username if they're signed in, the public chat room they have
- * open (never a private conversation) and whether AirDrop can reach them.
+ * What others see about this visitor: a colour, their city once located
+ * (unless Sharing in System Preferences says not to), their username if
+ * they're signed in, the public chat room they have open (never a private
+ * conversation) and whether AirDrop can reach them.
  */
 function infoFor(color: string, place: Place | null, account: Account | null, room: string | null): VisitorInfo {
   const info: VisitorInfo = { color };
-  if (place && place.source !== 'fallback') Object.assign(info, { city: place.city, country: place.country });
+  const shareCity = useSystem.getState().shareCity;
+  if (place && place.source !== 'fallback' && shareCity) Object.assign(info, { city: place.city, country: place.country });
   if (account) info.username = account.username;
   if (room && !isDM(room)) info.room = room;
   if (useAirDrop.getState().discoverable === 'none') info.airdrop = false;
@@ -68,7 +71,7 @@ export function Presence() {
       channel?.moveCursor(x, y);
     };
     const onMove = (e: PointerEvent) => {
-      if (e.pointerType === 'mouse') send(e.clientX / window.innerWidth, e.clientY / window.innerHeight);
+      if (e.pointerType === 'mouse' && useSystem.getState().sharePointer) send(e.clientX / window.innerWidth, e.clientY / window.innerHeight);
     };
     const onOut = (e: PointerEvent) => !e.relatedTarget && send(-1, -1);
 
@@ -98,7 +101,12 @@ export function Presence() {
         useWindows.subscribe((state, prev) => state.place !== prev.place && refresh()),
         useAccount.subscribe((state, prev) => state.account !== prev.account && refresh()),
         useChatState.subscribe((state, prev) => state.room !== prev.room && refresh()),
-        useAirDrop.subscribe((state, prev) => state.discoverable !== prev.discoverable && refresh())
+        useAirDrop.subscribe((state, prev) => state.discoverable !== prev.discoverable && refresh()),
+        useSystem.subscribe((state, prev) => {
+          if (state.shareCity !== prev.shareCity) refresh();
+          // Take the pointer away from others' screens straight away.
+          if (!state.sharePointer && prev.sharePointer) send(-1, -1);
+        })
       ];
       unsubscribe = () => stops.forEach((stop) => stop());
       if (!isPhone()) {
@@ -123,6 +131,7 @@ export function Presence() {
   }, []);
 
   const visitors = useWindows((s) => s.visitors);
+  const showPointers = useSystem((s) => s.showPointers);
   const whereIs = (id: string) => {
     const v = visitors?.find((v) => v.id === id);
     if (!v) return null;
@@ -133,7 +142,7 @@ export function Presence() {
 
   return (
     <div className="os-cursors" aria-hidden="true">
-      {Object.entries(cursors).map(([id, c]) => {
+      {Object.entries(showPointers ? cursors : {}).map(([id, c]) => {
         const where = whereIs(id);
         return (
           <div
