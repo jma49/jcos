@@ -1,5 +1,5 @@
-# Checks every pull request and every push to main: the unit tests and a
-# production build, and the database's rules against a real Postgres.
+# Checks every pull request and every push to main: the types, the unit
+# tests and a production build, and the database's rules against a real Postgres.
 name: CI
 
 on:
@@ -16,7 +16,7 @@ concurrency:
 
 jobs:
   test:
-    name: Tests and build
+    name: Types, tests and build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -25,6 +25,7 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - run: npm run check
       - run: npm test
       - run: npm run build
 
