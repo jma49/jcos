@@ -1,10 +1,10 @@
 ---
-title: majincheng.com
-description: 就是这个网站。用 Astro 做的中英双语个人主页，几乎不加载 JavaScript。
+title: JM/OS
+description: 就是这个网站：一个在浏览器里运行的 Mac OS X 风格桌面，账号、聊天室和留言板都跑在 Supabase 上。
 date: 2026-09
 status: live
 order: 3
-stack: [Astro, TypeScript, Tailwind CSS, Vercel]
+stack: [Astro, React, TypeScript, Supabase, Vercel]
 repo: https://github.com/jma49/jmos
 cover: ../covers/majincheng-com.jpg
 demo: https://www.majincheng.com/zh/
