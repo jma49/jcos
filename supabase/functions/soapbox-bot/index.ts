@@ -43,6 +43,8 @@ interface Place {
 const HOME: Place = { city: 'San Jose', country: 'US', latitude: 37.3382, longitude: -121.8863, timeZone: 'America/Los_Angeles' };
 /** Images Telegram sends as files that can become pictures. */
 const IMAGE_TYPES: Record<string, string> = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'image/gif': 'gif' };
+/** The public storage bucket photos are copied into. */
+const BUCKET = 'soapbox';
 /** The largest picture kept: the bucket's limit, and well inside the 20 MB bots can download. */
 const MAX_BYTES = 10 * 1024 * 1024;
 
@@ -188,6 +190,17 @@ async function telegram(method: string, params: Record<string, unknown>) {
   return data.result;
 }
 
+/** Makes the public bucket photos go in, as the migration describes it. */
+async function makeBucket() {
+  const res = await fetch(`${SUPABASE_URL}/storage/v1/bucket`, {
+    method: 'POST',
+    headers: { apikey: SERVICE_KEY, authorization: `Bearer ${SERVICE_KEY}`, 'content-type': 'application/json' },
+    body: JSON.stringify({ id: BUCKET, name: BUCKET, public: true, file_size_limit: MAX_BYTES, allowed_mime_types: Object.keys(IMAGE_TYPES) })
+  });
+  // Someone (another photo of the album) may have just made it.
+  if (!res.ok && !/already exists|Duplicate/i.test(await res.text())) throw new Error(`bucket: ${res.status}`);
+}
+
 /** The width and height of a PNG, GIF, WebP or JPEG, read from its header; zeros if unknown. */
 function dimensions(bytes: Uint8Array): { width: number; height: number } {
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
@@ -247,13 +260,22 @@ async function pictureOf(message: Message): Promise<Picture | null | 'unsupporte
   if (!size.width) size = dimensions(bytes);
 
   const path = `${new Date().toISOString().slice(0, 7)}/${message.message_id}-${file.file_unique_id}.${ext}`;
-  const upload = await fetch(`${SUPABASE_URL}/storage/v1/object/soapbox/${path}`, {
-    method: 'POST',
-    headers: { apikey: SERVICE_KEY, authorization: `Bearer ${SERVICE_KEY}`, 'content-type': type, 'x-upsert': 'true' },
-    body: bytes
-  });
-  if (!upload.ok) throw new Error(`upload: ${upload.status} ${await upload.text()}`);
-  return { url: `${SUPABASE_URL}/storage/v1/object/public/soapbox/${path}`, ...size, message: message.message_id };
+  const put = () =>
+    fetch(`${SUPABASE_URL}/storage/v1/object/${BUCKET}/${path}`, {
+      method: 'POST',
+      headers: { apikey: SERVICE_KEY, authorization: `Bearer ${SERVICE_KEY}`, 'content-type': type, 'x-upsert': 'true' },
+      body: bytes
+    });
+  let upload = await put();
+  // No bucket yet (the migration's insert into storage.buckets doesn't take on every project): make it, then try again.
+  if (!upload.ok) {
+    const text = await upload.text();
+    if (!/NoSuchBucket|Bucket not found/i.test(text)) throw new Error(`upload: ${upload.status} ${text}`);
+    await makeBucket();
+    upload = await put();
+    if (!upload.ok) throw new Error(`upload: ${upload.status} ${await upload.text()}`);
+  }
+  return { url: `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${path}`, ...size, message: message.message_id };
 }
 
 async function handle(message: Message, edited: boolean) {

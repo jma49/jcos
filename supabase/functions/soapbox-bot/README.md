@@ -61,7 +61,9 @@ asks for the token (without echoing it) and your user ID, and does steps
 
 Stickers, voice messages and videos are answered with a note that they
 can't go on the Soapbox. Photos are copied into the public `soapbox`
-bucket (Storage), so they stay up even if the Telegram message goes.
+bucket (Storage), so they stay up even if the Telegram message goes;
+the bot makes the bucket on the first photo if it isn't there. When a
+post fails, the bot's reply says which step failed and why.
 
 After deploying a new version of the function, nothing else changes:
 the webhook and secrets stay as they are. Deploy from an up-to-date
