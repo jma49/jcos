@@ -5,6 +5,7 @@ import { loadJSON, saveJSON } from '../core/storage';
 import { clockTimeZone, usePlace } from '../ambient/place';
 import type { AppProps } from '../core/registry';
 import { play } from '../core/sound';
+import { useFocusedId } from '../core/store';
 
 // Soapbox: Jincheng's own notes and rants, sent from Telegram (see
 // supabase/functions/soapbox-bot). Visitors read and react: members (signed
@@ -61,8 +62,22 @@ function Pictures({ images, onOpen }: { images: PostImage[]; onOpen: (index: num
 }
 
 /** A photo from a post, large, over the feed; the arrow keys step through the post's others. */
-function Lightbox({ images, index, onStep, onClose }: { images: PostImage[]; index: number; onStep: (i: number) => void; onClose: () => void }) {
+function Lightbox({
+  images,
+  index,
+  front,
+  onStep,
+  onClose
+}: {
+  images: PostImage[];
+  index: number;
+  /** Whether Soapbox is the front window; only then do the keys belong to it. */
+  front: boolean;
+  onStep: (i: number) => void;
+  onClose: () => void;
+}) {
   useEffect(() => {
+    if (!front) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
       else if (e.key === 'ArrowRight' && images.length > 1) onStep((index + 1) % images.length);
@@ -72,7 +87,7 @@ function Lightbox({ images, index, onStep, onClose }: { images: PostImage[]; ind
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [images.length, index, onStep, onClose]);
+  }, [front, images.length, index, onStep, onClose]);
 
   return (
     <div className="os-soapbox-lightbox" role="dialog" aria-label="Photo" onClick={onClose}>
@@ -164,7 +179,8 @@ function PostCard({
   );
 }
 
-export default function Soapbox(_: AppProps) {
+export default function Soapbox({ win }: AppProps) {
+  const front = useFocusedId() === win.id;
   const [load, setLoad] = useState<Load>({ state: 'loading' });
   const [filter, setFilter] = useState<Filter>('all');
   const [viewing, setViewing] = useState<{ images: PostImage[]; index: number } | null>(null);
@@ -286,6 +302,7 @@ export default function Soapbox(_: AppProps) {
         <Lightbox
           images={viewing.images}
           index={viewing.index}
+          front={front}
           onStep={(index) => setViewing({ ...viewing, index })}
           onClose={() => setViewing(null)}
         />
