@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { DOCK_CLEARANCE, MENU_BAR_HEIGHT, isPhone, useWindows } from '../core/store';
 import type { Rect, WindowState } from '../core/types';
@@ -111,10 +111,77 @@ function useHotCorner() {
   }, []);
 }
 
-/** The dimmed backdrop and window titles shown while Exposé is open. */
+type Direction = 'ArrowLeft' | 'ArrowRight' | 'ArrowUp' | 'ArrowDown';
+
+/** The window nearest `from` in a direction, favouring ones straight ahead. */
+function nearest(layout: Record<string, Rect>, from: string, direction: Direction) {
+  const centre = (r: Rect) => ({ x: r.x + r.width / 2, y: r.y + r.height / 2 });
+  const a = centre(layout[from]);
+  let best: string | null = null;
+  let bestScore = Infinity;
+  for (const [id, rect] of Object.entries(layout)) {
+    if (id === from) continue;
+    const b = centre(rect);
+    const dx = b.x - a.x;
+    const dy = b.y - a.y;
+    const ahead = direction === 'ArrowLeft' ? -dx : direction === 'ArrowRight' ? dx : direction === 'ArrowUp' ? -dy : dy;
+    const aside = direction === 'ArrowLeft' || direction === 'ArrowRight' ? Math.abs(dy) : Math.abs(dx);
+    if (ahead <= 0) continue;
+    const score = ahead + aside * 2;
+    if (score < bestScore) {
+      best = id;
+      bestScore = score;
+    }
+  }
+  return best;
+}
+
+/**
+ * The dimmed backdrop and window titles shown while Exposé is open. The
+ * arrow keys move a highlight between the windows (the mouse does too) and
+ * Return brings the highlighted one forward.
+ */
 export function Expose({ layout }: { layout: Record<string, Rect> | null }) {
   const windows = useWindows((s) => s.windows);
+  const [picked, setPicked] = useState<string | null>(null);
   useHotCorner();
+
+  // Start on the window that was in front.
+  const open = layout !== null;
+  useEffect(() => {
+    if (!open) return setPicked(null);
+    setPicked([...useWindows.getState().order].reverse().find((id) => layout?.[id]) ?? null);
+  }, [open]);
+
+  useEffect(() => {
+    if (!layout) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Enter' && picked) {
+        e.preventDefault();
+        const s = useWindows.getState();
+        s.setExpose(false);
+        s.focus(picked);
+      } else if (picked && ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) {
+        e.preventDefault();
+        setPicked(nearest(layout, picked, e.key as Direction) ?? picked);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [layout, picked]);
+
+  // The mouse moves the highlight too.
+  useEffect(() => {
+    if (!layout) return;
+    const onMove = (e: PointerEvent) => {
+      const hit = Object.entries(layout).find(([, r]) => e.clientX >= r.x && e.clientX <= r.x + r.width && e.clientY >= r.y && e.clientY <= r.y + r.height);
+      if (hit) setPicked(hit[0]);
+    };
+    window.addEventListener('pointermove', onMove);
+    return () => window.removeEventListener('pointermove', onMove);
+  }, [layout]);
+
+  const ring = picked && layout?.[picked];
 
   return (
     <AnimatePresence>
@@ -128,10 +195,18 @@ export function Expose({ layout }: { layout: Record<string, Rect> | null }) {
           transition={{ duration: 0.25 }}
           onClick={() => useWindows.getState().setExpose(false)}
         >
+          {ring && (
+            <span
+              className="os-expose-ring"
+              aria-hidden="true"
+              style={{ left: ring.x - 6, top: ring.y - 6, width: ring.width + 12, height: ring.height + 12 }}
+            />
+          )}
           {Object.entries(layout).map(([id, rect]) => (
             <span
               key={id}
               className="os-expose-label"
+              data-picked={id === picked || undefined}
               style={{ left: rect.x + rect.width / 2, top: rect.y + rect.height + 8 }}
             >
               {windows[id]?.title}

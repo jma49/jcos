@@ -37,3 +37,22 @@
 .os-window[data-exposed]:hover {
   box-shadow: 0 0 0 6px rgba(120, 170, 255, 0.85), 0 10px 30px rgba(0, 0, 0, 0.45);
 }
+
+/* The window the arrow keys (or the mouse) are on: a glow in the accent. */
+.os-expose-ring {
+  position: absolute;
+  border-radius: 10px;
+  box-shadow: 0 0 0 3px var(--os-accent), 0 0 24px 4px color-mix(in srgb, var(--os-accent) 60%, transparent);
+  pointer-events: none;
+  transition: left 0.18s, top 0.18s, width 0.18s, height 0.18s;
+}
+
+.os-expose-label[data-picked] {
+  background: var(--os-select-grad);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .os-expose-ring {
+    transition: none;
+  }
+}
