@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useOSData } from '../core/context';
 import type { AppProps } from '../core/registry';
+import { launch } from '../core/registry';
 import { useWindows, type Appearance } from '../core/store';
 import { choosePlace, clockTimeZone, HOME, placeLabel, usePlace, usesFahrenheit } from '../ambient/place';
 import { PlaceSearch } from '../ambient/PlaceSearch';
@@ -256,6 +257,9 @@ function MaterialPicker() {
 function AppearancePane() {
   const appearance = useWindows((s) => s.appearance);
   const setAppearance = useWindows((s) => s.setAppearance);
+  // Without a place yet (or in `astro dev`), the sun is San Jose's: say so.
+  const place = usePlace();
+  const guessing = !place || place.source === 'fallback';
   return (
     <>
       <section className="os-prefs-section">
@@ -267,6 +271,14 @@ function AppearancePane() {
               <span>
                 <strong>{a.name}</strong>
                 <small>{a.blurb}</small>
+                {a.value === 'sun' && appearance === 'sun' && guessing && (
+                  <small className="os-prefs-hint">
+                    We don’t know where you are yet, so this follows the sun in {HOME.city}.{' '}
+                    <button type="button" className="os-link" onClick={() => launch('preferences', { props: { pane: 'location' } })}>
+                      Pick a city…
+                    </button>
+                  </small>
+                )}
               </span>
             </label>
           ))}
