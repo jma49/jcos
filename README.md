@@ -39,6 +39,7 @@ npm run dev        # http://localhost:4321
 npm test           # unit tests (Vitest)
 npm run test:db    # database rules against a local Postgres (needs psql)
 npm run build      # -> dist/
+npm run test:smoke # opens every app in the build, fails on any error (after a build)
 npm run perf       # load, drag and idle budgets, against `npx astro preview` (after a build)
 ```
 
