@@ -4,6 +4,7 @@ import {
   AccountIcon,
   AirDropIcon,
   PhotoBoothIcon,
+  SynthIcon,
   ChatIcon,
   AppletStoreIcon,
   CalculatorIcon,
@@ -253,6 +254,17 @@ export const apps: Record<AppId, AppDefinition> = {
     minWidth: 420,
     minHeight: 460,
     Component: lazy(() => import('../apps/PhotoBooth'))
+  },
+  synth: {
+    applet: true,
+    material: 'metal',
+    name: 'Synth',
+    Icon: SynthIcon,
+    width: 640,
+    height: 380,
+    minWidth: 520,
+    minHeight: 340,
+    Component: lazy(() => import('../apps/Synth'))
   },
   account: {
     name: 'Account',

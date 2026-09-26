@@ -40,6 +40,14 @@ export const APPLETS: Applet[] = [
     description:
       'A four-function calculator with an LCD and Aqua keys. It chains operations, repeats the last one when you press = again, rounds away floating-point noise, and follows your keyboard.',
     added: '2026-09-26'
+  },
+  {
+    app: 'synth',
+    category: 'Utilities',
+    tagline: 'A little synthesizer you play with your keyboard.',
+    description:
+      'Two octaves of keys, played with the mouse or with your computer’s keys (A to K for the white notes, W to U for the black). Pick a waveform or a preset, shape the attack and release, add some echo, and watch the wave on the oscilloscope. It follows the sound switch in the menu bar.',
+    added: '2026-09-27'
   }
 ];
 

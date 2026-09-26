@@ -42,6 +42,7 @@ export const AppletsFolderIcon = pngIcon('applets');
 export const DocumentsFolderIcon = pngIcon('documents');
 export const AirDropIcon = pngIcon('airdrop');
 export const PhotoBoothIcon = pngIcon('photo-booth');
+export const SynthIcon = pngIcon('synth');
 
 /** The Music folder: a folder with a note on it, as in Mac OS X's home folder. */
 export function MusicFolderIcon({ size = 64 }: { size?: number }) {

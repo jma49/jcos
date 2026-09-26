@@ -1,0 +1,150 @@
+/* ---------- Synth ---------- */
+
+.os-synth {
+  --black: 5.2%;
+  background: transparent;
+  user-select: none;
+}
+
+.os-synth-panel {
+  flex: none;
+  display: flex;
+  gap: 12px;
+  padding: 4px 10px 8px;
+}
+
+/* A green-on-black oscilloscope, set into the metal. */
+.os-synth-scope {
+  flex: none;
+  width: 220px;
+  height: 90px;
+  border-radius: 4px;
+  background: radial-gradient(ellipse at 50% 40%, #0f2a1a, #050d08);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6), inset 0 2px 6px rgba(0, 0, 0, 0.8), 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+.os-synth-controls {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 11px;
+}
+
+.os-synth-controls > label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.os-synth-knobs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px 12px;
+}
+
+.os-synth-knobs label {
+  display: grid;
+  grid-template-columns: 44px 1fr;
+  align-items: center;
+  gap: 4px;
+}
+
+.os-synth-knobs input {
+  width: 100%;
+  min-width: 0;
+}
+
+.os-synth-status {
+  flex: none;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 0 12px 4px;
+  color: var(--os-dim);
+  font-size: 11px;
+}
+
+.os-synth-status kbd {
+  padding: 0 4px;
+  border-radius: 3px;
+  background: rgba(0, 0, 0, 0.08);
+  font: 10px var(--os-ui);
+}
+
+.os-synth-keys {
+  position: relative;
+  flex: 1;
+  min-height: 110px;
+  display: flex;
+  margin: 0 10px 10px;
+  padding: 8px 6px 6px;
+  border-radius: 6px;
+  background: linear-gradient(#2a2a2c, #111);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  touch-action: none;
+}
+
+.os-root .os-synth-white {
+  position: relative;
+  flex: 1;
+  margin: 0 1px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 6px;
+  border-radius: 0 0 4px 4px;
+  background: linear-gradient(#f4f4f4, #ffffff 80%, #e2e2e2);
+  box-shadow: inset 0 -3px 0 #cfcfcf, 0 1px 1px rgba(0, 0, 0, 0.5);
+  color: #999;
+  font-size: 10px;
+}
+
+.os-root .os-synth-white[data-held] {
+  background: linear-gradient(#dcdcdc, #eaeaea);
+  box-shadow: inset 0 -1px 0 #bbb, inset 0 3px 6px rgba(0, 0, 0, 0.2);
+}
+
+.os-root .os-synth-black {
+  position: absolute;
+  top: 8px;
+  z-index: 1;
+  width: var(--black);
+  height: 58%;
+  margin-left: 6px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 4px;
+  border-radius: 0 0 3px 3px;
+  background: linear-gradient(#2c2c2e, #0b0b0c 85%, #3a3a3c);
+  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.6), inset 0 -3px 0 #000, inset 1px 0 0 rgba(255, 255, 255, 0.12);
+  color: #888;
+  font-size: 9px;
+}
+
+.os-root .os-synth-black[data-held] {
+  background: linear-gradient(#111, #2a2a2c);
+  box-shadow: inset 0 -1px 0 #000;
+}
+
+/* The keys glow in the accent while held. */
+.os-root .os-synth-white[data-held] span,
+.os-root .os-synth-black[data-held] span {
+  color: var(--os-accent);
+}
+
+@media (max-width: 767px), (max-height: 500px) and (pointer: coarse) {
+  .os-synth-panel {
+    flex-direction: column;
+  }
+
+  .os-synth-scope {
+    width: 100%;
+  }
+
+  .os-synth-keys span {
+    display: none;
+  }
+}

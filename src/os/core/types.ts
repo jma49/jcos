@@ -71,6 +71,7 @@ export type AppId =
   | 'chat'
   | 'airdrop'
   | 'photobooth'
+  | 'synth'
   | 'account'
   | 'welcome';
 
