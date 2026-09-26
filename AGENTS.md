@@ -127,8 +127,20 @@ readers, crawlers and visitors without JavaScript.
 - `src/os/core/notices.ts` and `shell/Notices.tsx`: Growl-style
   notifications (chat mentions, AirDrop offers). `shell/ContextMenu.tsx`
   is the right-click menu the desktop and Finder share.
+- `src/os/apps/PhotoBooth.tsx`: the camera with CSS-filter effects, a
+  countdown and one or four pictures, kept in `os-photobooth` (the last
+  eight, as small JPEGs). The camera is only on while the window is open.
+- `src/os/apps/Synth.tsx`: an applet synthesizer on the shared
+  AudioContext (`audio()` in `sound.ts`); it follows the sound switch
+  and volume, and a note turns sound on. Settings in `os-synth`.
+- `src/os/apps/AboutThisMac.tsx`: the Apple menu's About This Mac.
+  `__JMOS_BUILD__` (defined in `astro.config.mjs` from Vercel's
+  `VERCEL_GIT_COMMIT_SHA`) is the build's short commit hash.
+- The Terminal (`apps/Terminal.tsx`) has a working folder on Macintosh
+  HD (`cd`, `pwd`, `ls`, `cat`, `open <path>`), and the Dock and the
+  desktop share `shell/ContextMenu.tsx` for their right-click menus.
 - `src/os/core/applets.ts` and `apps/AppletStore.tsx`: the Applet Store's
-  catalog (Minesweeper, Tile Game, Calculator) and which applets this
+  catalog (Minesweeper, Tile Game, Calculator, Synth) and which applets this
   browser has installed (`os-applets`). Installed applets appear in
   Finder's Applets folder and Spotlight. To add one, write the app,
   register it, and add an entry to `APPLETS`.
