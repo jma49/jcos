@@ -14,7 +14,7 @@ interface Cursor {
 }
 
 /** "🇯🇵" for "JP"; empty for anything that isn't a two-letter code. */
-function flag(country?: string) {
+export function flag(country?: string) {
   if (!country || !/^[A-Z]{2}$/.test(country)) return '';
   return String.fromCodePoint(...[...country].map((c) => 0x1f1a5 + c.charCodeAt(0)));
 }
