@@ -9,7 +9,7 @@ import {
   type PointerEvent as ReactPointerEvent,
   type ReactNode
 } from 'react';
-import { animate, motion, useMotionValue } from 'motion/react';
+import { animate, m, useMotionValue } from 'motion/react';
 import { apps } from '../core/registry';
 import { DOCK_CLEARANCE, MENU_BAR_HEIGHT, isPhone, useWindows } from '../core/store';
 import { frameOf } from './Expose';
@@ -252,15 +252,17 @@ export const Window = memo(function Window({ win, focused, z, exposed }: Props) 
     return () => controls.stop();
   }, [genie, win.minimized, warp]);
 
+  // Every target names the same values: one that a target leaves out goes
+  // back to its `initial`, which put windows in Exposé at their opening size.
   const shown = { x: 0, y: 0, scale: 1, scaleX: 1, scaleY: 1, opacity: 1 };
   const target = genie
     ? win.minimized
       ? { x: genie.dx, y: genie.dy, scale: 1, scaleX: 0.12, scaleY: 0.04, opacity: 0, transition: GENIE_IN }
       : { ...shown, transition: GENIE_OUT }
     : win.minimized
-      ? { ...towards(rect, dockTarget()), opacity: 0 }
+      ? { ...shown, ...towards(rect, dockTarget()), opacity: 0 }
       : exposed
-        ? { ...towards(rect, exposed), opacity: 1 }
+        ? { ...shown, ...towards(rect, exposed), opacity: 1 }
         : shown;
 
   // Exposé moves windows even with reduced motion, just without the animation.
@@ -270,7 +272,7 @@ export const Window = memo(function Window({ win, focused, z, exposed }: Props) 
   };
 
   return (
-    <motion.section
+    <m.section
       role="dialog"
       aria-label={win.title}
       data-focused={focused}
@@ -347,7 +349,7 @@ export const Window = memo(function Window({ win, focused, z, exposed }: Props) 
           <div {...resizeHandle('sw')} />
         </>
       )}
-    </motion.section>
+    </m.section>
   );
 });
 

@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { AnimatePresence, motion } from 'motion/react';
+import { AnimatePresence, m } from 'motion/react';
 import { dismiss, NOTICE_SECONDS, useNotices, type Notice } from '../core/notices';
 
 /** One Growl-style bubble. Without buttons it goes by itself after a few seconds. */
@@ -12,7 +12,7 @@ function Bubble({ notice }: { notice: Notice }) {
   }, [notice.id, timed]);
 
   return (
-    <motion.div
+    <m.div
       layout
       className="os-notice"
       role={timed ? 'status' : 'alertdialog'}
@@ -62,7 +62,7 @@ function Bubble({ notice }: { notice: Notice }) {
           </div>
         )}
       </div>
-    </motion.div>
+    </m.div>
   );
 }
 

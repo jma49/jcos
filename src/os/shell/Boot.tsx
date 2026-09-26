@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { motion } from 'motion/react';
+import { m } from 'motion/react';
 
 /** The grey boot screen, once per session. */
 export function Boot({ onDone }: { onDone: () => void }) {
@@ -8,19 +8,19 @@ export function Boot({ onDone }: { onDone: () => void }) {
     return () => clearTimeout(timer);
   }, [onDone]);
   return (
-    <motion.div className="os-boot" exit={{ opacity: 0 }} transition={{ duration: 0.45 }}>
-      <motion.div
+    <m.div className="os-boot" exit={{ opacity: 0 }} transition={{ duration: 0.45 }}>
+      <m.div
         className="os-boot-mark"
         initial={{ opacity: 0, scale: 0.92 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
       >
         JM
-      </motion.div>
+      </m.div>
       <div className="os-boot-bar">
-        <motion.span initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} transition={{ duration: 1.2, ease: [0.65, 0, 0.35, 1] }} />
+        <m.span initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} transition={{ duration: 1.2, ease: [0.65, 0, 0.35, 1] }} />
       </div>
-    </motion.div>
+    </m.div>
   );
 }
 

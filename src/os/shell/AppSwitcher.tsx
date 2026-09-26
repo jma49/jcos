@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { AnimatePresence, motion } from 'motion/react';
+import { AnimatePresence, m } from 'motion/react';
 import { apps } from '../core/registry';
 import { isPhone, useWindowList, useWindows } from '../core/store';
 
@@ -74,7 +74,7 @@ export function AppSwitcher() {
   return (
     <AnimatePresence>
       {shown && shown.length > 0 && (
-        <motion.div
+        <m.div
           className="os-switcher"
           role="listbox"
           aria-label="Open windows"
@@ -105,7 +105,7 @@ export function AppSwitcher() {
             })}
           </ul>
           <p>{selected ? windows[selected].title : ''}</p>
-        </motion.div>
+        </m.div>
       )}
     </AnimatePresence>
   );
