@@ -1,5 +1,5 @@
 // Measures the desktop the way a visitor meets it, for the self-audit
-// after a significant change (see AGENTS.md). Run it against a
+// after a significant change (docs/agents/self-audit.md). Run it against a
 // production build:
 //
 //   npm run build && npx astro preview --port 4321 &
