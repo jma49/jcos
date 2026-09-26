@@ -9,9 +9,13 @@ import {
   DocumentIcon,
   DocumentsFolderIcon,
   FolderIcon,
+  IPodIcon,
+  MusicFolderIcon,
   PhotosIcon
 } from './icons';
 import type { AppId, OSData } from './types';
+import { ALBUMS, SONGS, coverOf, tracksOf } from '../media/library';
+import { useMusic } from '../media/music';
 
 export interface FileNode {
   /** Absolute path, e.g. "/Applications/Photos". */
@@ -27,6 +31,8 @@ export interface FileNode {
   /** Folders list their contents; everything else opens. */
   children?: FileNode[];
   open?: (el: Element | null) => void;
+  /** What Quick Look shows besides the name and kind: a picture and a line or two. */
+  look?: { image?: string; lines?: string[] };
 }
 
 
@@ -53,6 +59,7 @@ export function buildDisk(data: OSData, applets: AppId[]): FileNode {
       Icon: PhotosIcon,
       thumb: p.thumb,
       date: p.taken,
+      look: { image: p.full, lines: [p.alt] },
       open: (el) => launch('photos', { origin: rectOf(el), props: { photo: p.id } })
     };
   });
@@ -63,9 +70,42 @@ export function buildDisk(data: OSData, applets: AppId[]): FileNode {
     kind: p.status === 'wip' ? 'Project · in progress' : 'Project',
     Icon: apps.project.Icon,
     thumb: p.cover,
+    look: { image: p.cover, lines: [p.description, p.stack.join(' · ')] },
     open: (el) =>
       launch('project', { key: `project:${p.slug}`, title: p.title, origin: rectOf(el), props: { slug: p.slug } })
   }));
+
+  const song = (dir: string, index: number, queue: number[]): FileNode => {
+    const s = SONGS[index];
+    const name = s.track ? `${String(s.track).padStart(2, '0')} ${s.title}` : `${s.artist} - ${s.title}`;
+    return {
+      path: `${dir}/${s.id}`,
+      name: `${name}.m4a`,
+      kind: 'MPEG-4 audio',
+      Icon: IPodIcon,
+      thumb: coverOf(s),
+      look: { image: coverOf(s), lines: [s.title, [s.artist, s.album].filter(Boolean).join(' — ')] },
+      open: (el) => {
+        useMusic.getState().play('ipod', index, queue);
+        launch('ipod', { origin: rectOf(el) });
+      }
+    };
+  };
+  const albums: FileNode[] = ALBUMS.map((a) => {
+    const tracks = tracksOf(a);
+    return {
+      path: `/Music/${encodeURIComponent(a.title)}`,
+      name: a.title,
+      kind: 'Album',
+      Icon: MusicFolderIcon,
+      thumb: a.cover,
+      date: `${a.year}-01-01`,
+      look: { image: a.cover, lines: [`${a.artist} · ${a.year}`, ...(a.note ? [a.note] : [])] },
+      children: tracks.map((i) => song(`/Music/${encodeURIComponent(a.title)}`, i, tracks))
+    };
+  });
+  const singles = SONGS.flatMap((s, i) => (ALBUMS.some((a) => a.title === s.album) ? [] : [i]));
+  const music: FileNode[] = [...albums, ...singles.map((i) => song('/Music', i, singles))];
 
   const documents: FileNode[] = [
     { ...appFile('/Documents', 'about', 'Plain text'), name: 'About Me.txt', Icon: apps.about.Icon },
@@ -89,6 +129,7 @@ export function buildDisk(data: OSData, applets: AppId[]): FileNode {
       folder('Applications', ApplicationsFolderIcon, applicationApps.map((a) => appFile('/Applications', a)).sort(byName)),
       folder('Applets', AppletsFolderIcon, applets.filter((a) => a in apps).map((a) => appFile('/Applets', a, 'Applet')).sort(byName)),
       folder('Documents', DocumentsFolderIcon, documents),
+      folder('Music', MusicFolderIcon, music),
       folder('Pictures', PhotosIcon, photos),
       folder('Projects', FolderIcon, projects)
     ]

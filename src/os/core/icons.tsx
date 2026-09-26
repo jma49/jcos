@@ -42,6 +42,23 @@ export const AppletsFolderIcon = pngIcon('applets');
 export const DocumentsFolderIcon = pngIcon('documents');
 export const AirDropIcon = pngIcon('airdrop');
 
+/** The Music folder: a folder with a note on it, as in Mac OS X's home folder. */
+export function MusicFolderIcon({ size = 64 }: { size?: number }) {
+  return (
+    <span className="os-icon os-icon-stack" style={{ width: size, height: size }} aria-hidden="true">
+      <FolderIcon size={size} />
+      <svg viewBox="0 0 64 64" width={size} height={size}>
+        <path
+          d="M38 22v18.5a5 5 0 1 1-3-4.6V26l-10 2.4v14.6a5 5 0 1 1-3-4.6V24.6z"
+          fill="#3d6fa8"
+          opacity="0.55"
+          transform="translate(4 6)"
+        />
+      </svg>
+    </span>
+  );
+}
+
 /** Stickies: a stack of notes. Drawn here; ryOS has no Stickies icon. */
 export function StickiesIcon({ size = 64 }: { size?: number }) {
   // Unique per instance: the icon shows in several places at once, and a

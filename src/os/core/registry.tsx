@@ -157,7 +157,7 @@ export const apps: Record<AppId, AppDefinition> = {
     height: 480,
     minWidth: 440,
     minHeight: 300,
-    Component: lazy(() => import('../apps/Finder'))
+    Component: lazy(() => import('../apps/finder/Finder'))
   },
   appstore: {
     inApplications: true,
