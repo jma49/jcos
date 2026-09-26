@@ -14,6 +14,9 @@
 --   at once. Only the bot (service role) calls it.
 -- • The "soapbox" storage bucket holds the pictures, readable by anyone
 --   who has a picture's address; only the service role writes to it.
+--   On some projects the insert into storage.buckets below doesn't take;
+--   the bot then makes the bucket itself on the first photo (or make it
+--   in Storage › New bucket: "soapbox", public).
 
 alter table public.soapbox_posts add column if not exists images jsonb not null default '[]'::jsonb;
 alter table public.soapbox_posts add column if not exists media_group_id text unique;
