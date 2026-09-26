@@ -65,6 +65,12 @@ async function hashOf(token: string) {
   return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, '0')).join('');
 }
 
+/** Keeps the function alive for work that finishes after the response (Supabase's EdgeRuntime). */
+function inBackground(work: Promise<unknown>) {
+  const runtime = (globalThis as { EdgeRuntime?: { waitUntil?: (p: Promise<unknown>) => void } }).EdgeRuntime;
+  runtime?.waitUntil?.(work);
+}
+
 const escape = (text: string) => text.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
 
 async function sendLink(to: string, username: string, token: string) {
@@ -94,8 +100,10 @@ async function request(username: unknown) {
   if (!USERNAME.test(name)) return reply({ error: 'A username is 3 to 20 letters, digits or underscores.' }, 400);
   const token = newToken();
   const address: string | null = await rpc('recovery_request', { p_username: name, p_token_hash: await hashOf(token) });
-  // A failed send is logged, not reported: an error would give away that the account has an address.
-  if (address) await sendLink(address, name, token).catch((error) => console.error(error));
+  // The mail goes out after the answer, so neither an error nor the time
+  // it takes gives away that the account has an address; a failed send is
+  // only logged.
+  if (address) inBackground(sendLink(address, name, token).catch((error) => console.error(error)));
   return reply({ ok: true });
 }
 

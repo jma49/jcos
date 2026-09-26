@@ -35,6 +35,7 @@ globalThis.fetch = async (input, init = {}) => {
   const body = init.body ? JSON.parse(init.body) : null;
   if (url === 'https://api.resend.com/emails') {
     assert.equal(init.headers.authorization, 'Bearer re_test');
+    if (world.mailGate) await world.mailGate;
     if (world.mailFails) return json({ message: 'domain not verified' }, 403);
     world.mail.push(body);
     return json({ id: 'm1' });
@@ -63,11 +64,15 @@ globalThis.fetch = async (input, init = {}) => {
 };
 
 let handler;
+/** Work the function left running after its answer (the email), as Supabase's EdgeRuntime keeps it. */
+const background = [];
+globalThis.EdgeRuntime = { waitUntil: (work) => background.push(work) };
 globalThis.Deno = { env: { get: (name) => env[name] }, serve: (h) => (handler = h) };
 await import('./index.ts');
 
 const call = async (body, method = 'POST') => {
   const res = await handler(new Request('https://fn.example', { method, body: method === 'POST' ? JSON.stringify(body) : undefined }));
+  await Promise.all(background.splice(0));
   return { status: res.status, body: res.status === 204 ? null : await res.json(), cors: res.headers.get('access-control-allow-origin') };
 };
 /** The token in the link of the last email sent. */
@@ -85,6 +90,17 @@ test('a link goes to the recovery address, and only its hash is kept', async () 
   const token = tokenInMail();
   assert.equal(world.links[0].hash, sha256(token));
   assert.ok(!JSON.stringify(world.links).includes(token));
+});
+
+test('the answer doesn’t wait for the email', async () => {
+  let release;
+  world.mailGate = new Promise((resolve) => (release = resolve));
+  const res = await handler(new Request('https://fn.example', { method: 'POST', body: JSON.stringify({ action: 'request', username: 'alice' }) }));
+  assert.equal(res.status, 200);
+  assert.equal(world.mail.length, 0, 'answered before the email went');
+  release();
+  await Promise.all(background.splice(0));
+  assert.equal(world.mail.length, 1);
 });
 
 test('every request gets the same answer, link or not', async () => {
