@@ -9,8 +9,7 @@ descriptions, issues, code comments, documentation, and file names.
 
 The only exceptions are content that is Chinese by nature:
 - the Chinese copy of the site: the `zh` entries in
-  `src/i18n/content.ts`, `src/content/projects/zh/` and the Chinese
-  résumé PDF;
+  `src/i18n/content.ts` and `src/content/projects/zh/`;
 - proper names in data, such as song titles and artists in
   `src/data/songs.json`, which may also be quoted in the docs;
 - patterns that have to match Chinese text, such as the lyric credits in

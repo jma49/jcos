@@ -145,8 +145,8 @@ export const content = {
       email: 'Email',
       github: 'GitHub',
       linkedin: 'LinkedIn',
-      resume: 'Résumé (PDF)',
-      resumeHref: '/Jincheng_Ma_Resume.pdf',
+      resume: 'Résumé',
+      resumeHref: '/?open=resume',
       photography: 'Photography'
     },
     footer: {
@@ -284,8 +284,8 @@ export const content = {
       email: '邮箱',
       github: 'GitHub',
       linkedin: '领英',
-      resume: '简历（PDF）',
-      resumeHref: '/Jincheng_Ma_Resume_CN.pdf',
+      resume: '简历',
+      resumeHref: '/?open=resume',
       photography: '摄影作品'
     },
     footer: {

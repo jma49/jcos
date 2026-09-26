@@ -25,7 +25,7 @@ export const GET: APIRoute = async ({ site }) => {
     '',
     '## Links',
     '',
-    `- [Résumé (PDF)](${url(t.links.resumeHref)})`,
+    `- [${t.links.resume}](${url(t.links.resumeHref)})`,
     `- [GitHub](${profile.github})`,
     `- [LinkedIn](${profile.linkedin})`,
     `- [Photography](${profile.photography})`,
