@@ -38,7 +38,7 @@ A test suite runs about fifty of these rules against a real Postgres in CI, and 
 
 A desktop full of apps can still load like a page:
 
-- about 170 KB of JavaScript (gzipped) on a first visit, under a 180 KB budget, with every app loaded only when it's opened;
+- about 155 KB of JavaScript (gzipped) on a first visit, under a 160 KB budget, with every app loaded only when it's opened;
 - 0.95 MB of images, down from 2.2 MB after I found the desktop picture being downloaded twice;
 - dragging a window with six apps open went from 640 ms of script to 210 ms, once only the dragged window re-rendered.
 

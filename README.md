@@ -118,9 +118,10 @@ rather than opening an issue.
 
 ## Performance
 
-A first visit downloads about 170 KB of JavaScript (gzipped), one
+A first visit downloads about 155 KB of JavaScript (gzipped), one
 desktop picture and two subset fonts. Everything else loads when it's
-first used: each app, the Supabase client and the screen savers.
+first used, or once the desktop has settled: each app, the Supabase
+client, the Dashboard and the screen savers.
 Dragging a window re-renders only that window. `npm run perf` checks
 these budgets:
 - what a first visit downloads;

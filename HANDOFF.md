@@ -148,9 +148,8 @@ ryOS (AGPL-3.0).
     - the screen saver's views load lazily; an idle desktop costs about
       10 ms of script in five seconds.
 
-    What's left is framework weight: react-dom (65 KB gzip) and motion
-    (40 KB). Motion could shrink with `LazyMotion`, at the cost of
-    touching every animated component.
+    What's left is mostly framework weight: react-dom (67 KB gzip).
+    Motion now loads lean through `LazyMotion` (#85).
     Known and accepted:
     - Presence names are the client's own claim (a signed-out visitor
       could show up as "jincheng" on a cursor or in AirDrop). Signals
@@ -174,9 +173,10 @@ ryOS (AGPL-3.0).
    (#81); pointers stop past 12 people on the desktop (crowd mode). Open:
    - 18 `exhaustive-deps` warnings from `npm run lint`, left alone since
      most effects deliberately run on one trigger; review one by one.
-   - First-visit JavaScript is 172 of 180 KB. The next addition to the
-     first screen needs something taken out (motion's `LazyMotion` is
-     the largest candidate).
+   - First-visit JavaScript went from 172 to 154 KB (LazyMotion, #85;
+     the Dashboard and screen saver after the desktop settles, #86), and
+     the budget from 180 to 160. The song and wallpaper catalogues (about
+     5 KB together) stay: they're read synchronously in ten places.
    - Considered and not done: a spec template for changes, `llms.txt` in
      robots.txt (no crawler reads it there), splitting the largest app
      components.
