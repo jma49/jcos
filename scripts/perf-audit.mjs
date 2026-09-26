@@ -2,8 +2,8 @@
 // after a significant change (docs/agents/self-audit.md). Run it against a
 // production build:
 //
-//   npm run build && npx astro preview --port 4321 &
-//   npm run perf                      # or: node scripts/perf-audit.mjs <url>
+//   npm run build && npm run perf     # serves dist/ itself
+//   node scripts/perf-audit.mjs <url> # or measures a running site
 //
 // It reports three things, each compared with its budget:
 //   load  what a first visit downloads (initial JS gzip, images, fonts)
