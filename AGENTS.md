@@ -264,16 +264,55 @@ The Chinese site is offline for now: `/zh/*` redirects to the English
 paths (`vercel.json`). Keep the `zh` content in `content.ts` and the
 Chinese project files; they will be used again.
 
+## Security
+
+- The browser holds only the public key; the database enforces every
+  rule. A new table gets row-level security, `revoke all` from `anon`
+  and `authenticated`, and column-level grants for exactly what the site
+  reads and writes.
+- Functions that bypass row-level security are `security definer` with
+  `set search_path = public`, and have `execute` revoked from `public`,
+  `anon` and `authenticated` unless the site calls them. Ones only an
+  Edge Function calls are granted to `service_role` alone.
+- A limit that counts rows before inserting ("three a day") takes a
+  transaction-scoped advisory lock for whoever it limits first
+  (`pg_advisory_xact_lock`), or concurrent requests all get through.
+  Add a race for it in `supabase/tests/race.sh`, and a site-wide cap
+  where many accounts together could flood it.
+- Private data (recovery addresses, reset tokens, secrets) lives in the
+  `private` schema, which the API doesn't expose. Keep tokens as hashes.
+- Secrets (service role, Telegram, Resend) exist only as Supabase Edge
+  Function secrets; nothing server-side goes in `PUBLIC_*` variables,
+  Vercel or the repository. `.env` is ignored; `.env.example` lists
+  what's safe.
+- Presence and signals are unauthenticated claims: check shape and
+  size, tie a name to the sender's own presence, and throttle anything
+  that notifies.
+- Anything a visitor wrote renders as text: links only for `http(s)`,
+  never `dangerouslySetInnerHTML` (project Markdown, built at build time,
+  is the one exception).
+- Security headers are set in `vercel.json`. Dependabot proposes updates
+  weekly; review majors (Astro, Vite) with a full build and the tests.
+
+## README
+
+`README.md` is the project's front page: what JM/OS is, how to run and
+configure it, the backend setup, the layout, security and scripts. Update
+it in the same pull request as any major change: a new part of the
+desktop, a new service, secret or setup step, a new top-level folder or
+script, or a changed command.
+
 ## Tests
 
 `npm test` runs the unit tests (Vitest, `*.test.ts` next to the code,
-and `supabase/functions/soapbox-bot/bot.test.mjs`); keep game rules and
+and each Edge Function's `*.test.mjs`); keep game rules and
 other logic worth testing in plain modules without React (as
 `apps/spider/rules.ts` and `apps/pinball/table.ts` are). `npm run
 test:db` checks the database's rules (`supabase/tests/rules.sql`)
-against a local Postgres; add a check there with every new rule or
-migration. CI (`.github/workflows/ci.yml`) runs both and the build on
-every pull request.
+against a local Postgres, then races the per-member limits with
+overlapping sessions (`supabase/tests/race.sh`); add a check there with
+every new rule or migration. CI (`.github/workflows/ci.yml`) runs both
+and the build on every pull request.
 
 ## Commits
 
