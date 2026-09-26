@@ -219,7 +219,7 @@ export default function Spider({ win }: AppProps) {
     setTimeout(() => setLit((l) => (l === h ? null : l)), 1600);
   };
 
-  // Keyboard: ⌥Z undo, H hint, D deal, N new game.
+  // Keyboard: ⌥Z undo, H hint, D deal, F2 new game (as on Windows; a letter would be too easy to hit).
   useEffect(() => {
     if (!front) return;
     const onKey = (e: KeyboardEvent) => {
@@ -230,7 +230,7 @@ export default function Spider({ win }: AppProps) {
       } else if (!e.altKey && !e.metaKey && !e.ctrlKey) {
         if (e.code === 'KeyH') showHint();
         else if (e.code === 'KeyD') deal();
-        else if (e.code === 'KeyN') restart();
+        else if (e.code === 'F2') restart();
       }
     };
     window.addEventListener('keydown', onKey);
@@ -281,7 +281,7 @@ export default function Spider({ win }: AppProps) {
   return (
     <div ref={root} className="os-app os-spider">
       <div className="os-toolbar">
-        <button type="button" className="os-button" onClick={() => restart()} title="New game (N)">
+        <button type="button" className="os-button" onClick={() => restart()} title="New game (F2)">
           New Game
         </button>
         <select value={suits} onChange={(e) => restart(Number(e.target.value) as Suits)} aria-label="Difficulty">

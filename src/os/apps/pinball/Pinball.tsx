@@ -7,7 +7,7 @@ import { BALL, flip, H, newGame, plunge, pull, RANKS, SEGMENTS, step, TARGETS, t
 
 // Pinball: the table (table.ts) drawn on a canvas, tilted back for depth,
 // with the score, balls and rank beside it. Z and / (or the arrow keys, or
-// Shift) are the flippers, Space pulls and lets go of the plunger, N
+// Shift) are the flippers, Space pulls and lets go of the plunger, F2
 // starts over. On a phone, tap either half for a flipper. The game pauses
 // while the window isn't in front.
 
@@ -273,7 +273,7 @@ export default function Pinball({ win }: AppProps) {
       else if (RIGHT.has(e.code)) flip(s, 1, down, sound);
       else if (PLUNGE.has(e.code)) {
         if (!e.repeat) plunge(s, down, sound);
-      } else if (down && (e.code === 'KeyN' || e.code === 'F2')) restart();
+      } else if (down && e.code === 'F2') restart();
       else return;
       e.preventDefault();
     };
@@ -289,14 +289,25 @@ export default function Pinball({ win }: AppProps) {
     };
   }, [front]);
 
-  // Touch and mouse: a press on either half of the table works that flipper.
+  // Touch and mouse: a press on either half of the table works that
+  // flipper until that finger lifts, wherever it has moved to.
+  const pressing = useRef(new Map<number, 0 | 1>());
   const pointer = (down: boolean) => (e: React.PointerEvent<HTMLCanvasElement>) => {
     const s = game.current;
-    if (s.over) return;
-    const r = e.currentTarget.getBoundingClientRect();
-    const side = e.clientX - r.left < r.width / 2 ? 0 : 1;
-    if (down) e.currentTarget.setPointerCapture(e.pointerId);
-    flip(s, side, down, sound);
+    if (down) {
+      if (s.over) return;
+      const r = e.currentTarget.getBoundingClientRect();
+      const side = e.clientX - r.left < r.width / 2 ? 0 : 1;
+      e.currentTarget.setPointerCapture(e.pointerId);
+      pressing.current.set(e.pointerId, side);
+      flip(s, side, true, sound);
+      return;
+    }
+    const side = pressing.current.get(e.pointerId);
+    if (side === undefined) return;
+    pressing.current.delete(e.pointerId);
+    // The other finger may still be holding the same flipper.
+    if (![...pressing.current.values()].includes(side)) flip(s, side, false, sound);
   };
 
   return (
@@ -348,7 +359,7 @@ export default function Pinball({ win }: AppProps) {
             Hold to Launch
           </button>
         )}
-        <span>Z and / flip · Space launches · N new game</span>
+        <span>Z and / flip · Space launches · F2 new game</span>
       </div>
     </div>
   );
