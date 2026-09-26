@@ -7,7 +7,7 @@ import { PlaceSearch } from '../PlaceSearch';
 import { SAVER_STYLES, SAVER_VIEWS } from '../Screensaver';
 import { play } from '../sound';
 import { ACCENTS, cachedAccent, type AccentChoice } from '../accent';
-import { backgroundFor, COVER, PATTERNS, SKY, SOLID_COLORS } from '../wallpapers';
+import { backgroundFor, COVER, PATTERNS, PICTURE_SETS, setOf, SKY, SOLID_COLORS, tileBackground, TILES } from '../wallpapers';
 import { coverOf, SONGS, useMusic } from '../music';
 import { useSky } from '../Sky';
 
@@ -31,7 +31,8 @@ const IDLE_CHOICES = [
   { minutes: 0, label: 'Never' }
 ];
 
-type Collection = 'desktop' | 'photos' | 'colors' | 'patterns' | 'dynamic';
+/** A built-in collection, or the id of a ryOS set (PICTURE_SETS, TILES). */
+type Collection = string;
 
 interface Picture {
   /** What's stored: null for the default picture, a URL, or color:/pattern:/dynamic: (wallpapers.ts). */
@@ -45,6 +46,8 @@ interface Picture {
 const COLLECTIONS: { id: Collection; name: string }[] = [
   { id: 'desktop', name: 'Desktop Pictures' },
   { id: 'photos', name: 'Jincheng’s Photos' },
+  ...PICTURE_SETS.map((set) => ({ id: set.id, name: set.name })),
+  { id: TILES.id, name: TILES.name },
   { id: 'colors', name: 'Solid Colors' },
   { id: 'patterns', name: 'Patterns' },
   { id: 'dynamic', name: 'Dynamic' }
@@ -55,7 +58,8 @@ function collectionOf(value: string | null, photoUrls: Set<string>): Collection 
   if (value.startsWith('color:')) return 'colors';
   if (value.startsWith('pattern:')) return 'patterns';
   if (value.startsWith('dynamic:')) return 'dynamic';
-  return photoUrls.has(value) ? 'photos' : 'desktop';
+  if (photoUrls.has(value)) return 'photos';
+  return setOf(value)?.id ?? 'desktop';
 }
 
 function DesktopPane() {
@@ -72,6 +76,8 @@ function DesktopPane() {
   const nowCover = playing ?? coverOf(SONGS[0]);
 
   const pictures: Record<Collection, Picture[]> = {
+    ...Object.fromEntries(PICTURE_SETS.map((set) => [set.id, set.items])),
+    [TILES.id]: TILES.items.map((t) => ({ value: t.value, name: t.name, background: tileBackground(t.value) })),
     desktop: [{ value: null, name: 'Stones', thumb: data.wallpaper }],
     photos: data.photos.map((p) => ({ value: p.full, name: p.alt, thumb: p.thumb })),
     colors: SOLID_COLORS.map((c) => ({ value: `color:${c.id}`, name: c.name, background: backgroundFor(`color:${c.id}`, '', sky) })),

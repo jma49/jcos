@@ -50,7 +50,9 @@ readers, crawlers and visitors without JavaScript.
   `data-backdrop` on `.os-root`. It turns opaque over a zoomed window and
   on phones while an app is open. The Apple logo is tinted with the
   accent.
-- `src/os/wallpapers.ts`: desktop pictures besides photos: solid
+- `src/os/wallpapers.ts`: desktop pictures besides photos: ryOS's photo
+  collections and tiles (`public/os/wallpapers/`, listed in
+  `src/data/wallpapers.json`; photos are WebP, at most 2560px wide), solid
   colours, SVG/CSS patterns and a dynamic sky that follows the sun and
   weather at the visitor's place. The store keeps a photo URL or
   `color:<id>`, `pattern:<id>`, `dynamic:sky`; `backgroundFor()` turns

@@ -7,6 +7,8 @@ GNU Affero General Public License v3.0:
   public/os/icons/*        Mac OS X–style icons (from public/icons/macosx)
   public/os/fonts/*        Lucida Grande, Apple Garamond and Monaco font files
   src/assets/os/stones.jpg Desktop wallpaper (from public/wallpapers/photos/nature)
+  public/os/wallpapers/*   Desktop pictures and tiles (from public/wallpapers;
+                           photos re-encoded as WebP, thumbnails and tiles as is)
 
 These assets reproduce Apple's Mac OS X look. Apple, Mac, Mac OS, Aqua,
 Lucida Grande, Monaco and the Apple logo are trademarks of Apple Inc.,

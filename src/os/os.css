@@ -172,6 +172,11 @@
   transition: background 2s linear;
 }
 
+/* Tiny tiles are pixel art: enlarge them with hard edges. */
+.os-wallpaper[data-pixel] {
+  image-rendering: pixelated;
+}
+
 /* Now Playing: the cover, blurred into a wash of its colours. Overhanging
    the screen keeps the blur from fading at the edges. */
 .os-wallpaper[data-blur] {

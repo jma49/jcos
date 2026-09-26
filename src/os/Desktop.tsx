@@ -12,7 +12,7 @@ import { Presence } from './Presence';
 import { AppSwitcher } from './AppSwitcher';
 import { watchWindows } from './sound';
 import { ACCENTS, accentFromPicture, cachedAccent, cachedTopBrightness, DEFAULT_ACCENT, topBrightness } from './accent';
-import { accentForGenerated, backgroundFor, COVER, isPicture, nextPicture, SKY, topBrightnessOfGenerated } from './wallpapers';
+import { accentForGenerated, backgroundFor, COVER, isPicture, isPixelTile, nextPicture, SKY, topBrightnessOfGenerated } from './wallpapers';
 import { coverOf, SONGS, useMusic } from './music';
 import { OSDataContext } from './context';
 import { apps, launch, rectOf } from './registry';
@@ -434,6 +434,7 @@ export default function Desktop({ data }: { data: OSData }) {
             className="os-wallpaper"
             aria-hidden="true"
             data-blur={showsCover || undefined}
+            data-pixel={isPixelTile(chosen) || undefined}
             style={{ background: backgroundFor(chosen, data.wallpaper, sky, cover) }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
