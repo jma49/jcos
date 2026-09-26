@@ -3,7 +3,7 @@ import { AnimatePresence, LazyMotion, MotionConfig, domAnimation, m } from 'moti
 import { Dock } from './shell/Dock';
 import { MenuBar } from './shell/MenuBar';
 import { Spotlight } from './shell/Spotlight';
-import { Dashboard } from './shell/Dashboard';
+import { DashboardLayer } from './shell/DashboardLayer';
 import { Window } from './shell/Window';
 import { Expose, exposeLayout } from './shell/Expose';
 import { Screensaver } from './shell/Screensaver';
@@ -139,7 +139,7 @@ function Shell({ data }: { data: OSData }) {
         <WindowLayer />
 
         <Dock />
-        <Dashboard />
+        <DashboardLayer />
         <Spotlight />
         <AppSwitcher />
         <Screensaver />
