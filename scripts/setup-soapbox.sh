@@ -35,7 +35,7 @@ echo "✓ Function deployed"
 curl -fsS "https://api.telegram.org/bot${TOKEN}/setWebhook" \
   --data-urlencode "url=${FUNCTION_URL}" \
   --data-urlencode "secret_token=${SECRET}" \
-  --data-urlencode 'allowed_updates=["message","edited_message"]' \
+  --data-urlencode 'allowed_updates=["message","edited_message","callback_query"]' \
   --data-urlencode 'drop_pending_updates=true' >/dev/null
 echo "✓ Webhook set"
 
@@ -44,6 +44,7 @@ curl -fsS "https://api.telegram.org/bot${TOKEN}/setMyCommands" -H 'content-type:
   {"command":"note","description":"Post a note"},
   {"command":"at","description":"Stamp posts with a city, e.g. /at Tokyo"},
   {"command":"delete","description":"Hide the post you reply to, or the latest"},
+  {"command":"watch","description":"New notes and chat messages here: on or off"},
   {"command":"help","description":"What I can do"}]}' >/dev/null
 echo "✓ Commands menu set"
 
