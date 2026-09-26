@@ -1,0 +1,56 @@
+/* ---------- Desktop icons ---------- */
+
+.os-desktop-icons {
+  position: absolute;
+  top: 36px;
+  right: 14px;
+  bottom: 100px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap-reverse;
+  align-content: flex-start;
+  gap: 10px;
+}
+
+/* Dragged somewhere by the visitor. */
+.os-desktop-icon-free {
+  position: fixed;
+}
+
+.os-desktop-icons button {
+  width: 96px;
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  border-radius: 6px;
+}
+
+.os-desktop-icons .os-icon {
+  filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.35));
+}
+
+.os-desktop-icons span {
+  max-width: 100%;
+  padding: 0 5px;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9), 0 0 6px rgba(0, 0, 0, 0.5);
+}
+
+.os-desktop-icons button[data-selected='true'] .os-icon {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 6px;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.3);
+}
+
+.os-desktop-icons button[data-selected='true'] span {
+  background: var(--os-select);
+  text-shadow: none;
+}

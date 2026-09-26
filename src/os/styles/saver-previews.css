@@ -1,0 +1,85 @@
+/* ---------- Screensavers: Starfield and Clock ---------- */
+
+.os-saver-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background: #000;
+}
+
+.os-saver-clock-stage {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: radial-gradient(ellipse at 50% 40%, #13213a, #000 75%);
+  container-type: size;
+}
+
+.os-saver-clock {
+  position: absolute;
+  display: grid;
+  justify-items: center;
+  gap: 0.4em;
+  color: #fff;
+  font-size: clamp(8px, 2.2cqw, 22px);
+  text-align: center;
+  white-space: nowrap;
+  transform: translate(-50%, -50%);
+}
+
+.os-saver-clock strong {
+  font-family: var(--os-display);
+  font-size: 5em;
+  font-weight: 400;
+  line-height: 1;
+}
+
+.os-saver-clock span {
+  opacity: 0.7;
+}
+
+/* Soapbox screen saver: one post at a time, in large type. */
+.os-saver-quote-stage {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 8%;
+  background: radial-gradient(ellipse at 50% 45%, #2a2622, #0b0a09 75%);
+  container-type: size;
+}
+
+.os-saver-quote {
+  max-width: 34em;
+  margin: 0;
+  color: #f3eee6;
+  font-size: clamp(7px, 2.4cqw, 26px);
+  text-align: center;
+}
+
+.os-saver-quote-kind {
+  display: inline-block;
+  margin-bottom: 1em;
+  padding: 0.15em 0.8em;
+  border: 1px solid rgba(243, 238, 230, 0.35);
+  border-radius: 1em;
+  font-size: 0.55em;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+
+.os-saver-quote blockquote {
+  margin: 0;
+  font-family: var(--os-display);
+  font-size: 1.6em;
+  line-height: 1.3;
+  white-space: pre-wrap;
+}
+
+.os-saver-quote figcaption {
+  margin-top: 1.2em;
+  font-size: 0.6em;
+  opacity: 0.6;
+}

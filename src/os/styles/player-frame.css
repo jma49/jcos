@@ -1,0 +1,19 @@
+/* ---------- Music players: hiding YouTube's chrome ---------- */
+
+/* 300px taller than its host and centred on it: the video, letterboxed to
+   the player's width, fills the host while YouTube's title bar (top) and
+   logo (bottom) sit in the strips that are cut off. */
+.os-player-frame {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -150px;
+  bottom: -150px;
+}
+
+.os-player-frame iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}

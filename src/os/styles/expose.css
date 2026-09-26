@@ -1,0 +1,39 @@
+/* ---------- Exposé ---------- */
+
+/* Sits under the windows (z-index 10 and up) and over the desktop icons. */
+.os-expose {
+  position: absolute;
+  inset: 0;
+  z-index: 9;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.os-expose-label {
+  position: absolute;
+  max-width: 260px;
+  padding: 2px 10px;
+  overflow: hidden;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.62);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.os-window[data-exposed] {
+  cursor: pointer;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+}
+
+/* The whole window is one click target: pick it and leave Exposé. */
+.os-window[data-exposed] > * {
+  pointer-events: none;
+}
+
+.os-window[data-exposed]:hover {
+  box-shadow: 0 0 0 6px rgba(120, 170, 255, 0.85), 0 10px 30px rgba(0, 0, 0, 0.45);
+}

@@ -1,0 +1,160 @@
+@font-face {
+  font-family: 'LucidaGrande';
+  src: url('/os/fonts/LucidaGrande.woff2') format('woff2');
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'LucidaGrande';
+  src: url('/os/fonts/LucidaGrande-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Apple Garamond';
+  src: url('/os/fonts/AppleGaramond.woff2') format('woff2');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Monaco';
+  src: url('/os/fonts/monacottf.woff2') format('woff2');
+  font-display: swap;
+}
+
+.os-root {
+  --os-ui: 'LucidaGrande', 'Lucida Grande', 'Hiragino Sans GB', ui-sans-serif, -apple-system, sans-serif;
+  --os-display: 'Apple Garamond', 'EB Garamond', Garamond, Georgia, serif;
+  --os-mono: 'Monaco', ui-monospace, Menlo, monospace;
+
+  --os-window: #ececec;
+  --os-content: #ffffff;
+  --os-ink: #1a1a1a;
+  --os-dim: #4d4d4d;
+  --os-faint: #808080;
+  --os-line: #c2c2c2;
+  --os-line-soft: #dcdcdc;
+  --os-accent: #3875d7;
+  --os-select: var(--os-accent);
+  --os-select-grad: linear-gradient(color-mix(in srgb, var(--os-accent) 70%, white), var(--os-accent));
+  /* Aqua gel (default buttons, pressed segments, selected cells), all from the accent. */
+  --os-gel: linear-gradient(color-mix(in srgb, var(--os-accent) 30%, white), color-mix(in srgb, var(--os-accent) 75%, white) 45%, color-mix(in srgb, var(--os-accent) 100%, white) 50%, color-mix(in srgb, var(--os-accent) 55%, white));
+  --os-gel-pressed: linear-gradient(color-mix(in srgb, var(--os-accent) 25%, white), color-mix(in srgb, var(--os-accent) 48%, white) 50%, color-mix(in srgb, var(--os-accent) 62%, white) 50%, color-mix(in srgb, var(--os-accent) 33%, white));
+  --os-accent-rim: color-mix(in srgb, var(--os-accent) 55%, black);
+  --os-accent-shadow: color-mix(in srgb, color-mix(in srgb, var(--os-accent) 45%, black) 45%, transparent);
+  --os-focus: color-mix(in srgb, var(--os-accent) 55%, transparent);
+  --os-title-top: #ebebeb;
+  --os-title-bottom: #cbcbcb;
+  --os-title-inactive-top: #f6f6f6;
+  --os-title-inactive-bottom: #e3e3e3;
+  --os-sidebar: #e3e9ef;
+  --os-menu-bg: rgba(250, 250, 250, 0.96);
+  --os-bar-top: rgba(255, 255, 255, 0.86);
+  --os-bar-bottom: rgba(230, 230, 230, 0.86);
+  --os-shadow: 0 0 0 1px rgba(0, 0, 0, 0.28), 0 16px 42px rgba(0, 0, 0, 0.5);
+  --os-shadow-quiet: 0 0 0 1px rgba(0, 0, 0, 0.2), 0 8px 22px rgba(0, 0, 0, 0.28);
+
+  /* Aqua pinstripes: 4px bands of white over the window grey. Layer them over a colour. */
+  --os-pinstripe: repeating-linear-gradient(0deg, transparent 0 1.5px, rgba(255, 255, 255, 0.62) 1.5px 4px);
+  --os-pinstripe-soft: repeating-linear-gradient(0deg, transparent 0 1.5px, rgba(255, 255, 255, 0.3) 1.5px 4px);
+  /* Brushed aluminium: fine horizontal grain (SVG noise stretched sideways) over a light-to-mid grey. */
+  --os-metal-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1600' height='240'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.0012 0.9' numOctaves='3' seed='7' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0.33 0.33 0.33 0 0 0.33 0.33 0.33 0 0 0.33 0.33 0.33 0 0 0 0 0 0 1'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)' opacity='0.4'/%3E%3C/svg%3E");
+  --os-metal: var(--os-metal-grain), linear-gradient(#e8e8e8, #c9c9c9 38%, #b9b9b9);
+
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  color: var(--os-ink);
+  font-family: var(--os-ui);
+  font-size: 13px;
+  line-height: 1.4;
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+}
+
+:root[data-theme='dark'] .os-root {
+  --os-window: #3a3a3a;
+  --os-content: #232323;
+  --os-ink: #ececec;
+  --os-dim: #c4c4c4;
+  --os-faint: #939393;
+  --os-line: #1a1a1a;
+  --os-line-soft: #474747;
+  --os-title-top: #565656;
+  --os-title-bottom: #3c3c3c;
+  --os-title-inactive-top: #484848;
+  --os-title-inactive-bottom: #3a3a3a;
+  --os-sidebar: #2e3136;
+  --os-menu-bg: rgba(44, 44, 44, 0.96);
+  --os-bar-top: rgba(60, 60, 60, 0.86);
+  --os-bar-bottom: rgba(40, 40, 40, 0.86);
+  --os-pinstripe: repeating-linear-gradient(0deg, transparent 0 1.5px, rgba(255, 255, 255, 0.028) 1.5px 4px);
+  --os-pinstripe-soft: repeating-linear-gradient(0deg, transparent 0 1.5px, rgba(255, 255, 255, 0.02) 1.5px 4px);
+  --os-metal: var(--os-metal-grain), linear-gradient(#5b5b5b, #474747 38%, #3d3d3d);
+}
+
+/* A registered colour, so a new accent fades in rather than snapping. */
+@property --os-accent {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #3875d7;
+}
+
+.os-root {
+  transition: --os-accent 0.8s ease;
+  /* Native checkboxes, radios and sliders follow the accent too. */
+  accent-color: var(--os-accent);
+}
+
+/* Zero-specificity resets, so every component class below wins. */
+:where(.os-root) button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: default;
+}
+
+:where(.os-root) a {
+  color: inherit;
+}
+
+.os-root :focus-visible {
+  outline: 3px solid var(--os-focus);
+  outline-offset: 1px;
+}
+
+.os-dragging,
+.os-dragging * {
+  user-select: none !important;
+}
+
+/* Iframes would swallow the pointer mid-drag. */
+.os-dragging iframe {
+  pointer-events: none;
+}
+
+/* Aqua scrollbars: a grooved track and a glossy blue thumb. */
+.os-root ::-webkit-scrollbar {
+  width: 15px;
+  height: 15px;
+}
+
+.os-root ::-webkit-scrollbar-track {
+  background: linear-gradient(90deg, #d8d8d8, #f3f3f3 40%, #f3f3f3 60%, #e2e2e2);
+  box-shadow: inset 1px 0 0 #c4c4c4;
+}
+
+.os-root ::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 8px;
+  background: linear-gradient(90deg, #3b7fe0, #8ec0f8 45%, #5f9ef0 55%, #3070d8) padding-box;
+  box-shadow: inset 0 0 0 1px var(--os-accent-shadow);
+}
+
+.os-root ::-webkit-scrollbar-corner {
+  background: #ececec;
+}

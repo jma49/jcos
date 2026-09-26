@@ -8,9 +8,9 @@ import {
   type Note,
   type NoteColor,
   type Social
-} from '../social';
-import type { AppProps } from '../registry';
-import { play } from '../sound';
+} from '../social/social';
+import type { AppProps } from '../core/registry';
+import { play } from '../core/sound';
 
 /**
  * Remembers that this browser has left its one note, so the button can say

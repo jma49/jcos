@@ -1,24 +1,24 @@
 import { useCallback, useEffect, useRef, useState, type ComponentType } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
-import { Dock } from './Dock';
-import { MenuBar } from './MenuBar';
-import { Spotlight } from './Spotlight';
-import { Dashboard } from './Dashboard';
-import { Window } from './Window';
-import { Expose, exposeLayout } from './Expose';
-import { Screensaver } from './Screensaver';
-import { Sky, skyDimming, useSky } from './Sky';
-import { Presence } from './Presence';
-import { AppSwitcher } from './AppSwitcher';
-import { watchWindows } from './sound';
-import { ACCENTS, accentFromPicture, cachedAccent, cachedTopBrightness, DEFAULT_ACCENT, topBrightness } from './accent';
-import { accentForGenerated, backgroundFor, COVER, isPicture, isPixelTile, nextPicture, SKY, topBrightnessOfGenerated } from './wallpapers';
-import { coverOf, SONGS, useMusic } from './music';
-import { OSDataContext } from './context';
-import { apps, launch, rectOf } from './registry';
-import { DiskIcon, DocumentIcon, PhotosIcon } from './icons';
-import { MENU_BAR_HEIGHT, MOBILE_BREAKPOINT, useFocusedId, useWindows, type IconPositions } from './store';
-import type { AppId, OSData } from './types';
+import { Dock } from './shell/Dock';
+import { MenuBar } from './shell/MenuBar';
+import { Spotlight } from './shell/Spotlight';
+import { Dashboard } from './shell/Dashboard';
+import { Window } from './shell/Window';
+import { Expose, exposeLayout } from './shell/Expose';
+import { Screensaver } from './shell/Screensaver';
+import { Sky, skyDimming, useSky } from './ambient/Sky';
+import { Presence } from './social/Presence';
+import { AppSwitcher } from './shell/AppSwitcher';
+import { watchWindows } from './core/sound';
+import { ACCENTS, accentFromPicture, cachedAccent, cachedTopBrightness, DEFAULT_ACCENT, topBrightness } from './look/accent';
+import { accentForGenerated, backgroundFor, COVER, isPicture, isPixelTile, nextPicture, SKY, topBrightnessOfGenerated } from './look/wallpapers';
+import { coverOf, SONGS, useMusic } from './media/music';
+import { OSDataContext } from './core/context';
+import { apps, launch, openableApps, rectOf } from './core/registry';
+import { DiskIcon, DocumentIcon, PhotosIcon } from './core/icons';
+import { MENU_BAR_HEIGHT, MOBILE_BREAKPOINT, useFocusedId, useWindows, type IconPositions } from './core/store';
+import type { AppId, OSData } from './core/types';
 import './os.css';
 
 interface Shortcut {
@@ -476,8 +476,6 @@ export default function Desktop({ data }: { data: OSData }) {
   );
 }
 
-const DEEP_LINK_APPS: AppId[] = ['about', 'resume', 'projects', 'photos', 'stickies', 'soapbox', 'terminal', 'preferences', 'minesweeper', 'finder', 'appstore', 'calculator', 'tilegame', 'ipod', 'karaoke'];
-
 /** Handles links like /?open=resume or /?open=ocra. Returns whether it opened anything. */
 function openFromUrl(data: OSData): boolean {
   const target = new URLSearchParams(window.location.search).get('open')?.toLowerCase();
@@ -490,7 +488,7 @@ function openFromUrl(data: OSData): boolean {
     useWindows.getState().setScreensaver(true);
     return true;
   }
-  if ((DEEP_LINK_APPS as string[]).includes(target)) {
+  if ((openableApps as string[]).includes(target)) {
     launch(target as AppId);
     return true;
   }

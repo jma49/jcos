@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { APPLETS, FEATURED, installApplet, removeApplet, useInstalledApplets, type Applet } from '../applets';
-import { apps, launch, rectOf, type AppProps } from '../registry';
-import { play } from '../sound';
-import type { AppId } from '../types';
+import { APPLETS, FEATURED, installApplet, removeApplet, useInstalledApplets, type Applet } from '../core/applets';
+import { apps, launch, rectOf, type AppProps } from '../core/registry';
+import { play } from '../core/sound';
+import type { AppId } from '../core/types';
 
 // The Applet Store: browse the applets, "Get" one to install it into
 // Finder's Applets folder (and Spotlight), then open it from here.

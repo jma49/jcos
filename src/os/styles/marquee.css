@@ -1,0 +1,38 @@
+/* ---------- Scrolling text ---------- */
+
+.os-marquee {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.os-marquee > span {
+  display: inline-block;
+}
+
+.os-marquee[data-run] {
+  text-overflow: clip;
+}
+
+.os-marquee[data-run] > span {
+  animation: os-marquee var(--duration) linear infinite;
+}
+
+@keyframes os-marquee {
+  0%,
+  18% {
+    transform: none;
+  }
+  82%,
+  100% {
+    transform: translateX(var(--shift));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .os-marquee[data-run] > span {
+    animation: none;
+  }
+}

@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { useOSData } from '../context';
-import { launch, rectOf } from '../registry';
-import type { OSProject } from '../types';
+import { useOSData } from '../core/context';
+import { launch, rectOf } from '../core/registry';
+import type { OSProject } from '../core/types';
 
 const filters = [
   { id: 'all', label: 'All Projects' },

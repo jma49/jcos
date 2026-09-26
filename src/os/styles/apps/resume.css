@@ -1,0 +1,208 @@
+/* ---------- Résumé (a Pages document) ---------- */
+
+.os-pages-canvas {
+  padding: 28px 24px 48px;
+  background: #8e8e8e linear-gradient(#a3a3a3, #8a8a8a);
+}
+
+:root[data-theme='dark'] .os-pages-canvas {
+  background: #2a2a2a;
+}
+
+.os-page {
+  width: 760px;
+  min-height: 983px;
+  margin: 0 auto;
+  padding: 56px 60px 60px;
+  background: #fff;
+  color: #1d1d1f;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.18), 0 10px 30px rgba(0, 0, 0, 0.35);
+  font-size: 11.5px;
+  line-height: 1.55;
+  user-select: text;
+}
+
+.os-cv-header {
+  padding-bottom: 18px;
+  margin-bottom: 22px;
+  border-bottom: 2px solid #1d1d1f;
+}
+
+.os-cv-header h1 {
+  margin: 0;
+  font-family: var(--os-display);
+  font-size: 46px;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  line-height: 1;
+}
+
+.os-cv-role {
+  margin: 10px 0 0;
+  color: #3875d7;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.os-cv-where {
+  margin: 2px 0 0;
+  color: #6e6e73;
+}
+
+.os-cv-body {
+  display: grid;
+  grid-template-columns: 196px 1fr;
+  gap: 34px;
+}
+
+.os-page h2 {
+  margin: 0 0 10px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid #d2d2d7;
+  color: #3875d7;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.os-page section + section {
+  margin-top: 22px;
+}
+
+.os-page h3 {
+  margin: 0;
+  font-size: 11.5px;
+  font-weight: 700;
+}
+
+.os-page p {
+  margin: 0;
+}
+
+.os-page a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.os-page a:hover {
+  color: #3875d7;
+}
+
+.os-cv-contact {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow-wrap: anywhere;
+}
+
+.os-cv-contact li + li {
+  margin-top: 3px;
+}
+
+.os-cv-skill + .os-cv-skill,
+.os-cv-edu + .os-cv-edu {
+  margin-top: 10px;
+}
+
+.os-cv-skill p,
+.os-cv-edu p {
+  color: #424245;
+}
+
+.os-cv-date {
+  color: #86868b;
+  font-size: 10.5px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.os-cv-profile {
+  font-family: var(--os-display);
+  font-size: 15px;
+  line-height: 1.5;
+  color: #1d1d1f;
+}
+
+.os-cv-job + .os-cv-job {
+  margin-top: 18px;
+}
+
+.os-cv-job-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.os-cv-job h3 {
+  font-size: 13px;
+}
+
+.os-cv-job-role {
+  color: #424245;
+  font-style: italic;
+}
+
+.os-cv-job-summary {
+  margin-top: 4px !important;
+  color: #1d1d1f;
+}
+
+.os-cv-job ul {
+  margin: 6px 0 0;
+  padding-left: 14px;
+  list-style: disc;
+  color: #424245;
+}
+
+.os-cv-job li + li {
+  margin-top: 3px;
+}
+
+/* Print only the page, as a clean résumé. */
+@media print {
+  @page {
+    margin: 0;
+  }
+
+  body * {
+    visibility: hidden;
+  }
+
+  .os-page,
+  .os-page * {
+    visibility: visible;
+  }
+
+  .os-page {
+    position: fixed;
+    inset: 0;
+    zoom: 1 !important;
+    box-shadow: none;
+  }
+}
+
+@media (max-width: 767px) {
+  .os-pages-canvas {
+    padding: 0;
+  }
+
+  .os-page {
+    width: auto;
+    min-height: 0;
+    padding: 28px 22px;
+    box-shadow: none;
+  }
+
+  .os-cv-body {
+    grid-template-columns: 1fr;
+    gap: 22px;
+  }
+
+  .os-cv-side {
+    order: 2;
+  }
+}

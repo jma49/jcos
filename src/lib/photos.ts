@@ -1,4 +1,4 @@
-import type { OSPhoto } from '../os/types';
+import type { OSPhoto } from '../os/core/types';
 import snapshot from '../data/photos.json' with { type: 'json' };
 
 const PER_PAGE = 30;

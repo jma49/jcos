@@ -1,0 +1,498 @@
+/* ---------- Karaoke ---------- */
+
+.os-karaoke {
+  --karaoke-fill: color-mix(in srgb, var(--os-accent) 45%, white);
+  position: relative;
+  flex: 1;
+  overflow: hidden;
+  container-type: size;
+  background: #000;
+  color: #fff;
+  outline: none;
+  user-select: none;
+}
+
+/* The video covers the window, cropped like a desktop picture. */
+.os-karaoke-video {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: max(100cqw, 177.78cqh);
+  height: max(100cqh, 56.25cqw);
+  translate: -50% -50%;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.os-karaoke-shade {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 50%, rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.78));
+}
+
+.os-karaoke-stage {
+  position: absolute;
+  inset: 0 0 60px;
+  display: grid;
+  place-items: center;
+  padding: 0 6%;
+  text-align: center;
+}
+
+.os-karaoke-lines {
+  width: 100%;
+  display: grid;
+  gap: 0.5em;
+}
+
+.os-karaoke-line {
+  margin: 0;
+  min-height: 1.25em;
+  font-weight: 700;
+  line-height: 1.25;
+  text-wrap: balance;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.6));
+}
+
+.os-karaoke-line[data-at='past'] {
+  font-size: clamp(13px, 2.6cqw, 22px);
+  opacity: 0.35;
+}
+
+/* The line being sung fills from the left as it goes (--fill, set every frame). */
+.os-karaoke-line[data-at='now'] {
+  --fill: 0%;
+  font-size: clamp(22px, 5.4cqw, 54px);
+  background: linear-gradient(90deg, var(--karaoke-fill) var(--fill), rgba(255, 255, 255, 0.92) var(--fill));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.os-karaoke-line[data-at='next'] {
+  font-size: clamp(15px, 3.2cqw, 28px);
+  opacity: 0.7;
+}
+
+.os-karaoke-line[data-at='later'] {
+  font-size: clamp(13px, 2.6cqw, 22px);
+  opacity: 0.4;
+}
+
+.os-karaoke-title,
+.os-root .os-karaoke-start {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+}
+
+.os-karaoke-title strong,
+.os-karaoke-start strong {
+  font-size: clamp(24px, 6cqw, 56px);
+  line-height: 1.1;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.6));
+}
+
+.os-karaoke-title small,
+.os-karaoke-start small {
+  font-size: clamp(13px, 2.4cqw, 20px);
+  opacity: 0.8;
+}
+
+.os-karaoke-title em,
+.os-karaoke-note {
+  margin: 0;
+  font-size: 13px;
+  font-style: normal;
+  opacity: 0.7;
+}
+
+.os-karaoke-count {
+  color: var(--karaoke-fill);
+  font-size: 18px;
+  letter-spacing: 0.4em;
+}
+
+.os-root .os-karaoke-start {
+  padding: 22px 34px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.15);
+  transition: background 0.15s;
+}
+
+.os-root .os-karaoke-start:hover {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.os-karaoke-start > span {
+  width: 56px;
+  height: 56px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--os-gel);
+  box-shadow: inset 0 0 0 1px var(--os-accent-rim);
+  font-size: 22px;
+  text-indent: 4px;
+}
+
+/* Nothing to sing: the cover, blurred, fills the window. */
+.os-karaoke-backdrop {
+  position: absolute;
+  inset: -12%;
+  background: center / cover no-repeat;
+  filter: blur(46px) saturate(1.25) brightness(0.8);
+  opacity: 0;
+  transition: opacity 0.8s ease;
+}
+
+.os-karaoke-backdrop[data-show] {
+  opacity: 1;
+}
+
+.os-karaoke-listen {
+  width: min(100%, 760px);
+  display: flex;
+  align-items: center;
+  gap: clamp(18px, 5cqw, 48px);
+  text-align: left;
+  animation: os-karaoke-rise 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.os-karaoke-cover {
+  flex: none;
+  width: clamp(120px, 42cqh, 320px);
+  aspect-ratio: 1;
+  border-radius: 6px;
+  object-fit: cover;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12), 0 24px 60px rgba(0, 0, 0, 0.55), 0 6px 16px rgba(0, 0, 0, 0.35);
+  -webkit-box-reflect: below 2px linear-gradient(transparent 72%, rgba(255, 255, 255, 0.18));
+}
+
+.os-karaoke-about {
+  min-width: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.os-karaoke-about p,
+.os-karaoke-about h2 {
+  margin: 0;
+}
+
+.os-karaoke-eyebrow {
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.os-karaoke-about h2 {
+  font-family: var(--os-display);
+  font-size: clamp(28px, 6.4cqw, 64px);
+  font-weight: 400;
+  line-height: 1.02;
+  letter-spacing: -0.01em;
+  overflow-wrap: anywhere;
+}
+
+.os-karaoke-by {
+  color: rgba(255, 255, 255, 0.82);
+  font-size: clamp(13px, 1.9cqw, 16px);
+}
+
+.os-karaoke-blurb {
+  max-width: 44ch;
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.os-karaoke-next {
+  margin-top: 10px !important;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.16);
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 12px;
+}
+
+.os-karaoke-about .os-karaoke-note {
+  color: rgba(255, 255, 255, 0.62);
+}
+
+@keyframes os-karaoke-rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .os-karaoke-listen {
+    animation: none;
+  }
+}
+
+/* Narrow windows: cover above, words below. */
+@container (max-width: 520px) {
+  .os-karaoke-listen {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .os-karaoke-cover {
+    width: clamp(110px, 34cqh, 220px);
+    -webkit-box-reflect: unset;
+  }
+}
+
+.os-karaoke-bar {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: 10px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 10px;
+  border-radius: 12px;
+  background: rgba(24, 24, 26, 0.55);
+  backdrop-filter: blur(18px) saturate(1.6);
+  -webkit-backdrop-filter: blur(18px) saturate(1.6);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+  font-size: 12px;
+}
+
+.os-root .os-karaoke-bar button {
+  flex: none;
+  padding: 4px 8px;
+  border-radius: 6px;
+  line-height: 1.2;
+}
+
+.os-root .os-karaoke-bar button:hover,
+.os-root .os-karaoke-bar button[aria-expanded='true'] {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.os-root .os-karaoke-bar .os-karaoke-song {
+  flex: 0 1 180px;
+  min-width: 0;
+  display: grid;
+  text-align: left;
+}
+
+.os-karaoke-song strong,
+.os-karaoke-song small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.os-karaoke-song small {
+  opacity: 0.7;
+  font-size: 11px;
+}
+
+.os-karaoke-transport {
+  display: flex;
+  font-size: 14px;
+}
+
+.os-karaoke-time {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.os-karaoke-time input {
+  flex: 1;
+  min-width: 0;
+}
+
+.os-karaoke-offset {
+  display: flex;
+  align-items: center;
+}
+
+.os-karaoke-offset[hidden] {
+  display: none;
+}
+
+.os-karaoke-offset span {
+  min-width: 42px;
+  font-size: 11px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.8;
+}
+
+.os-karaoke-picker {
+  position: absolute;
+  left: 10px;
+  bottom: 62px;
+  width: min(340px, calc(100% - 20px));
+  max-height: calc(100% - 80px);
+  overflow: hidden auto;
+  padding: 6px;
+  border-radius: 12px;
+  background: rgba(24, 24, 26, 0.82);
+  backdrop-filter: blur(18px) saturate(1.6);
+  -webkit-backdrop-filter: blur(18px) saturate(1.6);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12), 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+/* A slim, dark scroller instead of the Aqua one. */
+.os-karaoke-picker::-webkit-scrollbar {
+  width: 8px;
+}
+
+.os-karaoke-picker::-webkit-scrollbar-track {
+  background: transparent;
+  box-shadow: none;
+}
+
+.os-karaoke-picker::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+.os-karaoke-picker::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  background: rgba(255, 255, 255, 0.3) padding-box;
+  box-shadow: none;
+}
+
+.os-karaoke-picker ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.os-karaoke-picker section + section {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.os-karaoke-picker h3 {
+  margin: 4px 6px 4px;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* A whole album: its cover and a Play button, then numbered tracks. */
+.os-karaoke-album {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px;
+}
+
+.os-karaoke-album img {
+  flex: none;
+  width: 52px;
+  height: 52px;
+  border-radius: 4px;
+  object-fit: cover;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.os-karaoke-album span {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+}
+
+.os-karaoke-album strong,
+.os-karaoke-album small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.os-karaoke-album small {
+  opacity: 0.65;
+  font-size: 11px;
+}
+
+.os-root .os-karaoke-album button {
+  flex: none;
+  padding: 4px 12px;
+  border-radius: 12px;
+  background: var(--os-gel);
+  box-shadow: inset 0 0 0 1px var(--os-accent-rim);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.os-root .os-karaoke-picker ul[data-album] button {
+  padding: 3px 6px;
+}
+
+.os-karaoke-track {
+  flex: none;
+  width: 22px;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 11px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.os-root .os-karaoke-picker li button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 6px;
+  border-radius: 8px;
+  text-align: left;
+}
+
+.os-root .os-karaoke-picker li button:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.os-root .os-karaoke-picker li button[aria-current='true'] {
+  background: color-mix(in srgb, var(--os-accent) 65%, transparent);
+}
+
+.os-karaoke-picker li img {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 3px;
+  object-fit: cover;
+}
+
+.os-karaoke-picker span {
+  display: grid;
+  min-width: 0;
+}
+
+.os-karaoke-picker strong,
+.os-karaoke-picker small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.os-karaoke-picker small {
+  opacity: 0.7;
+}
+
+@container (max-width: 560px) {
+  .os-karaoke-offset,
+  .os-karaoke-time time {
+    display: none;
+  }
+}

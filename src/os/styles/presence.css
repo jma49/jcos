@@ -1,0 +1,93 @@
+/* ---------- Presence ---------- */
+
+.os-cursors {
+  position: absolute;
+  inset: 0;
+  z-index: 1200;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.os-cursor {
+  position: absolute;
+  filter: drop-shadow(0 1px 1.5px rgba(0, 0, 0, 0.35));
+  transition: left 0.1s linear, top 0.1s linear, opacity 0.6s ease;
+}
+
+.os-cursor[data-idle] {
+  opacity: 0;
+}
+
+.os-cursor svg {
+  display: block;
+}
+
+.os-cursor-label {
+  position: absolute;
+  left: 14px;
+  top: 18px;
+  padding: 1px 7px;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.8);
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
+}
+
+.os-online-wrap {
+  position: relative;
+  display: flex;
+  height: 100%;
+}
+
+.os-status .os-online {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 7px;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.os-online[aria-expanded='true'] {
+  background: var(--os-select-grad);
+  color: #fff;
+}
+
+.os-online-list {
+  right: 0;
+  left: auto;
+  min-width: 200px;
+  padding: 6px 0;
+}
+
+.os-online-list p {
+  margin: 0 12px 4px;
+  font-size: 11px;
+  font-weight: 700;
+  opacity: 0.6;
+}
+
+.os-online-list ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.os-online-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 12px;
+  font-size: 13px;
+}
+
+.os-online-list i {
+  width: 9px;
+  height: 9px;
+  flex: none;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2);
+}

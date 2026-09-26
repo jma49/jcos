@@ -1,15 +1,15 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { useOSData } from '../context';
-import { launch } from '../registry';
-import { useWindows } from '../store';
-import type { AppProps } from '../registry';
-import type { OSData } from '../types';
+import { useOSData } from '../core/context';
+import { launch, openableApps } from '../core/registry';
+import { useWindows } from '../core/store';
+import type { AppProps } from '../core/registry';
+import type { AppId, OSData } from '../core/types';
 import { plain } from './inline';
 import { openProject } from './Projects';
-import { HOME, placeLabel, searchPlaces, type Place } from '../place';
-import { describe, getWeather } from '../weather';
-import { getSocial } from '../social';
-import { play } from '../sound';
+import { HOME, placeLabel, searchPlaces, type Place } from '../ambient/place';
+import { describe, getWeather } from '../ambient/weather';
+import { getSocial } from '../social/social';
+import { play } from '../core/sound';
 
 interface Line {
   id: number;
@@ -38,7 +38,8 @@ const COMMANDS: Record<string, string> = {
   exit: 'close this window'
 };
 
-const APP_TARGETS = ['about', 'resume', 'projects', 'photos', 'stickies', 'soapbox', 'terminal', 'browser', 'preferences', 'minesweeper', 'appstore', 'calculator', 'tilegame', 'finder', 'ipod', 'karaoke'] as const;
+/** What `open` knows by name. */
+const APP_TARGETS: readonly string[] = openableApps;
 
 function neofetch(data: OSData): ReactNode {
   const art = [
@@ -140,8 +141,8 @@ export default function Terminal({ win }: AppProps) {
       case 'open': {
         const target = arg.toLowerCase();
         if (!target) return print({ kind: 'error', content: 'usage: open <app|project|url>' });
-        if ((APP_TARGETS as readonly string[]).includes(target)) {
-          launch(target as (typeof APP_TARGETS)[number], target === 'terminal' ? { key: `terminal-${Date.now()}` } : {});
+        if (APP_TARGETS.includes(target)) {
+          launch(target as AppId, target === 'terminal' ? { key: `terminal-${Date.now()}` } : {});
           return print({ content: `Opening ${target}…` });
         }
         const project = data.projects.find((p) => p.slug === target || p.title.toLowerCase() === target);

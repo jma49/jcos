@@ -1,0 +1,43 @@
+/* ---------- About (a TextEdit document) ---------- */
+
+.os-about .os-scroll,
+.os-project {
+  background: var(--os-content);
+}
+
+.os-document {
+  padding: 30px 40px 40px;
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.os-document h1 {
+  margin: 0;
+  font-family: var(--os-display);
+  font-size: 40px;
+  font-weight: 400;
+  line-height: 1.1;
+}
+
+.os-document-meta {
+  margin: 4px 0 20px;
+  color: var(--os-faint);
+  font-size: 12px;
+}
+
+.os-document p {
+  margin: 0 0 12px;
+}
+
+.os-document a,
+.os-prose a {
+  color: #1a5cc8;
+  text-decoration: underline;
+}
+
+.os-document-sign {
+  margin-top: 22px !important;
+  font-family: var(--os-display);
+  font-size: 20px;
+  color: var(--os-dim);
+}

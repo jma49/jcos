@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { play } from '../../sound';
+import { play } from '../../core/sound';
 import type { ScreenInput } from './input';
 
 // Brick, the iPod's own Breakout: turn the wheel to move the paddle, press

@@ -1,0 +1,116 @@
+/* ---------- Projects (Finder) ---------- */
+
+.os-finder {
+  flex-direction: row;
+}
+
+.os-sidebar {
+  flex: none;
+  width: 170px;
+  padding: 10px 0;
+  background: var(--os-sidebar);
+  border-right: 1px solid #a5acb4;
+  user-select: none;
+}
+
+.os-sidebar-heading {
+  margin: 4px 12px 4px;
+  color: #6f7885;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+.os-sidebar button {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  padding: 3px 12px 3px 20px;
+  text-align: left;
+  font-size: 12px;
+}
+
+.os-sidebar button span {
+  color: var(--os-faint);
+}
+
+.os-sidebar button[aria-pressed='true'] {
+  background: var(--os-select-grad);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--os-accent) 60%, white);
+  color: #fff;
+  font-weight: 700;
+}
+
+.os-sidebar button[aria-pressed='true'] span {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.os-finder-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--os-content);
+}
+
+.os-finder-grid {
+  margin: 0;
+  padding: 18px;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  align-content: start;
+  gap: 16px 12px;
+  user-select: none;
+}
+
+.os-finder-grid button {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 6px;
+  border-radius: 6px;
+}
+
+.os-finder-thumb {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: #f4f4f4;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.25), 0 3px 8px rgba(0, 0, 0, 0.25);
+  color: var(--os-faint);
+  font-weight: 700;
+}
+
+.os-finder-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+}
+
+.os-finder-name {
+  padding: 0 6px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.os-finder-meta {
+  color: var(--os-faint);
+  font-size: 11px;
+}
+
+.os-finder-grid button[data-selected='true'] .os-finder-thumb {
+  box-shadow: 0 0 0 3px var(--os-focus), 0 3px 8px rgba(0, 0, 0, 0.25);
+}
+
+.os-finder-grid button[data-selected='true'] .os-finder-name {
+  background: var(--os-select);
+  color: #fff;
+}

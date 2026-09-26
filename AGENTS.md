@@ -18,20 +18,20 @@ desktop rendered by one client-only React island in `src/os/`. The page
 also renders a visually hidden plain-text copy of the content for screen
 readers, crawlers and visitors without JavaScript.
 
-- `src/os/store.ts`: zustand store for windows (map + z-order array),
+- `src/os/core/store.ts`: zustand store for windows (map + z-order array),
   theme and appearance, Spotlight, Dashboard, Exposé, the screensaver
   and its settings, the visitor's place and the chosen desktop picture.
-- `src/os/Expose.tsx`: the Exposé grid (F9, the bottom-left hot corner or
+- `src/os/shell/Expose.tsx`: the Exposé grid (F9, the bottom-left hot corner or
   View → Exposé). Windows animate to their slot in place, so iframes
   don't reload.
-- `src/os/sound.ts`: interface sounds synthesized with Web Audio (no
+- `src/os/core/sound.ts`: interface sounds synthesized with Web Audio (no
   recordings). Off by default; the menu bar speaker and the Sound pane
   turn them on (`os-sound` in `localStorage`). That one switch and volume
   govern every sound, the music included: anything new that plays audio
   must follow it (see `setLoudness()` in `music.ts`).
-- `src/os/AppSwitcher.tsx`: ⌥Tab steps through open windows, most
+- `src/os/shell/AppSwitcher.tsx`: ⌥Tab steps through open windows, most
   recent first; releasing ⌥ focuses the chosen one.
-- `src/os/Screensaver.tsx` and `savers.tsx`: Photos (a slideshow of the
+- `src/os/shell/Screensaver.tsx` and `savers.tsx`: Photos (a slideshow of the
   library), Flurry, Soapbox (the latest posts in large type), Starfield,
   Clock or Bounce, after the idle time chosen in System Preferences (two
   minutes by default).
@@ -50,41 +50,41 @@ readers, crawlers and visitors without JavaScript.
   `data-backdrop` on `.os-root`. It turns opaque over a zoomed window and
   on phones while an app is open. The Apple logo is tinted with the
   accent.
-- `src/os/wallpapers.ts`: desktop pictures besides photos: ryOS's photo
+- `src/os/look/wallpapers.ts`: desktop pictures besides photos: ryOS's photo
   collections and tiles (`public/os/wallpapers/`, listed in
   `src/data/wallpapers.json`; photos are WebP, at most 2560px wide), solid
   colours, SVG/CSS patterns and a dynamic sky that follows the sun and
   weather at the visitor's place. The store keeps a photo URL or
   `color:<id>`, `pattern:<id>`, `dynamic:sky`; `backgroundFor()` turns
   it into CSS.
-- `src/os/accent.ts`: the accent colour. By default it's sampled from the
+- `src/os/look/accent.ts`: the accent colour. By default it's sampled from the
   desktop picture (the most prominent colourful hue, at a readable
   lightness); System Preferences can fix it instead. Everything blue in
   `os.css` derives from `--os-accent` via `color-mix()`.
-- `src/os/place.ts`: where the visitor is. `api/geo.ts` (a Vercel
+- `src/os/ambient/place.ts`: where the visitor is. `api/geo.ts` (a Vercel
   Function) returns the city, coordinates and time zone Vercel derives
   from their IP address; the Weather widget's flip side lets them pick a
   city instead (kept in `localStorage`), and `?place=<city>` overrides
   both for demos. Without a location (e.g. `astro dev`) it falls back to
   San Jose's weather and the device clock.
-- `src/os/Sky.tsx` and `weather.ts`: tint the wallpaper with the time of
+- `src/os/ambient/Sky.tsx` and `weather.ts`: tint the wallpaper with the time of
   day and weather at that place (Open-Meteo), in °F or °C by country.
   `?sky=dusk,rain` pins both. The menu bar clock and the Dashboard's
   clock and calendar use the place's time zone; a Dashboard widget shows
   Jincheng's time in San Jose next to it.
-- `src/os/drawer.tsx`: Tiger-style drawers. Each window has a slot
+- `src/os/shell/drawer.tsx`: Tiger-style drawers. Each window has a slot
   along its edge (right, left if there's no room, or over the content
   when neither side fits); an app renders `<Drawer open>` anywhere and it
   appears there. Used by Photos (Info) and Finder (Get Info, ⌥I).
-- `src/os/genie.ts`: the displacement map behind the Genie minimize in
+- `src/os/shell/genie.ts`: the displacement map behind the Genie minimize in
   `Window.tsx`.
-- `src/os/social.ts`: Stickies (a guestbook) and presence (who's
+- `src/os/social/social.ts`: Stickies (a guestbook) and presence (who's
   online and from which city, and other visitors' cursors labelled with
   it) on Supabase. See below.
 - `src/os/apps/Soapbox.tsx`: Jincheng's own notes and rants. Posts come
   from a Telegram bot, `supabase/functions/soapbox-bot` (setup in its
   README); visitors read them and leave one emoji reaction per post.
-- `src/os/music.ts`, `lyrics.ts`, `apps/IPod.tsx` and `apps/Karaoke.tsx`:
+- `src/os/media/music.ts`, `lyrics.ts`, `apps/ipod/IPod.tsx` and `apps/Karaoke.tsx`:
   the iPod (click wheel, menus, Now Playing with the video and a line of
   lyrics) and Karaoke (full-window video with lyrics that fill as they're
   sung, or a listening view for instrumentals). `src/data/songs.json`
@@ -110,26 +110,28 @@ readers, crawlers and visitors without JavaScript.
   Music Quiz), which take the wheel through a `ScreenInput`, and the
   `Marquee` used for long titles. The iPod's own settings (theme,
   backlight, artwork or video) live in `os-ipod`.
-- `src/os/NowPlaying.tsx`: the menu bar's ♫ while a song is on, with a
+- `src/os/shell/NowPlaying.tsx`: the menu bar's ♫ while a song is on, with a
   card to control it; it also feeds the Media Session API. The Dynamic
   desktop picture `dynamic:cover` shows the playing song's cover,
   blurred.
-- `src/os/files.ts` and `apps/Finder.tsx`: Macintosh HD, a read-only
+- `src/os/core/files.ts` and `apps/Finder.tsx`: Macintosh HD, a read-only
   file system built from the content (Applications, Applets, Documents,
   Pictures, Projects), browsed in Finder with icon and list views.
-- `src/os/applets.ts` and `apps/AppletStore.tsx`: the Applet Store's
+- `src/os/core/applets.ts` and `apps/AppletStore.tsx`: the Applet Store's
   catalog (Minesweeper, Tile Game, Calculator) and which applets this
   browser has installed (`os-applets`). Installed applets appear in
   Finder's Applets folder and Spotlight. To add one, write the app,
   register it, and add an entry to `APPLETS`.
-- `src/os/registry.tsx`: every app's name, icon, default and minimum size,
+- `src/os/core/registry.tsx`: every app's name, icon, default and minimum size,
   and lazily imported component. `dockApps` and `mobileDockApps` pick what
   the Dock keeps (other apps appear there while open); `launcherApps` is
   what Spotlight lists.
 - `src/os/apps/`: one component per app. Content comes from `OSData`,
   assembled at build time in `index.astro` from `src/i18n/content.ts`, the
   projects collection and `src/lib/photos.ts` (Unsplash, fetched at build).
-- `src/os/os.css`: the Aqua theme. Icons, fonts and the wallpaper under
+- `src/os/os.css`: the Aqua theme, split by part of the desktop into
+  `src/os/styles/` (one file per app in `styles/apps/`) and imported in
+  cascade order. Icons, fonts and the wallpaper under
   `public/os/` and `src/assets/os/` come from ryOS; see `NOTICE`.
 - Deep links: `/?open=<app|project-slug|dashboard|screensaver>` opens that
   window.
@@ -150,14 +152,24 @@ set up from an older schema also needs the files in `supabase/migrations/`,
 run in date order.
 
 Without those variables, production hides both features, and `astro dev`
-falls back to `src/os/social-local.ts`, which keeps notes in
+falls back to `src/os/social/social-local.ts`, which keeps notes in
 `localStorage` (one per browser) and shares presence between tabs of one
 browser.
 
-To add an app: add its id to `AppId` in `src/os/types.ts`, write the
-component in `src/os/apps/`, register it in `registry.tsx`, and add it to
-`dockApps` or the desktop shortcuts in `Desktop.tsx` if it should be
-reachable from there.
+To add an app: add its id to `AppId` in `src/os/core/types.ts`, write the
+component in `src/os/apps/` (a folder for one with several parts), its
+styles in `src/os/styles/apps/` (imported from `os.css`), and register it
+in `src/os/core/registry.tsx`. The entry says where it appears: `dock`
+(its position), `phoneDock`, `inApplications`, `applet` or `internal`;
+Spotlight, the Terminal and `?open=` pick it up by itself. Add a desktop
+shortcut in `Desktop.tsx` if it needs one. Anything remembered in the
+browser goes through `src/os/core/storage.ts`.
+
+`src/os` is grouped by domain: `core/` (store, types, registry, icons,
+sounds, storage, files), `shell/` (menu bar, Dock, windows and the rest
+of the chrome), `ambient/` (place, weather, sky), `look/` (desktop
+pictures, accent), `media/` (music, lyrics), `social/` (Supabase),
+`apps/` and `styles/`.
 
 The Chinese site is offline for now: `/zh/*` redirects to the English
 paths (`vercel.json`). Keep the `zh` content in `content.ts` and the

@@ -1,0 +1,470 @@
+/* ---------- iPod ---------- */
+
+.os-ipod-app {
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  user-select: none;
+}
+
+/* A fifth-generation iPod: white polycarbonate, or black in dark appearance. */
+.os-ipod {
+  --ipod-body: linear-gradient(#ffffff, #eeeef1 55%, #e2e3e7);
+  --ipod-rim: rgba(0, 0, 0, 0.18);
+  --ipod-wheel: radial-gradient(circle at 50% 40%, #fbfbfc, #ebecef 70%, #e0e1e5);
+  --ipod-label: #a3a7ae;
+  --ipod-center: linear-gradient(#ffffff, #eceef1);
+  flex: none;
+  width: 264px;
+  height: 436px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 14px 14px 0;
+  border-radius: 24px;
+  background: var(--ipod-body);
+  box-shadow: inset 0 1px 0 #fff, inset 0 0 0 1px var(--ipod-rim), 0 10px 26px rgba(0, 0, 0, 0.28);
+  outline: none;
+}
+
+/* Black: chosen, or Automatic in dark appearance. U2: black with a red wheel. */
+.os-ipod[data-look='black'],
+.os-ipod[data-look='u2'],
+:root[data-theme='dark'] .os-ipod[data-look='auto'] {
+  --ipod-body: linear-gradient(#3b3b3f, #1d1d20 55%, #111113);
+  --ipod-rim: rgba(255, 255, 255, 0.12);
+  --ipod-wheel: radial-gradient(circle at 50% 40%, #3c3c40, #2a2a2e 70%, #222225);
+  --ipod-label: #8c8c93;
+  --ipod-center: linear-gradient(#303034, #202023);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), inset 0 0 0 1px var(--ipod-rim), 0 10px 26px rgba(0, 0, 0, 0.5);
+}
+
+.os-ipod[data-look='u2'] {
+  --ipod-wheel: radial-gradient(circle at 50% 40%, #e2203a, #b3122a 70%, #8f0c20);
+  --ipod-label: rgba(255, 255, 255, 0.72);
+  --ipod-center: linear-gradient(#26262a, #111113);
+}
+
+.os-ipod-screen {
+  transition: filter 0.8s ease;
+  position: relative;
+  flex: none;
+  width: 236px;
+  height: 200px;
+  overflow: hidden;
+  border-radius: 5px;
+  background: linear-gradient(#fbfcfd, #e7ebf0);
+  box-shadow: 0 0 0 2px #50565e, 0 0 0 3px rgba(255, 255, 255, 0.4);
+  color: #111;
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+.os-ipod-header {
+  position: relative;
+  z-index: 2;
+  height: 17px;
+  display: grid;
+  grid-template-columns: 24px 1fr 24px;
+  align-items: center;
+  padding: 0 4px;
+  background: linear-gradient(#fdfdfd, #d5dae0);
+  border-bottom: 1px solid #98a2ad;
+  font-size: 11px;
+  font-weight: 700;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.os-ipod-header > span:nth-child(2) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.os-ipod-state {
+  justify-self: start;
+  font-size: 8px;
+  color: #3d6fb8;
+}
+
+.os-ipod-battery {
+  justify-self: end;
+  width: 17px;
+  height: 8px;
+  border: 1px solid #555;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #6ac25f 70%, transparent 70%);
+  box-shadow: 2px 0 0 -1px #555;
+}
+
+/* The player sits under the menus and shows on Now Playing. */
+.os-ipod-video,
+.os-ipod-video-cover {
+  position: absolute;
+  top: 17px;
+  left: 0;
+  width: 236px;
+  height: 133px;
+  pointer-events: none;
+}
+
+/* Hidden (still playing) unless Now Playing shows the video. */
+.os-ipod-video {
+  overflow: hidden;
+  background: #000;
+  visibility: hidden;
+}
+
+.os-ipod-video[data-show] {
+  visibility: visible;
+}
+
+/* Until the video really plays, and whenever it's paused, the artwork
+   covers YouTube's own title, spinner and suggestions. */
+.os-ipod-video-cover {
+  object-fit: cover;
+  filter: brightness(0.7);
+}
+
+.os-ipod-menu {
+  position: absolute;
+  inset: 17px 0 0;
+  z-index: 1;
+  overflow: hidden;
+  background: linear-gradient(#fbfcfd, #e7ebf0);
+}
+
+.os-ipod-menu ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  transition: translate 0.08s;
+}
+
+.os-ipod-menu li {
+  height: 19px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 7px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* The label takes the room. */
+.os-ipod-menu li > .os-ipod-label-text {
+  flex: 1;
+}
+
+/* Albums: a cover and two lines per row. */
+.os-ipod-menu li[data-tall] {
+  height: 34px;
+  padding-left: 4px;
+}
+
+.os-ipod-thumb {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 2px;
+  object-fit: cover;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.18);
+}
+
+.os-ipod-two {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  line-height: 1.15;
+}
+
+.os-ipod-two > span,
+.os-ipod-two small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.os-ipod-two small {
+  color: #6b7480;
+  font-size: 10px;
+  font-weight: 400;
+}
+
+.os-ipod-menu li[aria-selected='true'] .os-ipod-two small,
+.os-ipod-menu li[aria-selected='true'] .os-ipod-number {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.os-ipod-number {
+  flex: none;
+  min-width: 14px;
+  color: #7a8390;
+  font-size: 10px;
+  font-weight: 400;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* The top of an album's page: its cover and what it is, above the tracks. */
+.os-ipod-menu li.os-ipod-album {
+  height: 74px;
+  gap: 8px;
+  padding: 7px;
+  align-items: center;
+  border-bottom: 1px solid #c6ccd3;
+  background: linear-gradient(#ffffff, #eef1f4);
+}
+
+.os-ipod-album img {
+  flex: none;
+  width: 60px;
+  height: 60px;
+  border-radius: 2px;
+  object-fit: cover;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+}
+
+.os-ipod-album div {
+  min-width: 0;
+  display: grid;
+  gap: 1px;
+  white-space: normal;
+}
+
+.os-ipod-album strong {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  font-size: 11px;
+  line-height: 1.2;
+}
+
+.os-ipod-album span {
+  font-size: 10px;
+  font-weight: 400;
+}
+
+.os-ipod-album small {
+  color: #6b7480;
+  font-size: 9px;
+  font-weight: 400;
+}
+
+.os-ipod-value {
+  color: #6b7480;
+  font-weight: 400;
+}
+
+.os-ipod-menu li[aria-selected='true'] {
+  background: var(--os-select-grad);
+  color: #fff;
+}
+
+.os-ipod-menu li[aria-selected='true'] .os-ipod-value {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.os-ipod-now {
+  position: absolute;
+  inset: 150px 0 0;
+  display: grid;
+  align-content: center;
+  gap: 4px;
+  padding: 0 7px;
+}
+
+/* Artwork, as an iPod shows it: the cover on the left, the song beside it. */
+.os-ipod-now[data-show='artwork'] {
+  inset: 17px 0 0;
+  grid-template-rows: 1fr auto auto;
+  align-content: stretch;
+  padding-bottom: 7px;
+}
+
+.os-ipod-artwork {
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.os-ipod-artwork img {
+  flex: none;
+  width: 96px;
+  height: 96px;
+  border-radius: 2px;
+  object-fit: cover;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.15), 0 3px 8px rgba(0, 0, 0, 0.3);
+  -webkit-box-reflect: below 1px linear-gradient(transparent 78%, rgba(255, 255, 255, 0.35));
+}
+
+.os-ipod-artwork div {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.os-ipod-artwork span {
+  overflow: hidden;
+  color: #4a535e;
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.os-ipod-artwork em {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  margin-top: 3px;
+  color: #3d6fb8;
+  font-size: 10px;
+  font-style: normal;
+  line-height: 1.25;
+}
+
+.os-ipod-song {
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.os-ipod-info {
+  display: grid;
+  min-width: 0;
+}
+
+.os-ipod-info p {
+  display: grid;
+  margin: 0;
+  min-width: 0;
+}
+
+.os-ipod-info p > span:not(.os-marquee) {
+  overflow: hidden;
+  color: #5b6470;
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.os-ipod-info .os-ipod-count {
+  color: #5b6470;
+  font-size: 9px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.os-ipod-bar {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 5px;
+  font-size: 9px;
+  font-variant-numeric: tabular-nums;
+}
+
+.os-ipod-progress {
+  height: 6px;
+  overflow: hidden;
+  border: 1px solid #7d8894;
+  background: #fff;
+}
+
+.os-ipod-progress span {
+  display: block;
+  height: 100%;
+  background: var(--os-gel);
+}
+
+/* A line of the lyrics, subtitled over the bottom of the video. */
+.os-ipod-caption {
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 6px;
+  right: 6px;
+  margin: 0;
+  padding: 1px 4px;
+  border-radius: 3px;
+  background: rgba(0, 0, 0, 0.5);
+  color: #fff;
+  font-size: 10px;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.os-ipod-note {
+  position: absolute;
+  bottom: calc(100% + 50px);
+  left: 0;
+  right: 0;
+  margin: 0;
+  color: #fff;
+  font-size: 11px;
+  text-align: center;
+}
+
+.os-ipod-wheel {
+  position: relative;
+  flex: none;
+  width: 176px;
+  height: 176px;
+  margin: auto 0;
+  border-radius: 50%;
+  background: var(--ipod-wheel);
+  box-shadow: inset 0 0 0 1px var(--ipod-rim), inset 0 1px 2px rgba(0, 0, 0, 0.06);
+  touch-action: none;
+}
+
+.os-ipod-label {
+  position: absolute;
+  color: var(--ipod-label);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  pointer-events: none;
+}
+
+.os-ipod-label[data-at='top'] {
+  top: 13px;
+  left: 50%;
+  translate: -50% 0;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+}
+
+.os-ipod-label[data-at='right'] {
+  right: 13px;
+  top: 50%;
+  translate: 0 -50%;
+}
+
+.os-ipod-label[data-at='bottom'] {
+  bottom: 13px;
+  left: 50%;
+  translate: -50% 0;
+}
+
+.os-ipod-label[data-at='left'] {
+  left: 13px;
+  top: 50%;
+  translate: 0 -50%;
+}
+
+.os-root .os-ipod-center {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--ipod-center);
+  box-shadow: inset 0 0 0 1px var(--ipod-rim), 0 1px 2px rgba(0, 0, 0, 0.12);
+}
+
+.os-root .os-ipod-center:active {
+  background: var(--ipod-wheel);
+}

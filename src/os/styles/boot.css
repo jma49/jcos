@@ -1,0 +1,34 @@
+/* ---------- Boot (grey screen, logo, spinner) ---------- */
+
+.os-boot {
+  position: absolute;
+  inset: 0;
+  z-index: 5000;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 36px;
+  background: radial-gradient(circle at 50% 45%, #e4e4e4, #bdbdbd);
+}
+
+.os-boot-mark {
+  width: 110px;
+  height: 110px;
+  background: url('/os/icons/apple.png') center / contain no-repeat;
+  filter: grayscale(1) brightness(0.55) contrast(1.2);
+  font-size: 0;
+}
+
+.os-boot-bar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.05));
+  mask: repeating-conic-gradient(#000 0 18deg, transparent 18deg 30deg), radial-gradient(circle, transparent 5px, #000 5.5px);
+  mask-composite: intersect;
+  animation: os-spin 0.9s steps(12) infinite;
+}
+
+.os-boot-bar span {
+  display: none;
+}

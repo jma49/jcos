@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useOSData } from '../context';
+import { useOSData } from '../core/context';
 import { Inline } from './inline';
 
 export default function About() {
