@@ -403,8 +403,8 @@ other logic worth testing in plain modules without React (as
 test:db` checks the database's rules (`supabase/tests/rules.sql`)
 against a local Postgres, then races the per-member limits with
 overlapping sessions (`supabase/tests/race.sh`); add a check there with
-every new rule or migration. CI (`.github/workflows/ci.yml`) runs both
-and the build on every pull request.
+every new rule or migration. CI (`.github/workflows/ci.yml`) runs both,
+the type check (`npm run check`) and the build on every pull request.
 
 ## Pitfalls
 
