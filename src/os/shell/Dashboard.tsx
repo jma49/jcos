@@ -3,7 +3,7 @@ import { PlaceSearch } from '../ambient/PlaceSearch';
 import { getSocial, type Post } from '../social/social';
 import { flag } from '../social/Presence';
 import { launch } from '../core/registry';
-import { AnimatePresence, motion } from 'motion/react';
+import { AnimatePresence, m } from 'motion/react';
 import { useWindows } from '../core/store';
 import { useOSData } from '../core/context';
 import { describe as describeWeather, useWeather } from '../ambient/weather';
@@ -171,7 +171,7 @@ function WeatherWidget() {
   const { label, icon } = describeWeather(weather && weather !== 'error' ? weather.condition : 'clear');
 
   return (
-    <motion.div
+    <m.div
       className="os-widget os-widget-weather"
       key={flipped ? 'back' : 'front'}
       initial={{ rotateY: 90 }}
@@ -214,7 +214,7 @@ function WeatherWidget() {
           )}
         </>
       )}
-    </motion.div>
+    </m.div>
   );
 }
 
@@ -454,7 +454,7 @@ export function Dashboard() {
   return (
     <AnimatePresence>
       {open && (
-        <motion.div
+        <m.div
           className="os-dashboard"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -466,7 +466,7 @@ export function Dashboard() {
         >
           <div className="os-dashboard-board" onPointerDown={(e) => e.target === e.currentTarget && setDashboard(false)}>
             {widgets.map((w, i) => (
-              <motion.div
+              <m.div
                 key={w.key}
                 className={`os-dashboard-slot os-slot-${w.key}`}
                 initial={{ scale: 0.6, opacity: 0 }}
@@ -475,10 +475,10 @@ export function Dashboard() {
                 transition={{ type: 'spring', stiffness: 300, damping: 22, delay: i * 0.05 }}
               >
                 {w.node}
-              </motion.div>
+              </m.div>
             ))}
           </div>
-        </motion.div>
+        </m.div>
       )}
     </AnimatePresence>
   );

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { AnimatePresence, MotionConfig, motion } from 'motion/react';
+import { AnimatePresence, LazyMotion, MotionConfig, domAnimation, m } from 'motion/react';
 import { Dock } from './shell/Dock';
 import { MenuBar } from './shell/MenuBar';
 import { Spotlight } from './shell/Spotlight';
@@ -40,7 +40,9 @@ export default function Desktop({ data }: { data: OSData }) {
   const motionChoice = useSystem((s) => s.motion);
   return (
     <MotionConfig reducedMotion={motionChoice === 'system' ? 'user' : motionChoice === 'reduce' ? 'always' : 'never'}>
-      <Shell data={data} />
+      <LazyMotion features={domAnimation} strict>
+        <Shell data={data} />
+      </LazyMotion>
     </MotionConfig>
   );
 }
@@ -118,7 +120,7 @@ function Shell({ data }: { data: OSData }) {
         }}
       >
         <AnimatePresence initial={false}>
-          <motion.div
+          <m.div
             key={picture.key}
             className="os-wallpaper"
             aria-hidden="true"

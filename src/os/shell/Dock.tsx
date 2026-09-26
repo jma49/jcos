@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { motion, useMotionValue, useSpring, useTransform, type MotionValue } from 'motion/react';
+import { m, useMotionValue, useSpring, useTransform, type MotionValue } from 'motion/react';
 import { apps, dockApps, launch, mobileDockApps, rectOf } from '../core/registry';
 import { DashboardIcon, TrashIcon } from '../core/icons';
 import { useWindowList, useWindows } from '../core/store';
@@ -54,7 +54,7 @@ function Magnified({
   const size = useSpring(target, { stiffness: 380, damping: 28, mass: 0.4 });
 
   return (
-    <motion.button
+    <m.button
       ref={ref}
       type="button"
       className="os-dock-item"
@@ -70,16 +70,16 @@ function Magnified({
       data-mobile={mobile || undefined}
     >
       <span className="os-dock-label">{label}</span>
-      <motion.span className="os-dock-icon" style={{ width: size, height: size }}>
+      <m.span className="os-dock-icon" style={{ width: size, height: size }}>
         {children(peak)}
-      </motion.span>
+      </m.span>
       {running && <span className="os-dock-dot" />}
       {badge ? (
         <span className="os-dock-badge" aria-hidden="true">
           {badge > 99 ? '99+' : badge}
         </span>
       ) : null}
-    </motion.button>
+    </m.button>
   );
 }
 
@@ -137,7 +137,7 @@ export function Dock() {
 
   return (
     <nav className="os-dock-wrap" aria-label="Dock">
-      <motion.div
+      <m.div
         className="os-dock"
         style={{ '--dock-icon': `${base}px` } as React.CSSProperties}
         onMouseMove={(e) => mouseX.set(e.clientX)}
@@ -211,7 +211,7 @@ export function Dock() {
         >
           {(s) => <TrashIcon size={s} />}
         </Magnified>
-      </motion.div>
+      </m.div>
       {menu && <ContextMenu at={menu} items={menu.items} onClose={() => setMenu(null)} label="Dock" />}
     </nav>
   );

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { AnimatePresence, motion } from 'motion/react';
+import { AnimatePresence, m } from 'motion/react';
 import { DOCK_CLEARANCE, MENU_BAR_HEIGHT, isPhone, useWindows } from '../core/store';
 import type { Rect, WindowState } from '../core/types';
 
@@ -186,7 +186,7 @@ export function Expose({ layout }: { layout: Record<string, Rect> | null }) {
   return (
     <AnimatePresence>
       {layout && (
-        <motion.div
+        <m.div
           key="expose"
           className="os-expose"
           initial={{ opacity: 0 }}
@@ -212,7 +212,7 @@ export function Expose({ layout }: { layout: Record<string, Rect> | null }) {
               {windows[id]?.title}
             </span>
           ))}
-        </motion.div>
+        </m.div>
       )}
     </AnimatePresence>
   );

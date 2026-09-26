@@ -12,6 +12,12 @@
   - The Supabase client arrives by dynamic import (`social.ts`).
   - The screen saver's views load on first use, or once the page is
     idle (`saverViews.tsx`).
+  - Motion is loaded lean: `Desktop.tsx` wraps everything in
+    `<LazyMotion features={domAnimation} strict>`, so animate with `m.div`
+    and friends, never `motion.div` (strict mode throws). `domAnimation`
+    has animations, exit, variants and hover/tap/focus; layout animations
+    and drag need `domMax`, which costs about 13 KB more on every first
+    visit, so measure before reaching for it.
 
   Anything new that isn't on screen at first paint follows the same
   pattern.
