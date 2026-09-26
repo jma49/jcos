@@ -12,12 +12,19 @@
 //   idle  script time over five quiet seconds with the same six apps
 //
 // Numbers vary by machine; compare runs on the same one, before and
-// after a change. It exits non-zero when a budget is exceeded.
+// after a change. It exits non-zero when a budget is exceeded. In CI
+// (CI=true), where shared runners make script times noisy, drag and idle
+// are reported but only the download budgets can fail it.
 
 import { chromium } from 'playwright';
 import { gzipSync } from 'node:zlib';
+import { serveDist } from './serve-dist.mjs';
 
-const URL_ = process.argv[2] ?? 'http://localhost:4321/';
+const server = process.argv[2] ? null : await serveDist();
+const URL_ = process.argv[2] ?? server.url;
+/** Budgets that measure time, not bytes: too noisy to fail CI on. */
+const TIMED = new Set(['dragScriptMs', 'idleScriptMs']);
+const strict = (key) => !(process.env.CI && TIMED.has(key));
 const BUDGET = {
   initialJsGzipKB: 180,
   imagesKB: 1100,
@@ -91,12 +98,14 @@ const idle = () => withSixWindows((page) => page.waitForTimeout(5000));
 
 const result = { ...(await load()), dragScriptMs: await drag(), idleScriptMs: await idle() };
 await browser.close();
+server?.close();
 
 let over = false;
 for (const [key, budget] of Object.entries(BUDGET)) {
   const ok = result[key] <= budget;
-  over ||= !ok;
-  console.log(`${ok ? 'ok  ' : 'OVER'} ${key.padEnd(16)} ${String(result[key]).padStart(6)}  (budget ${budget})`);
+  if (strict(key)) over ||= !ok;
+  const mark = ok ? 'ok  ' : strict(key) ? 'OVER' : 'slow';
+  console.log(`${mark} ${key.padEnd(16)} ${String(result[key]).padStart(6)}  (budget ${budget}${strict(key) ? '' : ', reported only'})`);
 }
 const twice = result.fetchedTwice.length === 0;
 over ||= !twice;
