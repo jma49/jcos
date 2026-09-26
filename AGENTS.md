@@ -212,6 +212,8 @@ security and triggers in `supabase/schema.sql` do the enforcing.
   forgotten password is reset with a one-time link emailed to the
   recovery address by `supabase/functions/account-recovery` (Resend;
   setup in its README); the link opens `/?open=account&reset=<token>`.
+  The email (subject, text and the Aqua-window HTML) is `email.ts` there;
+  `preview.mjs` renders it to a file.
 - **Stickies**: members only, three notes in any 24 hours, signed with the
   username; members can take their own down. Hide a note by setting
   `approved` to false in the Table editor.
