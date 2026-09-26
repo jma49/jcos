@@ -289,9 +289,9 @@ export const apps: Record<AppId, AppDefinition> = {
     internal: true,
     name: 'Welcome',
     Icon: ProjectIcon,
-    width: 440,
-    height: 470,
-    minWidth: 360,
+    width: 580,
+    height: 450,
+    minWidth: 380,
     minHeight: 420,
     Component: lazy(() => import('../apps/Welcome'))
   },
@@ -330,10 +330,11 @@ interface LaunchOptions {
   title?: string;
   origin?: Rect;
   props?: Record<string, string>;
+  center?: boolean;
 }
 
 /** Opens (or focuses) an app window with its registered defaults. */
-export function launch(app: AppId, { key, title, origin, props }: LaunchOptions = {}) {
+export function launch(app: AppId, { key, title, origin, props, center }: LaunchOptions = {}) {
   const def = apps[app];
   return useWindows.getState().open(app, {
     key,
@@ -341,7 +342,8 @@ export function launch(app: AppId, { key, title, origin, props }: LaunchOptions 
     width: def.width,
     height: def.height,
     origin,
-    props
+    props,
+    center
   });
 }
 
