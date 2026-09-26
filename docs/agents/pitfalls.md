@@ -72,6 +72,13 @@ again.
   where it had taken 55, even with its code loaded. For something that
   must open instantly, load the module yourself and render it once it's
   in (`DashboardLayer.tsx`).
+- An effect that runs on one trigger but calls functions from the
+  render sees the state of the render it last ran in. Synth's octave keys
+  saved the patch from before the last knob turn, undoing it; a nudge's
+  notification opened a conversation with the first render's state.
+  Read the latest values through `useEffectEvent` (or a ref, for a
+  callback that outlives the effect, like a notification's), and don't
+  leave dependencies out: the lint fails on it.
 - Motion's `useReducedMotion()` only knows the device. Use
   `useReduceMotion()` from `core/system.ts`, which honours System
   Preferences.
