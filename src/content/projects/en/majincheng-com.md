@@ -11,22 +11,39 @@ capture: /
 demo: https://www.majincheng.com
 ---
 
-I wanted a personal site that reads like a page rather than a dashboard, and that stays easy to update as I add projects.
+This site is JM/OS: a Mac OS X–style desktop that runs in the browser. My résumé, projects and photos are apps you open from the Dock. Around them is a working desktop: windows you can drag, stack, minimize with the Genie effect and spread out with Exposé, plus Spotlight, a Dashboard and screen savers. There are also things to do together with whoever else is here: a chat room, a guestbook, and AirDrop between visitors.
 
-## Design
+It started from [ryOS](https://github.com/ryokun6/ryos), whose icons, fonts and desktop pictures it uses. Everything else is written for this site, and it's open source under the AGPL.
 
-The layout follows [leerob.com](https://leerob.com): one serif reading face, a 600px text column, and an illustration pinned beside it on wide screens. There is no navigation bar, no hero section and no card grid. The bio has a short and a long version, and experience details stay collapsed until you open them.
+## How it's built
 
-## Content
+The page is one Astro route with a single React island. All content is assembled at build time: the text, the project pages and a snapshot of my Unsplash photos. For visitors without JavaScript, and for crawlers, the same content ships as plain HTML.
 
-Both languages live in one TypeScript file, so the English and Chinese pages always have the same structure. Projects are Markdown files with typed frontmatter, and each one gets its own page in both languages.
+- **The window manager** is a small zustand store: a map of windows and a stacking order. Windows render in the order they opened and stack with `z-index`, because moving DOM nodes would reload an embedded video.
+- **Apps are data.** Each app is one entry in a registry: name, icon, sizes, where it appears, and a lazily imported component. The Dock, Spotlight, the Terminal, Finder and `/?open=` links all read from it, so adding an app is one entry.
+- **Each window is isolated.** If an app throws, or its code is gone after a deploy, only its own window shows the error, and the rest of the desktop keeps working.
+- **The desktop follows the visitor's world.** The sky tints the wallpaper with the time of day and the weather where they are. The accent colour is sampled from the desktop picture, and the menu bar's text turns white or black depending on what's behind it.
+
+## The backend
+
+Accounts, the chat room, the guestbook and presence run on Supabase. The browser only holds the public key, so the database enforces every rule:
+
+- row-level security with column-level grants on every table;
+- private data (recovery addresses, reset tokens) in a schema the API can't reach;
+- per-member limits (three guestbook notes a day, a chat flood guard) that take an advisory lock first. Before that, six notes sent at once all got through a "three a day" check.
+
+A test suite runs about fifty of these rules against a real Postgres in CI, and races concurrent sessions against every limit. New notes and messages reach me on Telegram with a button to hide them, and the same bot publishes my Soapbox posts.
 
 ## Performance
 
-- No client-side framework on the page. The theme toggle, bio switch and copy button are a few lines of inline script.
-- The illustration is served as AVIF or WebP at the width each screen needs, about 18 KB on a phone.
-- The Chinese web font loads only on Chinese pages, and only where the system has no Chinese serif.
+A desktop full of apps can still load like a page:
 
-## Deployment
+- about 125 KB of JavaScript (gzipped) on a first visit, with every app loaded only when it's opened;
+- 0.95 MB of images, down from 2.2 MB after I found the desktop picture being downloaded twice;
+- dragging a window with six apps open went from 640 ms of script to 210 ms, once only the dragged window re-rendered.
 
-Vercel builds every push. Pull requests get a preview URL, and merging to `main` updates the live site.
+These are budgets, and `npm run perf` checks them in a real browser.
+
+## Testing
+
+Every pull request is type-checked, unit-tested and built. Then a browser opens every app in the production build and fails on any error. Game rules (Spider Solitaire, and a Pinball table played by bots) and the Telegram bot have unit tests of their own.
