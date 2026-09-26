@@ -37,4 +37,5 @@ test-results/
 playwright-report/
 coverage/
 .idea/
+.vscode/
 *.log
