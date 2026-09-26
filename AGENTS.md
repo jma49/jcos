@@ -431,6 +431,15 @@ again.
 - Playwright here launches with
   `executablePath: '/opt/pw-browsers/chromium'`. A throwaway script must
   run from inside the repository to find the `playwright` package.
+- Dependabot opens one pull request per package. Packages that move
+  together (Astro with `@astrojs/*`, React with its types) are
+  upgraded in one pull request. Adjacent bumps to the same file (the
+  workflow actions) conflict once the first merges; redo the rest on
+  `main` rather than merging `main` into each. Every major gets the
+  whole desktop opened in a browser, not only CI, which builds but
+  never runs the apps.
+- `pkill -f "<pattern>"` also matches the shell running it when the
+  pattern is in its own command line; stop background servers by PID.
 - There's no Prettier config. Don't reformat whole files; it buries the
   change in the diff.
 - Wrapping a big JSX tree reindents all of it. Wrap through a small

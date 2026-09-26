@@ -23,7 +23,7 @@ page at `/projects/<slug>/`.
 
 ## Stack
 
-- [Astro](https://astro.build) 5, static output, with one client-only
+- [Astro](https://astro.build) 7 (Node 22.12 or later), static output, with one client-only
   React 19 island for the desktop (`src/os/`), plus zustand and motion.
 - [Supabase](https://supabase.com): accounts, Postgres with row-level
   security, Realtime, Storage and Edge Functions (Deno).
