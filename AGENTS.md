@@ -31,8 +31,9 @@ readers, crawlers and visitors without JavaScript.
   must follow it (see `setLoudness()` in `music.ts`).
 - `src/os/shell/AppSwitcher.tsx`: ⌥Tab steps through open windows, most
   recent first; releasing ⌥ focuses the chosen one.
-- `src/os/shell/Screensaver.tsx` and `savers.tsx`: Photos (a slideshow of the
-  library), Flurry, Soapbox (the latest posts in large type), Starfield,
+- `src/os/shell/Screensaver.tsx` and `savers.tsx`: Desktop Pictures (a
+  slideshow of Mac OS X's scenic desktop pictures, `SCENIC` in
+  `wallpapers.ts`), Flurry, Soapbox (the latest posts in large type), Starfield,
   Clock or Bounce, after the idle time chosen in System Preferences (two
   minutes by default).
 - `src/os/apps/Preferences.tsx`: System Preferences: desktop picture,
@@ -41,9 +42,10 @@ readers, crawlers and visitors without JavaScript.
   (`os-wallpaper`, `os-wallpaper-rotate`, `os-screensaver`, `theme`,
   `os-place`).
 - The desktop picture changes to another from the same collection each
-  time the visitor leaves the tab and comes back (`Desktop.tsx`,
-  `nextPicture()` in `wallpapers.ts`); a checkbox in System Preferences
-  turns it off.
+  time the visitor leaves the tab and comes back (`useDesktopPicture.ts`,
+  `nextPicture()` in `wallpapers.ts`); the default moves on to `SCENIC`.
+  A checkbox in System Preferences turns it off. Jincheng's own photos
+  are only shown in Photos, never as the desktop or the screen saver.
 - The menu bar is see-through. Its text is white or black depending on
   how bright the top of the desktop picture is (`topBrightness()` in
   `accent.ts`, darkened by the sky's layers via `skyDimming()`), shown as
@@ -81,9 +83,12 @@ readers, crawlers and visitors without JavaScript.
 - `src/os/social/social.ts`: Stickies (a guestbook) and presence (who's
   online and from which city, and other visitors' cursors labelled with
   it) on Supabase. See below.
-- `src/os/apps/Soapbox.tsx`: Jincheng's own notes and rants. Posts come
-  from a Telegram bot, `supabase/functions/soapbox-bot` (setup in its
-  README); visitors read them and leave one emoji reaction per post.
+- `src/os/apps/Soapbox.tsx`: Jincheng's own notes and rants, with
+  photos. Posts come from a Telegram bot, `supabase/functions/soapbox-bot`
+  (setup in its README): text, photos with captions, albums (one post)
+  and images sent as files; photos are copied into the public `soapbox`
+  storage bucket. Visitors read them and leave one emoji reaction per
+  post.
 - `src/os/media/music.ts`, `lyrics.ts`, `apps/ipod/IPod.tsx` and `apps/Karaoke.tsx`:
   the iPod (click wheel, menus, Now Playing with the video and a line of
   lyrics) and Karaoke (full-window video with lyrics that fill as they're
@@ -145,8 +150,10 @@ readers, crawlers and visitors without JavaScript.
   Finder's Applets folder and Spotlight. To add one, write the app,
   register it, and add an entry to `APPLETS`.
 - Open windows survive a reload (`src/os/core/windowSession.ts`, saved in
-  `os-windows`); `?open=` wins, and a first visit gets About and a Welcome
-  window (`os-welcomed`).
+  `os-windows`); `?open=` wins. A first visit gets the Welcome window
+  alone, centred (`os-welcomed`), and About once it's closed.
+- The home page's browser tab says "Jincheng" (`tabTitle` in
+  `Layout.astro`); link previews keep the full title.
 - Phones are anything narrower than 768px or a short touch screen (a phone
   sideways): `isPhone()` and `PHONE_QUERY` in `src/os/core/store.ts`, and
   the same media query in the stylesheets.
