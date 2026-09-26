@@ -86,3 +86,11 @@
   width: 18px;
   height: 12px;
 }
+
+/* Drawn output (cowsay) keeps its spacing. */
+.os-term-pre {
+  margin: 0;
+  font: inherit;
+  line-height: 1.2;
+  white-space: pre;
+}

@@ -267,6 +267,8 @@ export function nextPicture(current: string | null, photos: string[]): string | 
   else if (current?.startsWith('color:')) pool = SOLID_COLORS.map((c) => `color:${c.id}`);
   else if (current?.startsWith('pattern:')) pool = PATTERNS.map((p) => `pattern:${p.id}`);
   else if (current?.startsWith('dynamic:')) return null;
+  // A picture of the visitor's own (from Photo Booth) stays put.
+  else if (current?.startsWith('data:')) return null;
   else pool = photos;
   const others = pool.filter((value) => value !== current);
   return others.length ? others[Math.floor(Math.random() * others.length)] : null;

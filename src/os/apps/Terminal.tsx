@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useOSData } from '../core/context';
 import { launch, openableApps } from '../core/registry';
 import { useWindows } from '../core/store';
@@ -10,21 +10,109 @@ import { HOME, placeLabel, searchPlaces, type Place } from '../ambient/place';
 import { describe, getWeather } from '../ambient/weather';
 import { getSocial } from '../social/social';
 import { play } from '../core/sound';
+import { useInstalledApplets } from '../core/applets';
+import { buildDisk, type FileNode } from '../core/files';
 
 interface Line {
   id: number;
   kind: 'input' | 'output' | 'error';
   content: ReactNode;
+  /** The prompt an input line was typed at. */
+  prompt?: string;
 }
 
-const PROMPT = 'jincheng@os ~ %';
+/** The prompt, with the working folder's name as zsh shows it ("~" for the disk). */
+const promptFor = (cwd: string) => `jincheng@os ${cwd === '/' ? '~' : cwd.split('/').pop()} %`;
+
+/** A path typed in the Terminal, made absolute against the working folder. */
+function absolute(cwd: string, typed: string) {
+  const parts = typed.startsWith('/') || typed.startsWith('~') ? [] : cwd.split('/').filter(Boolean);
+  for (const part of typed.replace(/^~\/?/, '').split('/')) {
+    if (!part || part === '.') continue;
+    if (part === '..') parts.pop();
+    else parts.push(part);
+  }
+  return parts;
+}
+
+/** The node at a typed path, matching names without regard to case. */
+function resolve(disk: FileNode, cwd: string, typed: string): FileNode | null {
+  let node: FileNode | undefined = disk;
+  for (const part of absolute(cwd, typed)) {
+    const want = part.toLowerCase();
+    node = node?.children?.find((c) => c.name.toLowerCase() === want || c.path.split('/').pop()?.toLowerCase() === want);
+    if (!node) return null;
+  }
+  return node ?? null;
+}
+
+/** How `ls` shows a name: folders with a slash, names with spaces quoted. */
+const listed = (n: FileNode) => {
+  const name = /\s/.test(n.name) ? `'${n.name}'` : n.name;
+  return n.children ? `${name}/` : name;
+};
+
+const FORTUNES = [
+  'There are two hard things in computer science: cache invalidation, naming things, and off-by-one errors.',
+  'It works on my machine. Ship the machine.',
+  'A flaky test is a test that is telling you something you don’t want to hear.',
+  'The best time to write the test was before the bug. The second best time is now.',
+  'Think different. Then write it down, because you’ll forget why.',
+  'Premature optimization is the root of all evil. Late optimization is the root of all pager alerts.',
+  'Every V6 was once a V0 you kept falling off.',
+  'Aqua was never about the buttons. (It was a little about the buttons.)',
+  'If it hurts, do it more often: deploys, reviews, and climbing.',
+  'Weeks of coding can save you hours of planning.',
+  'The quickest way to find a bug is to demo the feature.',
+  'Real artists ship. — Steve Jobs'
+];
+
+/** A cow, saying something, as cowsay drew it. */
+function cowsay(text: string) {
+  const words = (text || 'Moo.').split(/\s+/);
+  const lines: string[] = [];
+  for (const w of words) {
+    const last = lines[lines.length - 1];
+    if (last !== undefined && (last + ' ' + w).length <= 36) lines[lines.length - 1] = `${last} ${w}`;
+    else lines.push(w);
+  }
+  const width = Math.max(...lines.map((l) => l.length));
+  const bubble =
+    lines.length === 1
+      ? [`< ${lines[0]} >`]
+      : lines.map((l, i) => {
+          const [a, b] = i === 0 ? ['/', '\\'] : i === lines.length - 1 ? ['\\', '/'] : ['|', '|'];
+          return `${a} ${l.padEnd(width)} ${b}`;
+        });
+  return [
+    ` ${'_'.repeat(width + 2)}`,
+    ...bubble,
+    ` ${'-'.repeat(width + 2)}`,
+    '        \\   ^__^',
+    '         \\  (oo)\\_______',
+    '            (__)\\       )\\/\\',
+    '                ||----w |',
+    '                ||     ||'
+  ].join('\n');
+}
+
+/** How long something's been going, the way `uptime` says it. */
+function since(ms: number) {
+  const m = Math.floor(ms / 60_000);
+  if (m < 1) return `${Math.max(1, Math.floor(ms / 1000))} secs`;
+  if (m < 60) return `${m} min${m === 1 ? '' : 's'}`;
+  return `${Math.floor(m / 60)}:${String(m % 60).padStart(2, '0')}`;
+}
 
 const COMMANDS: Record<string, string> = {
   help: 'list commands',
   whoami: 'who this is',
   about: 'the short bio',
-  ls: 'list the desktop, or `ls projects`',
-  open: 'open an app, project or URL',
+  ls: 'list a folder on Macintosh HD: `ls Music`',
+  cd: 'change folder: `cd Pictures`, `cd ..`',
+  pwd: 'where you are',
+  cat: 'print a document',
+  open: 'open an app, project, file or URL',
   projects: 'list projects',
   contact: 'ways to reach me',
   theme: 'switch appearance: `theme light|dark`',
@@ -35,6 +123,10 @@ const COMMANDS: Record<string, string> = {
   weather: 'weather where you are, or `weather <city>`',
   soapbox: 'what Jincheng posted lately',
   echo: 'print text',
+  say: 'say something out loud (sound on)',
+  cowsay: 'a cow says it',
+  fortune: 'a fortune',
+  uptime: 'how long this desktop has been up',
   exit: 'close this window'
 };
 
@@ -88,6 +180,10 @@ export default function Terminal({ win }: AppProps) {
   const [history, setHistory] = useState<string[]>([]);
   const [cursor, setCursor] = useState<number | null>(null);
   const nextId = useRef(2);
+  const [cwd, setCwd] = useState('/');
+  const applets = useInstalledApplets();
+  const disk = useMemo(() => buildDisk(data, applets), [data, applets]);
+  const prompt = promptFor(cwd);
   const field = useRef<HTMLInputElement>(null);
   const screen = useRef<HTMLDivElement>(null);
 
@@ -97,8 +193,8 @@ export default function Terminal({ win }: AppProps) {
 
   const slugs = data.projects.map((p) => p.slug);
 
-  const print = (...items: { kind?: Line['kind']; content: ReactNode }[]) =>
-    setLines((ls) => [...ls, ...items.map((it) => ({ id: nextId.current++, kind: it.kind ?? 'output', content: it.content }))]);
+  const print = (...items: { kind?: Line['kind']; content: ReactNode; prompt?: string }[]) =>
+    setLines((ls) => [...ls, ...items.map((it) => ({ id: nextId.current++, kind: it.kind ?? 'output', content: it.content, prompt: it.prompt }))]);
 
   const run = (raw: string) => {
     const [cmd = '', ...args] = raw.trim().split(/\s+/);
@@ -123,10 +219,38 @@ export default function Terminal({ win }: AppProps) {
         return print({ content: `${data.name} — ${data.role}, ${data.location}` });
       case 'about':
         return print(...data.bio.short.map((p) => ({ content: plain(p) })));
-      case 'ls':
-        if (arg === 'projects' || arg === 'projects/')
-          return print({ content: data.projects.map((p) => `${p.slug}/`).join('   ') });
-        return print({ content: 'About.txt   Résumé   Projects/   Photos/   Stickies.app   Terminal.app' });
+      case 'ls': {
+        const long = args[0] === '-l';
+        const target = (long ? args.slice(1) : args).join(' ');
+        const node = resolve(disk, cwd, target);
+        if (!node) return print({ kind: 'error', content: `ls: ${target}: No such file or directory` });
+        const items = node.children ?? [node];
+        if (!items.length) return;
+        if (!long) return print({ content: items.map(listed).join('   ') });
+        return print(
+          ...items.map((n) => ({
+            content: `${n.children ? 'drwxr-xr-x' : '-rw-r--r--'}  jincheng  ${(n.date ? new Date(n.date).toDateString().slice(4) : '            ').padEnd(12)}  ${listed(n)}`
+          }))
+        );
+      }
+      case 'cd': {
+        const node = resolve(disk, cwd, arg || '/');
+        if (!node) return print({ kind: 'error', content: `cd: no such file or directory: ${arg}` });
+        if (!node.children) return print({ kind: 'error', content: `cd: not a directory: ${arg}` });
+        return setCwd(node.path);
+      }
+      case 'pwd':
+        return print({ content: cwd === '/' ? '/Volumes/Macintosh HD' : `/Volumes/Macintosh HD${cwd}` });
+      case 'cat': {
+        const node = resolve(disk, cwd, arg);
+        if (!arg) return print({ kind: 'error', content: 'usage: cat <file>' });
+        if (!node) return print({ kind: 'error', content: `cat: ${arg}: No such file or directory` });
+        if (node.children) return print({ kind: 'error', content: `cat: ${arg}: Is a directory` });
+        if (node.path === '/Documents/About Me') return print(...data.bio.short.map((p) => ({ content: plain(p) })));
+        const lines = node.look?.lines?.filter(Boolean);
+        if (lines?.length) return print(...lines.map((l) => ({ content: l })));
+        return print({ kind: 'error', content: `cat: ${node.name}: ${node.kind}; try \`open ${arg}\`` });
+      }
       case 'projects':
         return print(
           ...data.projects.map((p) => ({
@@ -149,6 +273,12 @@ export default function Terminal({ win }: AppProps) {
         if (project) {
           openProject(project);
           return print({ content: `Opening ${project.title}…` });
+        }
+        const file = resolve(disk, cwd, arg);
+        if (file && file.path !== '/') {
+          if (file.children) launch('finder', { props: { path: file.path } });
+          else file.open?.(null);
+          return print({ content: `Opening ${file.name}…` });
         }
         if (/^(https?:\/\/)?[\w-]+(\.[\w-]+)+/.test(target)) {
           launch('browser', { props: { url: /^https?:/.test(arg) ? arg : `https://${arg}` } });
@@ -211,6 +341,29 @@ export default function Terminal({ win }: AppProps) {
         return;
       case 'echo':
         return print({ content: arg });
+      case 'cowsay':
+        return print({ content: <pre className="os-term-pre">{cowsay(arg)}</pre> });
+      case 'fortune':
+        return print({ content: FORTUNES[Math.floor(Math.random() * FORTUNES.length)] });
+      case 'uptime': {
+        const { visitors } = useWindows.getState();
+        const users = visitors?.length ?? 1;
+        const time = new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+        return print({ content: `${time}  up ${since(performance.now())}, ${users} user${users === 1 ? '' : 's'}, load averages: 0.42 0.37 0.31` });
+      }
+      case 'say': {
+        if (!arg) return print({ kind: 'error', content: 'usage: say <text>' });
+        const { soundOn, volume } = useWindows.getState();
+        if (!soundOn) return print({ kind: 'error', content: 'say: sound is off (turn it on with the speaker in the menu bar)' });
+        if (!('speechSynthesis' in window)) return print({ kind: 'error', content: 'say: this browser can’t speak' });
+        const speech = new SpeechSynthesisUtterance(arg.slice(0, 300));
+        speech.volume = volume;
+        // Mac OS X's voice was Victoria, then Alex; take something English.
+        speech.voice = speechSynthesis.getVoices().find((v) => /Alex|Samantha|Daniel/.test(v.name)) ?? null;
+        speechSynthesis.cancel();
+        speechSynthesis.speak(speech);
+        return;
+      }
       case 'sudo':
         return print({ kind: 'error', content: 'Nice try. This incident will be reported.' });
       case 'exit':
@@ -229,12 +382,18 @@ export default function Terminal({ win }: AppProps) {
       else if (matches.length > 1) print({ content: matches.join('   ') });
       return;
     }
-    if (parts[0] === 'open') {
-      const pool = [...APP_TARGETS, ...slugs];
-      const matches = pool.filter((t) => t.startsWith(parts[1]));
-      if (matches.length === 1) setInput(`open ${matches[0]}`);
-      else if (matches.length > 1) print({ content: matches.join('   ') });
-    }
+    // Paths: complete the last part against the folder it's in.
+    const typed = parts.slice(1).join(' ');
+    const slash = typed.lastIndexOf('/');
+    const [dir, stem] = slash >= 0 ? [typed.slice(0, slash + 1), typed.slice(slash + 1)] : ['', typed];
+    const folder = resolve(disk, cwd, dir || '.');
+    const names = (folder?.children ?? [])
+      .filter((c) => (parts[0] === 'cd' ? c.children : true))
+      .map((c) => `${c.name}${c.children ? '/' : ''}`);
+    const pool = parts[0] === 'open' && !dir ? [...APP_TARGETS, ...slugs, ...names] : names;
+    const matches = [...new Set(pool)].filter((t) => t.toLowerCase().startsWith(stem.toLowerCase()));
+    if (matches.length === 1) setInput(`${parts[0]} ${dir}${matches[0]}`);
+    else if (matches.length > 1) print({ content: matches.join('   ') });
   };
 
   return (
@@ -242,7 +401,7 @@ export default function Terminal({ win }: AppProps) {
       <div ref={screen} className="os-scroll os-term-screen">
         {lines.map((l) => (
           <div key={l.id} className={`os-term-line os-term-${l.kind}`}>
-            {l.kind === 'input' && <span className="os-term-prompt">{PROMPT}</span>}
+            {l.kind === 'input' && <span className="os-term-prompt">{l.prompt}</span>}
             {l.content}
           </div>
         ))}
@@ -250,7 +409,7 @@ export default function Terminal({ win }: AppProps) {
           className="os-term-line"
           onSubmit={(e) => {
             e.preventDefault();
-            print({ kind: 'input', content: input });
+            print({ kind: 'input', content: input, prompt });
             if (input.trim()) setHistory((h) => [...h, input.trim()]);
             setCursor(null);
             run(input);
@@ -258,7 +417,7 @@ export default function Terminal({ win }: AppProps) {
           }}
         >
           <label className="os-term-prompt" htmlFor={`${win.id}-input`}>
-            {PROMPT}
+            {prompt}
           </label>
           <input
             id={`${win.id}-input`}

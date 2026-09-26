@@ -12,3 +12,6 @@ interface ImportMetaEnv {
 interface ImportMeta {
   readonly env: ImportMetaEnv;
 }
+
+/** The short commit hash this build came from, or "dev" (astro.config.mjs). */
+declare const __JMOS_BUILD__: string;

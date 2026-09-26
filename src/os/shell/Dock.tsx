@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { motion, useMotionValue, useSpring, useTransform, type MotionValue } from 'motion/react';
 import { apps, dockApps, launch, mobileDockApps, rectOf } from '../core/registry';
 import { DashboardIcon, TrashIcon } from '../core/icons';
@@ -6,6 +6,7 @@ import { useWindows } from '../core/store';
 import { play } from '../core/sound';
 import type { AppId } from '../core/types';
 import { useChatBadge } from '../social/chatState';
+import { ContextMenu, type ContextMenuItem } from './ContextMenu';
 
 const BASE = 50;
 const PEAK = 78;
@@ -18,6 +19,7 @@ function Magnified({
   running,
   badge,
   onActivate,
+  onMenu,
   children,
   dataApp,
   mobile = false
@@ -27,6 +29,8 @@ function Magnified({
   running?: boolean;
   /** A red count on the icon, like Mail's. */
   badge?: number;
+  /** A right-click (or long press) on the icon. */
+  onMenu?: (at: { x: number; y: number }) => void;
   onActivate: (el: HTMLElement) => void;
   children: (size: number) => React.ReactNode;
   dataApp?: string;
@@ -48,6 +52,11 @@ function Magnified({
       className="os-dock-item"
       style={{ width: size, height: size }}
       onClick={() => ref.current && onActivate(ref.current)}
+      onContextMenu={(e) => {
+        if (!onMenu) return;
+        e.preventDefault();
+        onMenu({ x: e.clientX, y: e.clientY - 8 });
+      }}
       aria-label={badge ? `${label}, ${badge} new` : label}
       data-dock-app={dataApp}
       data-mobile={mobile || undefined}
@@ -81,6 +90,30 @@ export function Dock() {
     else if (!visiting.some((v) => v.app === w.app)) visiting.push({ key: w.app, app: w.app, label: apps[w.app].name });
   }
 
+  const [menu, setMenu] = useState<{ x: number; y: number; items: ContextMenuItem[] } | null>(null);
+
+  /** The Dock menu for an app: its windows, then what can be done with it. */
+  const menuFor = (app: AppId): ContextMenuItem[] => {
+    const { windows: all, order, focus, minimize, close } = useWindows.getState();
+    const mine = order.map((id) => all[id]).filter((w) => w && w.app === app);
+    const def = apps[app];
+    return [
+      ...mine.map((w) => ({ label: `${w.minimized ? '◇ ' : ''}${w.title}`, action: () => focus(w.id) })),
+      ...(mine.length ? [{ label: '', divider: true }] : []),
+      ...(mine.length ? [] : [{ label: 'Open', action: () => launch(app) }]),
+      ...(def.inApplications || def.applet
+        ? [{ label: 'Show in Finder', action: () => launch('finder', { props: { path: def.applet ? '/Applets' : '/Applications' } }) }]
+        : []),
+      ...(mine.length
+        ? [
+            { label: 'Hide', disabled: mine.every((w) => w.minimized), action: () => mine.forEach((w) => !w.minimized && minimize(w.id)) },
+            { label: 'Quit', action: () => mine.forEach((w) => close(w.id)) }
+          ]
+        : [])
+    ];
+  };
+  const openMenu = (items: ContextMenuItem[]) => (at: { x: number; y: number }) => setMenu({ ...at, items });
+
   const activate = (app: AppId, el: HTMLElement) => {
     const open = Object.values(useWindows.getState().windows).filter((w) => w.app === app);
     if (open.length) {
@@ -109,6 +142,7 @@ export function Dock() {
               label={name}
               running={running.has(app)}
               badge={badgeOf(app)}
+              onMenu={(at) => openMenu(menuFor(app))(at)}
               dataApp={app}
               mobile={mobileDockApps.includes(app)}
               onActivate={(el) => activate(app, el)}
@@ -141,6 +175,16 @@ export function Dock() {
               label={v.label}
               running
               badge={v.id ? 0 : badgeOf(v.app)}
+              onMenu={(at) =>
+                openMenu(
+                  v.id
+                    ? [
+                        { label: 'Show', action: () => useWindows.getState().focus(v.id!) },
+                        { label: 'Close', action: () => useWindows.getState().close(v.id!) }
+                      ]
+                    : menuFor(v.app)
+                )(at)
+              }
               dataApp={v.id ? undefined : v.app}
               onActivate={(el) => (v.id ? useWindows.getState().focus(v.id) : activate(v.app, el))}
             >
@@ -149,10 +193,16 @@ export function Dock() {
           );
         })}
 
-        <Magnified mouseX={mouseX} label="Trash" onActivate={() => play('trash')}>
+        <Magnified
+          mouseX={mouseX}
+          label="Trash"
+          onActivate={() => play('trash')}
+          onMenu={openMenu([{ label: 'Empty Trash', action: () => play('trash') }])}
+        >
           {(s) => <TrashIcon size={s} />}
         </Magnified>
       </motion.div>
+      {menu && <ContextMenu at={menu} items={menu.items} onClose={() => setMenu(null)} label="Dock" />}
     </nav>
   );
 }

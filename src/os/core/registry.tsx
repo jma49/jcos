@@ -3,6 +3,9 @@ import {
   AboutIcon,
   AccountIcon,
   AirDropIcon,
+  PhotoBoothIcon,
+  SynthIcon,
+  MacIcon,
   ChatIcon,
   AppletStoreIcon,
   CalculatorIcon,
@@ -241,6 +244,37 @@ export const apps: Record<AppId, AppDefinition> = {
     minWidth: 380,
     minHeight: 400,
     Component: lazy(() => import('../apps/AirDrop'))
+  },
+  photobooth: {
+    inApplications: true,
+    material: 'metal',
+    name: 'Photo Booth',
+    Icon: PhotoBoothIcon,
+    width: 640,
+    height: 620,
+    minWidth: 420,
+    minHeight: 460,
+    Component: lazy(() => import('../apps/PhotoBooth'))
+  },
+  synth: {
+    applet: true,
+    material: 'metal',
+    name: 'Synth',
+    Icon: SynthIcon,
+    width: 640,
+    height: 380,
+    minWidth: 520,
+    minHeight: 340,
+    Component: lazy(() => import('../apps/Synth'))
+  },
+  aboutmac: {
+    name: 'About This Mac',
+    Icon: MacIcon,
+    width: 300,
+    height: 420,
+    minWidth: 280,
+    minHeight: 380,
+    Component: lazy(() => import('../apps/AboutThisMac'))
   },
   account: {
     name: 'Account',

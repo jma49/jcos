@@ -70,6 +70,9 @@ export type AppId =
   | 'karaoke'
   | 'chat'
   | 'airdrop'
+  | 'photobooth'
+  | 'synth'
+  | 'aboutmac'
   | 'account'
   | 'welcome';
 

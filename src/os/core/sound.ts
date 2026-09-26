@@ -5,11 +5,15 @@
 
 import { useWindows } from './store';
 
-export type Sound = 'open' | 'close' | 'minimize' | 'restore' | 'click' | 'tick' | 'pop' | 'error' | 'chime' | 'trash';
+export type Sound = 'open' | 'close' | 'minimize' | 'restore' | 'click' | 'tick' | 'pop' | 'error' | 'chime' | 'trash' | 'shutter';
 
 let context: AudioContext | null = null;
 
-function audio() {
+/**
+ * The one AudioContext, for apps that make their own sound (Synth). They
+ * must follow the sound switch and volume like everything else.
+ */
+export function audio() {
   if (typeof window === 'undefined' || !('AudioContext' in window)) return null;
   context ??= new AudioContext();
   if (context.state === 'suspended') context.resume().catch(() => {});
@@ -89,6 +93,14 @@ const RECIPES: Record<Sound, (ctx: AudioContext, out: AudioNode) => void> = {
   chime: (ctx, out) => {
     // A soft major chord, rolled: the "sounds are on" hello.
     [349.23, 440, 523.25, 698.46].forEach((f, i) => tone(ctx, out, { from: f, at: i * 0.05, length: 1.4, gain: 0.12 }));
+  },
+  shutter: (ctx, out) => {
+    // A camera's shutter: two quick mechanical clacks.
+    whoosh(ctx, out, { from: 4000, to: 1800, length: 0.05, gain: 0.35 });
+    tone(ctx, out, { from: 2400, to: 900, at: 0.005, length: 0.03, type: 'square', gain: 0.08 });
+    setTimeout(() => {
+      whoosh(ctx, out, { from: 3000, to: 1400, length: 0.06, gain: 0.3 });
+    }, 70);
   },
   trash: (ctx, out) => {
     whoosh(ctx, out, { from: 900, to: 400, length: 0.25, gain: 0.25 });
