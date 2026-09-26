@@ -375,7 +375,9 @@ Deno.serve(async (request) => {
       await handle(message, Boolean(update.edited_message));
     } catch (error) {
       console.error(error);
-      await reply(message.chat.id, 'Something went wrong; the post wasn’t saved.').catch(() => {});
+      // Only the owner gets here, so say what went wrong: which step, and what the server answered.
+      const reason = error instanceof Error ? error.message.slice(0, 300) : String(error);
+      await reply(message.chat.id, `Something went wrong; the post wasn’t saved.\n\n${reason}`).catch(() => {});
     }
   }
   // Always 200, so Telegram doesn't retry.

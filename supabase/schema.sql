@@ -672,3 +672,7 @@ on conflict (id) do update
   set public = true,
       file_size_limit = excluded.file_size_limit,
       allowed_mime_types = excluded.allowed_mime_types;
+
+-- PostgREST picks up the new function and column; Supabase usually does
+-- this by itself after a schema change, but not always.
+notify pgrst, 'reload schema';
