@@ -4,7 +4,7 @@ import { launch, openableApps } from '../core/registry';
 import { useWindows } from '../core/store';
 import type { AppProps } from '../core/registry';
 import type { AppId, OSData } from '../core/types';
-import { plain } from './inline';
+import { plain } from '../core/inline';
 import { openProject } from './Projects';
 import { HOME, placeLabel, searchPlaces, type Place } from '../ambient/place';
 import { describe, getWeather } from '../ambient/weather';

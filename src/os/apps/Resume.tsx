@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useOSData } from '../core/context';
-import { plain } from './inline';
+import { plain } from '../core/inline';
 
 const ZOOMS = [0.75, 0.9, 1, 1.15, 1.3];
 
