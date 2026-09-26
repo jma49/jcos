@@ -13,6 +13,7 @@
     "preview": "astro preview",
     "astro": "astro",
     "check": "astro check",
+    "lint": "eslint src",
     "preview:capture": "node scripts/capture-previews.mjs",
     "photos:update": "node scripts/update-photos.mjs",
     "test": "vitest run",
@@ -37,8 +38,11 @@
     "@astrojs/check": "^0.9.10",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
+    "eslint": "^10.11.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
     "playwright": "^1.63.0",
     "typescript": "^5.9.3",
+    "typescript-eslint": "^8.70.1",
     "vitest": "^5.0.2"
   },
   "allowScripts": {
