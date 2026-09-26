@@ -1,4 +1,5 @@
 import {
+  memo,
   Suspense,
   useCallback,
   useEffect,
@@ -105,7 +106,11 @@ const FRICTION = 3.2;
 /** Share of velocity kept when bouncing off a screen edge. */
 const BOUNCE = 0.45;
 
-export function Window({ win, focused, z, exposed }: Props) {
+/**
+ * One window. Memoized: while another window is dragged (a store update
+ * every frame), this one and the app inside it don't re-render.
+ */
+export const Window = memo(function Window({ win, focused, z, exposed }: Props) {
   const { close, focus, minimize, toggleMaximize, setBounds } = useWindows.getState();
   const [drawerSlot, setDrawerSlot] = useState<HTMLDivElement | null>(null);
   // Right if it fits, else left, else over the window's own content (maximized or very wide windows).
@@ -341,7 +346,7 @@ export function Window({ win, focused, z, exposed }: Props) {
       )}
     </motion.section>
   );
-}
+});
 
 function Loading(): ReactNode {
   return (

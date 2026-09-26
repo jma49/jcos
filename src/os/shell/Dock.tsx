@@ -2,7 +2,7 @@ import { useRef, useState } from 'react';
 import { motion, useMotionValue, useSpring, useTransform, type MotionValue } from 'motion/react';
 import { apps, dockApps, launch, mobileDockApps, rectOf } from '../core/registry';
 import { DashboardIcon, TrashIcon } from '../core/icons';
-import { useWindows } from '../core/store';
+import { useWindowList, useWindows } from '../core/store';
 import { DOCK_MAGNIFY, DOCK_SIZES, useSystem } from '../core/system';
 import { play } from '../core/sound';
 import type { AppId } from '../core/types';
@@ -86,14 +86,14 @@ function Magnified({
 export function Dock() {
   const mouseX = useMotionValue(Infinity);
   const { base } = useDockSizes();
-  const windows = useWindows((s) => s.windows);
-  const running = new Set(Object.values(windows).map((w) => w.app));
+  const windows = useWindowList();
+  const running = new Set(windows.map((w) => w.app));
   const chatBadge = useChatBadge();
   const badgeOf = (app: AppId) => (app === 'chat' ? chatBadge : 0);
   // Open apps that aren't kept in the Dock get a slot on the right while they
   // run, as on a Mac: one per app, or one per window for project pages.
   const visiting: { key: string; app: AppId; label: string; id?: string }[] = [];
-  for (const w of Object.values(windows)) {
+  for (const w of windows) {
     if (dockApps.includes(w.app) || apps[w.app].noDock) continue;
     if (w.app === 'project') visiting.push({ key: w.id, app: w.app, label: w.title, id: w.id });
     else if (!visiting.some((v) => v.app === w.app)) visiting.push({ key: w.app, app: w.app, label: apps[w.app].name });

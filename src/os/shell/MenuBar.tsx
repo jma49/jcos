@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { apps, launch } from '../core/registry';
-import { isPhone, useFocusedId, useWindows } from '../core/store';
+import { isPhone, useFocusedId, useWindowList, useWindows } from '../core/store';
 import { useOSData } from '../core/context';
 import { SkyStatus, type SkyState } from '../ambient/Sky';
 import { OnlineStatus } from '../social/Presence';
@@ -32,7 +32,7 @@ function useClock() {
 export function MenuBar({ sky }: { sky: SkyState }) {
   const data = useOSData();
   const focusedId = useFocusedId();
-  const windows = useWindows((s) => s.windows);
+  const windows = useWindowList();
   const theme = useWindows((s) => s.theme);
   const { close, minimize, toggleMaximize, focus, setTheme, setSpotlight } = useWindows.getState();
   const [openMenu, setOpenMenu] = useState<string | null>(null);
@@ -41,7 +41,7 @@ export function MenuBar({ sky }: { sky: SkyState }) {
   const clock24 = useSystem((s) => s.clock24);
   const clockDate = useSystem((s) => s.clockDate);
 
-  const focused = focusedId ? windows[focusedId] : null;
+  const focused = focusedId ? (windows.find((w) => w.id === focusedId) ?? null) : null;
   const appName = focused ? apps[focused.app].name : 'Finder';
 
   useEffect(() => {
@@ -116,8 +116,8 @@ export function MenuBar({ sky }: { sky: SkyState }) {
     Window: [
       { label: 'Minimize', shortcut: '⌥M', disabled: !focused, action: () => focused && minimize(focused.id) },
       { label: 'Zoom', disabled: !focused, action: () => focused && toggleMaximize(focused.id) },
-      ...(Object.values(windows).length ? [{ divider: true, label: '' }] : []),
-      ...Object.values(windows).map((w) => ({ label: `${w.id === focusedId ? '✓ ' : ''}${w.title}`, action: () => focus(w.id) }))
+      ...(windows.length ? [{ divider: true, label: '' }] : []),
+      ...windows.map((w) => ({ label: `${w.id === focusedId ? '✓ ' : ''}${w.title}`, action: () => focus(w.id) }))
     ]
   };
 
@@ -138,7 +138,7 @@ export function MenuBar({ sky }: { sky: SkyState }) {
 
   // See-through over the desktop; solid when a window runs up under it: a
   // zoomed one, or any app on a phone, where apps are full screen.
-  const solid = Object.values(windows).some((w) => !w.minimized && (w.maximized || phone));
+  const solid = windows.some((w) => !w.minimized && (w.maximized || phone));
 
   return (
     <header ref={barRef} className="os-menubar" data-solid={solid || undefined}>
