@@ -86,6 +86,8 @@
 .os-chat-bubble-wrap {
   min-width: 0;
   display: grid;
+  /* Bubbles are as wide as what they say, not as the name above them. */
+  justify-items: start;
   gap: 2px;
 }
 
