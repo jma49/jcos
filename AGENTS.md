@@ -145,7 +145,10 @@ readers, crawlers and visitors without JavaScript.
   HD (`cd`, `pwd`, `ls`, `cat`, `open <path>`), and the Dock and the
   desktop share `shell/ContextMenu.tsx` for their right-click menus.
 - `src/os/core/applets.ts` and `apps/AppletStore.tsx`: the Applet Store's
-  catalog (Minesweeper, Tile Game, Calculator, Synth) and which applets this
+  catalog (Minesweeper, Tile Game, Spider Solitaire, Pinball, Calculator,
+  Synth). Pinball's table, physics and rules are in `apps/pinball/table.ts`
+  (table units, 400 × 700); keep it free of anything from Microsoft's
+  Space Cadet and which applets this
   browser has installed (`os-applets`). Installed applets appear in
   Finder's Applets folder and Spotlight. To add one, write the app,
   register it, and add an entry to `APPLETS`.
