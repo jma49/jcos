@@ -248,7 +248,7 @@ an app is open.
 - `src/os/core/store.ts`: window map + z-order array; theme, Spotlight,
   Dashboard, Exposé, screensaver, desktop picture and online count.
 - `src/os/shell/`, `ambient/`, `look/`, `media/`, `social/`: the
-  features above, grouped by domain (see AGENTS.md).
+  features above, grouped by domain (see docs/agents/desktop.md).
 - `src/os/core/registry.tsx`: every app, lazily loaded; `dockApps` and
   `mobileDockApps` choose what the Dock shows.
 - `src/os/apps/*`: one component per app.

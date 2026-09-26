@@ -90,10 +90,12 @@ tests/api/         the Vercel Functions' unit tests (not in api/, or Vercel woul
 supabase/          schema, migrations, Edge Functions, database tests
 scripts/           preview capture, photo refresh, favicon and portrait builders, bot setup
 public/os/         icons, fonts and desktop pictures (from ryOS, see NOTICE)
+docs/agents/       guidance for coding agents, by part (AGENTS.md is the entry point)
 ```
 
-[AGENTS.md](AGENTS.md) has the conventions and a map of every part: how to
-add an app, a project, a song or a desktop picture.
+[AGENTS.md](AGENTS.md) has the conventions and the checks for each kind of
+change; [docs/agents/](docs/agents/) maps every part of the desktop and
+how to add an app, a project, a song or a desktop picture.
 [HANDOFF.md](HANDOFF.md) is the running state of the project and its open
 issues.
 
@@ -125,8 +127,9 @@ these budgets:
 - the script time of a drag with six apps open;
 - the script time of an idle desktop.
 
-AGENTS.md has the rules and the self-audit every significant change
-goes through.
+[docs/agents/performance.md](docs/agents/performance.md) has the rules,
+and [docs/agents/self-audit.md](docs/agents/self-audit.md) the audit every
+significant change goes through.
 
 ## Scripts
 
@@ -135,7 +138,7 @@ goes through.
 | `npm run check` | Type-checks the site (`astro check`). CI runs it on every pull request. |
 | `npm run preview:capture` | Screenshots project pages into their covers, and the home page into `public/og.png`. CI runs it on every push to `main`. |
 | `npm run lint` | Checks the rules of React hooks (ESLint, hooks rules only). CI runs it on every pull request. |
-| `npm run perf` | Measures a production build against the performance budgets (see AGENTS.md). |
+| `npm run perf` | Measures a production build against the performance budgets (see `docs/agents/performance.md`). |
 | `npm run photos:update` | Refreshes `src/data/photos.json` from Unsplash. |
 | `node scripts/build-favicon.mjs` | Regenerates the favicons from one vector mark. |
 | `node scripts/build-portrait.mjs <photo>` | Crops `public/portrait.jpg` from the source photo. |
