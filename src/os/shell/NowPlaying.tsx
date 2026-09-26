@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { launch } from '../core/registry';
-import { albumOf, coverOf, SONGS, useMusic, watchMediaSession } from '../media/music';
+import { albumOf, coverOf, SONGS } from '../media/library';
+import { useMusic } from '../media/music';
+import { watchMediaSession } from '../media/session';
 
 // ♫ in the menu bar while a song is on: the song, its cover and ⏮ ⏯ ⏭,
 // without going back to the iPod or Karaoke. It drives whichever app is

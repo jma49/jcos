@@ -8,7 +8,7 @@
 // doesn't answer browsers.
 
 import { useEffect, useState } from 'react';
-import type { Song } from './music';
+import type { Song } from './library';
 
 export interface LyricLine {
   /** Seconds from the start of the song. */

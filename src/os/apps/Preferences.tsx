@@ -8,7 +8,8 @@ import { SAVER_STYLES, SAVER_VIEWS } from '../shell/Screensaver';
 import { play } from '../core/sound';
 import { ACCENTS, cachedAccent, type AccentChoice } from '../look/accent';
 import { backgroundFor, COVER, PATTERNS, PICTURE_SETS, setOf, SKY, SOLID_COLORS, tileBackground, TILES } from '../look/wallpapers';
-import { coverOf, SONGS, useMusic } from '../media/music';
+import { coverOf, SONGS } from '../media/library';
+import { useMusic } from '../media/music';
 import { useSky } from '../ambient/Sky';
 
 // System Preferences, Tiger style: a toolbar of panes. Everything here is

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { SONGS, useMusic } from '../../media/music';
+import { SONGS } from '../../media/library';
+import { useMusic } from '../../media/music';
 import { play } from '../../core/sound';
 import type { ScreenInput } from './input';
 
