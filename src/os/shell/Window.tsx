@@ -15,6 +15,7 @@ import { DOCK_CLEARANCE, MENU_BAR_HEIGHT, isPhone, useWindows } from '../core/st
 import { frameOf } from './Expose';
 import { GENIE_REACH, genieMap, genieSupported } from './genie';
 import { DrawerSlot } from './drawer';
+import { AppBoundary } from './AppBoundary';
 import type { Rect, WindowState } from '../core/types';
 import { useReduceMotion } from '../core/system';
 
@@ -327,9 +328,11 @@ export const Window = memo(function Window({ win, focused, z, exposed }: Props) 
 
       <div className="os-body">
         <DrawerSlot.Provider value={drawerSlot}>
-          <Suspense fallback={<Loading />}>
-            <def.Component win={win} />
-          </Suspense>
+          <AppBoundary name={def.name} onClose={() => close(win.id)}>
+            <Suspense fallback={<Loading />}>
+              <def.Component win={win} />
+            </Suspense>
+          </AppBoundary>
         </DrawerSlot.Provider>
       </div>
       {/* Drawers open on whichever side has room, as on a Mac. */}
