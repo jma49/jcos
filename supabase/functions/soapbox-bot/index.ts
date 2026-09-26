@@ -301,10 +301,13 @@ async function handle(message: Message, edited: boolean) {
     const filter = target
       ? `telegram_message_id=in.(${target},${target - 1})&order=created_at.desc&limit=1`
       : 'hidden=eq.false&order=created_at.desc&limit=1';
-    const [post] = (await db(`soapbox_posts?${filter}&select=id,body`)) ?? [];
+    const [post] = (await db(`soapbox_posts?${filter}&select=id,body,images`)) ?? [];
     if (!post) return reply(chat, 'Nothing to delete.', message.message_id);
     await db(`soapbox_posts?id=eq.${post.id}`, { method: 'PATCH', body: JSON.stringify({ hidden: true }) });
-    return reply(chat, `🗑 Hidden: “${post.body.slice(0, 60)}${post.body.length > 60 ? '…' : ''}”`);
+    const what = post.body.trim()
+      ? `“${post.body.slice(0, 60)}${post.body.length > 60 ? '…' : ''}”`
+      : `a post with ${post.images?.length === 1 ? 'a photo' : `${post.images?.length ?? 0} photos`}`;
+    return reply(chat, `🗑 Hidden: ${what}`);
   }
 
   if (text.startsWith('/') && !/^\/(rant|note)\b/i.test(text)) return reply(chat, HELP);
