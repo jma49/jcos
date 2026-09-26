@@ -8,7 +8,18 @@ import { choosePlace, clockTimeZone, HOME, placeLabel, usePlace, usesFahrenheit 
 import { PlaceSearch } from '../../ambient/PlaceSearch';
 import { SAVER_STYLES, SAVER_VIEWS } from '../../shell/Screensaver';
 import { ACCENTS, cachedAccent, type AccentChoice } from '../../look/accent';
-import { backgroundFor, COVER, PATTERNS, PICTURE_SETS, SCENIC, setOf, SKY, SOLID_COLORS, tileBackground, TILES } from '../../look/wallpapers';
+import {
+  backgroundFor,
+  COVER,
+  PATTERNS,
+  PICTURE_SETS,
+  SCENIC,
+  setOf,
+  SKY,
+  SOLID_COLORS,
+  tileBackground,
+  TILES
+} from '../../look/wallpapers';
 import { coverOf, SONGS } from '../../media/library';
 import { useMusic } from '../../media/music';
 import { useSky } from '../../ambient/Sky';
@@ -70,7 +81,11 @@ export function DesktopPane() {
     ...Object.fromEntries(PICTURE_SETS.map((set) => [set.id, set.items])),
     [TILES.id]: TILES.items.map((t) => ({ value: t.value, name: t.name, background: tileBackground(t.value) })),
     desktop: [{ value: null, name: 'Stones', thumb: data.wallpaper }],
-    colors: SOLID_COLORS.map((c) => ({ value: `color:${c.id}`, name: c.name, background: backgroundFor(`color:${c.id}`, '', sky) })),
+    colors: SOLID_COLORS.map((c) => ({
+      value: `color:${c.id}`,
+      name: c.name,
+      background: backgroundFor(`color:${c.id}`, '', sky)
+    })),
     patterns: PATTERNS.map((p) => ({ value: `pattern:${p.id}`, name: p.name, background: p.background })),
     dynamic: [
       { value: SKY, name: 'Sky: the light and weather where you are, all day', background: skyNow },
@@ -82,87 +97,100 @@ export function DesktopPane() {
     ]
   };
   const blurb = SAVER_STYLES.find((s) => s.style === saver.style)?.blurb;
+  // Desktop and Screen Saver are two tabs, as in Leopard.
+  const [tab, setTab] = useState<'desktop' | 'saver'>('desktop');
 
   return (
     <>
-      <section className="os-prefs-section">
-        <h3>Desktop Picture</h3>
-        <div className="os-prefs-saver-body">
-          <ul className="os-prefs-list" role="listbox" aria-label="Collection">
-            {COLLECTIONS.map((c) => (
-              <li key={c.id} role="option" aria-selected={collection === c.id}>
-                <button type="button" onClick={() => setCollection(c.id)}>
-                  {c.name}
-                </button>
-              </li>
-            ))}
-          </ul>
-          <ul className="os-prefs-pictures" role="listbox" aria-label="Desktop picture">
-            {pictures[collection].map((p) => (
-              <li key={p.value ?? 'default'} role="option" aria-selected={(custom ?? null) === p.value}>
-                <button type="button" onClick={() => setWallpaper(p.value)} title={p.name}>
-                  {p.thumb ? (
-                    <img src={p.thumb} alt={p.name} loading="lazy" draggable={false} />
-                  ) : (
-                    <span className="os-prefs-swatch-picture" style={{ background: p.background }} aria-label={p.name} />
-                  )}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </div>
-        {collection === 'dynamic' ? (
-          <p className="os-prefs-note">
-            {custom === COVER
-              ? 'The cover of whatever the iPod or Karaoke is playing, blurred into a wash of its colours; the menus take its colour too. With nothing on, the default picture.'
-              : 'The sky follows the sun where you are: dawn, day, golden hour, dusk and night, greyed by clouds and rain.'}
-          </p>
-        ) : (
-          <div className="os-prefs-radios os-prefs-rotate">
-            <label>
-              <input type="checkbox" checked={rotate} onChange={(e) => setRotateWallpaper(e.target.checked)} />
-              <span>
-                <strong>Change picture when you come back</strong>
-                <small>Switch to another tab or app and return to a new picture from this collection.</small>
-              </span>
-            </label>
+      <div className="os-prefs-tabs">
+        <Segmented
+          label="Desktop or screen saver"
+          value={tab}
+          choices={[
+            { value: 'desktop', name: 'Desktop' },
+            { value: 'saver', name: 'Screen Saver' }
+          ]}
+          onChange={setTab}
+        />
+      </div>
+      {tab === 'desktop' ? (
+        <Group title="Desktop Picture">
+          <div className="os-prefs-saver-body">
+            <ul className="os-prefs-list" role="listbox" aria-label="Collection">
+              {COLLECTIONS.map((c) => (
+                <li key={c.id} role="option" aria-selected={collection === c.id}>
+                  <button type="button" onClick={() => setCollection(c.id)}>
+                    {c.name}
+                  </button>
+                </li>
+              ))}
+            </ul>
+            <ul className="os-prefs-pictures" role="listbox" aria-label="Desktop picture">
+              {pictures[collection].map((p) => (
+                <li key={p.value ?? 'default'} role="option" aria-selected={(custom ?? null) === p.value}>
+                  <button type="button" onClick={() => setWallpaper(p.value)} title={p.name}>
+                    {p.thumb ? (
+                      <img src={p.thumb} alt={p.name} loading="lazy" draggable={false} />
+                    ) : (
+                      <span className="os-prefs-swatch-picture" style={{ background: p.background }} aria-label={p.name} />
+                    )}
+                  </button>
+                </li>
+              ))}
+            </ul>
           </div>
-        )}
-      </section>
-
-      <section className="os-prefs-section os-prefs-saver">
-        <h3>Screen Saver</h3>
-        <div className="os-prefs-saver-body">
-          <ul className="os-prefs-list" role="listbox" aria-label="Screen saver">
-            {SAVER_STYLES.map((s) => (
-              <li key={s.style} role="option" aria-selected={saver.style === s.style}>
-                <button type="button" onClick={() => setSaver({ style: s.style })}>
-                  {s.name}
-                </button>
-              </li>
-            ))}
-          </ul>
-          <div className="os-prefs-preview">
-            <div className="os-prefs-screen">
-              {saver.style === 'photos' ? <img src={SCENIC[0].thumb} alt="" /> : SAVER_VIEWS[saver.style]?.()}
+          {collection === 'dynamic' ? (
+            <p className="os-prefs-note">
+              {custom === COVER
+                ? 'The cover of whatever the iPod or Karaoke is playing, blurred into a wash of its colours; the menus take its colour too. With nothing on, the default picture.'
+                : 'The sky follows the sun where you are: dawn, day, golden hour, dusk and night, greyed by clouds and rain.'}
+            </p>
+          ) : (
+            <div className="os-prefs-radios os-prefs-rotate">
+              <label>
+                <input type="checkbox" checked={rotate} onChange={(e) => setRotateWallpaper(e.target.checked)} />
+                <span>
+                  <strong>Change picture when you come back</strong>
+                  <small>Switch to another tab or app and return to a new picture from this collection.</small>
+                </span>
+              </label>
             </div>
-            <p>{blurb}</p>
-            <div className="os-prefs-row">
-              <label htmlFor="os-saver-idle">Start after</label>
-              <select id="os-saver-idle" value={saver.idle} onChange={(e) => setSaver({ idle: Number(e.target.value) })}>
-                {IDLE_CHOICES.map((c) => (
-                  <option key={c.minutes} value={c.minutes}>
-                    {c.label}
-                  </option>
-                ))}
-              </select>
-              <button type="button" className="os-button" onClick={() => setScreensaver(true)}>
-                Test
-              </button>
+          )}
+        </Group>
+      ) : (
+        <Group title="Screen Saver" className="os-prefs-saver">
+          <div className="os-prefs-saver-body">
+            <ul className="os-prefs-list" role="listbox" aria-label="Screen saver">
+              {SAVER_STYLES.map((s) => (
+                <li key={s.style} role="option" aria-selected={saver.style === s.style}>
+                  <button type="button" onClick={() => setSaver({ style: s.style })}>
+                    {s.name}
+                  </button>
+                </li>
+              ))}
+            </ul>
+            <div className="os-prefs-preview">
+              <div className="os-prefs-screen">
+                {saver.style === 'photos' ? <img src={SCENIC[0].thumb} alt="" /> : SAVER_VIEWS[saver.style]?.()}
+              </div>
+              <p>{blurb}</p>
+              <div className="os-prefs-row">
+                <label htmlFor="os-saver-idle">Start after</label>
+                <select id="os-saver-idle" value={saver.idle} onChange={(e) => setSaver({ idle: Number(e.target.value) })}>
+                  {IDLE_CHOICES.map((c) => (
+                    <option key={c.minutes} value={c.minutes}>
+                      {c.label}
+                    </option>
+                  ))}
+                </select>
+                <button type="button" className="os-button" onClick={() => setScreensaver(true)}>
+                  Test
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </Group>
+      )}
     </>
   );
 }
@@ -190,8 +218,7 @@ function AccentPicker() {
   ];
   const current = choices.find((c) => c.value === accent);
   return (
-    <section className="os-prefs-section">
-      <h3>Accent Color</h3>
+    <Group title="Accent Color">
       <div className="os-prefs-swatches" role="radiogroup" aria-label="Accent color">
         {choices.map((c) => (
           <button
@@ -213,7 +240,7 @@ function AccentPicker() {
           ? 'Selections, menus and buttons take their color from the desktop picture. Change the picture and they follow.'
           : 'A fixed color, whatever the desktop picture.'}
       </p>
-    </section>
+    </Group>
   );
 }
 
@@ -225,8 +252,7 @@ function MaterialPicker() {
     { glass: true, name: 'Glass', blurb: 'Frosted, translucent windows and menus that let the desktop show through.' }
   ];
   return (
-    <section className="os-prefs-section">
-      <h3>Material</h3>
+    <Group title="Material">
       <div className="os-prefs-radios" role="radiogroup" aria-label="Material">
         {options.map((o) => (
           <label key={o.name}>
@@ -238,7 +264,7 @@ function MaterialPicker() {
           </label>
         ))}
       </div>
-    </section>
+    </Group>
   );
 }
 
@@ -250,8 +276,7 @@ export function AppearancePane() {
   const guessing = !place || place.source === 'fallback';
   return (
     <>
-      <section className="os-prefs-section">
-        <h3>Appearance</h3>
+      <Group title="Appearance">
         <div className="os-prefs-radios" role="radiogroup" aria-label="Appearance">
           {APPEARANCES.map((a) => (
             <label key={a.value}>
@@ -262,7 +287,11 @@ export function AppearancePane() {
                 {a.value === 'sun' && appearance === 'sun' && guessing && (
                   <small className="os-prefs-hint">
                     We don’t know where you are yet, so this follows the sun in {HOME.city}.{' '}
-                    <button type="button" className="os-link" onClick={() => launch('preferences', { props: { pane: 'datetime' } })}>
+                    <button
+                      type="button"
+                      className="os-link"
+                      onClick={() => launch('preferences', { props: { pane: 'datetime' } })}
+                    >
                       Pick a city…
                     </button>
                   </small>
@@ -271,7 +300,7 @@ export function AppearancePane() {
             </label>
           ))}
         </div>
-      </section>
+      </Group>
       <MaterialPicker />
       <AccentPicker />
     </>
@@ -285,10 +314,7 @@ function AnalogClock({ timeZone }: { timeZone: string }) {
     const t = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(t);
   }, []);
-  const [h, m, sec] = now
-    .toLocaleTimeString('en-GB', { timeZone, hour12: false })
-    .split(':')
-    .map(Number);
+  const [h, m, sec] = now.toLocaleTimeString('en-GB', { timeZone, hour12: false }).split(':').map(Number);
   const hand = (turn: number, length: number, width: number, color: string) => (
     <line
       x1="50"
@@ -385,7 +411,12 @@ export function DateTimePane() {
       <Group title="Menu Bar Clock">
         <div className="os-prefs-radios">
           <Option checked={clock24} onChange={(on) => set({ clock24: on })} title="Use a 24-hour clock">
-            {new Date().toLocaleTimeString('en-US', { timeZone, hour: clock24 ? '2-digit' : 'numeric', minute: '2-digit', hourCycle: clock24 ? 'h23' : 'h12' })}
+            {new Date().toLocaleTimeString('en-US', {
+              timeZone,
+              hour: clock24 ? '2-digit' : 'numeric',
+              minute: '2-digit',
+              hourCycle: clock24 ? 'h23' : 'h12'
+            })}
           </Option>
           <Option checked={clockDate} onChange={(on) => set({ clockDate: on })} title="Show the date">
             The day and date before the time. Phones show the time alone.

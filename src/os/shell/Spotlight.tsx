@@ -4,6 +4,7 @@ import { apps, launch, launcherApps } from '../core/registry';
 import { APPLETS, useInstalledApplets } from '../core/applets';
 import { useWindows } from '../core/store';
 import { useOSData } from '../core/context';
+import { PANES } from '../apps/preferences/panes';
 
 interface Result {
   id: string;
@@ -44,6 +45,14 @@ export function Spotlight() {
               run: () => launch('appstore', { props: { applet: app } })
             }
       ),
+      // System Preferences isn't an app of its own; its panes are found by name.
+      ...PANES.map((p) => ({
+        id: `pane:${p.id}`,
+        label: p.name,
+        hint: 'System Preferences',
+        Icon: p.Icon,
+        run: () => launch('preferences', { props: { pane: p.id } })
+      })),
       ...data.projects.map((p) => ({
         id: `project:${p.slug}`,
         label: p.title,
