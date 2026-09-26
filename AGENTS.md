@@ -125,8 +125,9 @@ readers, crawlers and visitors without JavaScript.
   column views, Quick Look (Space), keyboard navigation and a
   right-click menu. A file's `look` is what Quick Look shows.
 - `src/os/social/airdrop.ts` and `apps/AirDrop.tsx`: AirDrop between
-  signed-in members on the desktop (signed out, it asks you to sign in). Only a Macintosh HD path is sent, and the
-  receiver looks it up on its own disk, so only JM/OS's own content can
+  signed-in members on the desktop (signed out, it asks you to sign in).
+  Only a Macintosh HD path is sent, and the receiver looks it up on its
+  own disk, so only JM/OS's own content can
   arrive; offers go over presence signals and must be accepted. Finder
   (right-click, drag onto AirDrop), Photos and project windows share.
 - `src/os/core/notices.ts` and `shell/Notices.tsx`: Growl-style
@@ -148,9 +149,9 @@ readers, crawlers and visitors without JavaScript.
   catalog (Minesweeper, Tile Game, Spider Solitaire, Pinball, Calculator,
   Synth). Pinball's table, physics and rules are in `apps/pinball/table.ts`
   (table units, 400 × 700); keep it free of anything from Microsoft's
-  Space Cadet and which applets this
-  browser has installed (`os-applets`). Installed applets appear in
-  Finder's Applets folder and Spotlight. To add one, write the app,
+  Space Cadet. Which applets this browser has installed is kept in
+  `os-applets`; installed applets appear in Finder's Applets folder and
+  Spotlight. To add one, write the app,
   register it, and add an entry to `APPLETS`.
 - Open windows survive a reload (`src/os/core/windowSession.ts`, saved in
   `os-windows`); `?open=` wins. A first visit gets the Welcome window
