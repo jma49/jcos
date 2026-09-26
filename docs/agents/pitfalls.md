@@ -67,6 +67,11 @@ again.
   their opening size because the Exposé target lacked the `scaleX` and
   `scaleY` the shown target had. Give every target of a component the
   same keys.
+- React holds back content that suspended for about 300 ms before
+  showing it. A lazy Dashboard behind `Suspense` took 350 ms to appear
+  where it had taken 55, even with its code loaded. For something that
+  must open instantly, load the module yourself and render it once it's
+  in (`DashboardLayer.tsx`).
 - Motion's `useReducedMotion()` only knows the device. Use
   `useReduceMotion()` from `core/system.ts`, which honours System
   Preferences.

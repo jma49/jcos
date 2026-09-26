@@ -1,11 +1,12 @@
 import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
 import { isPhone, useWindows, type SaverStyle } from '../core/store';
 import { useMusic } from '../media/music';
+import { afterSettled } from '../core/warmUp';
 
 // Starts the screen saver after the idle time chosen in System
 // Preferences. What it draws lives in saverViews.tsx, loaded the first
-// time it's needed (and fetched ahead once the page is idle), so the
-// desktop's first load doesn't carry it.
+// time it's needed (and fetched ahead once the desktop has settled), so
+// the desktop's first load doesn't carry it.
 
 const loadViews = () => import('./saverViews');
 const ScreensaverLayer = lazy(loadViews);
@@ -58,13 +59,8 @@ export function Screensaver() {
   const [used, setUsed] = useState(false);
   if (active && !used) setUsed(true);
 
-  // Fetch the views once the page has settled, so starting is instant.
-  useEffect(() => {
-    if (isPhone()) return;
-    const idleCallback = window.requestIdleCallback ?? ((run: () => void) => window.setTimeout(run, 3000));
-    const handle = idleCallback(() => void loadViews());
-    return () => (window.cancelIdleCallback ?? window.clearTimeout)(handle);
-  }, []);
+  // Fetch the views once the desktop has settled, so starting is instant.
+  useEffect(() => (isPhone() ? undefined : afterSettled(loadViews)), []);
 
   if (!used) return null;
   return (
