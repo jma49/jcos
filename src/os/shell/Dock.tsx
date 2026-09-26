@@ -5,6 +5,7 @@ import { DashboardIcon, TrashIcon } from '../core/icons';
 import { useWindows } from '../core/store';
 import { play } from '../core/sound';
 import type { AppId } from '../core/types';
+import { useChatBadge } from '../social/chatState';
 
 const BASE = 50;
 const PEAK = 78;
@@ -15,6 +16,7 @@ function Magnified({
   mouseX,
   label,
   running,
+  badge,
   onActivate,
   children,
   dataApp,
@@ -23,6 +25,8 @@ function Magnified({
   mouseX: MotionValue<number>;
   label: string;
   running?: boolean;
+  /** A red count on the icon, like Mail's. */
+  badge?: number;
   onActivate: (el: HTMLElement) => void;
   children: (size: number) => React.ReactNode;
   dataApp?: string;
@@ -44,7 +48,7 @@ function Magnified({
       className="os-dock-item"
       style={{ width: size, height: size }}
       onClick={() => ref.current && onActivate(ref.current)}
-      aria-label={label}
+      aria-label={badge ? `${label}, ${badge} new` : label}
       data-dock-app={dataApp}
       data-mobile={mobile || undefined}
     >
@@ -53,6 +57,11 @@ function Magnified({
         {children(PEAK)}
       </motion.span>
       {running && <span className="os-dock-dot" />}
+      {badge ? (
+        <span className="os-dock-badge" aria-hidden="true">
+          {badge > 99 ? '99+' : badge}
+        </span>
+      ) : null}
     </motion.button>
   );
 }
@@ -61,6 +70,8 @@ export function Dock() {
   const mouseX = useMotionValue(Infinity);
   const windows = useWindows((s) => s.windows);
   const running = new Set(Object.values(windows).map((w) => w.app));
+  const chatBadge = useChatBadge();
+  const badgeOf = (app: AppId) => (app === 'chat' ? chatBadge : 0);
   // Open apps that aren't kept in the Dock get a slot on the right while they
   // run, as on a Mac: one per app, or one per window for project pages.
   const visiting: { key: string; app: AppId; label: string; id?: string }[] = [];
@@ -97,6 +108,7 @@ export function Dock() {
               mouseX={mouseX}
               label={name}
               running={running.has(app)}
+              badge={badgeOf(app)}
               dataApp={app}
               mobile={mobileDockApps.includes(app)}
               onActivate={(el) => activate(app, el)}
@@ -128,6 +140,7 @@ export function Dock() {
               mouseX={mouseX}
               label={v.label}
               running
+              badge={v.id ? 0 : badgeOf(v.app)}
               dataApp={v.id ? undefined : v.app}
               onActivate={(el) => (v.id ? useWindows.getState().focus(v.id) : activate(v.app, el))}
             >

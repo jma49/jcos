@@ -1,0 +1,101 @@
+/* ---------- Notifications (Growl's "Smoke" style) ---------- */
+
+.os-notices {
+  position: absolute;
+  top: 32px;
+  right: 12px;
+  z-index: 1700;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 290px;
+  pointer-events: none;
+}
+
+.os-notice {
+  position: relative;
+  display: flex;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(20, 20, 22, 0.82);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35), inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+  color: #fff;
+  font-size: 12px;
+  pointer-events: auto;
+}
+
+.os-notice[data-clickable] {
+  cursor: pointer;
+}
+
+.os-notice-icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+}
+
+.os-notice-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.os-notice-text strong {
+  display: block;
+  padding-right: 12px;
+  font-size: 12px;
+}
+
+.os-notice-text p {
+  margin: 2px 0 0;
+  color: rgba(255, 255, 255, 0.82);
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.os-notice-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.os-root .os-notice-close {
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 13px;
+  line-height: 1;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.os-notice:hover .os-notice-close,
+.os-root .os-notice-close:focus-visible {
+  opacity: 1;
+}
+
+@media (max-width: 767px), (max-height: 500px) and (pointer: coarse) {
+  .os-notices {
+    left: 10px;
+    right: 10px;
+    width: auto;
+    top: calc(env(safe-area-inset-top, 0px) + 30px);
+  }
+
+  .os-notice-close {
+    opacity: 1;
+  }
+}

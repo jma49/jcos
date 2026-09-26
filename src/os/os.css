@@ -34,6 +34,7 @@
 @import './styles/expose.css';
 @import './styles/screensaver.css';
 @import './styles/presence.css';
+@import './styles/notices.css';
 @import './styles/apps/stickies.css';
 @import './styles/apps/ipod.css';
 @import './styles/player-frame.css';

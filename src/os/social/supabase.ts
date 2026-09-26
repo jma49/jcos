@@ -5,12 +5,17 @@
 import { createClient, type PostgrestError, type User } from '@supabase/supabase-js';
 import { CURSOR_COLORS } from './social';
 import {
+  LOBBY,
   NOTES_PER_DAY,
+  cleanInfo,
+  isDM,
   PASSWORD_MIN,
   SocialError,
   USERNAME,
   type Account,
+  type ChatHandlers,
   type ChatMessage,
+  type ChatRoom,
   type Note,
   type Post,
   type Reaction,
@@ -70,6 +75,48 @@ export function supabaseSocial(url: string, key: string): Social {
     }
     return usernames.get(id)!;
   };
+
+  /**
+   * Whether the database predates rooms (supabase/migrations/20260928_chat_rooms.sql
+   * not run yet): then there's one room, the Lobby, and messages have no room.
+   */
+  let roomless = false;
+
+  type Row = { id: number; user_id: string; body: string; created_at: string; room?: string };
+  const messageOf = async (row: Row): Promise<ChatMessage> => ({
+    id: String(row.id),
+    room: row.room ?? LOBBY.id,
+    user_id: row.user_id,
+    body: row.body,
+    created_at: row.created_at,
+    username: await usernameOf(row.user_id)
+  });
+
+  // One Realtime channel for chat, shared by everyone watching (the Chat
+  // window and the alerts that run while it's closed): the client hands
+  // back the same channel for the same name, so each can't have its own.
+  const chatWatchers = new Set<ChatHandlers>();
+  let chatChannel: ReturnType<typeof client.channel> | null = null;
+  const watchAll = () => {
+    chatChannel = client
+      .channel('chat-room')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' }, async ({ new: m }) => {
+        const message = await messageOf(m as Row);
+        chatWatchers.forEach((w) => w.onMessage(message));
+      })
+      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'chat_messages' }, ({ old }) => {
+        const id = (old as { id?: number }).id;
+        if (id !== undefined) chatWatchers.forEach((w) => w.onRemove(String(id)));
+      })
+      .subscribe();
+  };
+  // Private conversations are only delivered to a member who's signed in,
+  // so the channel starts over as the member changes.
+  listeners.add(() => {
+    if (!chatChannel) return;
+    client.removeChannel(chatChannel);
+    watchAll();
+  });
 
   return {
     account: () => current,
@@ -201,28 +248,64 @@ export function supabaseSocial(url: string, key: string): Social {
       throw refusal(error);
     },
 
-    async listChat(before) {
+    async listRooms() {
+      const { data, error } = await client.from('chat_rooms').select('id, name, topic').order('position');
+      if (error) {
+        roomless = true;
+        return [LOBBY];
+      }
+      return data?.length ? (data as ChatRoom[]) : [LOBBY];
+    },
+
+    async chatActivity() {
+      if (roomless) return [];
+      const { data, error } = await client.rpc('chat_activity');
+      if (error) return [];
+      return (data as { room: string; last_at: string }[]).map((a) => ({ room: a.room, last_at: a.last_at }));
+    },
+
+    async findMember(username) {
+      const { data } = await client.from('profiles').select('id, username').eq('username', username.trim().toLowerCase()).maybeSingle();
+      if (data) usernames.set(data.id, data.username);
+      return data;
+    },
+
+    usernameOf,
+
+    async listChat(room, before) {
+      if (roomless && room !== LOBBY.id) return [];
       let query = client
         .from('chat_messages')
-        .select('id, user_id, body, created_at, profiles(username)')
+        .select(roomless ? 'id, user_id, body, created_at, profiles(username)' : 'id, room, user_id, body, created_at, profiles(username)')
         .order('created_at', { ascending: false })
         .limit(100);
+      if (!roomless) query = query.eq('room', room);
       if (before) query = query.lt('created_at', before);
       const { data, error } = await query;
       if (error) throw new Error(error.message);
-      return (data ?? [])
+      return ((data ?? []) as unknown as (Row & { profiles: { username: string } | null })[])
         .map((m) => {
-          const profile = m.profiles as unknown as { username: string } | null;
-          if (profile) usernames.set(m.user_id, profile.username);
-          return { id: String(m.id), user_id: m.user_id, body: m.body, created_at: m.created_at, username: profile?.username ?? 'someone' };
+          if (m.profiles) usernames.set(m.user_id, m.profiles.username);
+          return {
+            id: String(m.id),
+            room: m.room ?? LOBBY.id,
+            user_id: m.user_id,
+            body: m.body,
+            created_at: m.created_at,
+            username: m.profiles?.username ?? 'someone'
+          };
         })
         .reverse();
     },
 
-    async sendChat(body) {
+    async sendChat(room, body) {
       member();
-      const { error } = await client.from('chat_messages').insert({ body: body.trim() });
-      if (error) throw refusal(error);
+      if (roomless && room !== LOBBY.id) throw new SocialError('failed', 'This room isn’t open yet.');
+      const { error } = await client.from('chat_messages').insert(roomless ? { body: body.trim() } : { body: body.trim(), room });
+      if (error) {
+        if (error.code === '42501' && isDM(room)) throw new SocialError('invalid', 'You can’t write to that conversation.');
+        throw refusal(error);
+      }
     },
 
     async deleteChat(id) {
@@ -231,23 +314,18 @@ export function supabaseSocial(url: string, key: string): Social {
       if (error) throw refusal(error);
     },
 
-    watchChat({ onMessage, onRemove }) {
-      const channel = client
-        .channel('chat-room')
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' }, async ({ new: m }) => {
-          const row = m as { id: number; user_id: string; body: string; created_at: string };
-          onMessage({ id: String(row.id), user_id: row.user_id, body: row.body, created_at: row.created_at, username: await usernameOf(row.user_id) });
-        })
-        .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'chat_messages' }, ({ old }) => {
-          if ((old as { id?: number }).id !== undefined) onRemove(String((old as { id: number }).id));
-        })
-        .subscribe();
+    watchChat(handlers) {
+      chatWatchers.add(handlers);
+      if (!chatChannel) watchAll();
       return () => {
-        client.removeChannel(channel);
+        chatWatchers.delete(handlers);
+        if (chatWatchers.size || !chatChannel) return;
+        client.removeChannel(chatChannel);
+        chatChannel = null;
       };
     },
 
-    joinPresence(info, { onVisitors, onCursor, onLeave }) {
+    joinPresence(info, { onVisitors, onCursor, onLeave, onSignal }) {
       const id = crypto.randomUUID();
       let me: VisitorInfo = info;
       let subscribed = false;
@@ -256,24 +334,30 @@ export function supabaseSocial(url: string, key: string): Social {
       });
       const visitors = () =>
         Object.entries(channel.presenceState<VisitorInfo>()).map(([key, [meta]]) => ({
+          ...cleanInfo(meta, CURSOR_COLORS[0]),
           id: key,
-          color: meta?.color ?? CURSOR_COLORS[0],
-          city: meta?.city,
-          country: meta?.country,
           self: key === id
         }));
       channel
         .on('presence', { event: 'sync' }, () => onVisitors(visitors()))
         .on('presence', { event: 'leave' }, ({ key }) => onLeave(key))
         .on('broadcast', { event: 'cursor' }, ({ payload }) => onCursor(payload.id, payload.x, payload.y, payload.color))
+        .on('broadcast', { event: 'signal' }, ({ payload }) => {
+          if (typeof payload?.event !== 'string' || typeof payload?.from !== 'string') return;
+          onSignal({ event: payload.event, from: payload.from, payload: payload.payload ?? {} });
+        })
         .subscribe((status) => {
           if (status !== 'SUBSCRIBED') return;
           subscribed = true;
           channel.track(me);
         });
       return {
+        id,
         moveCursor: (x, y) => {
           channel.send({ type: 'broadcast', event: 'cursor', payload: { id, x, y, color: me.color } });
+        },
+        signal: (event, payload) => {
+          channel.send({ type: 'broadcast', event: 'signal', payload: { event, from: id, payload } });
         },
         update: (next) => {
           me = next;

@@ -35,17 +35,55 @@ export interface Note {
 
 // ---------- Presence ----------
 
-/** Someone on the desktop, and roughly where they are (city and country, if known). */
-export interface Visitor {
-  id: string;
+/**
+ * What a visitor tells the others on the desktop: a cursor colour, roughly
+ * where they are (city and country, if known), their username if they're
+ * signed in, and the chat room they have open. None of it is verified.
+ */
+export interface VisitorInfo {
   color: string;
   city?: string;
   country?: string;
+  username?: string;
+  /** The chat room their Chat window shows (public rooms only). */
+  room?: string;
+}
+
+const text = (value: unknown, max: number) => (typeof value === 'string' && value.trim() ? value.trim().slice(0, max) : undefined);
+
+/** What another visitor says about themselves, kept to the shapes above. */
+export function cleanInfo(raw: unknown, fallbackColor: string): VisitorInfo {
+  const info = (raw ?? {}) as Record<string, unknown>;
+  const color = text(info.color, 20);
+  const username = text(info.username, 20);
+  const room = text(info.room, 24);
+  return {
+    color: color && /^#[0-9a-f]{3,8}$/i.test(color) ? color : fallbackColor,
+    city: text(info.city, 60),
+    country: text(info.country, 2),
+    username: username && USERNAME.test(username) ? username : undefined,
+    room: room && /^[a-z0-9-]+$/.test(room) ? room : undefined
+  };
+}
+
+/** Someone on the desktop. */
+export interface Visitor extends VisitorInfo {
+  id: string;
   /** This browser. */
   self?: boolean;
 }
 
-export type VisitorInfo = Omit<Visitor, 'id' | 'self'>;
+/**
+ * A message from one visitor to the others on the desktop, for things that
+ * aren't kept: typing, nudges, AirDrop. Anyone can send one, so a receiver
+ * checks what's in it before using it.
+ */
+export interface Signal {
+  event: string;
+  /** The sender's presence id. */
+  from: string;
+  payload: Record<string, unknown>;
+}
 
 interface PresenceHandlers {
   /** Everyone on the desktop, this visitor included. */
@@ -53,10 +91,15 @@ interface PresenceHandlers {
   /** Another visitor's pointer, as fractions of their viewport; x < 0 means it left the page. */
   onCursor: (id: string, x: number, y: number, color: string) => void;
   onLeave: (id: string) => void;
+  onSignal: (signal: Signal) => void;
 }
 
 export interface Presence {
+  /** This visitor's presence id, as others see it. */
+  id: string;
   moveCursor: (x: number, y: number) => void;
+  /** Sends a signal to everyone else on the desktop. */
+  signal: (event: string, payload: Record<string, unknown>) => void;
   /** Updates what others see about this visitor, e.g. once they're located. */
   update: (info: VisitorInfo) => void;
   leave: () => void;
@@ -83,12 +126,41 @@ export interface Post {
 
 export const CHAT_MAX = 500;
 
+/** A public room, set up by hand in the database. */
+export interface ChatRoom {
+  id: string;
+  name: string;
+  topic: string;
+}
+
+/** The room everyone starts in, and the only one before rooms existed. */
+export const LOBBY: ChatRoom = { id: 'lobby', name: 'Lobby', topic: 'Everyone, about anything' };
+
+/**
+ * A private conversation between two members is a room too, named from
+ * their two account ids in order: `dm:<id>:<id>`. Only those two can read
+ * or write it.
+ */
+export const dmRoom = (a: string, b: string) => `dm:${[a, b].sort().join(':')}`;
+
+export const isDM = (room: string) => room.startsWith('dm:');
+
+/** The other member in a private conversation. */
+export const dmPeer = (room: string, me: string) => room.split(':').slice(1).find((id) => id !== me) ?? me;
+
 export interface ChatMessage {
   id: string;
+  room: string;
   user_id: string;
   username: string;
   body: string;
   created_at: string;
+}
+
+/** A room with something in it: when it last had a message. */
+export interface ChatActivity {
+  room: string;
+  last_at: string;
 }
 
 export interface ChatHandlers {
@@ -148,10 +220,21 @@ export interface Social {
    */
   react: (postId: string, reaction: Reaction | null) => Promise<void>;
 
-  /** Up to 100 chat messages, oldest first: the latest, or those before `before` (a created_at). */
-  listChat: (before?: string) => Promise<ChatMessage[]>;
-  sendChat: (body: string) => Promise<void>;
+  /** The public rooms, in order. */
+  listRooms: () => Promise<ChatRoom[]>;
+  /** The latest message's time in each public room and in the member's private conversations. */
+  chatActivity: () => Promise<ChatActivity[]>;
+  /** A member by username, to start a private conversation with. */
+  findMember: (username: string) => Promise<Account | null>;
+  /** A member's username by account id. */
+  usernameOf: (id: string) => Promise<string>;
+  /** Up to 100 messages in a room, oldest first: the latest, or those before `before` (a created_at). */
+  listChat: (room: string, before?: string) => Promise<ChatMessage[]>;
+  sendChat: (room: string, body: string) => Promise<void>;
   deleteChat: (id: string) => Promise<void>;
-  /** Live messages and takedowns; returns a function that stops watching. */
+  /**
+   * Live messages in every room this visitor can read, and takedowns;
+   * returns a function that stops watching.
+   */
   watchChat: (handlers: ChatHandlers) => () => void;
 }

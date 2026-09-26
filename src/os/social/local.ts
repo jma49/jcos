@@ -8,6 +8,10 @@
 import { loadJSON, saveJSON } from '../core/storage';
 import {
   CHAT_MAX,
+  LOBBY,
+  cleanInfo,
+  dmPeer,
+  isDM,
   NOTES_PER_DAY,
   PASSWORD_MIN,
   SocialError,
@@ -15,6 +19,7 @@ import {
   type Account,
   type ChatHandlers,
   type ChatMessage,
+  type ChatRoom,
   type Note,
   type Post,
   type Reaction,
@@ -55,6 +60,14 @@ const SAMPLE_POSTS: Omit<Post, 'reactions'>[] = [
     created_at: '2026-09-20T05:15:00Z'
   }
 ];
+/** The rooms a real project seeds (supabase/schema.sql). */
+const ROOMS: ChatRoom[] = [
+  LOBBY,
+  { id: 'music', name: 'Music', topic: 'What’s on your iPod' },
+  { id: 'dev', name: 'Dev', topic: 'Code, tools and testing' },
+  { id: 'photography', name: 'Photography', topic: 'Pictures and places' }
+];
+
 const HEARTBEAT = 2000;
 const EXPIRE = 5000;
 
@@ -80,12 +93,16 @@ export function localSocial(): Social {
   };
 
   const notes = () => loadJSON<Note[]>(NOTES_KEY, []);
-  const chat = () => loadJSON<ChatMessage[]>(CHAT_KEY, []);
+  /** Every message this browser has, including private ones; messages from before rooms are the Lobby's. */
+  const everyMessage = () => loadJSON<ChatMessage[]>(CHAT_KEY, []).map((m) => ({ ...m, room: m.room ?? LOBBY.id }));
+  /** What the database would let this visitor read. */
+  const readable = (m: ChatMessage) => !isDM(m.room) || (current !== null && m.room.split(':').includes(current.id));
+  const chat = () => everyMessage().filter(readable);
   const chatChannel = new BroadcastChannel('os-dev-chat');
   const chatWatchers = new Set<ChatHandlers>();
   chatChannel.onmessage = ({ data }) => {
     for (const w of chatWatchers) {
-      if (data.type === 'message') w.onMessage(data.message);
+      if (data.type === 'message') readable(data.message) && w.onMessage(data.message);
       else w.onRemove(data.id);
     }
   };
@@ -181,17 +198,38 @@ export function localSocial(): Social {
       saveJSON(REACTIONS_KEY, { ...all, [postId]: by });
     },
 
-    async listChat(before) {
-      const all = chat().filter((m) => !before || m.created_at < before);
+    async listRooms() {
+      return ROOMS;
+    },
+
+    async chatActivity() {
+      const last = new Map<string, string>();
+      for (const m of chat()) if (m.created_at > (last.get(m.room) ?? '')) last.set(m.room, m.created_at);
+      return [...last].map(([room, last_at]) => ({ room, last_at }));
+    },
+
+    async findMember(username) {
+      const user = users().find((u) => u.username === username.trim().toLowerCase());
+      return user ? { id: user.id, username: user.username } : null;
+    },
+
+    async usernameOf(id) {
+      return users().find((u) => u.id === id)?.username ?? 'someone';
+    },
+
+    async listChat(room, before) {
+      const all = chat().filter((m) => m.room === room && (!before || m.created_at < before));
       return all.slice(-100);
     },
 
-    async sendChat(body) {
+    async sendChat(room, body) {
       const me = member();
       const text = body.trim().slice(0, CHAT_MAX);
       if (!text) throw new SocialError('invalid', 'Say something first.');
-      const message: ChatMessage = { id: crypto.randomUUID(), user_id: me.id, username: me.username, body: text, created_at: new Date().toISOString() };
-      saveJSON(CHAT_KEY, [...chat(), message]);
+      const open = isDM(room) ? room.split(':').includes(me.id) && users().some((u) => u.id === dmPeer(room, me.id)) : ROOMS.some((r) => r.id === room);
+      if (!open) throw new SocialError('invalid', 'You can’t write to that conversation.');
+      const message: ChatMessage = { id: crypto.randomUUID(), room, user_id: me.id, username: me.username, body: text, created_at: new Date().toISOString() };
+      saveJSON(CHAT_KEY, [...everyMessage(), message]);
       announce({ type: 'message', message });
     },
 
@@ -199,7 +237,7 @@ export function localSocial(): Social {
       const me = member();
       saveJSON(
         CHAT_KEY,
-        chat().filter((m) => m.id !== id || m.user_id !== me.id)
+        everyMessage().filter((m) => m.id !== id || m.user_id !== me.id)
       );
       announce({ type: 'remove', id });
     },
@@ -209,7 +247,7 @@ export function localSocial(): Social {
       return () => chatWatchers.delete(handlers);
     },
 
-    joinPresence(info, { onVisitors, onCursor, onLeave }) {
+    joinPresence(info, { onVisitors, onCursor, onLeave, onSignal }) {
       const id = crypto.randomUUID();
       const channel = new BroadcastChannel('os-dev-presence');
       const peers = new Map<string, { seen: number; info: VisitorInfo }>();
@@ -218,11 +256,12 @@ export function localSocial(): Social {
         onVisitors([{ id, ...me, self: true }, ...[...peers].map(([peer, { info }]) => ({ id: peer, ...info }))]);
 
       channel.onmessage = ({ data }) => {
+        if (data.type === 'signal') return onSignal({ event: data.event, from: data.id, payload: data.payload ?? {} });
         if (data.type === 'bye') {
           peers.delete(data.id);
           onLeave(data.id);
         } else {
-          peers.set(data.id, { seen: Date.now(), info: data.info ?? peers.get(data.id)?.info ?? { color: data.color } });
+          peers.set(data.id, { seen: Date.now(), info: cleanInfo(data.info ?? peers.get(data.id)?.info ?? { color: data.color }, data.color) });
           if (data.type === 'cursor') onCursor(data.id, data.x, data.y, data.color);
         }
         report();
@@ -243,7 +282,9 @@ export function localSocial(): Social {
       report();
 
       return {
+        id,
         moveCursor: (x, y) => channel.postMessage({ type: 'cursor', id, x, y, color: me.color }),
+        signal: (event, payload) => channel.postMessage({ type: 'signal', id, event, payload }),
         update: (next) => {
           me = next;
           hello();

@@ -15,6 +15,8 @@ import { useShortcuts } from './shell/useShortcuts';
 import { Sky, useSky } from './ambient/Sky';
 import { Presence } from './social/Presence';
 import { startAccount } from './social/account';
+import { startChatWatch } from './social/chatState';
+import { Notices } from './shell/Notices';
 import { useDesktopPicture } from './look/useDesktopPicture';
 import { useAppearance } from './look/useAppearance';
 import { watchWindows } from './core/sound';
@@ -52,6 +54,8 @@ export default function Desktop({ data }: { data: OSData }) {
   useEffect(saveWindowsAsTheyChange, []);
   // Whether someone's signed in (the social backend loads on its own, after the desktop).
   useEffect(startAccount, []);
+  // Unread counts, and alerts for private messages and @mentions.
+  useEffect(startChatWatch, []);
 
   const glass = useWindows((s) => s.glass);
   const picture = useDesktopPicture(data, sky, root);
@@ -145,6 +149,7 @@ export default function Desktop({ data }: { data: OSData }) {
         <AppSwitcher />
         <Screensaver />
         {!booting && <Presence />}
+        <Notices />
         {menuAt && <DesktopMenu at={menuAt} onClose={closeMenu} />}
 
         <AnimatePresence>{booting && !reduced && <Boot onDone={finishBoot} />}</AnimatePresence>

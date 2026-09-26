@@ -2,6 +2,10 @@ import { useEffect, useRef, useState } from 'react';
 import { CURSOR_COLORS, CURSOR_INTERVAL, getSocial, type Presence as Channel, type Visitor, type VisitorInfo } from './social';
 import { isPhone, useWindows } from '../core/store';
 import type { Place } from '../ambient/place';
+import { useAccount } from './account';
+import { useChatState } from './chatState';
+import { connectSignals, deliverSignal } from './signals';
+import { isDM, type Account } from './types';
 
 /** A remote cursor fades out after this long without moving. */
 const IDLE_MS = 4000;
@@ -19,11 +23,21 @@ export function flag(country?: string) {
   return String.fromCodePoint(...[...country].map((c) => 0x1f1a5 + c.charCodeAt(0)));
 }
 
-/** What others see about this visitor: a colour, and their city once located. */
-function infoFor(color: string, place: Place | null): VisitorInfo {
-  if (!place || place.source === 'fallback') return { color };
-  return { color, city: place.city, country: place.country };
+/**
+ * What others see about this visitor: a colour, their city once located,
+ * their username if they're signed in, and the public chat room they have
+ * open (never a private conversation).
+ */
+function infoFor(color: string, place: Place | null, account: Account | null, room: string | null): VisitorInfo {
+  const info: VisitorInfo = { color };
+  if (place && place.source !== 'fallback') Object.assign(info, { city: place.city, country: place.country });
+  if (account) info.username = account.username;
+  if (room && !isDM(room)) info.room = room;
+  return info;
 }
+
+const currentInfo = (color: string) =>
+  infoFor(color, useWindows.getState().place, useAccount.getState().account, useChatState.getState().room);
 
 /**
  * Joins the desktop's presence channel: lists who's here, and from where,
@@ -59,7 +73,7 @@ export function Presence() {
     let unsubscribe = () => {};
     getSocial().then((social) => {
       if (!social || cancelled) return;
-      channel = social.joinPresence(infoFor(color, useWindows.getState().place), {
+      channel = social.joinPresence(currentInfo(color), {
         onVisitors: (visitors) => useWindows.getState().setVisitors(visitors),
         onCursor: (id, x, y, c) =>
           setCursors((all) => {
@@ -73,11 +87,17 @@ export function Presence() {
           setCursors((all) => {
             const { [id]: _gone, ...rest } = all;
             return rest;
-          })
+          }),
+        onSignal: deliverSignal
       });
-      unsubscribe = useWindows.subscribe((state, prev) => {
-        if (state.place !== prev.place) channel?.update(infoFor(color, state.place));
-      });
+      connectSignals(channel);
+      const refresh = () => channel?.update(currentInfo(color));
+      const stops = [
+        useWindows.subscribe((state, prev) => state.place !== prev.place && refresh()),
+        useAccount.subscribe((state, prev) => state.account !== prev.account && refresh()),
+        useChatState.subscribe((state, prev) => state.room !== prev.room && refresh())
+      ];
+      unsubscribe = () => stops.forEach((stop) => stop());
       if (!isPhone()) {
         window.addEventListener('pointermove', onMove);
         document.addEventListener('pointerout', onOut);
@@ -94,6 +114,7 @@ export function Presence() {
       window.removeEventListener('pointermove', onMove);
       document.removeEventListener('pointerout', onOut);
       channel?.leave();
+      connectSignals(null);
       useWindows.getState().setVisitors(null);
     };
   }, []);
@@ -101,7 +122,10 @@ export function Presence() {
   const visitors = useWindows((s) => s.visitors);
   const whereIs = (id: string) => {
     const v = visitors?.find((v) => v.id === id);
-    return v?.city ? `${flag(v.country)} ${v.city}`.trim() : null;
+    if (!v) return null;
+    // Members by name (with their flag), everyone else by city.
+    if (v.username) return `${flag(v.country)} ${v.username}`.trim();
+    return v.city ? whereFrom(v) : null;
   };
 
   return (
@@ -130,9 +154,14 @@ export function Presence() {
   );
 }
 
+/** "🇯🇵 Tokyo", or "Somewhere" before they're located. */
+export function whereFrom(v: Pick<Visitor, 'city' | 'country'>) {
+  return v.city ? `${flag(v.country)} ${v.city}`.trim() : 'Somewhere';
+}
+
 function describeVisitor(v: Visitor) {
-  const where = v.city ? `${flag(v.country)} ${v.city}`.trim() : 'Somewhere';
-  return v.self ? `${where} (you)` : where;
+  const who = v.username ? `${v.username} · ${whereFrom(v)}` : whereFrom(v);
+  return v.self ? `${who} (you)` : who;
 }
 
 /** Menu bar item: how many people are on the desktop; click for where they are. */
