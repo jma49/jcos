@@ -6,6 +6,7 @@
 // visitor picked, then their IP location, then San Jose as a last resort.
 
 import { useWindows } from '../core/store';
+import { loadJSON, saveJSON } from '../core/storage';
 
 export interface Place {
   city: string;
@@ -119,13 +120,10 @@ export async function searchPlaces(query: string, signal?: AbortSignal): Promise
 }
 
 function savedPlace(): Place | null {
-  try {
-    const raw = localStorage.getItem(SAVED_KEY);
-    const place = raw ? (JSON.parse(raw) as Place) : null;
-    if (place && Number.isFinite(place.latitude) && Number.isFinite(place.longitude) && place.city) {
-      return { ...place, timeZone: validTimeZone(place.timeZone) ?? deviceTimeZone(), source: 'chosen' };
-    }
-  } catch {}
+  const place = loadJSON<Place | null>(SAVED_KEY, null);
+  if (place && Number.isFinite(place.latitude) && Number.isFinite(place.longitude) && place.city) {
+    return { ...place, timeZone: validTimeZone(place.timeZone) ?? deviceTimeZone(), source: 'chosen' };
+  }
   return null;
 }
 
@@ -167,10 +165,7 @@ export function startLocating() {
 
 /** Uses a city the visitor picked from now on, or goes back to their IP location with null. */
 export function choosePlace(place: Place | null) {
-  try {
-    if (place) localStorage.setItem(SAVED_KEY, JSON.stringify({ ...place, source: 'chosen' }));
-    else localStorage.removeItem(SAVED_KEY);
-  } catch {}
+  saveJSON(SAVED_KEY, place ? { ...place, source: 'chosen' } : null);
   if (place) {
     useWindows.getState().setPlace({ ...place, source: 'chosen' });
     return;

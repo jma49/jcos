@@ -10,6 +10,7 @@ import { Brick } from './Brick';
 import { Quiz } from './Quiz';
 import { Marquee } from './Marquee';
 import type { ScreenInput } from './input';
+import { loadSettings, saveJSON } from '../../core/storage';
 
 // An iPod with a click wheel. Drag round the wheel (or scroll, or use the
 // arrow keys) to move through the menus; MENU goes back, the centre button
@@ -65,13 +66,7 @@ const LOOKS: { look: Look; name: string }[] = [
 ];
 const BACKLIGHTS = [5, 10, 20, 0];
 
-function savedPrefs(): Prefs {
-  try {
-    return { ...DEFAULT_PREFS, ...JSON.parse(localStorage.getItem(PREFS_KEY) ?? '{}') };
-  } catch {
-    return DEFAULT_PREFS;
-  }
-}
+const savedPrefs = () => loadSettings(PREFS_KEY, DEFAULT_PREFS);
 
 const TITLES: Record<Exclude<Screen['kind'], 'menu'>, string> = {
   now: 'Now Playing',
@@ -129,9 +124,7 @@ export default function IPod({ win }: AppProps) {
   const setPref = <K extends keyof Prefs>(key: K, value: Prefs[K]) =>
     setPrefs((p) => {
       const next = { ...p, [key]: value };
-      try {
-        localStorage.setItem(PREFS_KEY, JSON.stringify(next));
-      } catch {}
+      saveJSON(PREFS_KEY, next);
       return next;
     });
 

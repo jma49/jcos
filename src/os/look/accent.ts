@@ -4,6 +4,8 @@
 // settle it at a lightness white text reads well on. The visitor can pick a
 // fixed colour instead in System Preferences.
 
+import { loadSettings, saveJSON } from '../core/storage';
+
 export type AccentChoice = 'auto' | 'blue' | 'graphite' | 'green' | 'orange' | 'purple' | 'red';
 
 export const ACCENTS: Record<Exclude<AccentChoice, 'auto'>, { name: string; color: string }> = {
@@ -100,20 +102,13 @@ const CACHE_KEY = 'os-accent-cache';
 const BRIGHTNESS_KEY = 'os-brightness-cache';
 
 function cached<T>(url: string, key = CACHE_KEY): T | null {
-  try {
-    return JSON.parse(localStorage.getItem(key) ?? '{}')[url] ?? null;
-  } catch {
-    return null;
-  }
+  return loadSettings<Record<string, T>>(key, {})[url] ?? null;
 }
 
 function remember(url: string, value: string | number, key = CACHE_KEY) {
-  try {
-    const all = JSON.parse(localStorage.getItem(key) ?? '{}');
-    // Keep the cache small: the last dozen pictures.
-    const entries = Object.entries({ ...all, [url]: value }).slice(-12);
-    localStorage.setItem(key, JSON.stringify(Object.fromEntries(entries)));
-  } catch {}
+  // Keep the cache small: the last dozen pictures.
+  const entries = Object.entries({ ...loadSettings(key, {}), [url]: value }).slice(-12);
+  saveJSON(key, Object.fromEntries(entries));
 }
 
 /** A small copy of an Unsplash picture is plenty to sample. */

@@ -9,6 +9,7 @@ import { useEffect, useRef, useState } from 'react';
 import { create } from 'zustand';
 import { useWindows } from '../core/store';
 import library from '../../data/songs.json' with { type: 'json' };
+import { loadSettings, saveJSON } from '../core/storage';
 
 export interface Song {
   /** The YouTube video id. */
@@ -68,20 +69,6 @@ export const coverOf = (song: Song) => song.cover ?? albumOf(song)?.cover ?? `ht
 const OFFSETS_KEY = 'os-lyric-offsets';
 const SETTINGS_KEY = 'os-music';
 
-function read<T>(key: string, fallback: T): T {
-  try {
-    return { ...fallback, ...JSON.parse(localStorage.getItem(key) ?? '{}') };
-  } catch {
-    return fallback;
-  }
-}
-
-function write(key: string, value: unknown) {
-  try {
-    localStorage.setItem(key, JSON.stringify(value));
-  } catch {}
-}
-
 interface MusicStore {
   /** The current song, an index into SONGS. */
   index: number;
@@ -124,7 +111,7 @@ export function currentTime() {
   return (owner && clocks.get(owner)?.()) || 0;
 }
 
-const settings = typeof window === 'undefined' ? null : read(SETTINGS_KEY, { shuffle: false, repeat: 'all' as Repeat, volume: 80 });
+const settings = loadSettings(SETTINGS_KEY, { shuffle: false, repeat: 'all' as Repeat, volume: 80 });
 
 export const useMusic = create<MusicStore>((set, get) => {
   /** The change that makes `app` the owner, noting where the old owner was. */
@@ -134,7 +121,7 @@ export const useMusic = create<MusicStore>((set, get) => {
   };
   const save = () => {
     const { shuffle, repeat, volume } = get();
-    write(SETTINGS_KEY, { shuffle, repeat, volume });
+    saveJSON(SETTINGS_KEY, { shuffle, repeat, volume });
   };
   /** Another song from the queue, at random. */
   const randomOther = (index: number, queue: number[]) => {
@@ -153,10 +140,10 @@ export const useMusic = create<MusicStore>((set, get) => {
     playing: false,
     owner: null,
     resume: null,
-    shuffle: settings?.shuffle ?? false,
-    repeat: settings?.repeat ?? 'all',
-    volume: settings?.volume ?? 80,
-    offsets: typeof window === 'undefined' ? {} : read<Record<string, number>>(OFFSETS_KEY, {}),
+    shuffle: settings.shuffle,
+    repeat: settings.repeat,
+    volume: settings.volume,
+    offsets: loadSettings<Record<string, number>>(OFFSETS_KEY, {}),
 
     play: (app, index = get().index, queue) => {
       soundOnToPlay();
@@ -200,7 +187,7 @@ export const useMusic = create<MusicStore>((set, get) => {
     nudge: (id, ms) => {
       const offsets = { ...get().offsets, [id]: (get().offsets[id] ?? 0) + ms };
       set({ offsets });
-      write(OFFSETS_KEY, offsets);
+      saveJSON(OFFSETS_KEY, offsets);
     }
   };
 });

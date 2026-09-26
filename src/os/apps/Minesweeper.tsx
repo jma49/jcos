@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { AppProps } from '../core/registry';
 import { play } from '../core/sound';
 import { DOCK_CLEARANCE, MENU_BAR_HEIGHT, MOBILE_BREAKPOINT, useWindows } from '../core/store';
+import { loadSettings, saveJSON } from '../core/storage';
 
 // Minesweeper. The first click is always safe (mines are laid after it),
 // right-click or long-press flags, and clicking a number whose flags are
@@ -75,11 +76,7 @@ function reveal(cells: Cell[], start: number[], cols: number, rows: number) {
 }
 
 function readBest(): Partial<Record<Level, number>> {
-  try {
-    return JSON.parse(localStorage.getItem(BEST_KEY) ?? '{}');
-  } catch {
-    return {};
-  }
+  return loadSettings<Partial<Record<Level, number>>>(BEST_KEY, {});
 }
 
 const pad = (n: number) => String(Math.max(-99, Math.min(999, n))).padStart(3, '0');
@@ -144,9 +141,7 @@ export default function Minesweeper({ win }: AppProps) {
       if (best[level] === undefined || time < best[level]!) {
         const updated = { ...best, [level]: time };
         setBest(updated);
-        try {
-          localStorage.setItem(BEST_KEY, JSON.stringify(updated));
-        } catch {}
+        saveJSON(BEST_KEY, updated);
       }
     }
   };

@@ -6,6 +6,7 @@ import { useInstalledApplets } from '../core/applets';
 import { buildDisk, find, type FileNode } from '../core/files';
 import { DiskIcon } from '../core/icons';
 import { Drawer } from '../shell/drawer';
+import { load, loadSettings, saveJSON } from '../core/storage';
 
 // Finder over Macintosh HD (files.ts): a sidebar of places, back and
 // forward, icon or list views, a search field that looks through the
@@ -25,14 +26,9 @@ const PREFS_KEY = 'os-finder';
 const DEFAULT_PREFS: Prefs = { view: 'icons', arrange: 'none', size: 64 };
 
 function savedPrefs(): Prefs {
-  try {
-    const saved = JSON.parse(localStorage.getItem(PREFS_KEY) ?? 'null');
-    // Earlier versions kept only the view, under its own key.
-    const view = localStorage.getItem('os-finder-view') === 'list' ? 'list' : DEFAULT_PREFS.view;
-    return { ...DEFAULT_PREFS, view, ...saved };
-  } catch {
-    return DEFAULT_PREFS;
-  }
+  // Earlier versions kept only the view, under its own key.
+  const view = load('os-finder-view') === 'list' ? 'list' : DEFAULT_PREFS.view;
+  return loadSettings(PREFS_KEY, { ...DEFAULT_PREFS, view });
 }
 
 const formatDate = (iso?: string) =>
@@ -229,9 +225,7 @@ export default function Finder({ win }: AppProps) {
   const update = (next: Partial<Prefs>) => {
     const merged = { ...prefs, ...next };
     setPrefs(merged);
-    try {
-      localStorage.setItem(PREFS_KEY, JSON.stringify(merged));
-    } catch {}
+    saveJSON(PREFS_KEY, merged);
   };
 
   const parent = path === '/' ? null : parentOf(path);

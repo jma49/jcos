@@ -3,6 +3,7 @@ import type { AppId, Rect, WindowState } from './types';
 import type { Place } from '../ambient/place';
 import type { Visitor } from '../social/social';
 import type { AccentChoice } from '../look/accent';
+import { load, loadJSON, loadSettings, save, saveJSON } from './storage';
 
 export const MENU_BAR_HEIGHT = 22;
 export const DOCK_CLEARANCE = 78;
@@ -106,72 +107,25 @@ const GLASS_KEY = 'os-glass';
 const ACCENT_CHOICES: AccentChoice[] = ['auto', 'blue', 'graphite', 'green', 'orange', 'purple', 'red'];
 
 function savedAccent(): AccentChoice {
-  const saved = read(ACCENT_KEY) as AccentChoice | null;
+  const saved = load(ACCENT_KEY) as AccentChoice | null;
   return saved && ACCENT_CHOICES.includes(saved) ? saved : 'auto';
 }
 /** Applets everyone starts with. */
 const DEFAULT_APPLETS: AppId[] = ['minesweeper'];
 
 function savedApplets(): AppId[] {
-  try {
-    const saved = JSON.parse(read(APPLETS_KEY) ?? 'null');
-    return Array.isArray(saved) ? saved : DEFAULT_APPLETS;
-  } catch {
-    return DEFAULT_APPLETS;
-  }
-}
-
-function savedIconPositions(): IconPositions | null {
-  try {
-    return JSON.parse(read(ICONS_KEY) ?? 'null');
-  } catch {
-    return null;
-  }
-}
-
-function read(key: string) {
-  try {
-    return localStorage.getItem(key);
-  } catch {
-    return null;
-  }
-}
-
-function write(key: string, value: string) {
-  try {
-    localStorage.setItem(key, value);
-  } catch {}
+  const saved = loadJSON<unknown>(APPLETS_KEY, null);
+  return Array.isArray(saved) ? saved : DEFAULT_APPLETS;
 }
 
 function savedAppearance(): Appearance {
-  const saved = read(APPEARANCE_KEY);
+  const saved = load(APPEARANCE_KEY);
   return saved === 'light' || saved === 'dark' || saved === 'sun' ? saved : 'system';
 }
 
 function savedSound(): { soundOn: boolean; volume: number } {
-  try {
-    const saved = JSON.parse(read(SOUND_KEY) ?? 'null');
-    if (saved) return { soundOn: saved.on === true, volume: Math.min(1, Math.max(0, Number(saved.volume) || 0.6)) };
-  } catch {}
-  return { soundOn: false, volume: 0.6 };
-}
-
-function savedSaver(): SaverPrefs {
-  const fallback: SaverPrefs = { style: 'photos', idle: 2 };
-  try {
-    const saved = JSON.parse(read(SAVER_KEY) ?? 'null');
-    return saved ? { ...fallback, ...saved } : fallback;
-  } catch {
-    return fallback;
-  }
-}
-
-function savedWallpaper() {
-  try {
-    return localStorage.getItem(WALLPAPER_KEY);
-  } catch {
-    return null;
-  }
+  const saved = loadSettings(SOUND_KEY, { on: false, volume: 0.6 });
+  return { soundOn: saved.on === true, volume: Math.min(1, Math.max(0, Number(saved.volume) || 0.6)) };
 }
 
 /** Where a new window goes: centred, then stepped down-right per open window. */
@@ -196,20 +150,20 @@ export const useWindows = create<WindowStore>((set, get) => ({
   windows: {},
   order: [],
   theme: 'light',
-  appearance: typeof window === 'undefined' ? 'system' : savedAppearance(),
-  saver: typeof window === 'undefined' ? { style: 'photos', idle: 2 } : savedSaver(),
-  ...(typeof window === 'undefined' ? { soundOn: false, volume: 0.6 } : savedSound()),
-  iconPositions: typeof window === 'undefined' ? null : savedIconPositions(),
-  applets: typeof window === 'undefined' ? DEFAULT_APPLETS : savedApplets(),
-  accent: typeof window === 'undefined' ? 'auto' : savedAccent(),
-  glass: typeof window === 'undefined' ? false : read(GLASS_KEY) === '1',
+  appearance: savedAppearance(),
+  saver: loadSettings<SaverPrefs>(SAVER_KEY, { style: 'photos', idle: 2 }),
+  ...savedSound(),
+  iconPositions: loadJSON<IconPositions | null>(ICONS_KEY, null),
+  applets: savedApplets(),
+  accent: savedAccent(),
+  glass: load(GLASS_KEY) === '1',
   spotlightOpen: false,
   dashboardOpen: false,
   exposeOpen: false,
   screensaverOn: false,
   visitors: null,
-  wallpaper: typeof window === 'undefined' ? null : savedWallpaper(),
-  rotateWallpaper: typeof window === 'undefined' ? true : read(ROTATE_KEY) !== '0',
+  wallpaper: load(WALLPAPER_KEY),
+  rotateWallpaper: load(ROTATE_KEY) !== '0',
   place: null,
 
   open: (app, { key = app, title, width, height, origin, props }) => {
@@ -267,44 +221,41 @@ export const useWindows = create<WindowStore>((set, get) => ({
     set((s) => (s.windows[id] && s.windows[id].title !== title ? { windows: { ...s.windows, [id]: { ...s.windows[id], title } } } : s)),
 
   setTheme: (theme) => {
-    write(APPEARANCE_KEY, theme);
+    save(APPEARANCE_KEY, theme);
     set({ theme, appearance: theme });
   },
   setAppearance: (appearance) => {
-    write(APPEARANCE_KEY, appearance);
+    save(APPEARANCE_KEY, appearance);
     set(appearance === 'light' || appearance === 'dark' ? { appearance, theme: appearance } : { appearance });
   },
   applyTheme: (theme) => set({ theme }),
   setIconPositions: (iconPositions) => {
-    try {
-      if (iconPositions) localStorage.setItem(ICONS_KEY, JSON.stringify(iconPositions));
-      else localStorage.removeItem(ICONS_KEY);
-    } catch {}
+    saveJSON(ICONS_KEY, iconPositions);
     set({ iconPositions });
   },
   setGlass: (glass) => {
-    write(GLASS_KEY, glass ? '1' : '0');
+    save(GLASS_KEY, glass ? '1' : '0');
     set({ glass });
   },
   setAccent: (accent) => {
-    write(ACCENT_KEY, accent);
+    save(ACCENT_KEY, accent);
     set({ accent });
   },
   setApplets: (applets) => {
-    write(APPLETS_KEY, JSON.stringify(applets));
+    saveJSON(APPLETS_KEY, applets);
     set({ applets });
   },
   setSound: (soundOn) => {
-    write(SOUND_KEY, JSON.stringify({ on: soundOn, volume: get().volume }));
+    saveJSON(SOUND_KEY, { on: soundOn, volume: get().volume });
     set({ soundOn });
   },
   setVolume: (volume) => {
-    write(SOUND_KEY, JSON.stringify({ on: get().soundOn, volume }));
+    saveJSON(SOUND_KEY, { on: get().soundOn, volume });
     set({ volume });
   },
   setSaver: (saver) => {
     const next = { ...get().saver, ...saver };
-    write(SAVER_KEY, JSON.stringify(next));
+    saveJSON(SAVER_KEY, next);
     set({ saver: next });
   },
   setSpotlight: (spotlightOpen) => set({ spotlightOpen }),
@@ -313,14 +264,11 @@ export const useWindows = create<WindowStore>((set, get) => ({
   setScreensaver: (screensaverOn) => set({ screensaverOn }),
   setVisitors: (visitors) => set({ visitors }),
   setWallpaper: (wallpaper) => {
-    try {
-      if (wallpaper) localStorage.setItem(WALLPAPER_KEY, wallpaper);
-      else localStorage.removeItem(WALLPAPER_KEY);
-    } catch {}
+    save(WALLPAPER_KEY, wallpaper);
     set({ wallpaper });
   },
   setRotateWallpaper: (rotateWallpaper) => {
-    write(ROTATE_KEY, rotateWallpaper ? '1' : '0');
+    save(ROTATE_KEY, rotateWallpaper ? '1' : '0');
     set({ rotateWallpaper });
   },
   setPlace: (place) => set({ place })
