@@ -8,7 +8,7 @@ import { PlaceSearch } from '../ambient/PlaceSearch';
 import { SAVER_STYLES, SAVER_VIEWS } from '../shell/Screensaver';
 import { play } from '../core/sound';
 import { ACCENTS, cachedAccent, type AccentChoice } from '../look/accent';
-import { backgroundFor, COVER, PATTERNS, PICTURE_SETS, setOf, SKY, SOLID_COLORS, tileBackground, TILES } from '../look/wallpapers';
+import { backgroundFor, COVER, PATTERNS, PICTURE_SETS, SCENIC, setOf, SKY, SOLID_COLORS, tileBackground, TILES } from '../look/wallpapers';
 import { coverOf, SONGS } from '../media/library';
 import { useMusic } from '../media/music';
 import { useSky } from '../ambient/Sky';
@@ -47,7 +47,6 @@ interface Picture {
 
 const COLLECTIONS: { id: Collection; name: string }[] = [
   { id: 'desktop', name: 'Desktop Pictures' },
-  { id: 'photos', name: 'Jincheng’s Photos' },
   ...PICTURE_SETS.map((set) => ({ id: set.id, name: set.name })),
   { id: TILES.id, name: TILES.name },
   { id: 'colors', name: 'Solid Colors' },
@@ -55,12 +54,11 @@ const COLLECTIONS: { id: Collection; name: string }[] = [
   { id: 'dynamic', name: 'Dynamic' }
 ];
 
-function collectionOf(value: string | null, photoUrls: Set<string>): Collection {
+function collectionOf(value: string | null): Collection {
   if (!value) return 'desktop';
   if (value.startsWith('color:')) return 'colors';
   if (value.startsWith('pattern:')) return 'patterns';
   if (value.startsWith('dynamic:')) return 'dynamic';
-  if (photoUrls.has(value)) return 'photos';
   return setOf(value)?.id ?? 'desktop';
 }
 
@@ -71,7 +69,7 @@ function DesktopPane() {
   const rotate = useWindows((s) => s.rotateWallpaper);
   const { setWallpaper, setSaver, setScreensaver, setRotateWallpaper } = useWindows.getState();
   const sky = useSky();
-  const [collection, setCollection] = useState<Collection>(() => collectionOf(custom, new Set(data.photos.map((p) => p.full))));
+  const [collection, setCollection] = useState<Collection>(() => collectionOf(custom));
   const skyNow = backgroundFor(SKY, data.wallpaper, sky);
   // The cover of the song that's on, or the first album's for the thumbnail.
   const playing = useMusic((s) => (s.owner ? coverOf(SONGS[s.index]) : null));
@@ -81,7 +79,6 @@ function DesktopPane() {
     ...Object.fromEntries(PICTURE_SETS.map((set) => [set.id, set.items])),
     [TILES.id]: TILES.items.map((t) => ({ value: t.value, name: t.name, background: tileBackground(t.value) })),
     desktop: [{ value: null, name: 'Stones', thumb: data.wallpaper }],
-    photos: data.photos.map((p) => ({ value: p.full, name: p.alt, thumb: p.thumb })),
     colors: SOLID_COLORS.map((c) => ({ value: `color:${c.id}`, name: c.name, background: backgroundFor(`color:${c.id}`, '', sky) })),
     patterns: PATTERNS.map((p) => ({ value: `pattern:${p.id}`, name: p.name, background: p.background })),
     dynamic: [
@@ -156,7 +153,7 @@ function DesktopPane() {
           </ul>
           <div className="os-prefs-preview">
             <div className="os-prefs-screen">
-              {saver.style === 'photos' ? data.photos[0] && <img src={data.photos[0].thumb} alt="" /> : SAVER_VIEWS[saver.style]?.()}
+              {saver.style === 'photos' ? <img src={SCENIC[0].thumb} alt="" /> : SAVER_VIEWS[saver.style]?.()}
             </div>
             <p>{blurb}</p>
             <div className="os-prefs-row">

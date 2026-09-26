@@ -77,7 +77,7 @@ export function useDesktopPicture(data: OSData, sky: SkyState, root: RefObject<H
     const onVisibility = () => {
       const { wallpaper: current, setWallpaper } = useWindows.getState();
       if (document.hidden) {
-        next = nextPicture(current, data.photos.map((p) => p.full));
+        next = nextPicture(current);
         if (next && isPicture(next)) {
           new Image().src = next;
           accentFromPicture(next).catch(() => {});

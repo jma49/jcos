@@ -179,11 +179,12 @@ export const useWindows = create<WindowStore>((set, get) => ({
   exposeOpen: false,
   screensaverOn: false,
   visitors: null,
-  wallpaper: load(WALLPAPER_KEY),
+  // Jincheng's photos were desktop pictures once; they're only in Photos now.
+  wallpaper: load(WALLPAPER_KEY)?.includes('images.unsplash.com') ? null : load(WALLPAPER_KEY),
   rotateWallpaper: load(ROTATE_KEY) !== '0',
   place: null,
 
-  open: (app, { key = app, title, width, height, origin, props }) => {
+  open: (app, { key = app, title, width, height, origin, props, center }) => {
     const existing = get().windows[key];
     if (existing) {
       set((s) => ({

@@ -71,7 +71,6 @@ function PhotoInfo({ photo, index, total }: { photo: OSPhoto; index: number; tot
 /** iPhoto-style library of the Unsplash photos fetched at build time. */
 export default function Photos({ win }: AppProps) {
   const { photos, links } = useOSData();
-  const wallpaper = useWindows((s) => s.wallpaper);
   const [row, setRow] = useState(180);
   const [open, setOpen] = useState<number | null>(null);
   // The Info drawer stays open from photo to photo.
@@ -159,14 +158,6 @@ export default function Photos({ win }: AppProps) {
           <span className="os-toolbar-meta">
             {open! + 1} of {photos.length} · {date}
           </span>
-          <button
-            type="button"
-            className="os-button"
-            disabled={wallpaper === current.full}
-            onClick={() => useWindows.getState().setWallpaper(current.full)}
-          >
-            {wallpaper === current.full ? 'Desktop Picture ✓' : 'Set as Desktop'}
-          </button>
           <button type="button" className="os-button" onClick={() => shareViaAirDrop(`/Pictures/${current.id}`)} title="Share with someone on the desktop">
             AirDrop…
           </button>

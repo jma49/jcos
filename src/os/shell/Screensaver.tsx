@@ -1,15 +1,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
-import { useOSData } from '../core/context';
 import { isPhone, useWindows, type SaverStyle } from '../core/store';
 import { useMusic } from '../media/music';
 import { clockTimeZone, usePlace } from '../ambient/place';
 import { describe, useWeather } from '../ambient/weather';
-import type { OSPhoto } from '../core/types';
+import { SCENIC } from '../look/wallpapers';
 import { Bounce, Flurry, SoapboxSaver } from './savers';
 
 export const SAVER_STYLES: { style: SaverStyle; name: string; blurb: string }[] = [
-  { style: 'photos', name: 'Photos', blurb: 'A slow pan across Jincheng’s photographs.' },
+  { style: 'photos', name: 'Desktop Pictures', blurb: 'A slow pan across Mac OS X’s desktop pictures.' },
   { style: 'flurry', name: 'Flurry', blurb: 'Glowing ribbons of colour, after the Mac OS X classic.' },
   { style: 'soapbox', name: 'Soapbox', blurb: 'Jincheng’s latest notes and rants, one at a time, like Word of the Day.' },
   { style: 'starfield', name: 'Starfield', blurb: 'Flying through the stars.' },
@@ -17,7 +16,7 @@ export const SAVER_STYLES: { style: SaverStyle; name: string; blurb: string }[] 
   { style: 'bounce', name: 'Bounce', blurb: 'JM, bouncing off the edges. Wait for it to hit a corner.' }
 ];
 
-/** Every screen saver but Photos, which needs the library; also the previews in System Preferences. */
+/** Every screen saver but the slideshow; also the previews in System Preferences. */
 export const SAVER_VIEWS: Partial<Record<SaverStyle, () => ReactNode>> = {
   flurry: () => <Flurry />,
   soapbox: () => <SoapboxSaver />,
@@ -77,20 +76,18 @@ function useIdle(minutes: number, onIdle: () => void) {
 
 /** The screensaver the visitor picked in System Preferences. */
 export function Screensaver() {
-  const { photos, name } = useOSData();
   const active = useWindows((s) => s.screensaverOn);
   const { style, idle } = useWindows((s) => s.saver);
   const start = useCallback(() => useWindows.getState().setScreensaver(true), []);
   const stop = useCallback(() => useWindows.getState().setScreensaver(false), []);
   useIdle(idle, start);
-  // Photos needs photos; without them, fall back to the stars.
-  const shown = style === 'photos' && photos.length === 0 ? 'starfield' : style;
+  const shown = style;
 
   return (
     <AnimatePresence>
       {active && (
         <Saver key={shown} onStop={stop}>
-          {shown === 'photos' ? <Slideshow photos={photos} name={name} /> : SAVER_VIEWS[shown]?.()}
+          {shown === 'photos' ? <Slideshow /> : SAVER_VIEWS[shown]?.()}
         </Saver>
       )}
     </AnimatePresence>
@@ -141,10 +138,13 @@ function Saver({ onStop, children }: { onStop: () => void; children: ReactNode }
   );
 }
 
-/** A slideshow of the Photos library, like iPhoto's screensaver. */
-function Slideshow({ photos, name }: { photos: OSPhoto[]; name: string }) {
+/**
+ * A slideshow of Mac OS X's desktop pictures, panning slowly as the Ken
+ * Burns screen saver did. (Jincheng's own photos stay in Photos.)
+ */
+function Slideshow() {
   const reduced = useReducedMotion();
-  const deck = useMemo(() => shuffle(photos), [photos]);
+  const deck = useMemo(() => shuffle(SCENIC), []);
   const [index, setIndex] = useState(0);
   const photo = deck[index % deck.length];
   const drift = DRIFTS[index % DRIFTS.length];
@@ -156,16 +156,14 @@ function Slideshow({ photos, name }: { photos: OSPhoto[]; name: string }) {
 
   // Warm the cache so the next photo fades in fully loaded.
   useEffect(() => {
-    new Image().src = deck[(index + 1) % deck.length].full;
+    new Image().src = deck[(index + 1) % deck.length].value;
   }, [index, deck]);
-
-  const date = new Date(photo.taken).toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
 
   return (
     <>
       <AnimatePresence initial={false}>
         <motion.div
-          key={`${photo.id}-${index}`}
+          key={`${photo.value}-${index}`}
           className="os-screensaver-slide"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -173,9 +171,9 @@ function Slideshow({ photos, name }: { photos: OSPhoto[]; name: string }) {
           transition={{ duration: 1.6, ease: 'easeInOut' }}
         >
           {/* A blurred copy fills the screen so portrait photos aren't cropped. */}
-          <div className="os-screensaver-backdrop" style={{ backgroundImage: `url(${photo.full})`, backgroundColor: photo.color }} />
+          <div className="os-screensaver-backdrop" style={{ backgroundImage: `url(${photo.value})` }} />
           <motion.img
-            src={photo.full}
+            src={photo.value}
             alt=""
             initial={reduced ? false : drift.from}
             animate={reduced ? undefined : drift.to}
@@ -184,8 +182,7 @@ function Slideshow({ photos, name }: { photos: OSPhoto[]; name: string }) {
         </motion.div>
       </AnimatePresence>
       <p className="os-screensaver-caption">
-        <strong>{name}</strong>
-        <span>{date}</span>
+        <strong>{photo.name}</strong>
       </p>
     </>
   );
