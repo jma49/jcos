@@ -121,11 +121,14 @@ function Slideshow() {
 
   return (
     <>
-      <AnimatePresence initial={false}>
+      {/* The first photo is there at once; later ones fade in. Only the fade
+          is skipped: AnimatePresence's initial={false} would also stop the
+          first photo's pan. */}
+      <AnimatePresence>
         <m.div
           key={`${photo.value}-${index}`}
           className="os-screensaver-slide"
-          initial={{ opacity: 0 }}
+          initial={index === 0 ? false : { opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 1.6, ease: 'easeInOut' }}
