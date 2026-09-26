@@ -86,13 +86,13 @@ function Shell({ data }: { data: OSData }) {
   };
 
   // Once the desktop is up, open whatever ?open= names (an app or a project
-  // slug), or put back the windows of the last visit, or greet with About.
-  // The very first time, the welcome comes alone, in the middle, and About
-  // follows once it's closed (Welcome.tsx).
+  // slug), or put back the windows of the last visit. The very first time,
+  // the welcome comes alone, in the middle; otherwise the desktop starts
+  // clear, the way a Mac does.
   useEffect(() => {
     if (booting || Object.keys(useWindows.getState().windows).length > 0) return;
     const greet = () => {
-      if (load(WELCOMED_KEY)) return launch('about');
+      if (load(WELCOMED_KEY)) return;
       save(WELCOMED_KEY, '1');
       launch('welcome', { center: true });
     };
