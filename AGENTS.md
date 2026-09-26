@@ -125,7 +125,7 @@ readers, crawlers and visitors without JavaScript.
   column views, Quick Look (Space), keyboard navigation and a
   right-click menu. A file's `look` is what Quick Look shows.
 - `src/os/social/airdrop.ts` and `apps/AirDrop.tsx`: AirDrop between
-  visitors on the desktop. Only a Macintosh HD path is sent, and the
+  signed-in members on the desktop (signed out, it asks you to sign in). Only a Macintosh HD path is sent, and the
   receiver looks it up on its own disk, so only JM/OS's own content can
   arrive; offers go over presence signals and must be accepted. Finder
   (right-click, drag onto AirDrop), Photos and project windows share.
@@ -159,8 +159,10 @@ readers, crawlers and visitors without JavaScript.
   the same media query in the stylesheets.
 - `src/os/core/registry.tsx`: every app's name, icon, default and minimum size,
   and lazily imported component. `dockApps` and `mobileDockApps` pick what
-  the Dock keeps (other apps appear there while open); `launcherApps` is
-  what Spotlight lists.
+  the Dock keeps (other apps appear there while open, except `noDock`
+  panels); `launcherApps` is what Spotlight lists. Keep the Dock and the
+  desktop (`shell/DesktopIcons.tsx`: Macintosh HD, About Me, Résumé,
+  Projects) short; a phone's home screen lists every app.
 - `src/os/apps/`: one component per app. Content comes from `OSData`,
   assembled at build time in `index.astro` from `src/i18n/content.ts`, the
   projects collection and `src/lib/photos.ts` (Unsplash, fetched at build).
