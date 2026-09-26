@@ -66,6 +66,8 @@ interface WindowStore {
   place: Place | null;
 
   open: (app: AppId, options: OpenOptions) => string;
+  /** Puts back windows from an earlier visit (see windowSession.ts), in their stacking order. */
+  restore: (windows: WindowState[], order: string[]) => void;
   close: (id: string) => void;
   focus: (id: string) => void;
   minimize: (id: string) => void;
@@ -129,7 +131,7 @@ function savedSound(): { soundOn: boolean; volume: number } {
 }
 
 /** Where a new window goes: centred, then stepped down-right per open window. */
-function placement(width: number, height: number, openCount: number) {
+export function placement(width: number, height: number, openCount: number) {
   const vw = window.innerWidth;
   const vh = window.innerHeight;
   if (vw < MOBILE_BREAKPOINT) {
@@ -185,6 +187,9 @@ export const useWindows = create<WindowStore>((set, get) => ({
     }));
     return key;
   },
+
+  restore: (windows, order) =>
+    set({ windows: Object.fromEntries(windows.map((w) => [w.id, w])), order: order.filter((id) => windows.some((w) => w.id === id)) }),
 
   close: (id) =>
     set((s) => {

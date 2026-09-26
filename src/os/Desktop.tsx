@@ -21,6 +21,7 @@ import { watchWindows } from './core/sound';
 import { OSDataContext } from './core/context';
 import { launch } from './core/registry';
 import { openFromUrl } from './core/deepLink';
+import { restoreWindows, saveWindowsAsTheyChange } from './core/windowSession';
 import { MOBILE_BREAKPOINT, useFocusedId, useWindows } from './core/store';
 import type { OSData } from './core/types';
 import './os.css';
@@ -44,6 +45,7 @@ export default function Desktop({ data }: { data: OSData }) {
   });
 
   useEffect(watchWindows, []);
+  useEffect(saveWindowsAsTheyChange, []);
   // Whether someone's signed in (the social backend loads on its own, after the desktop).
   useEffect(startAccount, []);
 
@@ -67,10 +69,10 @@ export default function Desktop({ data }: { data: OSData }) {
   };
 
   // Once the desktop is up, open whatever ?open= names (an app or a project
-  // slug), or greet with About.
+  // slug), or put back the windows of the last visit, or greet with About.
   useEffect(() => {
     if (booting || Object.keys(useWindows.getState().windows).length > 0) return;
-    const t = setTimeout(() => openFromUrl(data) || launch('about'), reduced ? 0 : 250);
+    const t = setTimeout(() => openFromUrl(data) || restoreWindows() || launch('about'), reduced ? 0 : 250);
     return () => clearTimeout(t);
   }, [booting, reduced, data]);
 
