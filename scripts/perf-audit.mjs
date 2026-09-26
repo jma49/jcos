@@ -26,7 +26,7 @@ const URL_ = process.argv[2] ?? server.url;
 const TIMED = new Set(['dragScriptMs', 'idleScriptMs']);
 const strict = (key) => !(process.env.CI && TIMED.has(key));
 const BUDGET = {
-  initialJsGzipKB: 180,
+  initialJsGzipKB: 160,
   imagesKB: 1100,
   fontsKB: 250,
   dragScriptMs: 400,
