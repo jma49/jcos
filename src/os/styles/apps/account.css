@@ -137,6 +137,52 @@
   line-height: 1.45;
 }
 
+/* Forgot password: a note with the Mail stamp, then the confirmation once sent. */
+.os-account-intro {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.os-account-intro img {
+  flex: none;
+}
+
+.os-account-sent {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  padding: 10px 6px 4px;
+  text-align: center;
+}
+
+.os-account-sent img {
+  margin-bottom: 2px;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.25));
+}
+
+.os-account-sent h3 {
+  margin: 0;
+  font-size: 15px;
+}
+
+.os-account-sent p {
+  max-width: 34ch;
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.os-account-sent small {
+  max-width: 34ch;
+  color: var(--os-dim);
+  font-size: 11px;
+}
+
+.os-account-sent .os-button {
+  margin-top: 6px;
+}
+
 .os-root .os-account-forgot {
   justify-self: start;
   font-size: 11px;
