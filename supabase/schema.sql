@@ -666,12 +666,21 @@ $$;
 revoke all on function public.soapbox_add_images(text, bigint, text, text, text, text, jsonb) from public, anon, authenticated;
 grant execute on function public.soapbox_add_images(text, bigint, text, text, text, text, jsonb) to service_role;
 
-insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
-values ('soapbox', 'soapbox', true, 10485760, array['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
-on conflict (id) do update
-  set public = true,
-      file_size_limit = excluded.file_size_limit,
-      allowed_mime_types = excluded.allowed_mime_types;
+-- The bucket. Some projects refuse this insert, and an error here used to
+-- undo everything above; now it's only a notice, and the bot makes the
+-- bucket itself on the first photo.
+do $$
+begin
+  insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+  values ('soapbox', 'soapbox', true, 10485760, array['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
+  on conflict (id) do update
+    set public = true,
+        file_size_limit = excluded.file_size_limit,
+        allowed_mime_types = excluded.allowed_mime_types;
+exception when others then
+  raise notice 'Couldn''t make the soapbox bucket here (%); the bot will make it.', sqlerrm;
+end;
+$$;
 
 -- PostgREST picks up the new function and column; Supabase usually does
 -- this by itself after a schema change, but not always.
