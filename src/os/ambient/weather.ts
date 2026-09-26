@@ -2,7 +2,7 @@
 // Open-Meteo (no key needed). Shared by the Dashboard widgets and the
 // desktop sky, so each place is fetched once per half hour.
 
-import { useEffect, useState } from 'react';
+import { useEffect, useEffectEvent, useState } from 'react';
 import { usesFahrenheit, type Place } from './place';
 
 export type Condition = 'clear' | 'cloudy' | 'overcast' | 'fog' | 'drizzle' | 'rain' | 'snow' | 'storm';
@@ -107,11 +107,13 @@ export function useWeather(place: Place | null): Weather | null | 'error' {
   const [state, setState] = useState<{ key: string; weather: Weather | 'error' } | null>(null);
   const key = place ? `${place.latitude},${place.longitude},${place.country}` : '';
 
+  // Fetched again only when the place itself changes, not a new object for it.
+  const fetchWeather = useEffectEvent(() => getWeather(place as Place));
   useEffect(() => {
-    if (!place) return;
+    if (!key) return;
     let live = true;
     const load = () =>
-      getWeather(place).then(
+      fetchWeather().then(
         (weather) => live && setState({ key, weather }),
         () => live && setState((s) => (s?.key === key && s.weather !== 'error' ? s : { key, weather: 'error' }))
       );

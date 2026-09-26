@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import type { AppProps } from '../../core/registry';
 import { play } from '../../core/sound';
 import { useFocusedId } from '../../core/store';
@@ -232,11 +232,13 @@ export default function Pinball({ win }: AppProps) {
   }, []);
 
   // A new best score is kept when the game ends.
+  const keepBest = useEffectEvent(() => {
+    if (hud.score <= best) return;
+    setBest(hud.score);
+    saveJSON(BEST_KEY, hud.score);
+  });
   useEffect(() => {
-    if (hud.over && hud.score > best) {
-      setBest(hud.score);
-      saveJSON(BEST_KEY, hud.score);
-    }
+    if (hud.over) keepBest();
   }, [hud.over]);
 
   // The table is as big as fits the space, at the screen's resolution.

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
 import { useOSData } from '../core/context';
 import type { AppProps } from '../core/registry';
 import { play } from '../core/sound';
@@ -52,8 +52,10 @@ export default function TileGame(_: AppProps) {
   const solved = useMemo(() => board.every((t, i) => t === i), [board]);
 
   useEffect(() => root.current?.focus(), []);
+  // A chime when the last tile goes in, not for a board that starts solved.
+  const onSolved = useEffectEvent(() => moves > 0 && play('chime'));
   useEffect(() => {
-    if (solved && moves > 0) play('chime');
+    if (solved) onSolved();
   }, [solved]);
 
   const slide = (position: number) => {
