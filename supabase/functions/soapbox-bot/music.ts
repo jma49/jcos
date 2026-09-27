@@ -327,12 +327,13 @@ export function musicCommands({ db, telegram }: Deps) {
         await telegram('answerCallbackQuery', { callback_query_id: cb.id });
         return true;
       }
-      const [row] = (await db(`music_settings?name=eq.draft:${id}&select=value`)) ?? [];
+      // Taking the draft is the claim: of two presses at once (or Telegram
+      // sending one twice), only the one whose delete finds it goes on.
+      const [row] = (await db(`music_settings?name=eq.draft:${id}`, { method: 'DELETE', headers: { prefer: 'return=representation' } })) ?? [];
       if (!row) {
         await done('(This one was already answered.)', 'Already done');
         return true;
       }
-      await db(`music_settings?name=eq.draft:${id}`, { method: 'DELETE', headers: { prefer: 'return=minimal' } });
       if (action === 'cancel') {
         await done('✖︎ Not added.', 'Cancelled');
         return true;
