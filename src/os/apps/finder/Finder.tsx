@@ -1,4 +1,5 @@
 import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
+import { BackGlyph, ForwardGlyph } from '../../core/glyphs';
 import { useOSData } from '../../core/context';
 import type { AppProps } from '../../core/registry';
 import { launch } from '../../core/registry';
@@ -330,10 +331,10 @@ export default function Finder({ win }: AppProps) {
       <div className="os-toolbar">
         <div className="os-segmented" role="group" aria-label="Navigate">
           <button type="button" disabled={at === 0} onClick={() => setAt(at - 1)} aria-label="Back" title="Back (⌥[)">
-            ◀
+            <BackGlyph />
           </button>
           <button type="button" disabled={at >= history.length - 1} onClick={() => setAt(at + 1)} aria-label="Forward" title="Forward (⌥])">
-            ▶
+            <ForwardGlyph />
           </button>
         </div>
         <div className="os-segmented" role="group" aria-label="View">

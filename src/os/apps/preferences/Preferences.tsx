@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type ComponentType } from 'react';
+import { BackGlyph, ForwardGlyph } from '../../core/glyphs';
 import type { AppProps } from '../../core/registry';
 import { useWindows } from '../../core/store';
 import { play } from '../../core/sound';
@@ -93,7 +94,7 @@ export default function Preferences({ win }: AppProps) {
       <div className="os-toolbar os-prefs-toolbar">
         <div className="os-segmented" role="group" aria-label="Navigate">
           <button type="button" aria-label="Back" title="Back" disabled={history.at === 0} onClick={() => step(-1)}>
-            ◀
+            <BackGlyph />
           </button>
           <button
             type="button"
@@ -102,7 +103,7 @@ export default function Preferences({ win }: AppProps) {
             disabled={history.at === history.views.length - 1}
             onClick={() => step(1)}
           >
-            ▶
+            <ForwardGlyph />
           </button>
         </div>
         <button type="button" className="os-button" disabled={view === 'all'} onClick={() => go('all')}>

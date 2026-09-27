@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { BackGlyph, ForwardGlyph } from '../../core/glyphs';
 import { getSocial, REACTIONS, SocialError, type Post, type PostImage, type Reaction, type Social } from '../../social/social';
 import { useAccount } from '../../social/account';
 import { loadJSON, updateJSON } from '../../core/storage';
@@ -97,11 +98,11 @@ function Lightbox({
       {images.length > 1 && (
         <p onClick={(e) => e.stopPropagation()}>
           <button type="button" onClick={() => onStep((index - 1 + images.length) % images.length)} aria-label="Previous photo">
-            ◀
+            <BackGlyph />
           </button>
           {index + 1} of {images.length}
           <button type="button" onClick={() => onStep((index + 1) % images.length)} aria-label="Next photo">
-            ▶
+            <ForwardGlyph />
           </button>
         </p>
       )}
