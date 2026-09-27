@@ -58,6 +58,18 @@ export function MenuBar({ sky }: { sky: SkyState }) {
     };
   }, [openMenu]);
 
+  // A menu opened from the keyboard puts focus on its first item, so the
+  // arrow keys can take it from there; on the menu itself when every item
+  // is disabled (Window, with no windows open).
+  const byKeyboard = useRef(false);
+  useEffect(() => {
+    if (!openMenu || !byKeyboard.current) return;
+    byKeyboard.current = false;
+    const list = barRef.current?.querySelector<HTMLElement>('.os-menu-list');
+    (list?.querySelector<HTMLElement>('[role="menuitem"]:not(:disabled)') ?? list)?.focus();
+  }, [openMenu]);
+
+
   const accounts = useAccount();
 
   // The iPod and Karaoke add a Controls menu while they're in front.
@@ -140,6 +152,28 @@ export function MenuBar({ sky }: { sky: SkyState }) {
   // zoomed one, or any app on a phone, where apps are full screen.
   const solid = windows.some((w) => !w.minimized && (w.maximized || phone));
 
+  const titles = Object.keys(menus);
+  const openFromKeyboard = (title: string | null) => {
+    byKeyboard.current = true;
+    setOpenMenu(title);
+  };
+  /** Up and down move through a menu, left and right to the next menu, Escape back to its title. */
+  const onMenuKey = (title: string) => (e: React.KeyboardEvent<HTMLUListElement>) => {
+    const items = [...e.currentTarget.querySelectorAll<HTMLElement>('[role="menuitem"]:not(:disabled)')];
+    const at = items.indexOf(document.activeElement as HTMLElement);
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      const step = e.key === 'ArrowDown' ? 1 : -1;
+      items[(at + step + items.length) % items.length]?.focus();
+    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+      e.preventDefault();
+      const next = (titles.indexOf(title) + (e.key === 'ArrowRight' ? 1 : -1) + titles.length) % titles.length;
+      openFromKeyboard(titles[next]);
+    } else if (e.key === 'Escape') {
+      e.currentTarget.parentElement?.querySelector<HTMLElement>('.os-menu-title')?.focus();
+    }
+  };
+
   return (
     <header ref={barRef} className="os-menubar" data-solid={solid || undefined}>
       <nav className="os-menus" aria-label="Menu bar">
@@ -151,14 +185,17 @@ export function MenuBar({ sky }: { sky: SkyState }) {
               data-open={openMenu === title}
               onPointerDown={() => setOpenMenu(openMenu === title ? null : title)}
               onPointerEnter={() => openMenu && setOpenMenu(title)}
+              // Enter or Space: a click with no pointer behind it (detail 0).
+              onClick={(e) => e.detail === 0 && openFromKeyboard(openMenu === title ? null : title)}
               aria-haspopup="menu"
               aria-expanded={openMenu === title}
+              aria-label={i === 0 ? 'Apple menu' : undefined}
             >
-              {i === 0 ? <span className="os-logo" role="img" aria-label="Menu" /> : title}
+              {i === 0 ? <span className="os-logo" aria-hidden="true" /> : title}
             </button>
             {i === 0 && <span className="os-menu-appname">{appName}</span>}
             {openMenu === title && (
-              <ul className="os-menu-list" role="menu">
+              <ul className="os-menu-list" role="menu" aria-label={i === 0 ? 'Apple' : title} tabIndex={-1} onKeyDown={onMenuKey(title)}>
                 {items.map((item, j) =>
                   item.divider ? (
                     <li key={j} className="os-menu-divider" role="separator" />
