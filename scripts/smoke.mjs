@@ -6,7 +6,8 @@
 // but neither runs the apps. This loads /?open=<app> for each app in the
 // catalog (and a project, the Dashboard and the screen saver) in a fresh
 // page and fails on an uncaught error, a console error, or an app showing
-// AppBoundary's crash panel. Network failures are ignored: dist/ is served
+// AppBoundary's crash panel. Errors logged by third-party frames (the
+// YouTube player) don't count. Network failures are ignored: dist/ is served
 // without the /api functions or Supabase, and third parties can be slow.
 
 import { readFile, readdir } from 'node:fs/promises';
@@ -57,7 +58,13 @@ async function check(target) {
   const problems = [];
   page.on('pageerror', (e) => problems.push(`uncaught: ${e.message}`));
   page.on('console', (m) => {
-    if (m.type() === 'error' && !ignored.test(m.text())) problems.push(`console: ${m.text().slice(0, 300)}`);
+    // Only this site's errors count: third-party frames (YouTube's player)
+    // log their own, such as a permissions-policy violation when they ask
+    // for something the embed doesn't grant, and whether that happens within
+    // the settle time varies from run to run.
+    const source = m.location()?.url ?? '';
+    const thirdParty = /^https?:/.test(source) && !source.startsWith(base);
+    if (m.type() === 'error' && !thirdParty && !ignored.test(m.text())) problems.push(`console: ${m.text().slice(0, 300)}`);
   });
   try {
     await page.goto(`${base}/?open=${target}`, { waitUntil: 'load' });
