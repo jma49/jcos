@@ -394,7 +394,7 @@ export function supabaseSocial(url: string, key: string): Social {
     // from the database's log, so the row can be believed; reading it here
     // saves every visitor asking the database at the same moment when a song
     // starts. (Joining at the right second asks, see media/together.ts.)
-    watchNowPlaying(onChange) {
+    watchNowPlaying(onChange, onConnected) {
       const channel = client
         .channel('now-playing')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'now_playing' }, ({ eventType, new: row }) => {
@@ -403,7 +403,9 @@ export function supabaseSocial(url: string, key: string): Social {
           if (eventType === 'DELETE' || typeof r?.song_id !== 'string' || !Number.isFinite(ends)) return onChange(null);
           onChange({ songId: r.song_id, remainingMs: Math.max(0, ends - Date.now()) });
         })
-        .subscribe();
+        .subscribe((status) => {
+          if (status === 'SUBSCRIBED') onConnected?.();
+        });
       return () => {
         client.removeChannel(channel);
       };

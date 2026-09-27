@@ -273,10 +273,14 @@ export interface Social {
   nowPlaying: () => Promise<NowPlaying | null>;
   /**
    * Calls back when Jincheng plays or stops a song, with the song and the
-   * time it has left (null when stopped); returns a function that stops
-   * watching.
+   * time it has left (null when stopped), and `onConnected` each time the
+   * watch starts or resumes after the connection dropped (changes made
+   * meanwhile aren't sent again); returns a function that stops watching.
    */
-  watchNowPlaying: (onChange: (now: Pick<NowPlaying, 'songId' | 'remainingMs'> | null) => void) => () => void;
+  watchNowPlaying: (
+    onChange: (now: Pick<NowPlaying, 'songId' | 'remainingMs'> | null) => void,
+    onConnected?: () => void
+  ) => () => void;
 }
 
 /** A song Jincheng is playing for everyone on the desktop (/play in Telegram). */
