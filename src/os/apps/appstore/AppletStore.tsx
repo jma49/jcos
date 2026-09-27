@@ -46,7 +46,8 @@ function GetButton({ app, big = false }: { app: AppId; big?: boolean }) {
           play('pop');
         } catch {
           play('error');
-          notify({ title: `${name} couldn’t be installed`, body: 'Check your connection and try again.', icon: <Icon size={32} /> });
+          // The browser won't fetch a failed download again in this page (pitfalls.md).
+          notify({ title: `${name} couldn’t be installed`, body: 'Once you’re connected, reload the page and get it again.', icon: <Icon size={32} /> });
         } finally {
           setInstalling(false);
         }

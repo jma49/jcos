@@ -67,6 +67,13 @@ again.
   their opening size because the Exposé target lacked the `scaleX` and
   `scaleY` the shown target had. Give every target of a component the
   same keys.
+- A module import that failed (offline for a moment) fails again for the
+  rest of the page's life: Chrome keeps the failure for that URL and
+  makes no request, even once the network is back, while the same file
+  with `?retry=1` loads. So a failed chunk isn't retried in the page:
+  the crash panel and the Applet Store offer a reload (the open windows
+  come back), and only `fetch()` paths such as `/api/songs` recover by
+  themselves.
 - React holds back content that suspended for about 300 ms before
   showing it. An installed applet, its code already fetched, took 820 ms
   to open through `lazy` and 80 ms rendered directly (`readyApp()`). A lazy Dashboard behind `Suspense` took 350 ms to appear

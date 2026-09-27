@@ -120,9 +120,8 @@ export const Window = memo(function Window({ win, focused, z, exposed }: Props) 
   const drawerSide =
     win.maximized || (roomRight < DRAWER_ROOM && win.x < DRAWER_ROOM) ? 'inside' : roomRight >= DRAWER_ROOM ? 'right' : 'left';
   const def = apps[win.app];
-  // Rendered directly if its code is already here, else lazily; chosen
-  // again for Try Again, after a failed download (appComponent).
-  const [App, setApp] = useState(() => appComponent(win.app));
+  // Rendered directly if its code is already here, else lazily (appComponent).
+  const [App] = useState(() => appComponent(win.app));
   const reduced = useReduceMotion();
   const start = useRef(win);
   const isMobile = isPhone();
@@ -334,7 +333,7 @@ export const Window = memo(function Window({ win, focused, z, exposed }: Props) 
 
       <div className="os-body">
         <DrawerSlot.Provider value={drawerSlot}>
-          <AppBoundary name={def.name} onClose={() => close(win.id)} onRetry={() => setApp(() => appComponent(win.app))}>
+          <AppBoundary name={def.name} onClose={() => close(win.id)}>
             <Suspense fallback={<Loading />}>
               <App win={win} />
             </Suspense>
