@@ -8,7 +8,12 @@ Conventions and a map of the code are in [AGENTS.md](AGENTS.md) and
 ## 1. Where it runs
 
 - Astro 7 with one `client:only` React 19 island (zustand, motion),
-  Tailwind 4.
+  Tailwind 4, on Node 24 (`engines.node` in `package.json`, which Vercel
+  and both workflows follow; npm warns on another major locally).
+- `npm run build && npm run serve` runs the production build with the
+  `api/` functions on http://localhost:4321, like Vercel minus Supabase
+  (the social features hide without it). Check changes there when
+  deployments are scarce.
 - Hosted on Vercel project `jincheng-protafolio`; merging to `main`
   deploys. DNS is at GoDaddy. The repository is `jma49/jmos`.
 - Supabase project `hszogpoyyqgwjuznbegd` backs accounts, Stickies,
@@ -83,9 +88,14 @@ ryOS (AGPL-3.0).
 ## 4. To check after the next deploy
 
 Production has run #85 since 2026-09-26: the daily deployment cap held
-back #86–#95, and the fixes made locally since (keyboard menus, the
-no-JavaScript page, reload after an update, dark links) wait to be
-pushed. A rate-limited deployment isn't retried: after the reset, push
+back #86–#95. Since then, work has been committed locally and not
+pushed, so as not to spend deployments: the keyboard menus, the
+no-JavaScript page, the text copy out of the tab order, the Applet
+Store banner, dark links, reload after an update, `npm run serve`,
+Node 24, and caching Playwright's shell in CI (on the branch
+`chore/node-24-and-ci-cache`, which holds all of it). After the reset,
+push it as one pull request and merge once CI passes: that deployment
+carries #86 onwards. A rate-limited deployment isn't retried, so merge
 or redeploy `main`'s head from the Vercel dashboard.
 
 Checked locally, in production builds (2026-09-27):
@@ -105,10 +115,15 @@ Checked locally, in production builds (2026-09-27):
 - keyboard use and names for assistive tech (all apps), and the page
   without JavaScript.
 
-Only a deployment can show:
+Only a deployment or a push can show:
 1. that it's live: About This Mac shows the build hash of `main`'s head;
 2. that the ignored build step skips a docs-only pull request and builds
-   one touching `src/`, and whether a skipped one counts toward the cap.
+   one touching `src/`, and whether a skipped one counts toward the cap;
+3. that Vercel builds on Node 24 (the build log's first lines), and that
+   CI reads Node 24 from `package.json`;
+4. that CI installs only Playwright's headless shell, and on the second
+   run finds it in the cache (the install step drops from about 20 s to
+   about 11 s).
 
 Checked by Jincheng on `npm run serve` (2026-09-27): printing the
 résumé from Chrome's and Safari's print dialogs, the interface sounds,
