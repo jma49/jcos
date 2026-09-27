@@ -27,10 +27,15 @@ Conventions and a map of the code are in [AGENTS.md](AGENTS.md) and
   branch puts old code live.
 - Free Supabase projects pause after a week without activity; the social
   features then hide themselves until it's resumed.
-- The "Update project previews" workflow runs on macOS after every push
-  to `main` and weekly: it refreshes the Photos snapshot
+- The "Update project previews" workflow runs on macOS once a day and by
+  hand (not on every push, to save deployments): it refreshes the Photos snapshot
   (`npm run photos:update`) and recaptures the project covers and
   `public/og.png` (`npm run preview:capture`), committing what changed.
+- The Hobby plan caps deployments a day, and a busy day of merges hit
+  it (2026-09-26: "Deployment rate limited — retry in 24 hours"; the
+  GitHub CI stays the gate meanwhile). `scripts/vercel-ignore.sh`
+  (vercel.json's `ignoreCommand`) skips the build when only docs, tests,
+  CI, Supabase or tooling changed. On a busy day, batch merges.
 
 The icons, fonts (Lucida Grande, Apple Garamond, Monaco) and the stones
 wallpaper are copied from ryOS. Using them was a deliberate choice after
