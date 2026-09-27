@@ -15,11 +15,13 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: previews
-  cancel-in-progress: true
+  # A scheduled run finishes; a new one waits for it rather than cutting
+  # off a capture partway through its commit.
+  cancel-in-progress: false
 
 jobs:
   capture:
@@ -27,10 +29,13 @@ jobs:
     # screenshot matches what Mac visitors see. Linux would fall back to
     # DejaVu Serif.
     runs-on: macos-latest
+    # Commits the refreshed images back to the branch.
+    permissions:
+      contents: write
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - uses: actions/setup-node@v7
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version-file: package.json
           cache: npm
