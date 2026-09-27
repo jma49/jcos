@@ -1,8 +1,5 @@
 import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
-import { useOSData } from '../core/context';
-import type { AppProps } from '../core/registry';
-import { play } from '../core/sound';
-import type { OSPhoto } from '../core/types';
+import { play, usePhotos, type AppProps, type OSPhoto } from '../../kit';
 
 // Tile Game, after Tiger's Dashboard widget: one of Jincheng's photos cut
 // into a 4 × 4 sliding puzzle. Click a tile next to the gap (or use the
@@ -41,7 +38,7 @@ function pickPhoto(photos: OSPhoto[], not?: string) {
 }
 
 export default function TileGame(_: AppProps) {
-  const { photos } = useOSData();
+  const photos = usePhotos();
   const [photo, setPhoto] = useState(() => pickPhoto(photos));
   // board[position] = which tile sits there; tile GAP is the hole.
   const [board, setBoard] = useState(shuffle);

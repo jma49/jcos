@@ -13,7 +13,17 @@ readers, crawlers and visitors without JavaScript.
 sounds, storage, files), `shell/` (menu bar, Dock, windows and the rest
 of the chrome), `ambient/` (place, weather, sky), `look/` (desktop
 pictures, accent), `media/` (music, lyrics), `social/` (Supabase),
-`apps/` and `styles/`.
+`apps/` (the built-in apps), `applets/` (the Applet Store's games and
+tools), `kit/` (what applets may use) and `styles/`.
+
+Applets are self-contained: each is a folder under `applets/` that
+imports only `src/os/kit` and its own files, never the rest of the OS or
+another applet (the lint enforces it). The kit gives them sounds, the
+sound setting, whether their window is in front, a game loop that stops
+when it isn't (`useGameLoop`), storage under their own `os-<id>` keys
+(`saved`), a way to resize their window and the photo library. Anything
+new an applet needs from the OS is added to the kit, not imported
+around it.
 
 - `src/os/core/store.ts`: zustand store for windows (map + z-order array),
   theme and appearance, Spotlight, Dashboard, Exposé, the screensaver
@@ -114,8 +124,8 @@ pictures, accent), `media/` (music, lyrics), `social/` (Supabase),
 - `src/os/apps/PhotoBooth.tsx`: the camera with CSS-filter effects, a
   countdown and one or four pictures, kept in `os-photobooth` (the last
   eight, as small JPEGs). The camera is only on while the window is open.
-- `src/os/apps/Synth.tsx`: an applet synthesizer on the shared
-  AudioContext (`audio()` in `sound.ts`); it follows the sound switch
+- `src/os/applets/synth/`: an applet synthesizer on the shared
+  AudioContext (`audio()` from the kit); it follows the sound switch
   and volume, and a note turns sound on. Settings in `os-synth`.
 - `src/os/apps/AboutThisMac.tsx`: the Apple menu's About This Mac.
   `__JMOS_BUILD__` (defined in `astro.config.mjs` from Vercel's
@@ -125,7 +135,7 @@ pictures, accent), `media/` (music, lyrics), `social/` (Supabase),
   desktop share `shell/ContextMenu.tsx` for their right-click menus.
 - `src/os/core/applets.ts` and `apps/AppletStore.tsx`: the Applet Store's
   catalog (Minesweeper, Tile Game, Spider Solitaire, Pinball, Calculator,
-  Synth). Pinball's table, physics and rules are in `apps/pinball/table.ts`
+  Synth). Pinball's table, physics and rules are in `applets/pinball/table.ts`
   (table units, 400 × 700); keep it free of anything from Microsoft's
   Space Cadet. Which applets this browser has installed is kept in
   `os-applets`; installed applets appear in Finder's Applets folder and

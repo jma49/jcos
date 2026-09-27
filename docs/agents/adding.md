@@ -12,9 +12,13 @@ Spotlight, the Terminal and `?open=` pick it up by itself. Add a desktop
 shortcut in `Desktop.tsx` if it needs one. Anything remembered in the
 browser goes through `src/os/core/storage.ts`.
 
-An applet (a small app installed from the Applet Store) is an app with
-`applet: true` in the registry and an entry in `APPLETS` in
-`src/os/core/applets.ts`.
+An applet (a small app installed from the Applet Store) lives in its own
+folder, `src/os/applets/<id>/`: the component, its rules or physics in a
+plain module with tests, and nothing from outside but `src/os/kit`
+(what it needs from the OS goes into the kit). It's registered with
+`applet: true` and has an entry in `APPLETS` in `src/os/core/applets.ts`.
+A game runs its frames through `useGameLoop(tick, front)`, so it stops
+behind another window, and keeps scores with `saved(id, 'best')`.
 
 ## A song or an album
 

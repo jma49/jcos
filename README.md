@@ -83,7 +83,7 @@ Function secrets:
 ## Layout
 
 ```
-src/os/            the desktop: core/ shell/ apps/ ambient/ look/ media/ social/ styles/
+src/os/            the desktop: core/ shell/ apps/ applets/ kit/ ambient/ look/ media/ social/ styles/
 src/pages/         the home page, project pages, robots.txt, llms.txt
 src/content/       projects (Markdown, one file per language) and their covers
 src/i18n/          the site's copy (English; the Chinese copy is kept for later)

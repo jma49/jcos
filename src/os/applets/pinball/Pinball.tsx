@@ -1,8 +1,5 @@
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
-import type { AppProps } from '../../core/registry';
-import { play } from '../../core/sound';
-import { useFocusedId } from '../../core/store';
-import { loadJSON, saveJSON } from '../../core/storage';
+import { play, saved, useGameLoop, useIsFront, type AppProps } from '../../kit';
 import { BALL, flip, H, newGame, plunge, pull, RANKS, SEGMENTS, step, TARGETS, tipOf, W, type Sound, type State } from './table';
 
 // Pinball: the table (table.ts) drawn on a canvas, tilted back for depth,
@@ -11,7 +8,7 @@ import { BALL, flip, H, newGame, plunge, pull, RANKS, SEGMENTS, step, TARGETS, t
 // starts over. On a phone, tap either half for a flipper. The game pauses
 // while the window isn't in front.
 
-const BEST_KEY = 'os-pinball-best';
+const best = saved<number>('pinball', 'best');
 
 const SOUNDS: Record<Sound, Parameters<typeof play>[0]> = {
   bumper: 'pop',
@@ -185,57 +182,50 @@ function draw(ctx: CanvasRenderingContext2D, s: State) {
   }
 }
 
+/** Draws the table on the canvas, at the canvas's resolution. */
+function paint(el: HTMLCanvasElement | null, s: State) {
+  const ctx = el?.getContext('2d');
+  if (!el || !ctx) return;
+  const scale = el.width / W;
+  ctx.setTransform(scale, 0, 0, scale, 0, 0);
+  draw(ctx, s);
+}
+
 export default function Pinball({ win }: AppProps) {
   const canvas = useRef<HTMLCanvasElement>(null);
   const game = useRef<State>(newGame());
-  const front = useFocusedId() === win.id;
-  const frontRef = useRef(front);
-  frontRef.current = front;
+  const front = useIsFront(win);
   const [hud, setHud] = useState({ score: 0, balls: 3, rank: 0, multiplier: 1, message: '' as string, over: false, inLane: true });
-  const [best, setBest] = useState(() => loadJSON<number>(BEST_KEY, 0));
+  const [bestScore, setBestScore] = useState(() => best.load(0));
 
   const restart = () => {
     game.current = newGame();
   };
 
-  // The loop: step the table, draw it, and update the score beside it now and then.
-  useEffect(() => {
-    let raf = 0;
-    let last = performance.now();
-    let shown = '';
-    const frame = (now: number) => {
-      raf = requestAnimationFrame(frame);
-      const dt = Math.min(0.05, (now - last) / 1000);
-      last = now;
-      const s = game.current;
-      const running = frontRef.current && !document.hidden;
-      if (running) {
-        pull(s, dt);
-        step(s, dt, sound);
-      }
-      const el = canvas.current;
-      const ctx = el?.getContext('2d');
-      if (el && ctx) {
-        const scale = el.width / W;
-        ctx.setTransform(scale, 0, 0, scale, 0, 0);
-        draw(ctx, s);
-      }
-      const message = !running && !s.over ? 'Paused' : s.message && s.time < s.message.until ? s.message.text : '';
-      const key = `${s.score}|${s.balls}|${s.rank}|${s.multiplier}|${message}|${s.over}|${s.inLane}`;
-      if (key !== shown) {
-        shown = key;
-        setHud({ score: s.score, balls: s.balls, rank: s.rank, multiplier: s.multiplier, message, over: s.over, inLane: s.inLane });
-      }
-    };
-    raf = requestAnimationFrame(frame);
-    return () => cancelAnimationFrame(raf);
-  }, []);
+  // The loop, while the table is in front: step it, draw it, and update
+  // the score beside it when it changes. Behind another window it stops,
+  // showing the table as it was.
+  const shown = useRef('');
+  useGameLoop((dt) => {
+    const s = game.current;
+    if (dt > 0) {
+      pull(s, dt);
+      step(s, dt, sound);
+    }
+    paint(canvas.current, s);
+    const message = !front && !s.over ? 'Paused' : s.message && s.time < s.message.until ? s.message.text : '';
+    const key = `${s.score}|${s.balls}|${s.rank}|${s.multiplier}|${message}|${s.over}|${s.inLane}`;
+    if (key !== shown.current) {
+      shown.current = key;
+      setHud({ score: s.score, balls: s.balls, rank: s.rank, multiplier: s.multiplier, message, over: s.over, inLane: s.inLane });
+    }
+  }, front);
 
   // A new best score is kept when the game ends.
   const keepBest = useEffectEvent(() => {
-    if (hud.score <= best) return;
-    setBest(hud.score);
-    saveJSON(BEST_KEY, hud.score);
+    if (hud.score <= bestScore) return;
+    setBestScore(hud.score);
+    best.save(hud.score);
   });
   useEffect(() => {
     if (hud.over) keepBest();
@@ -255,6 +245,8 @@ export default function Pinball({ win }: AppProps) {
       el.style.height = `${h}px`;
       el.width = Math.round(w * devicePixelRatio);
       el.height = Math.round(h * devicePixelRatio);
+      // Resizing clears the canvas; a paused table has to be drawn again.
+      paint(el, game.current);
     };
     fit();
     const observer = new ResizeObserver(fit);
@@ -329,7 +321,7 @@ export default function Pinball({ win }: AppProps) {
         </div>
         <div>
           <span>Best</span>
-          <strong>{Math.max(best, hud.over ? hud.score : 0).toLocaleString('en-US')}</strong>
+          <strong>{Math.max(bestScore, hud.over ? hud.score : 0).toLocaleString('en-US')}</strong>
         </div>
       </div>
       <div ref={stage} className="os-pinball-stage">

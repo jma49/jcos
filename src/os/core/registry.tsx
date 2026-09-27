@@ -185,7 +185,7 @@ export const apps: Record<AppId, AppDefinition> = {
     height: 360,
     minWidth: 230,
     minHeight: 340,
-    Component: lazy(() => import('../apps/Calculator'))
+    Component: lazy(() => import('../applets/calculator/Calculator'))
   },
   tilegame: {
     applet: true,
@@ -195,7 +195,7 @@ export const apps: Record<AppId, AppDefinition> = {
     height: 470,
     minWidth: 360,
     minHeight: 450,
-    Component: lazy(() => import('../apps/TileGame'))
+    Component: lazy(() => import('../applets/tilegame/TileGame'))
   },
   minesweeper: {
     applet: true,
@@ -205,7 +205,7 @@ export const apps: Record<AppId, AppDefinition> = {
     height: 470,
     minWidth: 300,
     minHeight: 360,
-    Component: lazy(() => import('../apps/Minesweeper'))
+    Component: lazy(() => import('../applets/minesweeper/Minesweeper'))
   },
   ipod: {
     dock: 4,
@@ -270,7 +270,7 @@ export const apps: Record<AppId, AppDefinition> = {
     height: 380,
     minWidth: 520,
     minHeight: 340,
-    Component: lazy(() => import('../apps/Synth'))
+    Component: lazy(() => import('../applets/synth/Synth'))
   },
   spider: {
     applet: true,
@@ -280,7 +280,7 @@ export const apps: Record<AppId, AppDefinition> = {
     height: 560,
     minWidth: 520,
     minHeight: 400,
-    Component: lazy(() => import('../apps/spider/Spider'))
+    Component: lazy(() => import('../applets/spider/Spider'))
   },
   pinball: {
     applet: true,
@@ -290,7 +290,7 @@ export const apps: Record<AppId, AppDefinition> = {
     height: 700,
     minWidth: 340,
     minHeight: 520,
-    Component: lazy(() => import('../apps/pinball/Pinball'))
+    Component: lazy(() => import('../applets/pinball/Pinball'))
   },
   aboutmac: {
     name: 'About This Mac',
