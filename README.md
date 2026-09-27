@@ -115,7 +115,9 @@ issues; [ROADMAP.md](ROADMAP.md) is what comes next, in order.
 - Service-role keys and third-party tokens exist only inside Edge
   Functions.
 - Responses carry security headers (`vercel.json`), and Dependabot
-  proposes dependency updates weekly.
+  proposes dependency updates weekly. CI fails on a high or critical
+  advisory in a production dependency, and the workflows pin every
+  action to a commit SHA with read-only permissions by default.
 
 To report a security problem, please email the address on the résumé
 rather than opening an issue.

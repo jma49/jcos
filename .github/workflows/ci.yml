@@ -1,7 +1,8 @@
-# Checks every pull request and every push to main: the types, the rules
-# of React hooks, the unit tests, a production build with every app opened
-# in a browser and measured against the performance budgets, and the
-# database's rules against a real Postgres.
+# Checks every pull request and every push to main: known advisories in
+# the production dependencies, the types, the rules of React hooks, the
+# unit tests, a production build with every app opened in a browser and
+# measured against the performance budgets, and the database's rules
+# against a real Postgres.
 name: CI
 
 on:
@@ -13,7 +14,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: ci-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -21,13 +22,15 @@ jobs:
     name: Types, tests, build, apps and budgets
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           # The same Node as Vercel: engines.node in package.json.
           node-version-file: package.json
           cache: npm
       - run: npm ci
+      # Known high or critical advisories in what ships (dev tools excluded).
+      - run: npm audit --omit=dev --audit-level=high
       - run: npm run check
       - run: npm run lint
       - run: npm test
@@ -38,7 +41,7 @@ jobs:
       - name: Find Playwright's version
         id: playwright
         run: echo "version=$(node -p "require('playwright/package.json').version")" >> "$GITHUB_OUTPUT"
-      - uses: actions/cache@v6
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}
@@ -63,5 +66,5 @@ jobs:
       PGUSER: postgres
       PGPASSWORD: postgres
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - run: bash supabase/tests/run.sh
