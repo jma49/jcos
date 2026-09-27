@@ -18,6 +18,12 @@ again.
   production while `npm run test:db` passed, since its Postgres doesn't
   load the extension. Write a `WHERE` (`where id` for a one-row table);
   `rules.sql` checks every function for one.
+- Realtime reads each changed row by its primary key, as the subscriber,
+  before sending it. A table whose visitors are granted some columns but
+  not the key sends them nothing, silently: `now_playing` granted
+  `song_id` but not `id`, and `/play` only showed after a reload.
+  Grant the key with the columns; `rules.sql` checks every published
+  table.
 - Migrations are named `<UTC timestamp>_<what it does>.sql`, with the
   time they're written as `YYYYMMDDHHMMSS`, the way `supabase migration
   new` names them. They used to be named by date, and the date was
