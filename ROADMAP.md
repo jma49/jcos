@@ -10,9 +10,8 @@ in [AGENTS.md](AGENTS.md)), and how we'll know it's done.
 
 ## Now: finish what's merged
 
-- **The music loop, live:** `/add`, `/play` on one device and listen
-  along on another, `/stop`. Nothing else in the plan depends on it, but
-  it's the one feature that hasn't been seen working end to end.
+- **`/stop`, live:** `/play` and listening along work; `/stop` needs
+  the `music_stop_where` migration run first (HANDOFF.md section 4).
 
 ## 1. Room on the first load
 
