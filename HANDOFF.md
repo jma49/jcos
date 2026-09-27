@@ -138,17 +138,12 @@ ryOS (AGPL-3.0).
 
 ## 4. To check after the next deploy
 
-**Where things stand (2026-09-26, evening).** Production has run #85;
-the daily deployment cap held back #86–#95, and everything since is in
-twelve open pull requests, stacked, each targeting the branch below it:
-#107 `chore/node-24-and-ci-cache` (keyboard menus, no-JS page, Node 24,
-CI cache) → #108 `refactor/app-kit` → #109 `refactor/app-manifests` →
-#110 `perf/app-styles` → #111 `feat/applet-install` → #112
-`feat/music-db` → #113 `feat/music-api` → #114 `feat/music-bot` →
-#115 `feat/music-together` → #116 `feat/pointers-opt-in` → #117
-`fix/concurrency` → #118 `fix/exploratory-bugs` (issues #96–#106).
-Pushing them spent the day's deployments on previews (pitfalls), so
-production can't deploy until the cap resets.
+**Where things stand (2026-09-26, late evening).** The whole stack
+(#107–#118) merged through #118 and deployed to production as
+`3d5739f`. #119 (the iPod's lists scroll; control glyphs drawn, not
+emoji) merged as `96e8071`, but its production deployment was
+rate-limited: production still runs `3d5739f`. Every branch but `main`
+is deleted; no pull request is open.
 
 **To do, in order:**
 1. **CI on #118: done**, green (2026-09-26). Its perf check had counted
@@ -156,14 +151,12 @@ production can't deploy until the cap resets.
    the top was reported over the menu bar as it painted, and that
    fetched the Dashboard ahead. Only real movement counts now (a product
    fix, not a raised budget); first-load JS on CI is 156 KB.
-2. **Merge once, deploy once.** When #118 is green, retarget it to
-   `main` and merge it (a merge commit): one production deployment
-   carries the whole stack. Close #107–#117 as merged through #118, and
-   delete every branch but `main`, including the old
-   `claude/task-knphtp` (merged as #72). Issues #96–#106 close with #118.
-3. **Deploy after the reset.** A rate-limited deployment isn't retried:
-   redeploy `main`'s head from the Vercel dashboard once the cap resets,
-   and check About This Mac shows its hash.
+2. **Merge once, deploy once: done.** #118 carried #107–#117 to `main`;
+   the others were closed as merged through it, and issues #96–#106
+   closed with it.
+3. **Deploy `96e8071` (#119) after the cap resets.** A rate-limited
+   deployment isn't retried: redeploy `main`'s head from the Vercel
+   dashboard, and check About This Mac shows its hash.
 4. **Database.** Run `supabase/migrations/20260927030802_music_library.sql`
    in the SQL editor, then Advisors › Security. Until then `/api/songs`
    serves the snapshot, so the site works either way.
