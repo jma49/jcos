@@ -79,7 +79,13 @@ globalThis.fetch = async (input, init = {}) => {
     if (table === 'music_settings') {
       const name = eq('name');
       if (method === 'POST') return (world.music[body.name] = body.value), new Response(null, { status: 201 });
-      if (method === 'DELETE') return delete world.music[name], new Response(null, { status: 204 });
+      if (method === 'DELETE') {
+        // As Postgres does: only one delete finds the row.
+        if (!(name in world.music)) return json([]);
+        const value = world.music[name];
+        delete world.music[name];
+        return json([{ name, value }]);
+      }
       return json(name in world.music ? [{ value: world.music[name] }] : []);
     }
     if (method === 'POST') {
@@ -378,4 +384,15 @@ test('/play plays a song for everyone, learning its length first; /stop stops it
   assert.match(world.replies.at(-1), /Stopped/);
   await send({ message_id: 218, text: '/play nothing like it' });
   assert.match(world.replies.at(-1), /No song matches/);
+});
+
+test('two presses of Add at once add the song once, and each says what happened', async () => {
+  world.youtube[NINGXIA] = { title: '寧夏', author_name: '梁靜茹 - Topic' };
+  await send({ message_id: 219, text: `/add ${NINGXIA}` });
+  await Promise.all([press(`song:add:${NINGXIA}`, 'preview'), press(`song:add:${NINGXIA}`, 'preview')]);
+  assert.equal(world.songs.length, 1);
+  const outcomes = world.edits.slice(-2).map((e) => e.text.split('\n').at(-1)).sort();
+  assert.equal(outcomes.filter((t) => t.startsWith('✅ Added')).length, 1);
+  assert.equal(outcomes.filter((t) => /already answered/.test(t)).length, 1);
+  assert.ok(!outcomes.some((t) => t.startsWith('⚠️')), 'no press reports a failure that didn’t happen');
 });
