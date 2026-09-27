@@ -10,10 +10,6 @@ in [AGENTS.md](AGENTS.md)), and how we'll know it's done.
 
 ## Now: finish what's merged
 
-- **Deploy `main`** once Vercel's cap allows (#132 and #133 were
-  rate-limited). The cap seems to count a rolling day that yesterday's
-  branch previews (before only `main` deployed) filled, so it frees up
-  by itself; until then, batch merges.
 - **The music loop, live:** `/add`, `/play` on one device and listen
   along on another, `/stop`. Nothing else in the plan depends on it, but
   it's the one feature that hasn't been seen working end to end.
