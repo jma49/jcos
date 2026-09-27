@@ -86,23 +86,8 @@ const FIRST_LOAD_MS = 7000;
 
 async function load() {
   const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
-  // The pointer starts at (0, 0), over the menu bar, where it would fetch the
-  // Dashboard ahead (DashboardLayer.tsx) whenever the browser happens to
-  // report it there: a first visit's load is measured before anyone reaches
-  // for the menu bar.
-  await page.mouse.move(720, 450);
   const seen = [];
   const start = Date.now();
-  // Who asked for each file (the script and function, from the browser's
-  // initiator stack), so a file that shouldn't be in the first load shows
-  // what fetched it.
-  const initiators = new Map();
-  const cdp = await page.context().newCDPSession(page);
-  await cdp.send('Network.enable');
-  cdp.on('Network.requestWillBeSent', ({ request, initiator }) => {
-    const frame = initiator.stack?.callFrames?.find((f) => f.url.includes('/_astro/'));
-    if (frame) initiators.set(new URL(request.url).pathname, `${frame.functionName || '(anonymous)'} in ${frame.url.split('/').pop()}`);
-  });
   page.on('response', async (res) => {
     if (new URL(res.url()).origin !== new URL(URL_).origin) return;
     if (res.request().timing().startTime - start > FIRST_LOAD_MS) return;
@@ -111,27 +96,13 @@ async function load() {
     seen.push({ path: new URL(res.url()).pathname, type: res.request().resourceType(), bytes: body?.length ?? 0, gzip: body ? gzipSync(body).length : 0, at });
   });
   await page.addInitScript(() => sessionStorage.setItem('os-booted', '1'));
-  // Pointer events nobody made (the browser reporting where its pointer is
-  // as the page appears under it) can fetch the Dashboard ahead: list them.
-  await page.addInitScript(() => {
-    const t0 = performance.now();
-    document.addEventListener('pointerover', (e) => {
-      const el = e.target instanceof Element ? e.target : null;
-      const where = el?.closest('.os-menubar') ? 'menu bar' : el?.closest('.os-dock') ? 'Dock' : el?.className?.toString().slice(0, 40) || el?.tagName;
-      console.log(`[perf] pointerover ${where} at ${((performance.now() - t0) / 1000).toFixed(2)} s (${e.clientX}, ${e.clientY})`);
-    }, true);
-  });
-  const pointerEvents = [];
-  page.on('console', (m) => m.text().startsWith('[perf] ') && pointerEvents.push(m.text().slice(7)));
   await settle(page);
   await page.waitForTimeout(3000);
   await page.close();
-  for (const e of pointerEvents.slice(0, 5)) console.log(`     ${e}`);
   const sum = (type, key = 'bytes') => seen.filter((r) => r.type === type).reduce((n, r) => n + r[key], 0);
   // What the first load's JavaScript is, largest first, to see what a change added.
   for (const r of seen.filter((r) => r.type === 'script').sort((a, b) => b.gzip - a.gzip)) {
-    const by = initiators.get(r.path);
-    console.log(`     ${(r.gzip / 1024).toFixed(1).padStart(5)} KB  ${r.path.replace('/_astro/', '').padEnd(34)} at ${(r.at / 1000).toFixed(2)} s${by ? `  (${by})` : ''}`);
+    console.log(`     ${(r.gzip / 1024).toFixed(1).padStart(5)} KB  ${r.path.replace('/_astro/', '').padEnd(34)} at ${(r.at / 1000).toFixed(2)} s`);
   }
   const counts = new Map();
   for (const r of seen) counts.set(r.path, (counts.get(r.path) ?? 0) + 1);

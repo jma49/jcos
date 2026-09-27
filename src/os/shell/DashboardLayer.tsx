@@ -22,11 +22,18 @@ export function DashboardLayer() {
   useEffect(() => {
     if (module) return;
     const load = () => void loadDashboard().then(setModule);
-    const onOver = (e: PointerEvent) => (e.target as Element).closest?.('.os-menubar, .os-dock') && load();
-    document.addEventListener('pointerover', onOver);
+    // A pointer moving onto the menu bar or the Dock is on its way to the
+    // Dashboard: fetch it ahead. Only real movement counts. A browser
+    // reports a resting pointer as over whatever the page paints under it
+    // (the menu bar, when the pointer is at the top as the page loads),
+    // which is nobody reaching for anything; that fetched 4.2 KB on first
+    // loads.
+    const onMove = (e: PointerEvent) =>
+      (e.movementX !== 0 || e.movementY !== 0) && (e.target as Element).closest?.('.os-menubar, .os-dock') && load();
+    document.addEventListener('pointermove', onMove);
     const cancel = afterSettled(load);
     return () => {
-      document.removeEventListener('pointerover', onOver);
+      document.removeEventListener('pointermove', onMove);
       cancel();
     };
   }, [module]);
