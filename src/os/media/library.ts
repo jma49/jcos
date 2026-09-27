@@ -7,6 +7,7 @@
 // stable handle until the page is reloaded.
 
 import type { Album, Library, Song } from '../../lib/library';
+import { getSocial } from '../social/social';
 
 export type { Album, Song };
 
@@ -44,6 +45,28 @@ async function fromApi(): Promise<Library> {
 }
 
 export const libraryLoaded = () => SONGS.length > 0;
+
+const VIDEO_ID = /^[A-Za-z0-9_-]{11}$/;
+
+/**
+ * A song's place in the library, or -1 if there's no such song. A song
+ * added after this visit's library was read (the edge keeps /api/songs
+ * for minutes) is fetched on its own and appended, so every other song
+ * keeps its place: Jincheng can /play a song he has just added.
+ */
+export async function findSong(id: string): Promise<number> {
+  await loadLibrary();
+  const known = SONGS.findIndex((s) => s.id === id);
+  if (known >= 0 || !VIDEO_ID.test(id)) return known;
+  const social = await getSocial();
+  const song = await social?.song(id).catch(() => null);
+  if (!song) return -1;
+  // Asked twice at once (a play and an AirDrop offer), it's added once.
+  const meanwhile = SONGS.findIndex((s) => s.id === id);
+  if (meanwhile >= 0) return meanwhile;
+  SONGS = [...SONGS, song];
+  return SONGS.length - 1;
+}
 
 /**
  * Something worked out from the library, the first time it's asked for.

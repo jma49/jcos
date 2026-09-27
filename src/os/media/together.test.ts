@@ -22,13 +22,19 @@ vi.mock('../social/social', () => ({
     }
   })
 }));
-vi.mock('./library', () => ({
-  loadLibrary: () => gate.wait,
-  SONGS: [
+vi.mock('./library', () => {
+  const SONGS = [
     { id: 'AAAAAAAAAAA', title: 'First', artist: 'A' },
     { id: 'OxtZF0WGXtE', title: '寧夏', artist: '梁靜茹' }
-  ]
-}));
+  ];
+  return {
+    SONGS,
+    findSong: async (id: string) => {
+      await gate.wait;
+      return SONGS.findIndex((s) => s.id === id);
+    }
+  };
+});
 
 let together: typeof import('./together');
 let music: typeof import('./music');
