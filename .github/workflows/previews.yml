@@ -1,15 +1,17 @@
 # Re-captures project preview images and refreshes the Unsplash photo
-# snapshot after every change to main and once a week, and commits them back
-# when they differ. See scripts/capture-previews.mjs and update-photos.mjs.
+# snapshot once a day, and commits them back when they differ. See
+# scripts/capture-previews.mjs and update-photos.mjs.
+#
+# It used to run after every push to main. The covers of live sites (ocra,
+# Assay) differ on nearly every capture, so each merge was followed by an
+# image commit and a second production deployment, against the Hobby
+# plan's daily cap. Run it by hand (Actions > Run workflow) to update the
+# images right after a change to how the site looks.
 name: Update project previews
 
 on:
-  push:
-    branches: [main]
-    # The bot's own commit only touches these images; don't react to it.
-    paths-ignore: ['src/content/projects/covers/**', 'public/og.png', 'src/data/photos.json']
   schedule:
-    - cron: '0 12 * * 1'
+    - cron: '0 12 * * *'
   workflow_dispatch:
 
 permissions:
