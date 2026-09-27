@@ -164,11 +164,15 @@ previews made before only `main` deployed (#125) had filled. The local
 folder is `~/Code/personal/jmos` now, like the repository.
 
 **To do, in order:**
-1. **Look at it:** About This Mac shows `1b9f680` and the iPod's Music
-   menu shows "Songs 34/200".
-2. **The whole music loop, live:** `/add` a song and see it in the iPod
-   within five minutes; `/play` it and see the notification on another
-   device, listen along at the same place; `/stop` and see it go.
+1. **Run `20260927093000_music_stop_where.sql`** in the SQL editor.
+   `/play` and listening along work live (checked by Jincheng,
+   2026-09-27), but `/stop` failed with "DELETE requires a WHERE
+   clause": Supabase's API loads pg_safeupdate, and `music_stop()`
+   deleted without one (docs/agents/pitfalls.md). No deploy is needed;
+   the bot calls the function.
+2. **Then `/stop`** after a `/play`, and see the notification go on
+   another device. About This Mac should show `1b9f680` (or later) and
+   the iPod's Music menu "Songs 34/200".
 
 Checked locally, in production builds (2026-09-27):
 - the clear desktop and the Welcome; Finder's selection on striped rows;
@@ -217,9 +221,10 @@ first load, lyrics that line up, then visitors asking for songs.
    `/remove`, `/offset`, `/play` and `/stop`, and listening along
    (section 3 has the decisions, section 4 what's left to deploy).
 
-1. **The database is up to date** (2026-09-27). Every migration in
-   `supabase/migrations/`, through `20260927062914_song_limit.sql`, has
-   been run in the SQL editor. Password reset (`account-recovery`) is live and
+1. **The database needs one migration** (2026-09-27). Every migration in
+   `supabase/migrations/` through `20260927062914_song_limit.sql` has
+   been run in the SQL editor; `20260927093000_music_stop_where.sql`
+   (`/stop`) is next (section 4). Password reset (`account-recovery`) is live and
    sends mail. The Security Advisor (run 2026-09-27, after the music
    migrations) shows only the findings kept on purpose, with
    `song_limit()` callable by visitors as a third (it returns only the

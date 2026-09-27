@@ -1214,7 +1214,8 @@ language sql
 security definer
 set search_path = public
 as $$
-  delete from public.now_playing;
+  -- With a WHERE: Supabase's API refuses a DELETE without one (pg_safeupdate).
+  delete from public.now_playing where id;
 $$;
 revoke execute on function public.music_stop() from public, anon, authenticated;
 grant execute on function public.music_stop() to service_role;
