@@ -24,11 +24,16 @@
   font-display: swap;
 }
 
-.os-root {
+/* The typefaces, for the desktop and for the résumé's print copy, which
+   sits outside it (Resume.tsx). */
+.os-root,
+.os-cv-print {
   --os-ui: 'LucidaGrande', 'Lucida Grande', 'Hiragino Sans GB', ui-sans-serif, -apple-system, sans-serif;
   --os-display: 'Apple Garamond', 'EB Garamond', Garamond, Georgia, serif;
   --os-mono: 'Monaco', ui-monospace, Menlo, monospace;
+}
 
+.os-root {
   --os-window: #ececec;
   --os-content: #ffffff;
   --os-ink: #1a1a1a;

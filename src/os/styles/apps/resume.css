@@ -162,26 +162,61 @@
   margin-top: 3px;
 }
 
-/* Print only the page, as a clean résumé. */
+/* The print copy (Resume.tsx): hidden on screen. When printing, it's the
+   only thing on the page, and it flows onto as many sheets as it needs. */
+.os-cv-print {
+  display: none;
+}
+
 @media print {
   @page {
+    margin: 0.5in 0.55in;
+  }
+
+  html,
+  body {
+    height: auto !important;
+    overflow: visible !important;
+    background: #fff !important;
+  }
+
+  body > :not(.os-cv-print) {
+    display: none !important;
+  }
+
+  .os-page.os-cv-print {
+    display: block;
+    width: auto;
+    min-height: 0;
     margin: 0;
-  }
-
-  body * {
-    visibility: hidden;
-  }
-
-  .os-page,
-  .os-page * {
-    visibility: visible;
-  }
-
-  .os-page {
-    position: fixed;
-    inset: 0;
-    zoom: 1 !important;
+    padding: 0;
     box-shadow: none;
+    font-family: var(--os-ui);
+    print-color-adjust: exact;
+  }
+
+  /* A sheet of paper is narrower than the phone breakpoint: keep two columns. */
+  .os-cv-print .os-cv-body {
+    grid-template-columns: 196px 1fr;
+    gap: 34px;
+  }
+
+  .os-cv-print .os-cv-side {
+    order: 0;
+  }
+
+  /* Don't split a line of work, a skill or a degree across two sheets. */
+  .os-cv-print li,
+  .os-cv-print .os-cv-skill,
+  .os-cv-print .os-cv-edu {
+    break-inside: avoid;
+  }
+
+  .os-cv-print h2,
+  .os-cv-print .os-cv-job-head,
+  .os-cv-print .os-cv-job-role,
+  .os-cv-print .os-cv-job-summary {
+    break-after: avoid;
   }
 }
 
