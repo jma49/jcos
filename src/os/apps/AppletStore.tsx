@@ -148,7 +148,12 @@ export default function AppletStore({ win }: AppProps) {
               <section className="os-store-hero" onClick={() => setShown(featured.app)}>
                 <div>
                   <p className="os-store-kicker">New this week</p>
-                  <h2>{apps[featured.app].name}</h2>
+                  {/* The whole banner opens the applet; this is the way in from the keyboard. */}
+                  <h2>
+                    <button type="button" className="os-store-hero-title" onClick={() => setShown(featured.app)}>
+                      {apps[featured.app].name}
+                    </button>
+                  </h2>
                   <p>{featured.tagline}</p>
                   <GetButton app={featured.app} />
                 </div>
