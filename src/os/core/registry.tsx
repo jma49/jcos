@@ -65,21 +65,17 @@ const lazies = new Map<AppId, LazyExoticComponent<ComponentType<AppProps>>>();
 
 /**
  * What a window renders: the app itself once its code has arrived
- * (readyApp), or a lazy one that loads it, so the desktop stays small. A
- * lazy one whose download failed is dropped, since React.lazy keeps a
- * failure for good: the next window, or Try Again, downloads it afresh.
+ * (readyApp), or a lazy one that loads it, so the desktop stays small.
+ * A download that failed can't be tried again in this page: the browser
+ * remembers a failed module import for the page's life and doesn't even
+ * ask again (pitfalls.md), so AppBoundary offers a reload instead.
  */
 export function appComponent(id: AppId): ComponentType<AppProps> {
   const ready = readyApp(id);
   if (ready) return ready;
   let app = lazies.get(id);
   if (!app) {
-    app = lazy(() =>
-      preloadApp(id).catch((error) => {
-        lazies.delete(id);
-        throw error;
-      })
-    );
+    app = lazy(() => preloadApp(id));
     lazies.set(id, app);
   }
   return app;

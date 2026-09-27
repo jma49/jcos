@@ -179,8 +179,9 @@ Checked locally, in production builds (2026-09-27):
 - **a deploy under an open page**, by swapping builds under the local
   server: opening an app whose code is gone offers Reload, which brings
   every window back in the new version (since #97 the panel says the
-  page may be out of date or the connection dropped, and offers Try
-  Again too; offline, only Try Again);
+  page may be out of date or the connection dropped, or that the visitor
+  is offline; either way Reload, since the browser won't fetch a failed
+  chunk again in the same page);
 - **slow networks**, emulated: the desktop is ready in 2.4 s on 4G and
   7 s on fast 3G. Opening the Dashboard right away takes 90 ms on 4G
   as before #86, and 210 ms instead of 90 on fast 3G, only in the first
