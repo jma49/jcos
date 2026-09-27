@@ -37,7 +37,7 @@ jobs:
 
       - run: npm ci
 
-      - run: npx playwright install chromium
+      - run: npx playwright install --only-shell chromium
 
       - run: npm run photos:update
         env:

@@ -32,7 +32,17 @@ jobs:
       - run: npm run lint
       - run: npm test
       - run: npm run build
-      - run: npx playwright install --with-deps chromium
+      # Only the headless shell, which is all the scripts launch. It's
+      # cached by Playwright's version; the system libraries it needs are
+      # installed every time.
+      - name: Find Playwright's version
+        id: playwright
+        run: echo "version=$(node -p "require('playwright/package.json').version")" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@v6
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}
+      - run: npx playwright install --with-deps --only-shell chromium
       - run: npm run test:smoke
       # Download budgets fail the build; script times are only reported here.
       - run: npm run perf
