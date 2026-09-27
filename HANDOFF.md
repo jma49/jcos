@@ -20,8 +20,10 @@ Conventions and a map of the code are in [AGENTS.md](AGENTS.md) and
   Chat, presence and Soapbox. Vercel holds its URL and publishable key
   as `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
   (all environments; Astro exposes the `NEXT_PUBLIC_` prefix through
-  `vite.envPrefix`). Preview deployments use the same project as
-  production, so anything posted while testing a PR is real data.
+  `vite.envPrefix`). Only `main` deploys (`git.deploymentEnabled` in
+  `vercel.json`), so a branch has no preview: try it with `npm run
+  serve`. Anything posted from a local build with the real keys is real
+  data.
 - `supabase/schema.sql` describes the full current state for a new
   project; changes to an existing one go in a new file under
   `supabase/migrations/`, written so it can be rerun, and the owner runs
@@ -38,9 +40,11 @@ Conventions and a map of the code are in [AGENTS.md](AGENTS.md) and
   `public/og.png` (`npm run preview:capture`), committing what changed.
 - The Hobby plan caps deployments a day, and a busy day of merges hit
   it (2026-09-26: "Deployment rate limited — retry in 24 hours"; the
-  GitHub CI stays the gate meanwhile). `scripts/vercel-ignore.sh`
-  (vercel.json's `ignoreCommand`) skips the build when only docs, tests,
-  CI, Supabase or tooling changed. On a busy day, batch merges.
+  GitHub CI stays the gate meanwhile). Only `main` deploys now
+  (`git.deploymentEnabled` in vercel.json), so a pull request spends no
+  deployment until it merges, and `scripts/vercel-ignore.sh` (the
+  `ignoreCommand`) skips `main`'s build when only docs, tests, CI,
+  Supabase or tooling changed. On a busy day, batch merges.
 
 The icons, fonts (Lucida Grande, Apple Garamond, Monaco) and the stones
 wallpaper are copied from ryOS. Using them was a deliberate choice after

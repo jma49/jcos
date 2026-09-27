@@ -12,11 +12,8 @@ set -u
 head="${2:-HEAD}"
 base="${1:-${VERCEL_GIT_PREVIOUS_SHA:-}}"
 
-# A branch's first deployment has no previous one: compare with where the
-# branch left main.
-if [ -z "$base" ] && [ "${VERCEL_GIT_COMMIT_REF:-}" != main ]; then
-  git fetch --quiet --depth=200 origin main 2>/dev/null && base=$(git merge-base "$head" FETCH_HEAD 2>/dev/null)
-fi
+# Only main deploys (git.deploymentEnabled in vercel.json), and each of
+# its deployments knows the one before (VERCEL_GIT_PREVIOUS_SHA).
 
 # Vercel clones shallowly; go deeper once if the base isn't there.
 if [ -n "$base" ] && ! git cat-file -e "$base^{commit}" 2>/dev/null; then
