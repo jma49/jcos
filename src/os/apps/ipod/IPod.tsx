@@ -104,7 +104,11 @@ export default function IPod({ win }: AppProps) {
   const { time, duration } = useClock();
   const song = SONGS[music.index];
   const lyrics = useLyrics(song, music.owner ? duration : 0);
-  const [stack, setStack] = useState<Frame[]>([{ screen: { kind: 'menu', id: 'root', title: 'iPod' }, selected: 0 }]);
+  const [stack, setStack] = useState<Frame[]>(() => [
+    { screen: { kind: 'menu', id: 'root', title: 'iPod' }, selected: 0 },
+    // Opened to play a song (see `nowPlaying` below): straight to it.
+    ...(win.props?.nowPlaying && useMusic.getState().owner === 'ipod' ? [{ screen: { kind: 'now' } as Screen, selected: 0 }] : [])
+  ]);
   const [showVolume, setShowVolume] = useState(0);
   const [prefs, setPrefs] = useState(savedPrefs);
   const [touched, setTouched] = useState(() => Date.now());
@@ -118,6 +122,16 @@ export default function IPod({ win }: AppProps) {
 
   const top = stack[stack.length - 1];
   const kind = top.screen.kind;
+
+  // A song started from outside (Listen along, a song opened in Finder)
+  // shows on Now Playing: its launch carries a new `nowPlaying` each time,
+  // so it works when the iPod is already open too. A window restored after
+  // a reload carries an old one with nothing playing, and opens on the menu.
+  const [asked, setAsked] = useState(win.props?.nowPlaying);
+  if (win.props?.nowPlaying !== asked) {
+    setAsked(win.props?.nowPlaying);
+    if (kind !== 'now') setStack((s) => [...s, { screen: { kind: 'now' }, selected: 0 }]);
+  }
   const push = (screen: Screen) => setStack((s) => [...s, { screen, selected: 0 }]);
   const pop = () => setStack((s) => (s.length > 1 ? s.slice(0, -1) : s));
   const nowPlaying = () => push({ kind: 'now' });
