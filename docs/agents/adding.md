@@ -59,9 +59,9 @@ site path like `/` is captured from the local build, a full URL from the
 live site. Run `npm run preview:capture` to update covers locally; it
 also captures the home page into `public/og.png`. Captures use a frozen
 clock and reduced motion, and pages that answer with an HTTP error are
-skipped. The `Update project previews` workflow runs it on every push to
-`main`, on macOS so the fonts match, and commits images whose pixels
-changed by more than 0.1%. Don't edit a captured image by hand; it will
+skipped. The `Update project previews` workflow runs it once a day (and
+by hand from the Actions tab), on macOS so the fonts match, and commits
+images whose pixels changed by more than 0.1%. Don't edit a captured image by hand; it will
 be overwritten.
 
 The JM/OS Projects app, the pages at `/projects/<slug>/`, the sitemap and
