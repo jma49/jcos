@@ -35,6 +35,12 @@ characters over `git ls-files`.
 | adding an app, applet, song, desktop picture or project | [docs/agents/adding.md](docs/agents/adding.md) |
 | anything at all | [docs/agents/pitfalls.md](docs/agents/pitfalls.md): mistakes already made once |
 
+Keep [HANDOFF.md](HANDOFF.md) current without being asked: when a piece
+of work is done (merged, deployed, or stopped partway), update what
+production runs, what's merged but not deployed, what the owner still
+has to do (migrations, deployments, the bot) and any decision made, in
+the same pull request or one right after. A new session starts from it.
+
 Before opening a pull request for a significant change (a feature, a
 migration, a dependency, anything touching accounts, data, Realtime,
 the window manager or the first load), go through
