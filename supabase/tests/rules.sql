@@ -179,6 +179,9 @@ select pg_temp.check((select count(*) from public.songs) = 33 and (select count(
 
 select pg_temp.act_as('anon');
 select pg_temp.check((select count(*) from public.songs) = 33, 'visitors read the library');
+-- Exactly what /api/songs asks for (src/lib/library.ts): the columns, and the order.
+select pg_temp.check((select count(*) from (select title, artist, year, cover, note from public.albums order by added_at, title) a) = 1, 'visitors read albums as /api/songs asks for them');
+select pg_temp.check((select count(*) from (select id, title, artist, album, cover, track, instrumental, lyrics_offset, lyrics_id from public.songs order by added_at, id) s) = 33, 'visitors read songs as /api/songs asks for them');
 select pg_temp.check(pg_temp.refused($$insert into public.songs (id, title, artist) values ('aaaaaaaaaaa', 'x', 'y')$$), 'visitors can''t add songs');
 select pg_temp.check(pg_temp.refused($$update public.songs set title = 'x'$$), 'visitors can''t change songs');
 select pg_temp.check(pg_temp.refused($$delete from public.songs$$), 'visitors can''t remove songs');

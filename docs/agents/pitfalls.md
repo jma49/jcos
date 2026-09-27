@@ -166,6 +166,14 @@ again.
   a stampede of one query per visitor. Use what the Realtime event
   carries, and ask only when someone acts on it.
 
+- The music migration granted visitors `songs.added_at` but not
+  `albums.added_at`, while `/api/songs` ordered albums by it: Postgres
+  refuses to order by a column the role can't read, so every live
+  request fell back to the snapshot, silently, and new songs never
+  showed. The function now logs why it falls back, and `rules.sql` runs
+  the function's own queries as a visitor. A query and its grants
+  change together.
+
 ## Tests and tooling
 
 - A test that mocks a module and then loads several modules with

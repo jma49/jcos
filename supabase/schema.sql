@@ -1153,7 +1153,7 @@ create policy "What's playing is public while it plays" on public.now_playing fo
 
 -- Visitors read the library and what's playing; nothing else, no writes.
 revoke all on public.albums, public.songs, public.music_settings, public.now_playing from anon, authenticated;
-grant select (title, artist, year, cover, note) on public.albums to anon, authenticated;
+grant select (title, artist, year, cover, note, added_at) on public.albums to anon, authenticated;
 grant select (id, title, artist, album, cover, track, instrumental, lyrics_offset, lyrics_id, duration_ms, added_at) on public.songs to anon, authenticated;
 grant select (song_id, started_at, ends_at) on public.now_playing to anon, authenticated;
 grant select, insert, update, delete on public.albums, public.songs, public.music_settings, public.now_playing to service_role;
