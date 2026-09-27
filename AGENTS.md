@@ -89,10 +89,12 @@ it, and when one is done, record it in HANDOFF.md and take it out.
 | an Edge Function | `npm test` (its `*.test.mjs`) |
 | a project's cover or the home page's look | `npm run preview:capture` |
 
-CI (`.github/workflows/ci.yml`) runs the type check, the lint, the unit
-tests, the build, the smoke test, the download budgets of `npm run perf`
-(script times are only reported there, since shared runners are noisy)
-and the database tests on every pull request.
+CI (`.github/workflows/ci.yml`) runs `npm audit --omit=dev
+--audit-level=high`, the type check, the lint, the unit tests, the
+build, the smoke test, the download budgets of `npm run perf` (script
+times are only reported there, since shared runners are noisy) and the
+database tests on every pull request. Actions are pinned to a commit
+SHA with the version in a comment; Dependabot updates both.
 
 - Unit tests (Vitest) are `*.test.ts` next to the code in `src/`; the
   Vercel Functions' are in `tests/api/`, since Vercel deploys every file
