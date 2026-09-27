@@ -10,8 +10,9 @@ in [AGENTS.md](AGENTS.md)), and how we'll know it's done.
 
 ## Now: finish what's merged
 
-- **Listening along, live:** `/play` reaching an open desktop and `/stop`
-  need the `now_playing_realtime` migration run (HANDOFF.md section 4).
+- **Listening along, live:** `/play` reaching an open desktop without a
+  reload, "Listen along" opening Now Playing, `/stop` taking the
+  notification away (HANDOFF.md section 4).
 
 ## 1. Room on the first load
 
