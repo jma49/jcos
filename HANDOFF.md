@@ -83,33 +83,38 @@ ryOS (AGPL-3.0).
 ## 4. To check after the next deploy
 
 Production has run #85 since 2026-09-26: the daily deployment cap held
-back #86–#95, which reach it together with the first push after the
-reset. Checked before deploying, in a local production build: the clear
-desktop and the Welcome on a first visit; Finder's list selection on
-odd and even rows; the Dashboard and Exposé, with and without reduced
-motion; Synth's patch across octave keys; Photos' keys; the résumé
-printed on Letter and A4; every app by the smoke test, and the
-animations frame by frame against the previous build. What only a
-deployment can show:
+back #86–#95, and the fixes made locally since (keyboard menus, the
+no-JavaScript page, reload after an update, dark links) wait to be
+pushed. A rate-limited deployment isn't retried: after the reset, push
+or redeploy `main`'s head from the Vercel dashboard.
 
-1. **It's live.** About This Mac shows the build hash of `main`'s head.
-2. **The ignored build step works.** In the Vercel dashboard, a pull
-   request touching only docs or CI shows "Ignored Build Step" and no
-   build, and one touching `src/` builds. See whether skipped ones count
-   toward the daily cap.
-3. **A deploy while the desktop is open.** Keep a tab open across a
-   deploy, then open an app you hadn't opened: the window should say
-   "JM/OS has been updated" with Reload (AppBoundary, #73), not go blank.
-4. **Real network speed.** `node scripts/perf-audit.mjs
-   https://www.majincheng.com/` within budget; the Dashboard opens as
-   quickly on the live site as locally (it loads when the pointer
-   reaches the menu bar or the Dock, or eight seconds in).
-5. **The previews workflow.** Run it by hand once (Actions › Update
-   project previews › Run workflow): it should finish and commit the
-   covers and `og.png` that changed.
-6. **By a person.** Print the résumé from Chrome's and Safari's print
-   dialogs (paper size, headers and footers off); listen to the
-   interface sounds; check the timing of 三個人的晚餐 in Karaoke.
+Checked locally, in production builds (2026-09-27):
+- the clear desktop and the Welcome; Finder's selection on striped rows;
+  the Dashboard and Exposé with and without reduced motion; Synth's
+  patch across octaves; Photos' keys; the résumé on Letter and A4;
+  every app (smoke test); the animations frame by frame;
+- **a deploy under an open page**, by swapping builds under the local
+  server: opening an app whose code is gone shows "JM/OS has been
+  updated", and Reload brings every window back in the new version;
+- **slow networks**, emulated: the desktop is ready in 2.4 s on 4G and
+  7 s on fast 3G. Opening the Dashboard right away takes 90 ms on 4G
+  as before #86, and 210 ms instead of 90 on fast 3G, only in the first
+  eight seconds, before it has loaded ahead;
+- the preview capture, run end to end (#81);
+- keyboard use and names for assistive tech (all apps), and the page
+  without JavaScript.
+
+Only a deployment can show:
+1. that it's live: About This Mac shows the build hash of `main`'s head;
+2. that the ignored build step skips a docs-only pull request and builds
+   one touching `src/`, and whether a skipped one counts toward the cap.
+
+Only a person can check:
+3. printing the résumé from Chrome's and Safari's print dialogs (paper
+   size, headers and footers off);
+4. how the interface sounds sound; the lyrics' timing of 三個人的晚餐 in
+   Karaoke;
+5. the desktop with VoiceOver, beyond the automated checks.
 
 ## 5. Open issues and next steps
 
