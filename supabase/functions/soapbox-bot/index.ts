@@ -15,11 +15,15 @@
 //   /delete           hide the post you reply to, or the latest one
 //   /watch on|off     new Stickies notes and public chat messages sent
 //                     here with a Hide button (on by default)
+//   /add <YouTube link>, /songs, /remove <song>, /offset <song> <ms>
+//                     manage the iPod's music library (music.ts)
 //   /help             this list
 //
 // Editing a message (or a photo's caption) in Telegram edits its post.
 // Photos go to the public "soapbox" storage bucket. Setup is in
 // supabase/functions/soapbox-bot/README.md.
+
+import { musicCommands } from './music.ts';
 
 const env = (name: string) => {
   const value = Deno.env.get(name);
@@ -149,6 +153,12 @@ const HELP = [
   '/delete: hide the post you reply to, or the latest one',
   '/watch on|off: send me new Stickies notes and chat messages to hide',
   '',
+  'Music (the iPod and Karaoke):',
+  '/add <YouTube link>: add a song (then Add or Cancel); /add <link> Title - Artist to say what to look for',
+  '/songs [words]: how many, and the latest or those matching',
+  '/remove <title or id>: take a song out',
+  '/offset <title or id> <ms>: how far its lyrics run ahead',
+  '',
   'Edit a message to edit its post.'
 ].join('\n');
 
@@ -230,8 +240,9 @@ interface Callback {
   message?: { chat: { id: number }; message_id: number; text?: string };
 }
 
-/** Hide or Show again, pressed on a notice. */
+/** Hide or Show again, pressed on a notice (or a music button, which music.ts answers). */
 async function press(cb: Callback) {
+  if (await music.press(cb)) return;
   const [action, kind, id] = (cb.data ?? '').split(':') as ['hide' | 'show', Notice['kind'], string];
   if (!['hide', 'show'].includes(action) || !VALID_ID[kind]?.test(id)) return telegram('answerCallbackQuery', { callback_query_id: cb.id });
   const hide = action === 'hide';
@@ -294,6 +305,8 @@ async function telegram(method: string, params: Record<string, unknown>) {
   if (!data.ok) throw new Error(`${method}: ${data.description}`);
   return data.result;
 }
+
+const music = musicCommands({ db, telegram });
 
 /** Makes the public bucket photos go in, as the migration describes it. */
 async function makeBucket() {
@@ -443,6 +456,8 @@ async function handle(message: Message, edited: boolean) {
       : `a post with ${post.images?.length === 1 ? 'a photo' : `${post.images?.length ?? 0} photos`}`;
     return reply(chat, `🗑 Hidden: ${what}`);
   }
+
+  if (await music.handle(chat, text)) return;
 
   if (text.startsWith('/') && !/^\/(rant|note)\b/i.test(text)) return reply(chat, HELP);
 

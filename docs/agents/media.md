@@ -26,8 +26,9 @@ own chrome never shows.
   song was started from (album, artist or all). Lyrics come from
   lrclib.net in the browser, or, when it has none, from NetEase through
   `api/lyrics.ts` (a Vercel Function; converted to Traditional Chinese).
-  To add a song, add a row to `songs` (the Telegram bot will do it; until
-  then, the Table editor): its video id, title, artist, album and cover;
+  To add a song, send the Telegram bot `/add <YouTube link>`
+  (`supabase/functions/soapbox-bot/music.ts`), or add a row to `songs` in
+  the Table editor: its video id, title, artist, album and cover;
   tune `lyrics_offset` (ms the lyrics run ahead of the video, negative for
   videos with an intro) by nudging it in Karaoke with `[`/`]` and adding
   the tweak it shows, and set `lyrics_id` to an lrclib id if the search
