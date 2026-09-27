@@ -164,15 +164,16 @@ previews made before only `main` deployed (#125) had filled. The local
 folder is `~/Code/personal/jmos` now, like the repository.
 
 **To do, in order:**
-1. **Run `20260927093000_music_stop_where.sql`** in the SQL editor.
-   `/play` and listening along work live (checked by Jincheng,
-   2026-09-27), but `/stop` failed with "DELETE requires a WHERE
-   clause": Supabase's API loads pg_safeupdate, and `music_stop()`
-   deleted without one (docs/agents/pitfalls.md). No deploy is needed;
-   the bot calls the function.
-2. **Then `/stop`** after a `/play`, and see the notification go on
-   another device. About This Mac should show `1b9f680` (or later) and
-   the iPod's Music menu "Songs 34/200".
+1. **Run `20260927100000_now_playing_realtime.sql`** in the SQL editor
+   (`20260927093000_music_stop_where.sql` has run). Checked by Jincheng
+   2026-09-27: `/play` showed on another desktop only after a reload, and
+   `/stop` never; Realtime drops changes to a table whose key visitors
+   can't read, and `now_playing.id` wasn't granted (pitfalls.md). No
+   deploy is needed for this part.
+2. **Then, once `main` is deployed** (the iPod opening on Now Playing
+   for "Listen along"): `/play` and see the notification arrive on an
+   open desktop without a reload, "Listen along" open the iPod on Now
+   Playing, and `/stop` take the notification away.
 
 Checked locally, in production builds (2026-09-27):
 - the clear desktop and the Welcome; Finder's selection on striped rows;
@@ -223,8 +224,8 @@ first load, lyrics that line up, then visitors asking for songs.
 
 1. **The database needs one migration** (2026-09-27). Every migration in
    `supabase/migrations/` through `20260927062914_song_limit.sql` has
-   been run in the SQL editor; `20260927093000_music_stop_where.sql`
-   (`/stop`) is next (section 4). Password reset (`account-recovery`) is live and
+   been run in the SQL editor, and `20260927093000_music_stop_where.sql`;
+   `20260927100000_now_playing_realtime.sql` is next (section 4). Password reset (`account-recovery`) is live and
    sends mail. The Security Advisor (run 2026-09-27, after the music
    migrations) shows only the findings kept on purpose, with
    `song_limit()` callable by visitors as a third (it returns only the

@@ -10,8 +10,8 @@ in [AGENTS.md](AGENTS.md)), and how we'll know it's done.
 
 ## Now: finish what's merged
 
-- **`/stop`, live:** `/play` and listening along work; `/stop` needs
-  the `music_stop_where` migration run first (HANDOFF.md section 4).
+- **Listening along, live:** `/play` reaching an open desktop and `/stop`
+  need the `now_playing_realtime` migration run (HANDOFF.md section 4).
 
 ## 1. Room on the first load
 
