@@ -6,8 +6,24 @@ import { beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
 
 const launch = vi.fn();
 vi.mock('../core/registry', () => ({ launch: (...args: unknown[]) => launch(...args) }));
+/** The library arrives when the test lets it. */
+const gate = vi.hoisted(() => ({ wait: Promise.resolve() }));
+/** The social backend's side of listening along, driven by the test. */
+const social = vi.hoisted(() => ({
+  now: null as null | { songId: string; elapsedMs: number; remainingMs: number },
+  watcher: (_now: unknown) => {}
+}));
+vi.mock('../social/social', () => ({
+  getSocial: async () => ({
+    nowPlaying: async () => social.now,
+    watchNowPlaying: (onChange: (now: unknown) => void) => {
+      social.watcher = onChange;
+      return () => {};
+    }
+  })
+}));
 vi.mock('./library', () => ({
-  loadLibrary: async () => {},
+  loadLibrary: () => gate.wait,
   SONGS: [
     { id: 'AAAAAAAAAAA', title: 'First', artist: 'A' },
     { id: 'OxtZF0WGXtE', title: '寧夏', artist: '梁靜茹' }
@@ -58,5 +74,34 @@ describe('listenAlong', () => {
   test('a database that can’t be reached is a song that has finished', async () => {
     await together.listenAlong({ nowPlaying: async () => Promise.reject(new Error('paused')) });
     expect(launch).not.toHaveBeenCalled();
+  });
+});
+
+describe('the notification', () => {
+  const settle = () => new Promise((done) => setTimeout(done, 0));
+  const shown = () => notices.useNotices.getState().notices.map((n) => n.title);
+
+  test('a stop that arrives while a play waits for the library wins', async () => {
+    let arrive = () => {};
+    gate.wait = new Promise<void>((done) => (arrive = done));
+    const stopWatching = together.startListeningAlong();
+    await settle();
+    social.watcher({ songId: 'OxtZF0WGXtE', remainingMs: 200_000 });
+    social.watcher(null);
+    arrive();
+    await settle();
+    expect(shown()).toEqual([]);
+    stopWatching();
+    gate.wait = Promise.resolve();
+  });
+
+  test('the latest play is the one shown', async () => {
+    const stopWatching = together.startListeningAlong();
+    await settle();
+    social.watcher({ songId: 'AAAAAAAAAAA', remainingMs: 200_000 });
+    social.watcher({ songId: 'OxtZF0WGXtE', remainingMs: 200_000 });
+    await settle();
+    expect(notices.useNotices.getState().notices.map((n) => n.body)).toEqual(['寧夏 — 梁靜茹']);
+    stopWatching();
   });
 });

@@ -37,10 +37,20 @@ export async function listenAlong(social: Pick<Social, 'nowPlaying'>) {
   launch('ipod');
 }
 
+interface Showing {
+  /** When the notification goes by itself, as the song ends. */
+  timer: number;
+  /** The latest event's turn: one that finishes after a later one has started is dropped. */
+  turn: number;
+}
+
 /** Tells the visitor what Jincheng is playing, or takes the notification away when he stops. */
-async function show(social: Social, now: Pick<NowPlaying, 'songId' | 'remainingMs'> | null, stop: { timer: number }) {
+async function show(social: Social, now: Pick<NowPlaying, 'songId' | 'remainingMs'> | null, stop: Showing) {
+  const turn = ++stop.turn;
   clearTimeout(stop.timer);
   const index = now ? await indexOf(now.songId) : -1;
+  // A play waiting for the library must not undo a stop that came after it.
+  if (turn !== stop.turn) return;
   if (!now || index < 0) return dismiss(NOTICE, true);
   const song = SONGS[index];
   notify({
@@ -58,7 +68,7 @@ async function show(social: Social, now: Pick<NowPlaying, 'songId' | 'remainingM
 export function startListeningAlong() {
   let cancelled = false;
   let unwatch = () => {};
-  const stop = { timer: 0 };
+  const stop: Showing = { timer: 0, turn: 0 };
   getSocial().then((social) => {
     if (!social || cancelled) return;
     // Once on arrival, for a song already playing; after that, a change
