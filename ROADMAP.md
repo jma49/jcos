@@ -18,31 +18,7 @@ in [AGENTS.md](AGENTS.md)), and how we'll know it's done.
   along on another, `/stop`. Nothing else in the plan depends on it, but
   it's the one feature that hasn't been seen working end to end.
 
-## 1. See errors visitors hit
-
-**Why.** When an app crashes in a visitor's browser, the window's error
-boundary shows "quit unexpectedly" and logs to that visitor's console,
-and nobody else ever knows. Every other item here is safer to ship once
-a crash in production reaches Jincheng.
-
-**Shape.** The error boundary and a global `error` /
-`unhandledrejection` listener send a short report: the app, the
-message, the first lines of the stack, the build hash. A database
-function stores it (the table isn't writable directly), grouped by
-fingerprint with a count, so a crash seen by 200 visitors is one row;
-new fingerprints go to Telegram through the moderation webhook that
-already exists, and repeats only raise the count.
-
-**Rules it meets.** No secret on Vercel (the bot's token stays in the
-Edge Function); bounded input and a site-wide cap with an advisory lock,
-with a race in `race.sh`; the reporting code loads lazily and sends at
-most a few reports per page; the report says nothing about the visitor
-but the build and the app.
-
-**Done when** a thrown error in a test app reaches Telegram once, and a
-thousand of them still make one message.
-
-## 2. Room on the first load
+## 1. Room on the first load
 
 **Why.** The first visit's JavaScript is 157 KB against a budget of 160
 (`npm run perf`, 2026-09-27). Anything else on the first screen would
@@ -58,7 +34,7 @@ behind the same "after the desktop settles" loading as the Dashboard
 **Done when** the first load is 150 KB or less, with the reason for each
 kilobyte moved written in `docs/agents/performance.md`.
 
-## 3. Lyrics that line up
+## 2. Lyrics that line up
 
 **Why.** Decided 2026-09-27: timing gets reworked as a whole, not tuned
 song by song with `/offset`. Ten starter songs carry ryOS's offsets,
@@ -73,7 +49,7 @@ song from Karaoke that ends up in the database, not in one browser.
 **Done when** every song in the library is checked by ear once and the
 per-song offsets are the exception.
 
-## 4. Visitors ask for songs
+## 3. Visitors ask for songs
 
 **Why.** Decided as "may come later" with the music library: visitors
 request, Jincheng approves from Telegram.
@@ -96,6 +72,12 @@ library, and two requests at once from one member make one.
   per-visitor and a daily spending cap before anything else.
 
 ## Not planned
+
+- **Crash reports from visitors' browsers** (decided 2026-09-27). A
+  crash in a visitor's browser still reaches no one, but for a personal
+  site a table, a public write path with its own abuse limits, and a
+  bot change aren't worth it; each window's error boundary already
+  keeps a crash to its own window.
 
 Decided, with the reasons in HANDOFF.md section 3: commercial games or
 their ROMs (build originals, as Pinball is); Jincheng's photos anywhere
