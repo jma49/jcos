@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import type { AppProps } from '../core/registry';
 import { apps, launch } from '../core/registry';
 import { useWindows } from '../core/store';
@@ -6,8 +5,7 @@ import type { AppId } from '../core/types';
 import { useAccount } from '../social/account';
 
 // A first visit's welcome: what JM/OS is and a few things worth trying. It
-// opens once, alone and in the middle of the screen; when it's closed,
-// About follows, so the desktop is never left empty.
+// opens once, alone and in the middle of the screen.
 
 const TIPS: { icon: AppId; title: string; text: string }[] = [
   { icon: 'projects', title: 'Open things', text: 'Double-click on the desktop, click in the Dock, or right-click for more.' },
@@ -22,17 +20,6 @@ export default function Welcome({ win }: AppProps) {
   const { account, available } = useAccount();
   const others = useWindows((s) => Math.max(0, (s.visitors?.length ?? 1) - 1));
   const close = () => useWindows.getState().close(win.id);
-
-  // Once this window has gone, About takes its place if nothing else opened.
-  useEffect(
-    () => () => {
-      setTimeout(() => {
-        const { windows } = useWindows.getState();
-        if (!windows[win.id] && Object.keys(windows).length === 0) launch('about');
-      }, 0);
-    },
-    [win.id]
-  );
 
   return (
     <div className="os-app os-welcome">
