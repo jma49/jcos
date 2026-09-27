@@ -192,9 +192,10 @@ install step takes 12 s). Branches don't deploy (#125 got no Vercel
 check).
 
 Only a deployment can still show:
-1. that the ignored build step skips a docs-only merge to `main` (this
-   pull request is one: its merge should be skipped) and builds one
-   touching `src/`;
+1. that the ignored build step skips a docs-only merge to `main` and
+   builds one touching `src/` (not seen yet: #129's merge, docs only,
+   was rate-limited again at 07:15 UTC, minutes after `94806fc`
+   deployed, so the cap was still near; production is unaffected);
 2. that Vercel builds on Node 24 (the build log's first lines).
 
 Checked by Jincheng on `npm run serve` (2026-09-27): printing the
