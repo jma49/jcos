@@ -28,6 +28,12 @@ export interface Deps {
   telegram: (method: string, params: Record<string, unknown>) => Promise<any>;
 }
 
+/** A draft waiting in music_settings for Add or Cancel. */
+interface Pending {
+  song: Draft;
+  created: string;
+}
+
 export interface Draft {
   id: string;
   title: string;
@@ -162,14 +168,25 @@ export async function lengthFromLyrics(song: { title: string; artist: string }):
       signal: AbortSignal.timeout(TIMEOUT)
     });
     if (!res.ok) return null;
-    const seconds = ((await res.json()) as { duration?: number }[]).find((h) => typeof h.duration === 'number')?.duration;
+    // Only a hit that is this song (title and artist), not the search's first.
+    const hits = (await res.json()) as { trackName?: string; artistName?: string; duration?: number }[];
+    const seconds = hits.find(
+      (h) =>
+        typeof h.duration === 'number' &&
+        related(plain(h.trackName ?? ''), plain(song.title)) &&
+        related(plain(h.artistName ?? ''), plain(song.artist))
+    )?.duration;
     return seconds && seconds >= 1 && seconds <= 3600 ? Math.round(seconds * 1000) : null;
   } catch {
     return null;
   }
 }
 
-const minutes = (ms: number) => `${Math.floor(ms / 60000)}:${String(Math.round((ms % 60000) / 1000)).padStart(2, '0')}`;
+/** "4:12". Rounded to the second first, so 3:59.6 is 4:00, not 3:60. */
+export const minutes = (ms: number) => {
+  const seconds = Math.round(ms / 1000);
+  return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
+};
 
 export function describe(d: Draft) {
   return `${d.title} — ${d.artist}${d.album ? ` · ${d.album}` : ''}${d.duration_ms ? ` · ${minutes(d.duration_ms)}` : ''}`;
@@ -186,7 +203,7 @@ export function parseAdd(rest: string): { id: string | null; hint?: { title: str
 }
 
 /** Words for PostgREST's ilike, with anything that has meaning there taken out. */
-const searchable = (words: string) => words.replace(/[*%,()"\\:.]/g, ' ').trim().slice(0, 100);
+const searchable = (words: string) => words.replace(/[*%_,()"\\:.]/g, ' ').trim().slice(0, 100);
 
 export function musicCommands({ db, telegram }: Deps) {
   const say = (chat: number, text: string, extra: Record<string, unknown> = {}) =>
@@ -204,8 +221,12 @@ export function musicCommands({ db, telegram }: Deps) {
   /** Songs named by a video id or words from their titles. */
   const find = async (words: string): Promise<Found[]> => {
     const columns = 'id,title,artist,duration_ms';
+    // An 11-letter word ("Butterflies") looks like an id: try it, then the titles.
     const id = videoIdOf(words);
-    if (id) return db(`songs?id=eq.${id}&select=${columns}`);
+    if (id) {
+      const byId: Found[] = await db(`songs?id=eq.${id}&select=${columns}`);
+      if (byId.length) return byId;
+    }
     const q = searchable(words);
     if (!q) return [];
     return db(`songs?title=ilike.${encodeURIComponent(`*${q}*`)}&select=${columns}&order=added_at.desc&limit=10`);
@@ -229,11 +250,17 @@ export function musicCommands({ db, telegram }: Deps) {
     const found = await lookUp(id, hint);
     if ('error' in found) return say(chat, found.error);
     const lyrics = await hasSyncedLyrics(found);
-    // Kept until Add or Cancel is pressed: a button can carry only 64 bytes.
+    // Kept until Add or Cancel is pressed (a button carries only 64 bytes);
+    // drafts nobody answered within a day are cleared here.
+    const dayAgo = new Date(Date.now() - 86_400_000).toISOString();
+    await db(`music_settings?name=like.draft:*&value->>created=lt.${encodeURIComponent(dayAgo)}`, {
+      method: 'DELETE',
+      headers: { prefer: 'return=minimal' }
+    });
     await db('music_settings', {
       method: 'POST',
       headers: { prefer: 'resolution=merge-duplicates,return=minimal' },
-      body: JSON.stringify({ name: `draft:${id}`, value: found })
+      body: JSON.stringify({ name: `draft:${id}`, value: { song: found, created: new Date().toISOString() } satisfies Pending })
     });
     const lines = [
       `🎵 ${describe(found)}`,
@@ -260,6 +287,9 @@ export function musicCommands({ db, telegram }: Deps) {
     if (!words) return say(chat, 'Which song? /remove <title or id>');
     const song = await one(chat, words);
     if (!song) return;
+    // An empty library would send the site back to its snapshot, bringing
+    // removed songs back; the last one stays.
+    if ((await count()) <= 1) return say(chat, 'That’s the last song; the library can’t be empty. /add another first.');
     await db(`songs?id=eq.${song.id}`, { method: 'DELETE', headers: { prefer: 'return=minimal' } });
     return say(chat, `🗑 Removed ${song.title} — ${song.artist}. ${await tally()}.`);
   }
@@ -338,7 +368,12 @@ export function musicCommands({ db, telegram }: Deps) {
         await done('✖︎ Not added.', 'Cancelled');
         return true;
       }
-      const draft = row.value as Draft;
+      const draft = (row.value as Pending).song;
+      // Added meanwhile (another /add of it): say so, even if the library is full now.
+      if ((await db(`songs?id=eq.${draft.id}&select=id`)).length) {
+        await done('It’s already in the library.', 'Already there');
+        return true;
+      }
       try {
         await db('songs', { method: 'POST', headers: { prefer: 'return=minimal' }, body: JSON.stringify(draft) });
       } catch (error) {
