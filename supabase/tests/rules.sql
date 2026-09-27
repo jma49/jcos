@@ -236,3 +236,17 @@ select pg_temp.check(pg_temp.refused($$insert into public.songs (id, title, arti
 reset role;
 delete from public.songs where id = 'ccccccccccc';
 update public.music_settings set value = '200' where name = 'song_limit';
+
+-- Supabase's API loads pg_safeupdate, which refuses a DELETE or UPDATE
+-- without a WHERE clause, even inside a function ("DELETE requires a
+-- WHERE clause"). This Postgres doesn't have it, so every function's
+-- statements are checked for one instead.
+select pg_temp.check(not exists (
+  select 1
+  from pg_proc p
+  join pg_namespace n on n.oid = p.pronamespace,
+    regexp_split_to_table(p.prosrc, ';') as statement
+  where n.nspname = 'public'
+    and statement ~* '\m(delete\s+from|update\s+[a-z_."]+\s+set)\M'
+    and statement !~* '\mwhere\M'
+), 'every function''s DELETE and UPDATE has a WHERE (Supabase''s pg_safeupdate refuses one without)');

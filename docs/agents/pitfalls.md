@@ -12,6 +12,12 @@ again.
   raise notice … $$`.
 - PostgREST caches the schema. End a migration that adds functions or
   columns with `notify pgrst, 'reload schema';`.
+- Supabase's API loads pg_safeupdate: a `DELETE` or `UPDATE` without a
+  `WHERE` fails with "DELETE requires a WHERE clause", even inside a
+  `SECURITY DEFINER` function. `music_stop()` did, and `/stop` broke in
+  production while `npm run test:db` passed, since its Postgres doesn't
+  load the extension. Write a `WHERE` (`where id` for a one-row table);
+  `rules.sql` checks every function for one.
 - Migrations are named `<UTC timestamp>_<what it does>.sql`, with the
   time they're written as `YYYYMMDDHHMMSS`, the way `supabase migration
   new` names them. They used to be named by date, and the date was
