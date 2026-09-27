@@ -1,0 +1,268 @@
+import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
+import { play, saved, useIsFront, type AppProps } from '../../kit';
+import { bestTarget, hint, move, movable, newGame, RANKS, RED, settle, type Card, type Game, type Suits } from './rules';
+
+// Spider Solitaire: two decks in ten columns. Build down in any suit, but
+// only a run of one suit moves together; a full King-to-Ace run of one
+// suit leaves the table. Deal ten more from the stock when stuck (never
+// onto an empty column). One, two or four suits; undo, hints, and a best
+// score for each, kept in this browser.
+
+const settings = saved<{ suits: Suits; best: Partial<Record<Suits, number>> }>('spider');
+
+interface Drag {
+  from: number;
+  index: number;
+  x: number;
+  y: number;
+  dx: number;
+  dy: number;
+  /** The cards' width on the table, so the dragged ones match. */
+  w: number;
+}
+
+function CardFace({ card }: { card: Card }) {
+  if (!card.up) return <span className="os-spider-card" data-back />;
+  return (
+    <span className="os-spider-card" data-red={RED.has(card.suit) || undefined}>
+      <span className="os-spider-corner">
+        {RANKS[card.rank]}
+        <br />
+        {card.suit}
+      </span>
+      <span className="os-spider-pip">{card.rank > 10 ? RANKS[card.rank] : card.suit}</span>
+    </span>
+  );
+}
+
+export default function Spider({ win }: AppProps) {
+  const saved = useMemo(() => settings.load({ suits: 1, best: {} }), []);
+  const [suits, setSuits] = useState<Suits>(saved.suits);
+  const [best, setBest] = useState(saved.best);
+  const [game, setGame] = useState(() => newGame(saved.suits));
+  const [history, setHistory] = useState<Game[]>([]);
+  const [drag, setDrag] = useState<Drag | null>(null);
+  const [lit, setLit] = useState<{ from: number; index: number; to: number } | null>(null);
+  const table = useRef<HTMLDivElement>(null);
+  const root = useRef<HTMLDivElement>(null);
+  const front = useIsFront(win);
+  const won = game.done.length === 8;
+
+  const commit = (next: Game | null) => {
+    if (!next) return false;
+    setHistory((h) => [...h.slice(-199), game]);
+    setGame(next);
+    setLit(null);
+    // A finished run leaves the table with a chime; any other move clicks.
+    play(next.done.length > game.done.length ? 'chime' : 'click');
+    return true;
+  };
+
+  const onWon = useEffectEvent(() => {
+    play('chime');
+    if (game.score > (best[suits] ?? 0)) {
+      // The better of this score and what's stored, which another tab may have raised.
+      const stored = settings.update({ suits, best: {} }, (s) => ({ ...s, best: { ...s.best, [suits]: Math.max(s.best[suits] ?? 0, game.score) } }));
+      setBest(stored.best);
+    }
+  });
+  useEffect(() => {
+    if (won) onWon();
+  }, [won]);
+
+  const restart = (n: Suits = suits) => {
+    setSuits(n);
+    settings.update({ suits: n, best }, (s) => ({ ...s, suits: n }));
+    setGame(newGame(n));
+    setHistory([]);
+    setLit(null);
+  };
+
+  const deal = () => {
+    if (!game.stock.length) return;
+    if (game.columns.some((c) => c.length === 0)) {
+      play('error');
+      return;
+    }
+    const stock = [...game.stock];
+    const columns = game.columns.map((c) => [...c, { ...stock.shift()!, up: true }]);
+    commit(settle({ ...game, columns, stock, moves: game.moves + 1 }));
+  };
+
+  const undo = () => {
+    if (!history.length) return;
+    setGame(history[history.length - 1]);
+    setHistory((h) => h.slice(0, -1));
+    setGame((g) => ({ ...g, score: g.score - 1 }));
+  };
+
+  const showHint = () => {
+    const h = hint(game);
+    if (!h) return play('error');
+    setLit(h);
+    setTimeout(() => setLit((l) => (l === h ? null : l)), 1600);
+  };
+
+  // Keyboard: ⌥Z undo, H hint, D deal, F2 new game (as on Windows; a letter would be too easy to hit).
+  useEffect(() => {
+    if (!front) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLElement && e.target.matches('input, select, textarea')) return;
+      if ((e.altKey || e.metaKey || e.ctrlKey) && e.code === 'KeyZ') {
+        e.preventDefault();
+        undo();
+      } else if (!e.altKey && !e.metaKey && !e.ctrlKey) {
+        if (e.code === 'KeyH') showHint();
+        else if (e.code === 'KeyD') deal();
+        else if (e.code === 'F2') restart();
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  });
+
+  /** Which column the pointer is over. */
+  const columnAt = (x: number) => {
+    const cols = table.current?.querySelectorAll<HTMLElement>('.os-spider-column');
+    let hit: number | null = null;
+    cols?.forEach((el, i) => {
+      const r = el.getBoundingClientRect();
+      if (x >= r.left && x <= r.right) hit = i;
+    });
+    return hit;
+  };
+
+  const startDrag = (e: React.PointerEvent, from: number, index: number) => {
+    if (e.button !== 0 || !movable(game.columns[from], index)) return;
+    e.preventDefault();
+    const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    const start = { x: e.clientX, y: e.clientY };
+    let moved = false;
+    const onMove = (ev: PointerEvent) => {
+      if (!moved && Math.hypot(ev.clientX - start.x, ev.clientY - start.y) < 4) return;
+      moved = true;
+      setDrag({ from, index, x: ev.clientX, y: ev.clientY, dx: start.x - r.left, dy: start.y - r.top, w: r.width });
+    };
+    const onUp = (ev: PointerEvent) => {
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+      setDrag(null);
+      if (!moved) {
+        // A click (or tap) sends the run wherever it goes best.
+        const to = bestTarget(game, from, index);
+        if (to === null || !commit(move(game, from, index, to))) play('error');
+        return;
+      }
+      const to = columnAt(ev.clientX);
+      if (to === null || to === from || !commit(move(game, from, index, to))) play('error');
+    };
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+  };
+
+  const dragging = drag ? game.columns[drag.from].slice(drag.index) : [];
+
+  return (
+    <div ref={root} className="os-app os-spider">
+      <div className="os-toolbar">
+        <button type="button" className="os-button" onClick={() => restart()} title="New game (F2)">
+          New Game
+        </button>
+        <select value={suits} onChange={(e) => restart(Number(e.target.value) as Suits)} aria-label="Difficulty">
+          <option value={1}>One suit</option>
+          <option value={2}>Two suits</option>
+          <option value={4}>Four suits</option>
+        </select>
+        <button type="button" className="os-button" onClick={undo} disabled={!history.length} title="Undo (⌥Z)">
+          Undo
+        </button>
+        <button type="button" className="os-button" onClick={showHint} title="Hint (H)">
+          Hint
+        </button>
+        <span className="os-toolbar-meta">
+          Score {game.score} · Moves {game.moves}
+          {best[suits] ? ` · Best ${best[suits]}` : ''}
+        </span>
+      </div>
+
+      <div className="os-spider-table">
+        <div ref={table} className="os-spider-columns">
+          {game.columns.map((col, c) => (
+            <div key={c} className="os-spider-column" data-empty={!col.length || undefined} data-lit={lit?.to === c || undefined}>
+              {col.map((card, i) => {
+                const hidden = drag && drag.from === c && i >= drag.index;
+                return (
+                  <div
+                    key={card.id}
+                    className="os-spider-slot"
+                    data-down={!card.up || undefined}
+                    data-hidden={hidden || undefined}
+                    data-lit={(lit && lit.from === c && i >= lit.index) || undefined}
+                    onPointerDown={(e) => startDrag(e, c, i)}
+                    role={card.up ? 'button' : undefined}
+                    aria-label={card.up ? `${RANKS[card.rank]}${card.suit}` : 'Face-down card'}
+                  >
+                    <CardFace card={card} />
+                  </div>
+                );
+              })}
+            </div>
+          ))}
+        </div>
+
+        <div className="os-spider-bottom">
+          <div className="os-spider-done" aria-label={`${game.done.length} of 8 runs complete`}>
+            {Array.from({ length: 8 }, (_, i) => (
+              <span key={i} className="os-spider-done-slot">
+                {game.done[i] && <CardFace card={{ id: -1, rank: 13, suit: game.done[i], up: true }} />}
+              </span>
+            ))}
+          </div>
+          <button
+            type="button"
+            className="os-spider-stock"
+            onClick={deal}
+            disabled={!game.stock.length}
+            aria-label={`Deal ten cards (${game.stock.length / 10} deals left)`}
+            title="Deal (D)"
+          >
+            {Array.from({ length: game.stock.length / 10 }, (_, i) => (
+              <span key={i} className="os-spider-card" data-back style={{ left: i * 10 }} />
+            ))}
+          </button>
+        </div>
+
+        {won && (
+          <div className="os-spider-won">
+            <strong>You won!</strong>
+            <span>
+              Score {game.score} in {game.moves} moves
+            </span>
+            <button type="button" className="os-button os-button-primary" onClick={() => restart()}>
+              Play Again
+            </button>
+          </div>
+        )}
+      </div>
+
+      {drag && (
+        <div
+          className="os-spider-drag"
+          // Inside the window (which may be moved by a transform), relative to it.
+          style={{
+            '--cw': `${drag.w}px`,
+            left: drag.x - drag.dx - (root.current?.getBoundingClientRect().left ?? 0),
+            top: drag.y - drag.dy - (root.current?.getBoundingClientRect().top ?? 0)
+          } as React.CSSProperties}
+          aria-hidden="true"
+        >
+          {dragging.map((card) => (
+            <div key={card.id} className="os-spider-slot">
+              <CardFace card={card} />
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}

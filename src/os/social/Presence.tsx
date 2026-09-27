@@ -28,6 +28,15 @@ export const CALM = 10;
 /** Whether pointers are off, given how many are here and whether they were. */
 export const isCrowded = (count: number, wasCrowded: boolean) => (wasCrowded ? count > CALM : count > CROWD);
 
+/**
+ * Whether anyone else has chosen to see pointers. Pointers are drawn only
+ * for those who ask (System Preferences › Sharing), and sent only while
+ * someone does: no one's pointer crosses another screen uninvited, and a
+ * desktop where nobody watches sends none at all.
+ */
+export const anyoneWatching = (visitors: Pick<Visitor, 'self' | 'watching'>[] | null) =>
+  !!visitors?.some((v) => !v.self && v.watching);
+
 /** The most people the menu bar's list names; the rest are counted. */
 const LISTED = 30;
 
@@ -57,6 +66,7 @@ function infoFor(color: string, place: Place | null, account: Account | null, ro
   if (account) info.username = account.username;
   if (room && !isDM(room)) info.room = room;
   if (useAirDrop.getState().discoverable === 'none') info.airdrop = false;
+  if (useSystem.getState().showOthersPointers) info.watching = true;
   return info;
 }
 
@@ -65,8 +75,8 @@ const currentInfo = (color: string) =>
 
 /**
  * Joins the desktop's presence channel: lists who's here, and from where,
- * for the menu bar, and draws other visitors' pointers labelled with their
- * city. Phones are counted but don't send a pointer, since they have none.
+ * for the menu bar, and, for a visitor who has asked to see them, draws
+ * other visitors' pointers labelled with their city (see anyoneWatching). Phones are counted but don't send a pointer, since they have none.
  * A member's own other tabs and devices don't show as cursors.
  */
 export function Presence() {
@@ -84,7 +94,8 @@ export function Presence() {
     const color = CURSOR_COLORS[Math.floor(Math.random() * CURSOR_COLORS.length)];
 
     const send = (x: number, y: number) => {
-      if (useWindows.getState().crowded) return;
+      const { crowded, visitors } = useWindows.getState();
+      if (crowded || (x >= 0 && !anyoneWatching(visitors))) return;
       const wait = CURSOR_INTERVAL - (performance.now() - last);
       clearTimeout(queued);
       if (wait > 0) {
@@ -135,7 +146,8 @@ export function Presence() {
         },
         onCursor: (id, x, y, c) =>
           setCursors((all) => {
-            if (useWindows.getState().crowded) return all;
+            // Not asked for: not drawn, and not kept (so no re-render either).
+            if (useWindows.getState().crowded || !useSystem.getState().showOthersPointers) return all;
             if (x < 0) {
               const { [id]: _gone, ...rest } = all;
               return rest;
@@ -157,7 +169,8 @@ export function Presence() {
         useChatState.subscribe((state, prev) => state.room !== prev.room && refresh()),
         useAirDrop.subscribe((state, prev) => state.discoverable !== prev.discoverable && refresh()),
         useSystem.subscribe((state, prev) => {
-          if (state.shareCity !== prev.shareCity) refresh();
+          if (state.shareCity !== prev.shareCity || state.showOthersPointers !== prev.showOthersPointers) refresh();
+          if (!state.showOthersPointers && prev.showOthersPointers) setCursors({});
           // Take the pointer away from others' screens straight away.
           if (!state.sharePointer && prev.sharePointer) send(-1, -1);
         })
@@ -198,7 +211,7 @@ export function Presence() {
   }, []);
 
   const visitors = useWindows((s) => s.visitors);
-  const showPointers = useSystem((s) => s.showPointers);
+  const showPointers = useSystem((s) => s.showOthersPointers);
   const me = useAccount((s) => s.account?.username);
   /** This member's own other tabs and devices: their pointer is theirs, not someone else's. */
   const mine = (id: string) => !!me && visitors?.some((v) => v.id === id && v.username === me);

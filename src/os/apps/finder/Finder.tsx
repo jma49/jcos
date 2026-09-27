@@ -8,7 +8,7 @@ import { buildDisk, find, type FileNode } from '../../core/files';
 import { AirDropIcon, DiskIcon } from '../../core/icons';
 import { Drawer } from '../../shell/drawer';
 import { ContextMenu, type ContextMenuItem } from '../../shell/ContextMenu';
-import { load, loadSettings, saveJSON } from '../../core/storage';
+import { load, loadSettings, updateJSON } from '../../core/storage';
 import { PATH_MIME, shareViaAirDrop } from '../../social/airdrop';
 import { ActionMenu, ARRANGERS, ancestry, everything, FileInfo, formatDate, parentOf, Thumb, type Arrange, type View } from './parts';
 import { ColumnView } from './ColumnView';
@@ -105,7 +105,7 @@ export default function Finder({ win }: AppProps) {
   const update = (next: Partial<Prefs>) => {
     const merged = { ...prefs, ...next };
     setPrefs(merged);
-    saveJSON(PREFS_KEY, merged);
+    updateJSON(PREFS_KEY, prefs, (stored) => ({ ...stored, ...next }));
   };
 
   /** Selects a node; in column view that also opens the folder it's in. */

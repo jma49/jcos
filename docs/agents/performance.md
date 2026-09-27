@@ -3,15 +3,16 @@
 - **Budgets** (checked by `npm run perf`; see [self-audit.md](self-audit.md)) for a first visit,
   meaning what's requested in the first seven seconds, before the
   desktop settles and fetches ahead:
-  - at most 160 KB of JavaScript, gzipped (154 today; react-dom alone
-    is 67);
+  - at most 160 KB of JavaScript, gzipped (156 today; react-dom alone
+    is 67), and 20 KB of CSS (15 today);
   - at most 1.1 MB of images and 250 KB of fonts;
   - nothing downloaded twice.
 
   Dragging a window with six apps open, and five idle seconds, stay
   under the script time the script reports.
 - **Load only what the first screen needs.**
-  - Apps are lazy (`registry.tsx`).
+  - Apps are lazy, code and styles (`registry.tsx`, `core/appStyles.ts`):
+    `perf` fails if an applet's chunk is in the first load.
   - The Supabase client arrives by dynamic import (`social.ts`).
   - The Dashboard and the screen saver's views load on first use, or
     once the desktop has settled (`afterSettled()` in

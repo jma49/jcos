@@ -15,7 +15,8 @@ The only exceptions are content that is Chinese by nature:
 - the Chinese copy of the site: the `zh` entries in
   `src/i18n/content.ts` and `src/content/projects/zh/`;
 - proper names in data, such as song titles and artists in
-  `src/data/songs.json`, which may also be quoted in the docs;
+  `src/data/songs.json` and the music library's seed in `supabase/`
+  (`schema.sql` and its migration), which may also be quoted in the docs;
 - patterns that have to match Chinese text, such as the lyric credits in
   `api/lyrics.ts`.
 
@@ -56,6 +57,17 @@ issues.
   subscriptions select the narrowest slice.
 - Anything remembered in the browser goes through
   `src/os/core/storage.ts`.
+- Before deciding, check that it's the best practice, and that fixing
+  the problem in front of you doesn't bring in more. Find the cause
+  before changing anything: when it isn't known, first make it
+  observable (a log, a measurement, a test that fails), and fix what the
+  evidence shows, not a guess. A fix that silences a check (a raised
+  budget, a skipped test, an ignored error) needs a reason that holds
+  beyond today.
+- Design for many visitors at once and one visitor in several tabs:
+  limits and claims hold under races, tabs don't overwrite each other,
+  fan-out stays small, and no one's actions reach another's screen
+  uninvited (docs/agents/self-audit.md, Concurrency).
 - Don't reformat whole files (there's no Prettier config); match the
   surrounding code.
 
@@ -64,7 +76,7 @@ issues.
 | Changed | Run |
 | --- | --- |
 | any code | `npm run check` (types), `npm run lint` (hooks), `npm test` |
-| an app, the shell or anything a visitor sees | `npm run build`, then `npm run test:smoke`; open it in a browser too |
+| an app, the shell or anything a visitor sees | `npm run build`, then `npm run test:smoke`; open it in a browser too (`npm run serve`) |
 | the first load, a dependency, or anything per frame | `npm run build`, then `npm run perf`: every line within budget |
 | the schema, a migration, a policy or a limit | `npm run test:db`, with a check (and a race for a limit) for the new rule; then the Supabase Security Advisor |
 | an Edge Function | `npm test` (its `*.test.mjs`) |
@@ -78,8 +90,8 @@ and the database tests on every pull request.
 - Unit tests (Vitest) are `*.test.ts` next to the code in `src/`; the
   Vercel Functions' are in `tests/api/`, since Vercel deploys every file
   under `api/`; each Edge Function has its `*.test.mjs`. Keep logic worth
-  testing in plain modules without React (as `apps/spider/rules.ts` and
-  `apps/pinball/table.ts` are).
+  testing in plain modules without React (as `applets/spider/rules.ts`
+  and `applets/pinball/table.ts` are).
 - `npm run test:db` checks the database's rules
   (`supabase/tests/rules.sql`) against a local Postgres, then races the
   per-member limits with overlapping sessions (`supabase/tests/race.sh`).

@@ -2,7 +2,12 @@
    icons and wallpaper come from ryOS; see NOTICE. */
 
 /* The theme is split by part of the desktop, in cascade order: later files
-   build on earlier ones, so keep the order when adding one. */
+   build on earlier ones, so keep the order when adding one. Each app's own
+   stylesheet lives in its folder and arrives with its code, after all of
+   these: so an app's rules, not these files, have the last word on its
+   own classes (phone and reduced-motion variants included), and anything
+   more than one app or the OS uses belongs here (components.css,
+   source-list.css), not in an app. */
 @import './styles/base.css';
 @import './styles/wallpaper.css';
 @import './styles/sky.css';
@@ -10,24 +15,12 @@
 @import './styles/now-playing.css';
 @import './styles/desktop-icons.css';
 @import './styles/windows.css';
-@import './styles/apps/about.css';
-@import './styles/apps/resume.css';
-@import './styles/apps/projects.css';
-@import './styles/apps/finder.css';
-@import './styles/apps/project.css';
-@import './styles/apps/browser.css';
-@import './styles/apps/terminal.css';
+@import './styles/components.css';
+@import './styles/source-list.css';
 @import './styles/dock.css';
 @import './styles/spotlight.css';
 @import './styles/boot.css';
-@import './styles/apps/photos.css';
-@import './styles/apps/applet-store.css';
-@import './styles/apps/calculator.css';
-@import './styles/apps/tile-game.css';
-@import './styles/apps/minesweeper.css';
 @import './styles/switcher.css';
-@import './styles/apps/soapbox.css';
-@import './styles/apps/preferences.css';
 @import './styles/saver-previews.css';
 @import './styles/dashboard.css';
 @import './styles/desktop-menu.css';
@@ -35,20 +28,7 @@
 @import './styles/screensaver.css';
 @import './styles/presence.css';
 @import './styles/notices.css';
-@import './styles/apps/stickies.css';
-@import './styles/apps/ipod.css';
 @import './styles/player-frame.css';
 @import './styles/marquee.css';
-@import './styles/apps/ipod-views.css';
-@import './styles/apps/karaoke.css';
-@import './styles/apps/account.css';
-@import './styles/apps/chat.css';
-@import './styles/apps/airdrop.css';
-@import './styles/apps/photo-booth.css';
-@import './styles/apps/synth.css';
-@import './styles/apps/about-mac.css';
-@import './styles/apps/spider.css';
-@import './styles/apps/pinball.css';
-@import './styles/apps/welcome.css';
 @import './styles/phone.css';
 @import './styles/glass.css';

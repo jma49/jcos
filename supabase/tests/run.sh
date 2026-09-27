@@ -16,14 +16,29 @@ trap 'psql -q -d postgres -c "drop database if exists $DB" >/dev/null' EXIT
 # The API roles are cluster-wide; make them once.
 psql -q -d postgres -c "do \$\$ begin create role anon nologin; create role authenticated nologin; create role service_role nologin bypassrls; exception when duplicate_object then null; end \$\$" >/dev/null
 
-run() { psql -q -v ON_ERROR_STOP=1 -d "$DB" "$@" 2>&1 | grep -v -e 'NOTICE:.*skipping' -e 'wal_level' -e 'HINT:' || true; }
+# Runs psql quietly; an error fails the test (it used to be printed and let through).
+run() {
+  local out status=0
+  out=$(psql -q -v ON_ERROR_STOP=1 -d "$DB" "$@" 2>&1) || status=$?
+  printf '%s\n' "$out" | grep -v -e 'NOTICE:.*skipping' -e 'wal_level' -e 'HINT:' -e '^$' || true
+  return "$status"
+}
 
 run -c "$(grep -v '^create role' supabase/tests/stubs.sql)"
 run -1 -f supabase/schema.sql
-for f in supabase/migrations/20260926071227_chat_rooms.sql supabase/migrations/20260926080833_soapbox_images.sql supabase/migrations/20260926091033_moderation.sql supabase/migrations/20260926094533_password_reset.sql supabase/migrations/20260926095149_hardening.sql supabase/migrations/20260926100511_advisor.sql; do
+for f in supabase/migrations/20260926071227_chat_rooms.sql supabase/migrations/20260926080833_soapbox_images.sql supabase/migrations/20260926091033_moderation.sql supabase/migrations/20260926094533_password_reset.sql supabase/migrations/20260926095149_hardening.sql supabase/migrations/20260926100511_advisor.sql supabase/migrations/20260927030802_music_library.sql; do
   run -1 -f "$f"
 done
 out=$(psql -q -t -v ON_ERROR_STOP=1 -d "$DB" -f supabase/tests/rules.sql 2>&1) || { echo "$out"; exit 1; }
 echo "$out" | grep -o 'ok: .*'
 bash supabase/tests/race.sh "$DB"
+
+# The music migration reruns with the library full, and brings back
+# nothing removed since it seeded.
+psql -q -v ON_ERROR_STOP=1 -d "$DB" -c "delete from public.songs where id = 'OxtZF0WGXtE'; update public.music_settings set value = to_jsonb((select count(*) from public.songs)) where name = 'song_limit'" >/dev/null
+before=$(psql -tA -d "$DB" -c "select count(*) from public.songs")
+run -1 -f supabase/migrations/20260927030802_music_library.sql
+after=$(psql -tA -d "$DB" -c "select count(*) from public.songs")
+[ "$before" = "$after" ] || { echo "FAILED: rerunning the music migration changed the library ($before songs, then $after)"; exit 1; }
+echo "ok: the music migration reruns with the library full, and a removed song stays removed"
 echo "All database rules hold."

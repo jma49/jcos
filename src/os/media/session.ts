@@ -31,12 +31,12 @@ export function watchMediaSession() {
     } catch {}
   }
   const show = (s: MusicStore) => {
-    if (!s.owner) {
+    const song = s.owner ? SONGS[s.index] : undefined;
+    if (!song) {
       session.metadata = null;
       session.playbackState = 'none';
       return;
     }
-    const song = SONGS[s.index];
     const cover = coverOf(song);
     session.metadata = new MediaMetadata({
       title: song.title,

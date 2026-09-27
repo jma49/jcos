@@ -60,6 +60,18 @@ asks for the token (without echoing it) and your user ID, and does steps
 | `/delete` | hides the post you reply to, or the latest one |
 | editing a message or a caption | edits its post |
 | `/watch on` / `/watch off` | new Stickies notes and public chat messages sent to you, each with a 🙈 Hide button (on by default) |
+| `/add <YouTube link>` | looks the song up (YouTube, Apple Music for its title, album, cover and length, lrclib for lyrics) and shows it with ✅ Add and ✖︎ Cancel; `/add <link> Title - Artist` says what to search for |
+| `/songs [words]` | how many songs of the limit (200), and the latest or those matching |
+| `/remove <title or id>` | takes a song out of the library (not the last one: an empty library would send the site back to its snapshot) |
+| `/offset <title or id> <ms>` | how far its lyrics run ahead of the video (negative: behind) |
+| `/play <title or id>` | plays it for everyone on the desktop: they get a notification and can listen along from where it is |
+| `/stop` | stops it |
+
+The music commands (`music.ts`) need the music library migration
+(`20260927030802_music_library.sql`). A song is named by its YouTube id
+or words from its title; when several match, the bot lists them and asks
+for the id. Only the id is taken from a link: every address the bot
+fetches is one it builds, on YouTube, Apple or lrclib.
 
 Stickers, voice messages and videos are answered with a note that they
 can't go on the Soapbox. Photos are copied into the public `soapbox`
@@ -88,7 +100,10 @@ set up. `/watch off` stops them.
 
 `npm test` runs `bot.test.mjs`: the bot under Node with Telegram and
 Supabase faked, through text, photos, albums, files, failures, edits,
-/delete, /at, /watch, notices and their buttons.
+/delete, /at, /watch, notices and their buttons, and the music commands
+with YouTube, Apple Music and lrclib faked too. `music.test.mjs` covers
+reading links, guessing songs from video titles and picking Apple's
+match.
 
 Hidden posts stay in the table with `hidden = true`; flip it back in the
 Table editor to restore one.

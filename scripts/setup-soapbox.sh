@@ -45,6 +45,12 @@ curl -fsS "https://api.telegram.org/bot${TOKEN}/setMyCommands" -H 'content-type:
   {"command":"at","description":"Stamp posts with a city, e.g. /at Tokyo"},
   {"command":"delete","description":"Hide the post you reply to, or the latest"},
   {"command":"watch","description":"New notes and chat messages here: on or off"},
+  {"command":"add","description":"Add a song: /add <YouTube link>"},
+  {"command":"songs","description":"The music library"},
+  {"command":"remove","description":"Take a song out"},
+  {"command":"offset","description":"Lyrics timing: /offset <song> <ms>"},
+  {"command":"play","description":"Play a song for everyone on the desktop"},
+  {"command":"stop","description":"Stop it"},
   {"command":"help","description":"What I can do"}]}' >/dev/null
 echo "✓ Commands menu set"
 

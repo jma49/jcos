@@ -4,18 +4,20 @@
   "version": "1.0.0",
   "license": "AGPL-3.0-or-later",
   "engines": {
-    "node": ">=22.12.0"
+    "node": "24.x"
   },
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
+    "serve": "node scripts/serve.mjs",
     "astro": "astro",
     "check": "astro check",
     "lint": "eslint src",
     "preview:capture": "node scripts/capture-previews.mjs",
     "photos:update": "node scripts/update-photos.mjs",
+    "songs:snapshot": "node --env-file-if-exists=.env scripts/songs-snapshot.mjs",
     "test": "vitest run",
     "test:db": "bash supabase/tests/run.sh",
     "test:smoke": "node scripts/smoke.mjs",

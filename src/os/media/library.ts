@@ -1,43 +1,87 @@
-// The music library: songs and whole albums (src/data/songs.json, curated
-// by hand), each a YouTube video with cover art and a lyrics offset.
+// The music library: songs and whole albums, each song a YouTube video
+// with cover art and a lyrics offset. It lives in Supabase, managed from
+// the Telegram bot, and arrives through /api/songs (api/songs.ts) the
+// first time something needs it: the apps that play or list music say so
+// in their manifests (`data`), so it's here before they render. It stays
+// the same for the rest of the visit, so a song's place in SONGS is a
+// stable handle until the page is reloaded.
 
-import library from '../../data/songs.json' with { type: 'json' };
+import type { Album, Library, Song } from '../../lib/library';
+import { getSocial } from '../social/social';
 
-export interface Song {
-  /** The YouTube video id. */
-  id: string;
-  title: string;
-  artist: string;
-  /**
-   * Milliseconds the lyrics run ahead of the video: positive shows each line
-   * earlier. Music videos with an intro need a negative one. Visitors can
-   * nudge it further in Karaoke.
-   */
-  offset?: number;
-  /** An lrclib.net lyrics id, to pin the right lyrics when the search picks wrong ones. */
-  lyrics?: number;
-  /** The album it's from; a title in ALBUMS when the whole album is in the library. */
-  album?: string;
-  /** Square cover art. Album tracks share the album's. */
-  cover?: string;
-  /** Position on its album, for albums in ALBUMS. */
-  track?: number;
-  /** No words to sing: Karaoke shows the album instead of looking for lyrics. */
-  instrumental?: boolean;
+export type { Album, Song };
+
+/** Every album and song. Empty until loadLibrary() has finished. */
+export let ALBUMS: Album[] = [];
+export let SONGS: Song[] = [];
+
+let loading: Promise<void> | null = null;
+
+/**
+ * Loads the library, once. Without /api/songs (`astro dev`, or no
+ * network) it falls back to the snapshot in the repository, fetched only
+ * then. If both fail, that's forgotten, so the next call tries again.
+ */
+export function loadLibrary(): Promise<void> {
+  loading ??= (async () => {
+    const library = (await fromApi().catch(() => null)) ?? ((await import('../../data/songs.json')).default as Library);
+    ALBUMS = library.albums;
+    SONGS = library.songs;
+  })().catch((error) => {
+    loading = null;
+    throw error;
+  });
+  return loading;
 }
 
-/** A whole album in the library, shown with its cover and track list. */
-export interface Album {
-  title: string;
-  artist: string;
-  year: number;
-  cover: string;
-  /** A sentence or two about it. */
-  note?: string;
+async function fromApi(): Promise<Library> {
+  const res = await fetch('/api/songs', { signal: AbortSignal.timeout(8000) });
+  if (!res.ok) throw new Error(`/api/songs answered ${res.status}`);
+  const library = (await res.json()) as Partial<Library>;
+  if (!Array.isArray(library.songs) || !Array.isArray(library.albums) || !library.songs.length) {
+    throw new Error('/api/songs sent no library');
+  }
+  return library as Library;
 }
 
-export const ALBUMS: Album[] = library.albums;
-export const SONGS: Song[] = library.songs;
+export const libraryLoaded = () => SONGS.length > 0;
+
+const VIDEO_ID = /^[A-Za-z0-9_-]{11}$/;
+
+/**
+ * A song's place in the library, or -1 if there's no such song. A song
+ * added after this visit's library was read (the edge keeps /api/songs
+ * for minutes) is fetched on its own and appended, so every other song
+ * keeps its place: Jincheng can /play a song he has just added.
+ */
+export async function findSong(id: string): Promise<number> {
+  await loadLibrary();
+  const known = SONGS.findIndex((s) => s.id === id);
+  if (known >= 0 || !VIDEO_ID.test(id)) return known;
+  const social = await getSocial();
+  const song = await social?.song(id).catch(() => null);
+  if (!song) return -1;
+  // Asked twice at once (a play and an AirDrop offer), it's added once.
+  const meanwhile = SONGS.findIndex((s) => s.id === id);
+  if (meanwhile >= 0) return meanwhile;
+  SONGS = [...SONGS, song];
+  return SONGS.length - 1;
+}
+
+/**
+ * Something worked out from the library, the first time it's asked for.
+ * Asking before the library has loaded is a mistake, and throws.
+ */
+export function fromLibrary<T>(build: () => T): () => T {
+  let built: { value: T } | null = null;
+  return () => {
+    if (!built) {
+      if (!libraryLoaded()) throw new Error('The music library isn’t loaded yet.');
+      built = { value: build() };
+    }
+    return built.value;
+  };
+}
 
 /** A whole album in the library, by title. */
 export const albumNamed = (title: string | undefined) => ALBUMS.find((a) => a.title === title);

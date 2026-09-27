@@ -1,9 +1,9 @@
-# Accounts, Stickies, Chat and presence (Supabase)
+# Accounts, Stickies, Chat, presence and music (Supabase)
 
 The browser talks to Supabase directly with the public anon key; row-level
 security and triggers in `supabase/schema.sql` do the enforcing.
 
-- **Accounts** (`src/os/social/`, `apps/Account.tsx`): a username and a
+- **Accounts** (`src/os/social/`, `apps/account/`): a username and a
   password, with an optional recovery address. They're Supabase Auth users
   whose address is made from the username
   (`<username>@users.majincheng.com`), so Authentication › Providers ›
@@ -20,7 +20,20 @@ security and triggers in `supabase/schema.sql` do the enforcing.
   `approved` to false in the Table editor.
 - **Soapbox reactions**: members react as themselves and can change or take
   back a reaction; everyone else gets one per post, by salted IP hash.
-- **Chat** (`apps/Chat.tsx`, `social/chatState.ts`): public rooms listed
+- **The music library** (`public.songs`, `public.albums`; migration
+  `20260927030802_music_library.sql`): the iPod's and Karaoke's songs,
+  read by everyone and written only by the Telegram bot (service role).
+  At most `music_settings.song_limit` songs (200; change it in the Table
+  editor); a full library refuses new songs. The migration seeds today's
+  library once (`music_settings.seeded`), so a rerun changes nothing. Covers are links to
+  Apple's or YouTube's image hosts only (the `music_cover` domain).
+  `public.now_playing` is the one song Jincheng is playing for everyone:
+  the bot calls `music_play()` and `music_stop()`, visitors hear of it
+  through Realtime (`postgres_changes`, which only a real write can
+  trigger) and join at `now_playing_position()`, by the database's clock
+  (`media/together.ts`). The bot's music commands are in
+  `supabase/functions/soapbox-bot/music.ts`.
+- **Chat** (`apps/chat/`, `social/chatState.ts`): public rooms listed
   in `public.chat_rooms` (add one in the Table editor) and private
   conversations between two members (rooms named
   `dm:<account id>:<account id>`, smaller id first, readable only by
@@ -34,7 +47,12 @@ security and triggers in `supabase/schema.sql` do the enforcing.
   open chat room, whether AirDrop can reach them), their cursors, and
   signals: short-lived messages such as typing, nudges and AirDrop
   offers. Anyone can send anything there, so receivers check what
-  arrives (`cleanInfo()` for presence). Past `CROWD` (12) people, every
+  arrives (`cleanInfo()` for presence). Pointers are drawn only for a
+  visitor who has turned on "Show other people's pointers" (off by
+  default, `showOthersPointers`), who says so in their presence
+  (`watching`); a pointer is sent only while someone else watches
+  (`anyoneWatching()`), so a desktop where nobody does sends none, the
+  bulk of Realtime's messages otherwise. Past `CROWD` (12) people, every
   visitor stops sending and drawing pointers, since pointer traffic grows
   with the square of the crowd; they come back at `CALM` (10). The menu
   bar's list names the first 30.
