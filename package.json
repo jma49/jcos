@@ -11,6 +11,7 @@
     "start": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
+    "serve": "node scripts/serve.mjs",
     "astro": "astro",
     "check": "astro check",
     "lint": "eslint src",
