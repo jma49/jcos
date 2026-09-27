@@ -13,5 +13,6 @@ export default defineApp({
       'A four-function calculator with an LCD and Aqua keys. It chains operations, repeats the last one when you press = again, rounds away floating-point noise, and follows your keyboard.',
     added: '2026-09-26'
   },
+  styles: () => import('./calculator.css?inline'),
   load: () => import('./Calculator')
 });

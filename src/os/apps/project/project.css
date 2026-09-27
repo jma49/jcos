@@ -47,3 +47,23 @@
   font-family: var(--os-mono);
   font-size: 0.9em;
 }
+
+.os-project {
+  background: var(--os-content);
+}
+
+.os-prose a {
+  color: #1a5cc8;
+  text-decoration: underline;
+}
+
+/* The same blue, lighter, so links read on the dark page too. */
+:root[data-theme='dark'] .os-prose a {
+  color: #6aa2f5;
+}
+
+@media (max-width: 767px), (max-height: 500px) and (pointer: coarse) {
+  .os-project {
+    padding: 22px 20px 32px;
+  }
+}

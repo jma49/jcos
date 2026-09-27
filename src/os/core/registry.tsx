@@ -1,6 +1,7 @@
 import { lazy, type ComponentType, type LazyExoticComponent } from 'react';
 import { catalog } from '../catalog';
 import type { AppManifest } from '../kit/manifest';
+import { adoptStyles } from './appStyles';
 import { useWindows } from './store';
 import type { AppId, AppProps, OSProject, Rect } from './types';
 
@@ -8,7 +9,7 @@ import type { AppId, AppProps, OSProject, Rect } from './types';
 
 export type { AppProps };
 
-export interface AppDefinition extends Omit<AppManifest<AppId>, 'window' | 'load'> {
+export interface AppDefinition extends Omit<AppManifest<AppId>, 'window' | 'load' | 'styles'> {
   width: number;
   height: number;
   minWidth: number;
@@ -17,8 +18,18 @@ export interface AppDefinition extends Omit<AppManifest<AppId>, 'window' | 'load
   Component: LazyExoticComponent<ComponentType<AppProps>>;
 }
 
+/** Fetches an app's code and stylesheet together, and adopts the stylesheet before the app renders. */
+async function loadApp({ id, load, styles }: AppManifest<AppId>) {
+  const [app, css] = await Promise.all([load(), styles?.()]);
+  if (css) adoptStyles(id, css.default);
+  return app;
+}
+
 export const apps = Object.fromEntries(
-  catalog.map(({ window, load, ...app }): [AppId, AppDefinition] => [app.id, { ...app, ...window, Component: lazy(load) }])
+  catalog.map(({ window, load, styles, ...app }): [AppId, AppDefinition] => [
+    app.id,
+    { ...app, ...window, Component: lazy(() => loadApp({ ...app, window, load, styles })) }
+  ])
 ) as Record<AppId, AppDefinition>;
 
 const appIds = Object.keys(apps) as AppId[];

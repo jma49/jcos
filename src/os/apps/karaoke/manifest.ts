@@ -7,5 +7,6 @@ export default defineApp({
   Icon: KaraokeIcon,
   window: { width: 760, height: 500, minWidth: 460, minHeight: 320 },
   inApplications: true,
+  styles: () => import('./karaoke.css?inline'),
   load: () => import('./Karaoke')
 });

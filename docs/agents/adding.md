@@ -17,12 +17,19 @@ Store. In it:
   folder (the lint enforces it).
 - The component (the default export `load` fetches), and its rules or
   physics in a plain module with tests.
+- Its stylesheet, declared in the manifest as
+  `styles: () => import('./app.css?inline')`: it's fetched with the code
+  and adopted before the app renders (`core/appStyles.ts`), never in the
+  first load. Don't `import './app.css'` from the component: Astro would
+  hoist it into the page. Rules for the app's own classes, phone and
+  reduced-motion variants included, stay in this file; anything another
+  app or the OS uses goes in `src/os/styles/` (`components.css`,
+  `source-list.css`).
 
 Then add one line for it to `src/os/catalog.ts`. `AppId`, the Dock,
 Finder, Spotlight, the Terminal, `?open=`, the Applet Store and the
 smoke test all follow from the catalog; `catalog.test.ts` checks the
-folders and manifests agree. Styles go in `src/os/styles/apps/`
-(imported from `os.css`). Add a desktop shortcut in `Desktop.tsx` if it
+folders and manifests agree. Add a desktop shortcut in `Desktop.tsx` if it
 needs one.
 
 A built-in app may use the OS (`core/`, `social/`, `media/`…) but not

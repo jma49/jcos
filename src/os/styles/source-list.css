@@ -1,4 +1,5 @@
-/* ---------- Projects (Finder) ---------- */
+/* ---------- The Finder-style window: a sidebar of places beside a view
+   of items (Finder, Photos, Projects) ---------- */
 
 .os-finder {
   flex-direction: row;
@@ -113,4 +114,14 @@
 .os-finder-grid button[data-selected='true'] .os-finder-name {
   background: var(--os-select);
   color: #fff;
+}
+
+.os-sidebar .os-sidebar-heading + .os-sidebar-heading,
+.os-sidebar button + .os-sidebar-heading,
+.os-sidebar a + .os-sidebar-heading {
+  margin-top: 14px;
+}
+
+.os-finder-main {
+  position: relative;
 }

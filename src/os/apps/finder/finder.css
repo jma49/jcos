@@ -37,10 +37,6 @@
   text-decoration: underline;
 }
 
-.os-segmented button:disabled {
-  opacity: 0.4;
-}
-
 .os-files-grid {
   --icon: 64px;
   margin: 0;
@@ -229,10 +225,6 @@
 
 .os-root .os-finder-look {
   padding: 0 8px;
-}
-
-.os-finder-main {
-  position: relative;
 }
 
 /* List headers sort. (Not rows, so none of the row layout above.) */

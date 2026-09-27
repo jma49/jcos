@@ -9,5 +9,6 @@ export default defineApp({
   dock: 5,
   phoneDock: true,
   inApplications: true,
+  styles: () => import('./chat.css?inline'),
   load: () => import('./Chat')
 });

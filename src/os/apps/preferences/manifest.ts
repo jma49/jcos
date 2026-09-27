@@ -11,5 +11,6 @@ export default defineApp({
   menuOnly: true,
   // Preferences isn't listed as an app; its panes are found by name.
   shortcuts: PANES.map((p) => ({ id: p.id, name: p.name, Icon: p.Icon, props: { pane: p.id } })),
+  styles: () => import('./preferences.css?inline'),
   load: () => import('./Preferences')
 });

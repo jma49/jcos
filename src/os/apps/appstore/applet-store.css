@@ -135,12 +135,6 @@
   animation: os-spin 0.7s linear infinite;
 }
 
-@keyframes os-spin {
-  to {
-    rotate: 360deg;
-  }
-}
-
 .os-store-back {
   margin-bottom: 10px;
   color: var(--os-select);

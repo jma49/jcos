@@ -162,8 +162,10 @@ around it.
   assembled at build time in `index.astro` from `src/i18n/content.ts`, the
   projects collection and `src/lib/photos.ts` (Unsplash, fetched at build).
 - `src/os/os.css`: the Aqua theme, split by part of the desktop into
-  `src/os/styles/` (one file per app in `styles/apps/`) and imported in
-  cascade order. Icons, fonts and the wallpaper under
+  `src/os/styles/` and imported in cascade order: the shell, and what
+  several apps share (`components.css`, `source-list.css` for the
+  Finder-style sidebar). Each app's own stylesheet lives in its folder and
+  arrives with its code (see [adding.md](adding.md)), after all of these. Icons, fonts and the wallpaper under
   `public/os/` and `src/assets/os/` come from ryOS; see `NOTICE`.
 - Deep links: `/?open=<app|project-slug|dashboard|screensaver>` opens that
   window.

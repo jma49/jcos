@@ -54,7 +54,17 @@ export default [
     }
   },
   // A manifest is in the first load, so it holds data and a lazy import
-  // only. (Applets' manifests are held to the applet rule above.)
+  // only: no stylesheet, which arrives with the app's code. (Applets'
+  // manifests are held to the applet rule above for their imports.)
+  {
+    files: ['src/os/{apps,applets}/*/manifest.ts'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        { selector: 'ImportDeclaration[source.value=/\\.css$/]', message: 'A manifest doesn’t import styles; the app’s component does.' }
+      ]
+    }
+  },
   {
     files: ['src/os/apps/*/manifest.ts'],
     rules: {
