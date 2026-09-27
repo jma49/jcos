@@ -176,11 +176,11 @@ Realtime drops changes to a table whose key visitors can't read, and
 after it (09:35 UTC) lists the same four findings kept on purpose
 (section 5, item 1).
 
-**To do:** check listening along live (`main` is deployed, `8c9b6e5` or
-later): `/play` and see the notification arrive on an open desktop
-without a reload, "Listen along" open the iPod on Now Playing, and
-`/stop` take the notification away (only that: the visitor's music
-plays on, section 3).
+**Checked live by Jincheng (2026-09-27):** the whole music loop.
+`/add` and `/play` from Telegram; the notification arrives on an open
+desktop without a reload; "Listen along" opens the iPod on Now Playing
+at his place in the song; `/stop` takes the notification away and the
+visitor's music plays on. Nothing is waiting on the owner.
 
 Checked locally, in production builds (2026-09-27):
 - the clear desktop and the Welcome; Finder's selection on striped rows;
