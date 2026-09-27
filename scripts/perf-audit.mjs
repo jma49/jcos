@@ -97,7 +97,8 @@ async function load() {
     if (new URL(res.url()).origin !== new URL(URL_).origin) return;
     if (res.request().timing().startTime - start > FIRST_LOAD_MS) return;
     const body = await res.body().catch(() => null);
-    seen.push({ path: new URL(res.url()).pathname, type: res.request().resourceType(), bytes: body?.length ?? 0, gzip: body ? gzipSync(body).length : 0 });
+    const at = Math.round(res.request().timing().startTime - start);
+    seen.push({ path: new URL(res.url()).pathname, type: res.request().resourceType(), bytes: body?.length ?? 0, gzip: body ? gzipSync(body).length : 0, at });
   });
   await page.addInitScript(() => sessionStorage.setItem('os-booted', '1'));
   await settle(page);
@@ -106,7 +107,7 @@ async function load() {
   const sum = (type, key = 'bytes') => seen.filter((r) => r.type === type).reduce((n, r) => n + r[key], 0);
   // What the first load's JavaScript is, largest first, to see what a change added.
   for (const r of seen.filter((r) => r.type === 'script').sort((a, b) => b.gzip - a.gzip)) {
-    console.log(`     ${(r.gzip / 1024).toFixed(1).padStart(5)} KB  ${r.path.replace('/_astro/', '')}`);
+    console.log(`     ${(r.gzip / 1024).toFixed(1).padStart(5)} KB  ${r.path.replace('/_astro/', '').padEnd(34)} at ${(r.at / 1000).toFixed(2)} s`);
   }
   const counts = new Map();
   for (const r of seen) counts.set(r.path, (counts.get(r.path) ?? 0) + 1);
