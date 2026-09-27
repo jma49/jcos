@@ -379,12 +379,19 @@ export function supabaseSocial(url: string, key: string): Social {
       return row ? { songId: row.song_id, elapsedMs: Number(row.elapsed_ms), remainingMs: Number(row.remaining_ms) } : null;
     },
 
-    // Changes to now_playing, which only the bot writes: the payload isn't
-    // trusted, only taken as a cue to ask nowPlaying().
+    // Changes to now_playing, which only the bot writes. Realtime reads them
+    // from the database's log, so the row can be believed; reading it here
+    // saves every visitor asking the database at the same moment when a song
+    // starts. (Joining at the right second asks, see media/together.ts.)
     watchNowPlaying(onChange) {
       const channel = client
         .channel('now-playing')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'now_playing' }, () => onChange())
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'now_playing' }, ({ eventType, new: row }) => {
+          const r = row as { song_id?: unknown; ends_at?: unknown } | null;
+          const ends = typeof r?.ends_at === 'string' ? Date.parse(r.ends_at) : NaN;
+          if (eventType === 'DELETE' || typeof r?.song_id !== 'string' || !Number.isFinite(ends)) return onChange(null);
+          onChange({ songId: r.song_id, remainingMs: Math.max(0, ends - Date.now()) });
+        })
         .subscribe();
       return () => {
         client.removeChannel(channel);
