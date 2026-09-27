@@ -10,7 +10,7 @@ import {
   type ReactNode
 } from 'react';
 import { animate, m, useMotionValue } from 'motion/react';
-import { apps, readyApp } from '../core/registry';
+import { appComponent, apps } from '../core/registry';
 import { DOCK_CLEARANCE, MENU_BAR_HEIGHT, isPhone, useWindows } from '../core/store';
 import { frameOf } from './Expose';
 import { GENIE_REACH, genieMap, genieSupported } from './genie';
@@ -120,8 +120,9 @@ export const Window = memo(function Window({ win, focused, z, exposed }: Props) 
   const drawerSide =
     win.maximized || (roomRight < DRAWER_ROOM && win.x < DRAWER_ROOM) ? 'inside' : roomRight >= DRAWER_ROOM ? 'right' : 'left';
   const def = apps[win.app];
-  // Rendered directly if its code is already here (see readyApp), else lazily.
-  const [App] = useState(() => readyApp(win.app) ?? def.Component);
+  // Rendered directly if its code is already here, else lazily; chosen
+  // again for Try Again, after a failed download (appComponent).
+  const [App, setApp] = useState(() => appComponent(win.app));
   const reduced = useReduceMotion();
   const start = useRef(win);
   const isMobile = isPhone();
@@ -333,7 +334,7 @@ export const Window = memo(function Window({ win, focused, z, exposed }: Props) 
 
       <div className="os-body">
         <DrawerSlot.Provider value={drawerSlot}>
-          <AppBoundary name={def.name} onClose={() => close(win.id)}>
+          <AppBoundary name={def.name} onClose={() => close(win.id)} onRetry={() => setApp(() => appComponent(win.app))}>
             <Suspense fallback={<Loading />}>
               <App win={win} />
             </Suspense>
