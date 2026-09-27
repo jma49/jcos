@@ -1302,3 +1302,37 @@ begin
 end
 $$;
 
+-- ---------------------------------------------------------------------
+-- The library's limit, readable by visitors (the same as
+-- supabase/migrations/20260927062914_song_limit.sql, whose header explains it).
+
+create or replace function public.song_limit()
+returns int
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select coalesce((select (value #>> '{}')::int from public.music_settings where name = 'song_limit'), 200);
+$$;
+revoke execute on function public.song_limit() from public;
+grant execute on function public.song_limit() to anon, authenticated, service_role;
+
+create or replace function public.songs_within_limit()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  most int := public.song_limit();
+begin
+  perform pg_advisory_xact_lock(hashtextextended('songs', 0));
+  if (select count(*) from public.songs) >= most then
+    raise exception using errcode = 'P0429', message = format('The library is full (%s songs). Remove one first.', most);
+  end if;
+  return new;
+end;
+$$;
+revoke execute on function public.songs_within_limit() from public, anon, authenticated;
+

@@ -58,6 +58,26 @@ describe('from Supabase', () => {
   });
 });
 
+describe('the limit', () => {
+  test('comes with the library', async () => {
+    fakeSupabase((path) => (path.endsWith('/rpc/song_limit') ? Response.json(200) : Response.json(path.endsWith('/songs') ? [SONG] : [])));
+    const body = await (await GET()).json();
+    expect(body.limit).toBe(200);
+    expect(body.songs).toHaveLength(1);
+  });
+
+  test('missing (song_limit() not there yet) costs nothing but the number', async () => {
+    fakeSupabase((path) =>
+      path.endsWith('/rpc/song_limit') ? Response.json({ code: 'PGRST202' }, { status: 404 }) : Response.json(path.endsWith('/songs') ? [SONG] : [])
+    );
+    const res = await GET();
+    const body = await res.json();
+    expect(res.headers.get('x-library')).toBeNull();
+    expect(body.limit).toBeUndefined();
+    expect(body.songs).toHaveLength(1);
+  });
+});
+
 describe('the snapshot stands in', () => {
   const servesSnapshot = async () => {
     const res = await GET();

@@ -4,7 +4,7 @@ import type { AppProps } from '../../core/registry';
 import { launch } from '../../core/registry';
 import { useFocusedId } from '../../core/store';
 import { lineAt, useLyrics } from '../../media/lyrics';
-import { albumNamed, albumOf, coverOf, fromLibrary, lyricOffset, SONGS, tracksOf } from '../../media/library';
+import { albumNamed, albumOf, coverOf, fromLibrary, lyricOffset, SONG_LIMIT, SONGS, tracksOf } from '../../media/library';
 import { formatTime, useClock, useMusic, type Repeat } from '../../media/music';
 import { useKeys } from '../../core/useKeys';
 import { usePlayer } from '../../media/player';
@@ -161,7 +161,8 @@ export default function IPod({ win }: AppProps) {
           { label: 'Cover Flow', more: true, action: () => push({ kind: 'coverflow' }) },
           { label: 'Albums', more: true, action: menuOf('albums', 'Albums') },
           { label: 'Artists', more: true, action: menuOf('artists', 'Artists') },
-          { label: 'Songs', more: true, action: menuOf('songs', 'Songs') }
+          // How full the library is, as a setting's value: "34/200".
+          { label: 'Songs', value: `${SONGS.length}/${SONG_LIMIT}`, more: true, action: menuOf('songs', 'Songs') }
         ];
       case 'extras':
         return [
@@ -205,7 +206,7 @@ export default function IPod({ win }: AppProps) {
         ];
       case 'about':
         return [
-          { label: 'Songs', value: String(SONGS.length) },
+          { label: 'Songs', value: `${SONGS.length}/${SONG_LIMIT}` },
           { label: 'Albums', value: String(albums.length) },
           { label: 'Artists', value: String(artists.length) },
           { label: 'Videos', value: 'YouTube' },

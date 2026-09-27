@@ -162,6 +162,10 @@ is deleted; no pull request is open.
    too: without it, visitors can't order albums by `added_at`, the
    albums query is refused, and `/api/songs` serves the snapshot, so
    songs added from Telegram don't show. It needs no deployment.
+   **Then `20260927062914_song_limit.sql`**: `song_limit()` lets the iPod
+   show how full the library is ("34/200"); until it runs, the site shows
+   the default 200. The Security Advisor lists it as callable by
+   visitors, on purpose (it returns only the limit).
    Earlier note: run `supabase/migrations/20260927030802_music_library.sql`
    in the SQL editor, then Advisors › Security. Until then `/api/songs`
    serves the snapshot, so the site works either way.
