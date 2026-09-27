@@ -38,6 +38,14 @@ own chrome never shows.
   never show: players go in a `.os-player-frame` (300px taller than the
   space, so the title bar and logo are cut off) and the app covers the
   video with the artwork until `usePlayer`'s `live` is true.
+- `src/os/media/together.ts`: listening along. When Jincheng plays a song
+  from Telegram (`/play`), everyone on the desktop gets a notification
+  (and so does whoever arrives before it ends); "Listen along" opens the
+  iPod at his place in the song, from `now_playing_position()`, the
+  database's clock rather than the visitor's. It waits for that click,
+  since browsers don't play sound unasked, and then follows the sound
+  switch like all music. The notification goes when the song ends
+  (`remaining_ms`) or when he sends `/stop`.
 - `src/os/apps/ipod/`: the iPod's full-screen views (Cover Flow, Brick,
   Music Quiz), which take the wheel through a `ScreenInput`, and the
   `Marquee` used for long titles. The iPod's own settings (theme,

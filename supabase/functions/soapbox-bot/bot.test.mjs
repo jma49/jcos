@@ -69,6 +69,8 @@ globalThis.fetch = async (input, init = {}) => {
   }
   if (url.startsWith('https://itunes.apple.com/search?')) return json({ resultCount: world.itunes.length, results: world.itunes });
   if (url.startsWith('https://lrclib.net/api/search?')) return json(world.lrclib);
+  if (url.endsWith('/rest/v1/rpc/music_play')) return (world.playing = body.p_song), json({ song_id: body.p_song });
+  if (url.endsWith('/rest/v1/rpc/music_stop')) return (world.playing = null), new Response(null, { status: 204 });
   const music = url.match(/db\.example\/rest\/v1\/(songs|music_settings)(\?.*)?$/);
   if (music) {
     const [, table, query = ''] = music;
@@ -362,4 +364,18 @@ test('someone else’s /add is ignored', async () => {
   await call({ callback_query: { id: 'cb', from: { id: 7 }, data: `song:add:${NINGXIA}` } });
   assert.equal(world.fetched.length, 0);
   assert.equal(world.songs.length, 0);
+});
+
+test('/play plays a song for everyone, learning its length first; /stop stops it', async () => {
+  world.songs.push({ id: NINGXIA, title: '寧夏', artist: '梁靜茹', duration_ms: null });
+  world.lrclib = [{ duration: 252.4, syncedLyrics: '[00:12.00] …' }];
+  await send({ message_id: 216, text: '/play 寧夏' });
+  assert.equal(world.playing, NINGXIA);
+  assert.equal(world.songs[0].duration_ms, 252400);
+  assert.match(world.replies.at(-1), /Playing 寧夏 — 梁靜茹 for everyone on the desktop \(4:12\)/);
+  await send({ message_id: 217, text: '/stop' });
+  assert.equal(world.playing, null);
+  assert.match(world.replies.at(-1), /Stopped/);
+  await send({ message_id: 218, text: '/play nothing like it' });
+  assert.match(world.replies.at(-1), /No song matches/);
 });

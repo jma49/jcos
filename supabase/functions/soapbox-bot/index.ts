@@ -17,6 +17,8 @@
 //                     here with a Hide button (on by default)
 //   /add <YouTube link>, /songs, /remove <song>, /offset <song> <ms>
 //                     manage the iPod's music library (music.ts)
+//   /play <song>, /stop
+//                     play a song for whoever is on the desktop
 //   /help             this list
 //
 // Editing a message (or a photo's caption) in Telegram edits its post.
@@ -158,6 +160,7 @@ const HELP = [
   '/songs [words]: how many, and the latest or those matching',
   '/remove <title or id>: take a song out',
   '/offset <title or id> <ms>: how far its lyrics run ahead',
+  '/play <title or id>: play it for everyone on the desktop to listen along; /stop to stop',
   '',
   'Edit a message to edit its post.'
 ].join('\n');

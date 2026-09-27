@@ -13,6 +13,9 @@
 //   /songs [words]      how many songs, and the latest (or those matching)
 //   /remove <song>      takes a song out of the library
 //   /offset <song> <ms> how far its lyrics run ahead of the video
+//   /play <song>        plays it for whoever is on the desktop, who can
+//                       listen along from where it is (src/os/media/together.ts)
+//   /stop               stops it
 //
 // A song is named by its video id or by words from its title. Only the
 // video id is taken from a link: every address this fetches is built
@@ -151,6 +154,21 @@ export async function hasSyncedLyrics(draft: Pick<Draft, 'title' | 'artist'>): P
   }
 }
 
+/** A song's length from lrclib, for songs added before lengths were kept; null if it doesn't know. */
+export async function lengthFromLyrics(song: { title: string; artist: string }): Promise<number | null> {
+  try {
+    const res = await fetch(`https://lrclib.net/api/search?${new URLSearchParams({ track_name: song.title, artist_name: song.artist })}`, {
+      headers: { 'user-agent': 'JM/OS soapbox-bot (https://www.majincheng.com)' },
+      signal: AbortSignal.timeout(TIMEOUT)
+    });
+    if (!res.ok) return null;
+    const seconds = ((await res.json()) as { duration?: number }[]).find((h) => typeof h.duration === 'number')?.duration;
+    return seconds && seconds >= 1 && seconds <= 3600 ? Math.round(seconds * 1000) : null;
+  } catch {
+    return null;
+  }
+}
+
 const minutes = (ms: number) => `${Math.floor(ms / 60000)}:${String(Math.round((ms % 60000) / 1000)).padStart(2, '0')}`;
 
 export function describe(d: Draft) {
@@ -181,13 +199,16 @@ export function musicCommands({ db, telegram }: Deps) {
   const count = async () => ((await db('songs?select=id')) as unknown[]).length;
   const tally = async () => `${await count()}/${await limit()} songs`;
 
+  type Found = { id: string; title: string; artist: string; duration_ms: number | null };
+
   /** Songs named by a video id or words from their titles. */
-  const find = async (words: string): Promise<{ id: string; title: string; artist: string }[]> => {
+  const find = async (words: string): Promise<Found[]> => {
+    const columns = 'id,title,artist,duration_ms';
     const id = videoIdOf(words);
-    if (id) return db(`songs?id=eq.${id}&select=id,title,artist`);
+    if (id) return db(`songs?id=eq.${id}&select=${columns}`);
     const q = searchable(words);
     if (!q) return [];
-    return db(`songs?title=ilike.${encodeURIComponent(`*${q}*`)}&select=id,title,artist&order=added_at.desc&limit=10`);
+    return db(`songs?title=ilike.${encodeURIComponent(`*${q}*`)}&select=${columns}&order=added_at.desc&limit=10`);
   };
 
   /** One song, or a reply saying why not. */
@@ -254,13 +275,34 @@ export function musicCommands({ db, telegram }: Deps) {
     return say(chat, `⏱ ${song.title}: lyrics ${ms === 0 ? 'on the beat' : `${Math.abs(ms)} ms ${ms > 0 ? 'ahead' : 'behind'}`}.`);
   }
 
+  async function play(chat: number, words: string) {
+    if (!words) return say(chat, 'Which song? /play <title or id>');
+    const song = await one(chat, words);
+    if (!song) return;
+    // A known length lets the play end with the song (ten minutes otherwise).
+    let length = song.duration_ms;
+    if (!length && (length = await lengthFromLyrics(song))) {
+      await db(`songs?id=eq.${song.id}`, { method: 'PATCH', headers: { prefer: 'return=minimal' }, body: JSON.stringify({ duration_ms: length }) });
+    }
+    await db('rpc/music_play', { method: 'POST', body: JSON.stringify({ p_song: song.id }) });
+    return say(
+      chat,
+      `▶︎ Playing ${song.title} — ${song.artist} for everyone on the desktop${length ? ` (${minutes(length)})` : ' (for ten minutes: its length isn’t known)'}. They can listen along. /stop to stop.`
+    );
+  }
+
+  async function stop(chat: number) {
+    await db('rpc/music_stop', { method: 'POST', headers: { prefer: 'return=minimal' }, body: '{}' });
+    return say(chat, '⏹ Stopped.');
+  }
+
   return {
-    /** A /add, /songs, /remove or /offset; false for anything else. */
+    /** A /add, /songs, /remove, /offset, /play or /stop; false for anything else. */
     async handle(chat: number, text: string): Promise<boolean> {
-      const command = text.match(/^\/(add|songs|remove|offset)(?:@\w+)?(?:\s+([\s\S]*))?$/i);
+      const command = text.match(/^\/(add|songs|remove|offset|play|stop)(?:@\w+)?(?:\s+([\s\S]*))?$/i);
       if (!command) return false;
       const [, name, rest = ''] = command;
-      const run = { add, songs, remove, offset }[name.toLowerCase() as 'add' | 'songs' | 'remove' | 'offset'];
+      const run = { add, songs, remove, offset, play, stop }[name.toLowerCase() as 'add' | 'songs' | 'remove' | 'offset' | 'play' | 'stop'];
       try {
         await run(chat, rest.trim());
       } catch (error) {

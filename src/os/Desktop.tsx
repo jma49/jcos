@@ -16,6 +16,7 @@ import { Sky, useSky } from './ambient/Sky';
 import { Presence } from './social/Presence';
 import { startAccount } from './social/account';
 import { startChatWatch } from './social/chatState';
+import { startListeningAlong } from './media/together';
 import { startAirDrop } from './social/airdrop';
 import { Notices } from './shell/Notices';
 import { useDesktopPicture } from './look/useDesktopPicture';
@@ -70,6 +71,8 @@ function Shell({ data }: { data: OSData }) {
   useEffect(startAccount, []);
   // Unread counts, and alerts for private messages and @mentions.
   useEffect(startChatWatch, []);
+  // Songs Jincheng plays for everyone from Telegram, to listen along to.
+  useEffect(startListeningAlong, []);
   useEffect(() => startAirDrop(data), [data]);
   // The page's plain-text copy (index.astro) is for screen readers, which
   // still read it; with the desktop running, its links would only be

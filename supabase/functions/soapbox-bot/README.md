@@ -64,6 +64,8 @@ asks for the token (without echoing it) and your user ID, and does steps
 | `/songs [words]` | how many songs of the limit (200), and the latest or those matching |
 | `/remove <title or id>` | takes a song out of the library |
 | `/offset <title or id> <ms>` | how far its lyrics run ahead of the video (negative: behind) |
+| `/play <title or id>` | plays it for everyone on the desktop: they get a notification and can listen along from where it is |
+| `/stop` | stops it |
 
 The music commands (`music.ts`) need the music library migration
 (`20260927030802_music_library.sql`). A song is named by its YouTube id

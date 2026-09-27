@@ -29,8 +29,9 @@ security and triggers in `supabase/schema.sql` do the enforcing.
   `public.now_playing` is the one song Jincheng is playing for everyone:
   the bot calls `music_play()` and `music_stop()`, visitors hear of it
   through Realtime (`postgres_changes`, which only a real write can
-  trigger) and join at `now_playing_position()`, by the database's clock.
-  (Moving the site and the bot onto it is still to come; HANDOFF.md.)
+  trigger) and join at `now_playing_position()`, by the database's clock
+  (`media/together.ts`). The bot's music commands are in
+  `supabase/functions/soapbox-bot/music.ts`.
 - **Chat** (`apps/chat/`, `social/chatState.ts`): public rooms listed
   in `public.chat_rooms` (add one in the Table editor) and private
   conversations between two members (rooms named

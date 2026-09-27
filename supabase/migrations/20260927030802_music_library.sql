@@ -158,16 +158,20 @@ $$;
 revoke execute on function public.music_stop() from public, anon, authenticated;
 grant execute on function public.music_stop() to service_role;
 
--- What's playing and how far in, by the database's clock, for joining.
--- It reads only what its caller may read.
+-- What's playing, how far in and how long it has left, by the database's
+-- clock, for joining. It reads only what its caller may read. (Dropped
+-- first: a function's result columns can't change in place.)
+drop function if exists public.now_playing_position();
 create or replace function public.now_playing_position()
-returns table (song_id text, elapsed_ms bigint, ends_at timestamptz)
+returns table (song_id text, elapsed_ms bigint, remaining_ms bigint)
 language sql
 stable
 security invoker
 set search_path = public
 as $$
-  select song_id, (extract(epoch from now() - started_at) * 1000)::bigint, ends_at
+  select song_id,
+    (extract(epoch from now() - started_at) * 1000)::bigint,
+    (extract(epoch from ends_at - now()) * 1000)::bigint
   from public.now_playing
   where ends_at > now();
 $$;

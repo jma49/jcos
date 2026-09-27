@@ -209,7 +209,7 @@ select pg_temp.check((select ends_at - started_at from public.now_playing) = int
 select pg_temp.check(pg_temp.refused($$select public.music_play('nosuchsongx')$$), 'only songs in the library play');
 
 select pg_temp.act_as('anon');
-select pg_temp.check((select song_id from public.now_playing_position()) = 'OxtZF0WGXtE' and (select elapsed_ms from public.now_playing_position()) >= 0, 'visitors see what''s playing and how far in');
+select pg_temp.check((select song_id from public.now_playing_position()) = 'OxtZF0WGXtE' and (select elapsed_ms from public.now_playing_position()) >= 0 and (select remaining_ms from public.now_playing_position()) between 1 and 600000, 'visitors see what''s playing, how far in and how long it has left');
 reset role;
 update public.now_playing set started_at = now() - interval '2 hours', ends_at = now() - interval '1 hour';
 select pg_temp.act_as('anon');
