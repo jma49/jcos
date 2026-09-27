@@ -57,6 +57,10 @@ issues.
   subscriptions select the narrowest slice.
 - Anything remembered in the browser goes through
   `src/os/core/storage.ts`.
+- Design for many visitors at once and one visitor in several tabs:
+  limits and claims hold under races, tabs don't overwrite each other,
+  fan-out stays small, and no one's actions reach another's screen
+  uninvited (docs/agents/self-audit.md, Concurrency).
 - Don't reformat whole files (there's no Prettier config); match the
   surrounding code.
 
