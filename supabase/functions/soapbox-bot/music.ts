@@ -232,12 +232,19 @@ export function musicCommands({ db, telegram }: Deps) {
     return db(`songs?title=ilike.${encodeURIComponent(`*${q}*`)}&select=${columns}&order=added_at.desc&limit=10`);
   };
 
-  /** One song, or a reply saying why not. */
-  const one = async (chat: number, words: string) => {
+  /**
+   * One song, or a reply saying why not. When several match, each gets a
+   * button naming it; pressing one does `then` to it (with `arg`, such as
+   * an offset; see press), so no id is ever shown or typed.
+   */
+  const one = async (chat: number, words: string, then: 'remove' | 'play' | 'offset', arg?: number) => {
     const songs = await find(words);
     if (songs.length === 1) return songs[0];
     if (!songs.length) await say(chat, `No song matches “${words}”.`);
-    else await say(chat, `Which one? Name it by its id:\n${songs.map((s) => `${s.id}  ${s.title} — ${s.artist}`).join('\n')}`);
+    else
+      await say(chat, 'Which one?', {
+        reply_markup: { inline_keyboard: songs.map((s) => [{ text: `${s.title} — ${s.artist}`.slice(0, 64), callback_data: `song:${then}:${s.id}${arg === undefined ? '' : `:${arg}`}` }]) }
+      });
     return null;
   };
 
@@ -280,13 +287,16 @@ export function musicCommands({ db, telegram }: Deps) {
       ? await db(`songs?title=ilike.${encodeURIComponent(`*${q}*`)}&select=id,title,artist&order=added_at.desc&limit=20`)
       : await db('songs?select=id,title,artist&order=added_at.desc&limit=15');
     const head = q ? `${rows.length ? '' : 'None match. '}${total}/${most} songs.` : `${total}/${most} songs. The latest:`;
-    return say(chat, [head, ...rows.map((s) => `${s.id}  ${s.title} — ${s.artist}`)].join('\n'));
+    return say(chat, [head, ...rows.map((s) => `• ${s.title} — ${s.artist}`)].join('\n'));
   }
 
   async function remove(chat: number, words: string) {
-    if (!words) return say(chat, 'Which song? /remove <title or id>');
-    const song = await one(chat, words);
-    if (!song) return;
+    if (!words) return say(chat, 'Which song? /remove <title>');
+    const song = await one(chat, words, 'remove');
+    if (song) await removeSong(chat, song);
+  }
+
+  async function removeSong(chat: number, song: Found) {
     // An empty library would send the site back to its snapshot, bringing
     // removed songs back; the last one stays.
     if ((await count()) <= 1) return say(chat, 'That’s the last song; the library can’t be empty. /add another first.');
@@ -296,19 +306,25 @@ export function musicCommands({ db, telegram }: Deps) {
 
   async function offset(chat: number, rest: string) {
     const parts = rest.match(/^(.+?)\s+([+-]?\d{1,5})\s*(ms)?$/i);
-    if (!parts) return say(chat, 'How far the lyrics run ahead, in ms: /offset <title or id> 850 (negative for later).');
+    if (!parts) return say(chat, 'How far the lyrics run ahead, in ms: /offset <title> 850 (negative for later).');
     const ms = Number(parts[2]);
     if (Math.abs(ms) > 30000) return say(chat, 'Keep it within 30 seconds (30000 ms).');
-    const song = await one(chat, parts[1]);
-    if (!song) return;
+    const song = await one(chat, parts[1], 'offset', ms);
+    if (song) await setOffset(chat, song, ms);
+  }
+
+  async function setOffset(chat: number, song: Found, ms: number) {
     await db(`songs?id=eq.${song.id}`, { method: 'PATCH', headers: { prefer: 'return=minimal' }, body: JSON.stringify({ lyrics_offset: ms }) });
     return say(chat, `⏱ ${song.title}: lyrics ${ms === 0 ? 'on the beat' : `${Math.abs(ms)} ms ${ms > 0 ? 'ahead' : 'behind'}`}.`);
   }
 
   async function play(chat: number, words: string) {
-    if (!words) return say(chat, 'Which song? /play <title or id>');
-    const song = await one(chat, words);
-    if (!song) return;
+    if (!words) return say(chat, 'Which song? /play <title>');
+    const song = await one(chat, words, 'play');
+    if (song) await playSong(chat, song);
+  }
+
+  async function playSong(chat: number, song: Found) {
     // A known length lets the play end with the song (ten minutes otherwise).
     let length = song.duration_ms;
     if (!length && (length = await lengthFromLyrics(song))) {
@@ -343,10 +359,27 @@ export function musicCommands({ db, telegram }: Deps) {
       return true;
     },
 
-    /** Add or Cancel, pressed under an /add; false for other buttons. */
+    /** Add or Cancel under an /add, or a song chosen under "Which one?"; false for other buttons. */
     async press(cb: { id: string; data?: string; message?: { chat: { id: number }; message_id: number; text?: string } }): Promise<boolean> {
-      const [kind, action, id] = (cb.data ?? '').split(':');
+      const [kind, action, id, arg] = (cb.data ?? '').split(':');
       if (kind !== 'song') return false;
+      if (['remove', 'play', 'offset'].includes(action) && VIDEO_ID.test(id ?? '') && cb.message) {
+        const chat = cb.message.chat.id;
+        await telegram('answerCallbackQuery', { callback_query_id: cb.id });
+        // The choice is made: the buttons go, so it isn't made twice.
+        await telegram('editMessageReplyMarkup', { chat_id: chat, message_id: cb.message.message_id, reply_markup: { inline_keyboard: [] } });
+        try {
+          const [song]: Found[] = await db(`songs?id=eq.${id}&select=id,title,artist,duration_ms`);
+          if (!song) return (await say(chat, 'That song isn’t in the library any more.'), true);
+          if (action === 'remove') await removeSong(chat, song);
+          else if (action === 'play') await playSong(chat, song);
+          else if (Number.isInteger(Number(arg)) && Math.abs(Number(arg)) <= 30000) await setOffset(chat, song, Number(arg));
+        } catch (error) {
+          const reason = error instanceof Error ? error.message.slice(0, 300) : String(error);
+          await say(chat, `Something went wrong; the library is as it was.\n\n${reason}`).catch(() => {});
+        }
+        return true;
+      }
       const done = (text: string, note: string) =>
         Promise.all([
           telegram('answerCallbackQuery', { callback_query_id: cb.id, text: note }),

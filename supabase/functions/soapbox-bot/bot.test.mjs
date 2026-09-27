@@ -44,6 +44,7 @@ globalThis.fetch = async (input, init = {}) => {
     if (call === 'setWebhook') world.webhook = body;
     if (call === 'answerCallbackQuery') world.answered.push(body);
     if (call === 'editMessageText') world.edits.push(body);
+    if (call === 'editMessageReplyMarkup') (world.cleared ??= []).push(body.message_id);
     return json({ ok: true, result: {} });
   }
   if (url.includes('api.telegram.org/file/botTOKEN/')) return new Response(url.includes('png') ? PNG : JPEG);
@@ -436,4 +437,37 @@ test('drafts nobody answered within a day are cleared by the next /add', async (
   assert.ok(!('draft:OLDOLDOLD00' in world.music));
   assert.ok('draft:NEWNEWNEW00' in world.music);
   assert.ok(`draft:${NINGXIA}` in world.music);
+});
+
+test('/songs lists titles and artists, no ids', async () => {
+  world.songs.push({ id: NINGXIA, title: '寧夏', artist: '梁靜茹' }, { id: 'EEEEEEEEEEE', title: '夏天', artist: 'C' });
+  await send({ message_id: 224, text: '/songs' });
+  assert.match(world.replies.at(-1), /• 寧夏 — 梁靜茹/);
+  assert.doesNotMatch(world.replies.at(-1), new RegExp(`${NINGXIA}|EEEEEEEEEEE`));
+});
+
+test('when several songs match, each is a button, and pressing one does the command', async () => {
+  world.songs.push({ id: NINGXIA, title: '寧夏', artist: '梁靜茹' }, { id: 'EEEEEEEEEEE', title: '夏天', artist: 'C' });
+  await send({ message_id: 225, text: '/offset 夏 -850' });
+  const ask = world.sent.at(-1);
+  assert.equal(ask.text, 'Which one?', 'no ids in the question');
+  assert.deepEqual(
+    ask.reply_markup.inline_keyboard.map(([b]) => [b.text, b.callback_data]),
+    [
+      ['寧夏 — 梁靜茹', `song:offset:${NINGXIA}:-850`],
+      ['夏天 — C', 'song:offset:EEEEEEEEEEE:-850']
+    ]
+  );
+  await call({ callback_query: { id: 'cb', from: { id: OWNER }, data: `song:offset:${NINGXIA}:-850`, message: { chat: { id: OWNER }, message_id: 901, text: 'Which one?' } } });
+  assert.equal(world.songs[0].lyrics_offset, -850);
+  assert.equal(world.songs[1].lyrics_offset, undefined);
+  assert.deepEqual(world.cleared, [901], 'the buttons go once one is pressed');
+  assert.match(world.replies.at(-1), /寧夏: lyrics 850 ms behind/);
+
+  await send({ message_id: 226, text: '/remove 夏' });
+  await call({ callback_query: { id: 'cb', from: { id: OWNER }, data: 'song:remove:EEEEEEEEEEE', message: { chat: { id: OWNER }, message_id: 902, text: 'Which one?' } } });
+  assert.deepEqual(world.songs.map((s) => s.id), [NINGXIA]);
+  // Pressed again from another copy of the question: it's gone already.
+  await call({ callback_query: { id: 'cb', from: { id: OWNER }, data: 'song:remove:EEEEEEEEEEE', message: { chat: { id: OWNER }, message_id: 903, text: 'Which one?' } } });
+  assert.match(world.replies.at(-1), /isn’t in the library any more/);
 });
