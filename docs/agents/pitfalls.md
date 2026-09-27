@@ -214,6 +214,18 @@ again.
 
 ## Git and pull requests
 
+- Pushing a branch for the first time builds a Vercel preview even when
+  the change looks small: with no earlier deployment of the branch,
+  `vercel-ignore.sh` compares with `main`. Pushing a stack of twelve
+  branches spent twelve of the day's deployments at once, and the
+  production deployment after it was rate-limited. Before pushing
+  several branches, count what they'll build; to get CI on a stack
+  without spending deployments, push only its top branch.
+- A guess made to get a check green went wrong twice in one evening:
+  a perf failure was put down to the pointer resting on the menu bar,
+  and the change didn't fix it. Make the cause observable first (the
+  perf listing now prints when each file was asked for).
+
 - Check `git status` and `git diff --cached` before committing. A staged
   rename from other work once rode along in an unrelated fix.
 - After scripting an edit to a doc, read the paragraph back. A

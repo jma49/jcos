@@ -57,6 +57,13 @@ issues.
   subscriptions select the narrowest slice.
 - Anything remembered in the browser goes through
   `src/os/core/storage.ts`.
+- Before deciding, check that it's the best practice, and that fixing
+  the problem in front of you doesn't bring in more. Find the cause
+  before changing anything: when it isn't known, first make it
+  observable (a log, a measurement, a test that fails), and fix what the
+  evidence shows, not a guess. A fix that silences a check (a raised
+  budget, a skipped test, an ignored error) needs a reason that holds
+  beyond today.
 - Design for many visitors at once and one visitor in several tabs:
   limits and claims hold under races, tabs don't overwrite each other,
   fan-out stays small, and no one's actions reach another's screen

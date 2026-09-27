@@ -138,38 +138,42 @@ ryOS (AGPL-3.0).
 
 ## 4. To check after the next deploy
 
-**Also unpushed, stacked on that branch** (2026-09-26), each meant as its
-own pull request, merged in this order after it:
-1. `refactor/app-kit`: applets behind `src/os/kit`, the game loop that
-   stops behind other windows (54 → 5 ms idle with Pinball and Synth in
-   the background), Minesweeper's rules tested;
-2. `refactor/app-manifests`: a manifest per app, the catalog, the lint
-   boundaries;
-3. `perf/app-styles`: each app's styles load with it (first-load CSS
-   26.7 → 11.3 KB gzipped; every app pixel-identical in light, dark and
-   phone layouts);
-4. `feat/applet-install`: applets fetched on Get, not before; an
-   installed app opens in 80 ms instead of 820.
-5. `feat/music-db`, `feat/music-api`, `feat/music-bot`,
-   `feat/music-together`: the music library on Supabase (section 5,
-   item 0);
-6. `feat/pointers-opt-in`: other people's pointers only for those who
-   ask.
-7. `fix/concurrency`: tabs sharing storage, the bot's atomic Add, and
-   no database stampede when a song starts.
-Rebase each onto `main` once the one below merges (pitfalls: never stack
-on merged history).
+**Where things stand (2026-09-26, evening).** Production has run #85;
+the daily deployment cap held back #86–#95, and everything since is in
+twelve open pull requests, stacked, each targeting the branch below it:
+#107 `chore/node-24-and-ci-cache` (keyboard menus, no-JS page, Node 24,
+CI cache) → #108 `refactor/app-kit` → #109 `refactor/app-manifests` →
+#110 `perf/app-styles` → #111 `feat/applet-install` → #112
+`feat/music-db` → #113 `feat/music-api` → #114 `feat/music-bot` →
+#115 `feat/music-together` → #116 `feat/pointers-opt-in` → #117
+`fix/concurrency` → #118 `fix/exploratory-bugs` (issues #96–#106).
+Pushing them spent the day's deployments on previews (pitfalls), so
+production can't deploy until the cap resets.
 
-Production has run #85 since 2026-09-26: the daily deployment cap held
-back #86–#95. Since then, work has been committed locally and not
-pushed, so as not to spend deployments: the keyboard menus, the
-no-JavaScript page, the text copy out of the tab order, the Applet
-Store banner, dark links, reload after an update, `npm run serve`,
-Node 24, and caching Playwright's shell in CI (on the branch
-`chore/node-24-and-ci-cache`, which holds all of it). After the reset,
-push it as one pull request and merge once CI passes: that deployment
-carries #86 onwards. A rate-limited deployment isn't retried, so merge
-or redeploy `main`'s head from the Vercel dashboard.
+**To do, in order:**
+1. **CI on #118.** Its perf check counted the Dashboard's 4.2 KB in the
+   first load on some runs (161 KB against 160), which a local run
+   doesn't: there the request starts at 8.15 s, after the seven
+   measured seconds. The perf listing now prints when each file was
+   asked for; read the next CI run's listing, fix the measurement from
+   what it shows, and don't raise the budget to get past it.
+2. **Merge once, deploy once.** When #118 is green, retarget it to
+   `main` and merge it (a merge commit): one production deployment
+   carries the whole stack. Close #107–#117 as merged through #118, and
+   delete every branch but `main`, including the old
+   `claude/task-knphtp` (merged as #72). Issues #96–#106 close with #118.
+3. **Deploy after the reset.** A rate-limited deployment isn't retried:
+   redeploy `main`'s head from the Vercel dashboard once the cap resets,
+   and check About This Mac shows its hash.
+4. **Database.** Run `supabase/migrations/20260927030802_music_library.sql`
+   in the SQL editor, then Advisors › Security. Until then `/api/songs`
+   serves the snapshot, so the site works either way.
+5. **Bot.** Deploy `soapbox-bot` from an up-to-date `main`
+   (`supabase functions deploy soapbox-bot --no-verify-jwt`) and rerun
+   the command menu in `scripts/setup-soapbox.sh`.
+6. **The whole music loop, live:** `/add` a song and see it in the iPod
+   within five minutes; `/play` it and see the notification on another
+   device, listen along at the same place; `/stop` and see it go.
 
 Checked locally, in production builds (2026-09-27):
 - the clear desktop and the Welcome; Finder's selection on striped rows;
