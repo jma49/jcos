@@ -207,12 +207,10 @@ installs only Playwright's headless shell, found in the cache (the
 install step takes 12 s). Branches don't deploy (#125 got no Vercel
 check).
 
-Only a deployment can still show:
-1. that the ignored build step skips a docs-only merge to `main` and
-   builds one touching `src/` (not seen yet: #129's merge, docs only,
-   was rate-limited again at 07:15 UTC, minutes after `94806fc`
-   deployed, so the cap was still near; production is unaffected);
-2. that Vercel builds on Node 24 (the build log's first lines).
+The ignored build step works (2026-09-27): #143's merge, only CI and
+docs, was "Canceled by Ignored Build Step", and merges touching `src/`
+build (#140). Only a deployment's build log can still show that Vercel
+builds on Node 24 (its first lines).
 
 Checked by Jincheng on `npm run serve` (2026-09-27): printing the
 résumé from Chrome's and Safari's print dialogs, the interface sounds,
@@ -253,16 +251,17 @@ first load, lyrics that line up, then visitors asking for songs.
    background tabs, so a song started in a hidden tab waits until the tab
    is shown. `/api/lyrics` only runs on Vercel; under `astro dev` those
    songs show the listening view.
-4. **Tests and CI.** Every pull request gets the type check, the hooks
+4. **Tests and CI.** Every pull request gets `npm audit --omit=dev
+   --audit-level=high` (#143), the type check, the hooks
    lint, the unit tests (Vitest: game rules, the window manager and
    window restore, lyrics, the Vercel Functions, the Soapbox bot and the
    account-recovery function), the build, a smoke test that opens every
    app in a browser, the download budgets of `npm run perf`, and
    `npm run test:db` (about 50 database rules, plus races against the
    per-member limits, on Postgres with stand-ins for Supabase's auth,
-   storage and pg_net). **Possible next work:** the Chinese site and the
-   AI assistant later; an ocra review-replay app once ocra's redesign is
-   done.
+   storage and pg_net). The workflows pin every action to a commit SHA
+   and default to read-only tokens (#143); Dependabot updates both npm
+   and the actions weekly. What's next is in ROADMAP.md.
 5. **Still missing compared with ryOS:** in Chat, @ryo (AI replies), voice
    messages, IRC rooms and admins making rooms from the app; the first is
    on hold with the AI assistant, the rest were left out. Signals
