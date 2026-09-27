@@ -152,22 +152,16 @@ purpose: `song_limit()` callable by `anon` and `authenticated` (it
 returns only the limit), `my_reactions()` by `authenticated`, and leaked
 password protection (Pro plan). Every branch but `main` is deleted.
 
-**Production still runs `35a7e26`** (#122, deployed 2026-09-27 06:17
-UTC). GitHub's deployment records (`gh api repos/jma49/jmos/deployments`,
-and the Vercel status on each commit) show every `main` merge since,
-`a997868`, `a699b0b` and `20dbe28`, as "Deployment rate limited — retry
-in 24 hours", so the redeploy didn't bring #123–#127 live. The live
-`/api/songs` has no `limit` for that reason. A rate-limited merge is
-refused before the ignored build step runs, so docs-only merges are
-refused too.
+**Production runs `94806fc`** (everything through #128), deployed
+2026-09-27 07:07 UTC once the cap reset: GitHub's deployment records
+(`gh api repos/jma49/jmos/deployments`) list it as Production. The live
+`/api/songs` reads the database and carries `limit: 200` (34 songs).
+The merges between #122 and #128 had been rate-limited, which refuses a
+merge before the ignored build step runs, docs-only ones included.
 
 **To do, in order:**
-1. **Redeploy the latest `main` once the cap resets** (Vercel
-   dashboard, the newest `main` deployment, Redeploy; not an older
-   one). Then check `gh api repos/jma49/jmos/deployments?per_page=3`
-   lists a Production deployment of `main`'s head, About This Mac shows
-   its hash, `/api/songs` carries `limit`, and the iPod's Music menu
-   shows "Songs 34/200". Hold other merges until then.
+1. **Look at it:** About This Mac shows `94806fc` and the iPod's Music
+   menu shows "Songs 34/200".
 2. **The whole music loop, live:** `/add` a song and see it in the iPod
    within five minutes; `/play` it and see the notification on another
    device, listen along at the same place; `/stop` and see it go.
@@ -192,16 +186,16 @@ Checked locally, in production builds (2026-09-27):
 - keyboard use and names for assistive tech (all apps), and the page
   without JavaScript.
 
-Only a deployment or a push can show:
-1. that it's live: About This Mac shows the build hash of `main`'s head;
-2. that the ignored build step skips a docs-only merge to `main` and
-   builds one touching `src/` (branches no longer deploy at all: checked
-   on #125, which got no Vercel check);
-3. that Vercel builds on Node 24 (the build log's first lines), and that
-   CI reads Node 24 from `package.json`;
-4. that CI installs only Playwright's headless shell, and on the second
-   run finds it in the cache (the install step drops from about 20 s to
-   about 11 s).
+Checked on CI (2026-09-27): it reads Node 24 from `package.json`, and
+installs only Playwright's headless shell, found in the cache (the
+install step takes 12 s). Branches don't deploy (#125 got no Vercel
+check).
+
+Only a deployment can still show:
+1. that the ignored build step skips a docs-only merge to `main` (this
+   pull request is one: its merge should be skipped) and builds one
+   touching `src/`;
+2. that Vercel builds on Node 24 (the build log's first lines).
 
 Checked by Jincheng on `npm run serve` (2026-09-27): printing the
 résumé from Chrome's and Safari's print dialogs, the interface sounds,
