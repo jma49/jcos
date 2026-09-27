@@ -137,7 +137,8 @@ significant change goes through.
 | Command | Does |
 | --- | --- |
 | `npm run check` | Type-checks the site (`astro check`). CI runs it on every pull request. |
-| `npm run preview:capture` | Screenshots project pages into their covers, and the home page into `public/og.png`. CI runs it on every push to `main`. |
+| `npm run preview:capture` | Screenshots project pages into their covers, and the home page into `public/og.png`. A workflow runs it once a day. |
+| `bash scripts/vercel-ignore.sh <base>` | Vercel's ignored build step: says whether a deployment would be skipped (only docs, tests, CI or tooling changed since `<base>`). |
 | `npm run lint` | Checks the rules of React hooks and effects' dependencies (ESLint, hooks rules only). CI runs it on every pull request. |
 | `npm run perf` | Measures a production build against the performance budgets (see `docs/agents/performance.md`). |
 | `npm run photos:update` | Refreshes `src/data/photos.json` from Unsplash. |
