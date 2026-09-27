@@ -74,6 +74,15 @@ again.
   the crash panel and the Applet Store offer a reload (the open windows
   come back), and only `fetch()` paths such as `/api/songs` recover by
   themselves.
+- ⏮ ⏯ ⏭ ▶ ◀ ❚❚ and 🔈 are emoji on iOS (and some Android fonts): the
+  iPod's wheel, Karaoke and Now Playing showed colour pictures on a phone
+  and symbols on a desktop. Controls use the drawn glyphs in
+  `core/glyphs.tsx`, never the characters.
+- The iPod's menu moved its list with `translate` to follow the choice,
+  so nothing scrolled it but the wheel and the arrow keys: a finger, a
+  mouse wheel or a trackpad did nothing, and the rest of a long list
+  couldn't be seen. A list scrolls natively (`.os-ipod-scroll`); the
+  choice only brings its row into view.
 - React holds back content that suspended for about 300 ms before
   showing it. An installed applet, its code already fetched, took 820 ms
   to open through `lazy` and 80 ms rendered directly (`readyApp()`). A lazy Dashboard behind `Suspense` took 350 ms to appear

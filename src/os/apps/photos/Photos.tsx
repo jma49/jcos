@@ -1,4 +1,5 @@
 import { useEffect, useEffectEvent, useMemo, useRef, useState, type CSSProperties } from 'react';
+import { BackGlyph, ForwardGlyph } from '../../core/glyphs';
 import { useOSData } from '../../core/context';
 import type { AppProps } from '../../core/registry';
 import { DOCK_CLEARANCE, MENU_BAR_HEIGHT, isPhone, useWindows } from '../../core/store';
@@ -156,10 +157,10 @@ export default function Photos({ win }: AppProps) {
           </button>
           <div className="os-segmented" role="group" aria-label="Browse">
             <button type="button" aria-label="Previous photo" onClick={() => step(-1)}>
-              ◀
+              <BackGlyph />
             </button>
             <button type="button" aria-label="Next photo" onClick={() => step(1)}>
-              ▶
+              <ForwardGlyph />
             </button>
           </div>
           <span className="os-toolbar-meta">
