@@ -205,7 +205,7 @@ export default function Account({ win }: AppProps) {
   // Signed in from here: this window has done its job (unless it was opened to show the account).
   const close = () => useWindows.getState().close(win.id);
 
-  const submit = async (e: React.FormEvent) => {
+  const submit = async (e: React.SubmitEvent) => {
     e.preventDefault();
     if (tab === 'forgot') return sendLink(name);
     const social = await getSocial();

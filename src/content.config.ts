@@ -1,5 +1,6 @@
-import { defineCollection, z } from 'astro:content';
+import { defineCollection } from 'astro:content';
 import { glob } from 'astro/loaders';
+import { z } from 'astro/zod';
 
 // One Markdown file per project per language: projects/<lang>/<slug>.md
 const projects = defineCollection({
@@ -13,7 +14,7 @@ const projects = defineCollection({
       // Position in the list, lowest first; projects without one follow, newest first.
       order: z.number().int().optional(),
       stack: z.array(z.string()).default([]),
-      repo: z.string().url().optional(),
+      repo: z.url().optional(),
       demo: z.string().optional(),
       // Preview image, relative to the Markdown file. 16:10 works best.
       cover: image().optional(),
