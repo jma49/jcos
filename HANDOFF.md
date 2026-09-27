@@ -151,12 +151,11 @@ Pushing them spent the day's deployments on previews (pitfalls), so
 production can't deploy until the cap resets.
 
 **To do, in order:**
-1. **CI on #118.** Its perf check counted the Dashboard's 4.2 KB in the
-   first load on some runs (161 KB against 160), which a local run
-   doesn't: there the request starts at 8.15 s, after the seven
-   measured seconds. The perf listing now prints when each file was
-   asked for; read the next CI run's listing, fix the measurement from
-   what it shows, and don't raise the budget to get past it.
+1. **CI on #118: done**, green (2026-09-26). Its perf check had counted
+   the Dashboard in the first load on some runs: a pointer resting at
+   the top was reported over the menu bar as it painted, and that
+   fetched the Dashboard ahead. Only real movement counts now (a product
+   fix, not a raised budget); first-load JS on CI is 156 KB.
 2. **Merge once, deploy once.** When #118 is green, retarget it to
    `main` and merge it (a merge commit): one production deployment
    carries the whole stack. Close #107–#117 as merged through #118, and
