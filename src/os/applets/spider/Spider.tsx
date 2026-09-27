@@ -1,17 +1,14 @@
 import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
-import type { AppProps } from '../../core/registry';
-import { play } from '../../core/sound';
-import { useFocusedId } from '../../core/store';
-import { loadSettings, saveJSON } from '../../core/storage';
+import { play, saved, useIsFront, type AppProps } from '../../kit';
 import { bestTarget, hint, move, movable, newGame, RANKS, RED, settle, type Card, type Game, type Suits } from './rules';
-
-const SETTINGS_KEY = 'os-spider';
 
 // Spider Solitaire: two decks in ten columns. Build down in any suit, but
 // only a run of one suit moves together; a full King-to-Ace run of one
 // suit leaves the table. Deal ten more from the stock when stuck (never
 // onto an empty column). One, two or four suits; undo, hints, and a best
 // score for each, kept in this browser.
+
+const settings = saved<{ suits: Suits; best: Partial<Record<Suits, number>> }>('spider');
 
 interface Drag {
   from: number;
@@ -39,7 +36,7 @@ function CardFace({ card }: { card: Card }) {
 }
 
 export default function Spider({ win }: AppProps) {
-  const saved = useMemo(() => loadSettings(SETTINGS_KEY, { suits: 1 as Suits, best: {} as Partial<Record<Suits, number>> }), []);
+  const saved = useMemo(() => settings.load({ suits: 1, best: {} }), []);
   const [suits, setSuits] = useState<Suits>(saved.suits);
   const [best, setBest] = useState(saved.best);
   const [game, setGame] = useState(() => newGame(saved.suits));
@@ -48,7 +45,7 @@ export default function Spider({ win }: AppProps) {
   const [lit, setLit] = useState<{ from: number; index: number; to: number } | null>(null);
   const table = useRef<HTMLDivElement>(null);
   const root = useRef<HTMLDivElement>(null);
-  const front = useFocusedId() === win.id;
+  const front = useIsFront(win);
   const won = game.done.length === 8;
 
   const commit = (next: Game | null) => {
@@ -66,7 +63,7 @@ export default function Spider({ win }: AppProps) {
     if (game.score > (best[suits] ?? 0)) {
       const next = { ...best, [suits]: game.score };
       setBest(next);
-      saveJSON(SETTINGS_KEY, { suits, best: next });
+      settings.save({ suits, best: next });
     }
   });
   useEffect(() => {
@@ -75,7 +72,7 @@ export default function Spider({ win }: AppProps) {
 
   const restart = (n: Suits = suits) => {
     setSuits(n);
-    saveJSON(SETTINGS_KEY, { suits: n, best });
+    settings.save({ suits: n, best });
     setGame(newGame(n));
     setHistory([]);
     setLit(null);

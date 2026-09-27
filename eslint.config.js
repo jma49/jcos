@@ -14,5 +14,23 @@ export default [
       'react-hooks/rules-of-hooks': 'error',
       'react-hooks/exhaustive-deps': 'error'
     }
+  },
+  // Applets reach JM/OS only through the kit, and never each other, so
+  // each stays a self-contained unit loaded on demand (src/os/kit).
+  {
+    files: ['src/os/applets/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              regex: '^\\.\\./(?!\\.\\./kit$)',
+              message: 'Applets import only src/os/kit and their own folder.'
+            }
+          ]
+        }
+      ]
+    }
   }
 ];

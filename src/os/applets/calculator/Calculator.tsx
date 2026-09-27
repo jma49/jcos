@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import type { AppProps } from '../core/registry';
-import { play } from '../core/sound';
+import { play, type AppProps } from '../../kit';
 
 // A four-function calculator in the style of Mac OS X's: an LCD, Aqua keys,
 // and the keyboard works too (digits, + − × ÷, Enter, Esc, %, Backspace).

@@ -1,8 +1,5 @@
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
-import type { AppProps } from '../core/registry';
-import { useFocusedId, useWindows } from '../core/store';
-import { audio } from '../core/sound';
-import { loadSettings, saveJSON } from '../core/storage';
+import { audio, saved, soundSetting, turnSoundOn, useGameLoop, useIsFront, useSoundSetting, type AppProps } from '../../kit';
 
 // Synth, after ryOS's: two octaves of keys played with the mouse, a finger
 // or the computer's keys, a few waveforms and presets, a filter, an echo
@@ -32,8 +29,8 @@ const PRESETS: Record<string, Patch> = {
 const WAVES: OscillatorType[] = ['sine', 'triangle', 'square', 'sawtooth'];
 const WAVE_LABEL: Record<string, string> = { sine: 'Sine', triangle: 'Triangle', square: 'Square', sawtooth: 'Saw' };
 
-const KEY = 'os-synth';
-const saved = () => loadSettings<Patch & { octave: number }>(KEY, { ...PRESETS.Keys, octave: 4 });
+const settings = saved<Patch & { octave: number }>('synth');
+const savedPatch = () => settings.load({ ...PRESETS.Keys, octave: 4 });
 
 /** Computer keys to semitones above the lowest C, like GarageBand's Musical Typing. */
 const KEYMAP: Record<string, number> = {
@@ -132,17 +129,16 @@ class Engine {
 
 export default function Synth({ win }: AppProps) {
   const [patch, setPatch] = useState<Patch>(() => {
-    const { octave: _o, ...p } = saved();
+    const { octave: _o, ...p } = savedPatch();
     return p;
   });
-  const [octave, setOctave] = useState(() => Math.min(6, Math.max(2, saved().octave)));
+  const [octave, setOctave] = useState(() => Math.min(6, Math.max(2, savedPatch().octave)));
   const [held, setHeld] = useState<Set<number>>(new Set());
   const engine = useRef<Engine | null>(null);
   const scope = useRef<HTMLCanvasElement>(null);
   const pointerDown = useRef(false);
-  const soundOn = useWindows((s) => s.soundOn);
-  const volume = useWindows((s) => s.volume);
-  const front = useFocusedId() === win.id;
+  const { on: soundOn, volume } = useSoundSetting();
+  const front = useIsFront(win);
   const patchRef = useRef(patch);
   patchRef.current = patch;
   const base = octave * 12 + 12;
@@ -150,7 +146,7 @@ export default function Synth({ win }: AppProps) {
   const update = (next: Partial<Patch>, nextOctave = octave) => {
     const merged = { ...patch, ...next };
     setPatch(merged);
-    saveJSON(KEY, { ...merged, octave: nextOctave });
+    settings.save({ ...merged, octave: nextOctave });
   };
 
   const ensure = () => {
@@ -170,13 +166,11 @@ export default function Synth({ win }: AppProps) {
   useEffect(() => () => engine.current?.close(), []);
 
   const noteOn = (midi: number) => {
-    const { soundOn: on, setSound } = useWindows.getState();
     // Playing a note is asking for sound, as pressing Play is.
-    if (!on) setSound(true);
+    if (!soundSetting().on) turnSoundOn();
     const e = ensure();
     if (!e) return;
-    const { volume: v } = useWindows.getState();
-    e.set(patchRef.current, v * 0.8);
+    e.set(patchRef.current, soundSetting().volume * 0.8);
     e.on(midi, patchRef.current);
     setHeld((h) => new Set(h).add(midi));
   };
@@ -232,48 +226,47 @@ export default function Synth({ win }: AppProps) {
     };
   }, [front, octave, base]);
 
-  // The oscilloscope: the wave as it leaves, drawn every frame.
-  useEffect(() => {
-    let raf = 0;
-    const draw = () => {
-      raf = requestAnimationFrame(draw);
-      const canvas = scope.current;
-      const ctx = canvas?.getContext('2d');
-      if (!canvas || !ctx) return;
-      const { width, height } = canvas;
-      ctx.clearRect(0, 0, width, height);
-      ctx.strokeStyle = 'rgba(120, 255, 170, 0.12)';
-      ctx.lineWidth = 1;
-      for (let x = 0; x < width; x += width / 8) {
-        ctx.beginPath();
-        ctx.moveTo(x, 0);
-        ctx.lineTo(x, height);
-        ctx.stroke();
-      }
+  // The oscilloscope: the wave as it leaves, drawn every frame while the
+  // Synth is in front (behind another window it holds its last picture).
+  const wave = useRef(new Uint8Array(0));
+  useGameLoop(() => {
+    const canvas = scope.current;
+    const ctx = canvas?.getContext('2d');
+    if (!canvas || !ctx) return;
+    const { width, height } = canvas;
+    ctx.clearRect(0, 0, width, height);
+    ctx.strokeStyle = 'rgba(120, 255, 170, 0.12)';
+    ctx.lineWidth = 1;
+    for (let x = 0; x < width; x += width / 8) {
       ctx.beginPath();
-      ctx.moveTo(0, height / 2);
-      ctx.lineTo(width, height / 2);
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, height);
       ctx.stroke();
-      const analyser = engine.current?.analyser;
-      const data = new Uint8Array(analyser?.fftSize ?? 1024).fill(128);
-      analyser?.getByteTimeDomainData(data);
-      ctx.strokeStyle = '#7dffae';
-      ctx.shadowColor = '#3dff8a';
-      ctx.shadowBlur = 6;
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      data.forEach((v, i) => {
-        const x = (i / (data.length - 1)) * width;
-        const y = (v / 255) * height;
-        if (i === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
-      });
-      ctx.stroke();
-      ctx.shadowBlur = 0;
-    };
-    draw();
-    return () => cancelAnimationFrame(raf);
-  }, []);
+    }
+    ctx.beginPath();
+    ctx.moveTo(0, height / 2);
+    ctx.lineTo(width, height / 2);
+    ctx.stroke();
+    const analyser = engine.current?.analyser;
+    const size = analyser?.fftSize ?? 1024;
+    if (wave.current.length !== size) wave.current = new Uint8Array(size);
+    const data = wave.current;
+    if (analyser) analyser.getByteTimeDomainData(data);
+    else data.fill(128);
+    ctx.strokeStyle = '#7dffae';
+    ctx.shadowColor = '#3dff8a';
+    ctx.shadowBlur = 6;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    data.forEach((v, i) => {
+      const x = (i / (data.length - 1)) * width;
+      const y = (v / 255) * height;
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+  }, front);
 
   useEffect(() => {
     const up = () => (pointerDown.current = false);

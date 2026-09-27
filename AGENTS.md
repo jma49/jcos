@@ -78,8 +78,8 @@ and the database tests on every pull request.
 - Unit tests (Vitest) are `*.test.ts` next to the code in `src/`; the
   Vercel Functions' are in `tests/api/`, since Vercel deploys every file
   under `api/`; each Edge Function has its `*.test.mjs`. Keep logic worth
-  testing in plain modules without React (as `apps/spider/rules.ts` and
-  `apps/pinball/table.ts` are).
+  testing in plain modules without React (as `applets/spider/rules.ts`
+  and `applets/pinball/table.ts` are).
 - `npm run test:db` checks the database's rules
   (`supabase/tests/rules.sql`) against a local Postgres, then races the
   per-member limits with overlapping sessions (`supabase/tests/race.sh`).

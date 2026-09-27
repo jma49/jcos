@@ -1,83 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
-import type { AppProps } from '../core/registry';
-import { play } from '../core/sound';
-import { DOCK_CLEARANCE, MENU_BAR_HEIGHT, isPhone, useWindows } from '../core/store';
-import { loadSettings, saveJSON } from '../core/storage';
+import { play, resizeWindow, saved, type AppProps } from '../../kit';
+import { blank, cleared, layMines, LEVELS, reveal, targetsOf, type Cell, type Level, type Status } from './rules';
 
 // Minesweeper. The first click is always safe (mines are laid after it),
 // right-click or long-press flags, and clicking a number whose flags are
 // all placed opens its neighbours. Best times are kept in this browser.
 
-type Level = 'beginner' | 'intermediate' | 'expert';
-
-const LEVELS: Record<Level, { name: string; cols: number; rows: number; mines: number }> = {
-  beginner: { name: 'Beginner', cols: 9, rows: 9, mines: 10 },
-  intermediate: { name: 'Intermediate', cols: 16, rows: 16, mines: 40 },
-  expert: { name: 'Expert', cols: 30, rows: 16, mines: 99 }
-};
-
-const BEST_KEY = 'os-minesweeper-best';
-
-interface Cell {
-  mine: boolean;
-  open: boolean;
-  flag: boolean;
-  /** Mines around it. */
-  count: number;
-}
-
-type Status = 'ready' | 'playing' | 'won' | 'lost';
-
-const blank = (cols: number, rows: number): Cell[] =>
-  Array.from({ length: cols * rows }, () => ({ mine: false, open: false, flag: false, count: 0 }));
-
-function neighbours(i: number, cols: number, rows: number) {
-  const x = i % cols;
-  const y = Math.floor(i / cols);
-  const out: number[] = [];
-  for (let dy = -1; dy <= 1; dy++) {
-    for (let dx = -1; dx <= 1; dx++) {
-      if (!dx && !dy) continue;
-      const nx = x + dx;
-      const ny = y + dy;
-      if (nx >= 0 && ny >= 0 && nx < cols && ny < rows) out.push(ny * cols + nx);
-    }
-  }
-  return out;
-}
-
-/** Lays mines anywhere except the first cell clicked and the cells around it. */
-function layMines(cells: Cell[], cols: number, rows: number, mines: number, safe: number) {
-  const keepClear = new Set([safe, ...neighbours(safe, cols, rows)]);
-  // On tiny boards there may not be room to keep all neighbours clear.
-  const spots = cells.map((_, i) => i).filter((i) => (cells.length - keepClear.size >= mines ? !keepClear.has(i) : i !== safe));
-  for (let i = spots.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [spots[i], spots[j]] = [spots[j], spots[i]];
-  }
-  const next = cells.map((c) => ({ ...c }));
-  for (const i of spots.slice(0, mines)) next[i].mine = true;
-  next.forEach((c, i) => (c.count = neighbours(i, cols, rows).filter((n) => next[n].mine).length));
-  return next;
-}
-
-/** Opens cells from `start`, spreading across empty ones. Returns false if a mine went off. */
-function reveal(cells: Cell[], start: number[], cols: number, rows: number) {
-  const queue = [...start];
-  while (queue.length) {
-    const i = queue.pop()!;
-    const c = cells[i];
-    if (c.open || c.flag) continue;
-    c.open = true;
-    if (c.mine) return false;
-    if (c.count === 0) queue.push(...neighbours(i, cols, rows));
-  }
-  return true;
-}
-
-function readBest(): Partial<Record<Level, number>> {
-  return loadSettings<Partial<Record<Level, number>>>(BEST_KEY, {});
-}
+const best = saved<Partial<Record<Level, number>>>('minesweeper', 'best');
 
 const pad = (n: number) => String(Math.max(-99, Math.min(999, n))).padStart(3, '0');
 
@@ -90,18 +19,13 @@ export default function Minesweeper({ win }: AppProps) {
   const [now, setNow] = useState(0);
   const [pressing, setPressing] = useState(false);
   const [lastHit, setLastHit] = useState<number | null>(null);
-  const [best, setBest] = useState(readBest);
+  const [bestTimes, setBestTimes] = useState(() => best.load({}));
   const longPress = useRef<{ timer: number; fired: boolean }>({ timer: 0, fired: false });
 
-  /** Grows or shrinks the window to fit a level's board, within the screen. */
+  /** Grows or shrinks the window to fit a level's board. */
   const fitWindow = (next: Level) => {
-    if (isPhone() || win.maximized) return;
     const { cols: c, rows: r } = LEVELS[next];
-    const width = Math.min(window.innerWidth - 32, Math.max(400, c * 25 + 60));
-    const height = Math.min(window.innerHeight - MENU_BAR_HEIGHT - DOCK_CLEARANCE, r * 25 + 190);
-    const x = Math.min(win.x, window.innerWidth - width - 16);
-    const y = Math.min(win.y, window.innerHeight - DOCK_CLEARANCE - height);
-    useWindows.getState().setBounds(win.id, { x: Math.max(16, x), y: Math.max(MENU_BAR_HEIGHT + 8, y), width, height });
+    resizeWindow(win, Math.max(400, c * 25 + 60), r * 25 + 190);
   };
 
   const reset = (next: Level = level) => {
@@ -132,16 +56,16 @@ export default function Minesweeper({ win }: AppProps) {
       play('error');
       return;
     }
-    if (next.every((c) => c.mine || c.open)) {
+    if (cleared(next)) {
       next.forEach((c) => c.mine && (c.flag = true));
       const time = Math.floor((Date.now() - (started || Date.now())) / 1000);
       setStatus('won');
       setNow(Date.now());
       play('chime');
-      if (best[level] === undefined || time < best[level]!) {
-        const updated = { ...best, [level]: time };
-        setBest(updated);
-        saveJSON(BEST_KEY, updated);
+      if (bestTimes[level] === undefined || time < bestTimes[level]!) {
+        const updated = { ...bestTimes, [level]: time };
+        setBestTimes(updated);
+        best.save(updated);
       }
     }
   };
@@ -155,16 +79,9 @@ export default function Minesweeper({ win }: AppProps) {
       setStarted(Date.now());
       setNow(Date.now());
     }
-    const cell = next[i];
-    let targets = [i];
     // Chording: an open number with all its flags placed opens the rest around it.
-    if (cell.open && cell.count > 0) {
-      const around = neighbours(i, cols, rows);
-      if (around.filter((n) => next[n].flag).length !== cell.count) return;
-      targets = around.filter((n) => !next[n].flag && !next[n].open);
-    } else if (cell.open) {
-      return;
-    }
+    const targets = targetsOf(next, i, cols, rows);
+    if (!targets.length) return;
     const safe = reveal(next, targets, cols, rows);
     setCells(next);
     finish(next, safe ? null : targets.find((n) => next[n].mine) ?? i);
@@ -188,7 +105,7 @@ export default function Minesweeper({ win }: AppProps) {
             </button>
           ))}
         </div>
-        <span className="os-toolbar-meta">{best[level] !== undefined ? `Best: ${best[level]}s` : 'No best time yet'}</span>
+        <span className="os-toolbar-meta">{bestTimes[level] !== undefined ? `Best: ${bestTimes[level]}s` : 'No best time yet'}</span>
       </div>
       <div className="os-scroll os-mines-stage">
         <div className="os-mines-board" style={{ '--cols': cols } as React.CSSProperties}>
