@@ -150,6 +150,10 @@ again.
   `Promise.all([import(…), …])` failed five times in six: a module could
   bind the real one before the mock was in place. Load them one after
   another.
+- The same goes for the code under test: two calls at once that each
+  `await import()` a mocked module can get the real one the second time.
+  `findSong()` looked like it lost a race until its import of the social
+  module was made static (it was in the first load anyway).
 - A Vitest `expect` inside a per-frame loop made the Pinball test time
   out. Use plain `throw` in hot loops, and give long simulations an
   explicit timeout.
