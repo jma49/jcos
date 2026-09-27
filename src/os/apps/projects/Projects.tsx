@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useOSData } from '../../core/context';
 import { openProject } from '../../core/registry';
-import type { OSProject } from '../../core/types';
 
 const filters = [
   { id: 'all', label: 'All Projects' },

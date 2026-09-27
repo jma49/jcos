@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type ComponentType } from 'react';
 import { apps, launch, launcherApps, mobileDockApps, rectOf } from '../core/registry';
 import { DiskIcon, DocumentIcon } from '../core/icons';
 import { MENU_BAR_HEIGHT, isPhone, useWindows, type IconPositions } from '../core/store';
-import type { AppId, OSData } from '../core/types';
+import type { AppId } from '../core/types';
 
 // The icons down the right of the desktop: a double-click (a tap on a
 // phone) opens them, and they can be dragged anywhere.
@@ -14,7 +14,7 @@ interface Shortcut {
   open: (el: HTMLElement) => void;
 }
 
-export function DesktopIcons({ data }: { data: OSData }) {
+export function DesktopIcons() {
   const [selected, setSelected] = useState<string | null>(null);
   const openApp = (app: AppId, el: HTMLElement, extra: Parameters<typeof launch>[1] = {}) =>
     launch(app, { origin: rectOf(el), ...extra });

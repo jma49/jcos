@@ -145,7 +145,7 @@ function Shell({ data }: { data: OSData }) {
         </AnimatePresence>
         <Sky sky={sky} tinted={picture.tinted} />
         <MenuBar sky={sky} />
-        <DesktopIcons data={data} />
+        <DesktopIcons />
         <WindowLayer />
 
         <Dock />

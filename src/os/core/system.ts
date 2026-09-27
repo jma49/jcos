@@ -65,7 +65,7 @@ function savedSettings(): SystemSettings {
   return Object.fromEntries(Object.keys(SYSTEM_DEFAULTS).map((key) => [key, saved[key as keyof SystemSettings]])) as unknown as SystemSettings;
 }
 
-export const useSystem = create<SystemState>((set, get) => ({
+export const useSystem = create<SystemState>((set) => ({
   ...savedSettings(),
   // What's stored now, with this change: a setting changed in another tab stands.
   set: (patch) => {

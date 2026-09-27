@@ -1,4 +1,4 @@
-import { useEffect, useState, type CSSProperties, type FormEvent } from 'react';
+import { useEffect, useState, type CSSProperties, type SubmitEvent } from 'react';
 import { getSocial, NOTE_COLORS, NOTE_MAX, NOTES_PER_DAY, SocialError, type Note, type NoteColor, type Social } from '../../social/social';
 import { useAccount } from '../../social/account';
 import type { AppProps } from '../../core/registry';
@@ -55,7 +55,7 @@ export default function Stickies(_: AppProps) {
     social.notesLeft().then(setLeft, () => setLeft(null));
   }, [social, account]);
 
-  const submit = async (e: FormEvent) => {
+  const submit = async (e: SubmitEvent) => {
     e.preventDefault();
     if (load.state !== 'ready' || !body.trim() || left === 0) return;
     if (trap) return setDraft({ state: 'idle' });
