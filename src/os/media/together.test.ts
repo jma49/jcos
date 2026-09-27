@@ -11,13 +11,21 @@ const gate = vi.hoisted(() => ({ wait: Promise.resolve() }));
 /** The social backend's side of listening along, driven by the test. */
 const social = vi.hoisted(() => ({
   now: null as null | { songId: string; elapsedMs: number; remainingMs: number },
-  watcher: (_now: unknown) => {}
+  /** How long nowPlaying() takes to answer; resolved by the test. */
+  answer: null as null | Promise<void>,
+  watcher: (_now: unknown) => {},
+  connected: () => {}
 }));
 vi.mock('../social/social', () => ({
   getSocial: async () => ({
-    nowPlaying: async () => social.now,
-    watchNowPlaying: (onChange: (now: unknown) => void) => {
+    nowPlaying: async () => {
+      const now = social.now;
+      await social.answer;
+      return now;
+    },
+    watchNowPlaying: (onChange: (now: unknown) => void, onConnected: () => void) => {
       social.watcher = onChange;
+      social.connected = onConnected;
       return () => {};
     }
   })
@@ -109,5 +117,34 @@ describe('the notification', () => {
     await settle();
     expect(notices.useNotices.getState().notices.map((n) => n.body)).toEqual(['寧夏 — 梁靜茹']);
     stopWatching();
+  });
+
+  test('a play made while the connection was down shows once it’s back', async () => {
+    social.now = null;
+    const stopWatching = together.startListeningAlong();
+    await settle();
+    expect(shown()).toEqual([]);
+    social.now = { songId: 'OxtZF0WGXtE', elapsedMs: 5_000, remainingMs: 200_000 };
+    social.connected();
+    await settle();
+    expect(shown()).toEqual(['Jincheng is listening to']);
+    stopWatching();
+    social.now = null;
+  });
+
+  test('an answer that a change overtook is dropped', async () => {
+    // Asked on arrival while the song still played; the stop arrives first.
+    social.now = { songId: 'OxtZF0WGXtE', elapsedMs: 5_000, remainingMs: 200_000 };
+    let answer = () => {};
+    social.answer = new Promise<void>((done) => (answer = done));
+    const stopWatching = together.startListeningAlong();
+    await settle();
+    social.watcher(null);
+    answer();
+    await settle();
+    expect(shown()).toEqual([]);
+    stopWatching();
+    social.now = null;
+    social.answer = null;
   });
 });
