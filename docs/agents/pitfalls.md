@@ -241,9 +241,11 @@ again.
   the change looks small: with no earlier deployment of the branch,
   `vercel-ignore.sh` compares with `main`. Pushing a stack of twelve
   branches spent twelve of the day's deployments at once, and the
-  production deployment after it was rate-limited. Before pushing
-  several branches, count what they'll build; to get CI on a stack
-  without spending deployments, push only its top branch.
+  production deployment after it was rate-limited, and later a single
+  pull request's preview used up the day's last deployment, leaving
+  its merge undeployed. Branches don't deploy any more
+  (`git.deploymentEnabled`: only `main`); a `*` pattern wouldn't have
+  matched `fix/…` names, since it stops at `/`, hence `**`.
 - A guess made to get a check green went wrong: CI's perf counted the
   Dashboard (161 KB against 160) and the pointer was moved away before
   loading, which CI's Chromium ignored. Listing when each file was asked
