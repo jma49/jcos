@@ -1250,44 +1250,55 @@ begin
 end;
 $$;
 
--- Today's library (src/data/songs.json), in its order.
-insert into public.albums (title, artist, year, cover, note) values
-  ('BTTB -20th Anniversary Edition-', 'Ryuichi Sakamoto', 2018, 'https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/6e/8d/82/6e8d82ee-ee42-9020-51ed-daa71ea624ad/881036000154_cover.jpg/600x600bb.jpg', 'Back to the basics: solo piano, first released in 1998. The 20th anniversary edition gathers the original album, “snake eyes” and “tong poo” from the 1999 reissue, “reversing” from the international edition and “energy flow”.')
-on conflict (title) do nothing;
+-- Today's library (src/data/songs.json), in its order: a new project's
+-- first songs. Seeded once: a rerun doesn't bring back a song removed with
+-- /remove, and isn't stopped by the limit (which counts an insert even when
+-- `on conflict` would skip it).
+do $$
+begin
+  if exists (select 1 from public.music_settings where name = 'seeded') then
+    return;
+  end if;
+  insert into public.albums (title, artist, year, cover, note) values
+    ('BTTB -20th Anniversary Edition-', 'Ryuichi Sakamoto', 2018, 'https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/6e/8d/82/6e8d82ee-ee42-9020-51ed-daa71ea624ad/881036000154_cover.jpg/600x600bb.jpg', 'Back to the basics: solo piano, first released in 1998. The 20th anniversary edition gathers the original album, “snake eyes” and “tong poo” from the 1999 reissue, “reversing” from the international edition and “energy flow”.')
+  on conflict (title) do nothing;
 
-insert into public.songs (id, title, artist, album, cover, track, instrumental, lyrics_offset, lyrics_id, added_at) values
-  ('OxtZF0WGXtE', '寧夏', '梁靜茹', '燕尾蝶', 'https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/83/c1/66/83c1665d-af9a-ae17-769a-8995018e143f/dj.nbokcidv.jpg/600x600bb.jpg', null, false, 0, null, timestamptz '2026-09-01 00:00:00+00' + interval '0 seconds'),
-  ('QLHMhVonF-s', '黄昏のBAY CITY', '八神純子', 'Full Moon', 'https://is1-ssl.mzstatic.com/image/thumb/Music/y2005/m07/d13/h06/s07.usbmmjal.tif/600x600bb.jpg', null, false, 150, null, timestamptz '2026-09-01 00:00:00+00' + interval '1 seconds'),
-  ('TkmfOyuGSdQ', 'OH NO, OH YES!', '中森明菜', 'CRIMSON', 'https://is1-ssl.mzstatic.com/image/thumb/Music1/v4/93/82/35/93823581-bc38-2d16-8920-7d07c0f1b6c0/825646249701.jpg/600x600bb.jpg', null, false, 500, null, timestamptz '2026-09-01 00:00:00+00' + interval '2 seconds'),
-  ('0o-s_8Wt9zc', '寫信給你', '黃韻玲', '平凡', 'https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/68/db/8e/68db8e27-29d5-0cba-837b-6f9dcf489343/4710149911438_cover.jpg/600x600bb.jpg', null, false, 0, null, timestamptz '2026-09-01 00:00:00+00' + interval '3 seconds'),
-  ('bX33UI9ZPLk', '黑色毛衣', '周杰倫', '11月的蕭邦', 'https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/9e/35/ad/9e35ad1e-749e-75b6-0539-1e80cea1817b/JAY11.jpg/600x600bb.jpg', null, false, 3750, null, timestamptz '2026-09-01 00:00:00+00' + interval '4 seconds'),
-  ('RNBiaZbFGII', 'come again', 'm-flo', 'MF10 - 10th ANNIVERSARY BEST', 'https://is1-ssl.mzstatic.com/image/thumb/Music/d8/cc/76/mzi.wmjxzjse.jpg/600x600bb.jpg', null, false, -6800, null, timestamptz '2026-09-01 00:00:00+00' + interval '5 seconds'),
-  ('Dlz_XHeUUis', 'White Ferrari', 'Frank Ocean', 'Blonde', 'https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/bb/45/68/bb4568f3-68cd-619d-fbcb-4e179916545d/BlondCover-Final.jpg/600x600bb.jpg', null, false, 850, null, timestamptz '2026-09-01 00:00:00+00' + interval '6 seconds'),
-  ('xGqZ9lsc6Ck', '心動 (2018錄音棚現場版)', '黃韻玲', '心動 (2018錄音棚現場版)', 'https://is1-ssl.mzstatic.com/image/thumb/Music118/v4/16/03/57/1603573b-def7-eecc-503b-31bc1730f14f/4718009857179.jpg/600x600bb.jpg', null, false, 0, null, timestamptz '2026-09-01 00:00:00+00' + interval '7 seconds'),
-  ('rwFUxoLq3Ss', 'Kiss & Tell', '陳淑樺', '淑樺盛開', 'https://is1-ssl.mzstatic.com/image/thumb/Features114/v4/ea/e2/1c/eae21cef-7f7e-2a86-4a9e-7c81b5f7b70c/dj.rdpbhefl.jpg/600x600bb.jpg', null, false, 0, null, timestamptz '2026-09-01 00:00:00+00' + interval '8 seconds'),
-  ('jG6RnLVX07I', 'Hold On', 'The Internet', 'Hive Mind', 'https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/a7/9a/2d/a79a2dda-d97d-4225-bd7c-6a8b80715a01/886447110089.jpg/600x600bb.jpg', null, false, -850, null, timestamptz '2026-09-01 00:00:00+00' + interval '9 seconds'),
-  ('fXivMSJm_kA', 'YUKON', 'Justin Bieber', 'SWAG', 'https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/f9/09/36/f9093663-c05f-7f95-0a60-4e95d52fbb22/25UMGIM93915.rgb.jpg/600x600bb.jpg', null, false, 650, null, timestamptz '2026-09-01 00:00:00+00' + interval '10 seconds'),
-  ('uUcZHrGnJ54', '三個人的晚餐', '黃韻玲', '平凡', 'https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/68/db/8e/68db8e27-29d5-0cba-837b-6f9dcf489343/4710149911438_cover.jpg/600x600bb.jpg', null, false, 0, null, timestamptz '2026-09-01 00:00:00+00' + interval '11 seconds'),
-  ('kKsivrgoyDw', 'Cool with You', 'NewJeans', 'Get Up', 'https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/d3/4b/7e/d34b7e1e-af3b-43b6-2949-7a8c652a1bc9/196922462726_Cover.jpg/600x600bb.jpg', null, false, 500, null, timestamptz '2026-09-01 00:00:00+00' + interval '12 seconds'),
-  ('jWQx2f-CErU', 'Whiplash', 'aespa', 'Whiplash', 'https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/d5/c1/f5/d5c1f505-f588-775f-df05-c672a8ec22e9/888735949562_Cover.jpg/600x600bb.jpg', null, false, 500, null, timestamptz '2026-09-01 00:00:00+00' + interval '13 seconds'),
-  ('QiYOkmrI1jg', 'IYKYK', 'XG', 'AWE', 'https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/ae/69/ce/ae69ce7b-6007-c83a-f692-93ebfca55449/ANTCD-A0000014930.jpg/600x600bb.jpg', null, false, 500, null, timestamptz '2026-09-01 00:00:00+00' + interval '14 seconds'),
-  ('n59qeMSCAgA', 'opus', 'Ryuichi Sakamoto', 'BTTB -20th Anniversary Edition-', null, 1, true, 0, null, timestamptz '2026-09-01 00:00:00+00' + interval '15 seconds'),
-  ('qG0moUzt2wY', 'sonatine', 'Ryuichi Sakamoto', 'BTTB -20th Anniversary Edition-', null, 2, true, 0, null, timestamptz '2026-09-01 00:00:00+00' + interval '16 seconds'),
-  ('mcBuwynaCsY', 'intermezzo', 'Ryuichi Sakamoto', 'BTTB -20th Anniversary Edition-', null, 3, true, 0, null, timestamptz '2026-09-01 00:00:00+00' + interval '17 seconds'),
-  ('fJKGBLTzHLA', 'lorenz and watson', 'Ryuichi Sakamoto', 'BTTB -20th Anniversary Edition-', null, 4, true, 0, null, timestamptz '2026-09-01 00:00:00+00' + interval '18 seconds'),
-  ('MtiqsRvASDI', 'choral no.1', 'Ryuichi Sakamoto', 'BTTB -20th Anniversary Edition-', null, 5, true, 0, null, timestamptz '2026-09-01 00:00:00+00' + interval '19 seconds'),
-  ('IxnyhXJJyls', 'choral no.2', 'Ryuichi Sakamoto', 'BTTB -20th Anniversary Edition-', null, 6, true, 0, null, timestamptz '2026-09-01 00:00:00+00' + interval '20 seconds'),
-  ('TQ-pIBU5g-E', 'do bacteria sleep?', 'Ryuichi Sakamoto', 'BTTB -20th Anniversary Edition-', null, 7, true, 0, null, timestamptz '2026-09-01 00:00:00+00' + interval '21 seconds'),
-  ('dod5yASOmfU', 'bachata', 'Ryuichi Sakamoto', 'BTTB -20th Anniversary Edition-', null, 8, true, 0, null, timestamptz '2026-09-01 00:00:00+00' + interval '22 seconds'),
-  ('-KS71VBbMpg', 'chanson', 'Ryuichi Sakamoto', 'BTTB -20th Anniversary Edition-', null, 9, true, 0, null, timestamptz '2026-09-01 00:00:00+00' + interval '23 seconds'),
-  ('VtuUg1AcSbA', 'distant echo', 'Ryuichi Sakamoto', 'BTTB -20th Anniversary Edition-', null, 10, true, 0, null, timestamptz '2026-09-01 00:00:00+00' + interval '24 seconds'),
-  ('K-rsp6m55cQ', 'prelude', 'Ryuichi Sakamoto', 'BTTB -20th Anniversary Edition-', null, 11, true, 0, null, timestamptz '2026-09-01 00:00:00+00' + interval '25 seconds'),
-  ('59mCjeHk0sc', 'sonata', 'Ryuichi Sakamoto', 'BTTB -20th Anniversary Edition-', null, 12, true, 0, null, timestamptz '2026-09-01 00:00:00+00' + interval '26 seconds'),
-  ('66HGO2Pl3kk', 'uetax', 'Ryuichi Sakamoto', 'BTTB -20th Anniversary Edition-', null, 13, true, 0, null, timestamptz '2026-09-01 00:00:00+00' + interval '27 seconds'),
-  ('SJcbMTz2oNw', 'aqua', 'Ryuichi Sakamoto', 'BTTB -20th Anniversary Edition-', null, 14, true, 0, null, timestamptz '2026-09-01 00:00:00+00' + interval '28 seconds'),
-  ('jHC_yMY9N0I', 'energy flow', 'Ryuichi Sakamoto', 'BTTB -20th Anniversary Edition-', null, 15, true, 0, null, timestamptz '2026-09-01 00:00:00+00' + interval '29 seconds'),
-  ('H-Tj_pTZ0aM', 'snake eyes', 'Ryuichi Sakamoto', 'BTTB -20th Anniversary Edition-', null, 16, true, 0, null, timestamptz '2026-09-01 00:00:00+00' + interval '30 seconds'),
-  ('4DIWZ5qi03g', 'tong poo', 'Ryuichi Sakamoto', 'BTTB -20th Anniversary Edition-', null, 17, true, 0, null, timestamptz '2026-09-01 00:00:00+00' + interval '31 seconds'),
-  ('WKEuD1Ak3iM', 'reversing', 'Ryuichi Sakamoto', 'BTTB -20th Anniversary Edition-', null, 18, true, 0, null, timestamptz '2026-09-01 00:00:00+00' + interval '32 seconds')
-on conflict (id) do nothing;
+  insert into public.songs (id, title, artist, album, cover, track, instrumental, lyrics_offset, lyrics_id, added_at) values
+    ('OxtZF0WGXtE', '寧夏', '梁靜茹', '燕尾蝶', 'https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/83/c1/66/83c1665d-af9a-ae17-769a-8995018e143f/dj.nbokcidv.jpg/600x600bb.jpg', null, false, 0, null, timestamptz '2026-09-01 00:00:00+00' + interval '0 seconds'),
+    ('QLHMhVonF-s', '黄昏のBAY CITY', '八神純子', 'Full Moon', 'https://is1-ssl.mzstatic.com/image/thumb/Music/y2005/m07/d13/h06/s07.usbmmjal.tif/600x600bb.jpg', null, false, 150, null, timestamptz '2026-09-01 00:00:00+00' + interval '1 seconds'),
+    ('TkmfOyuGSdQ', 'OH NO, OH YES!', '中森明菜', 'CRIMSON', 'https://is1-ssl.mzstatic.com/image/thumb/Music1/v4/93/82/35/93823581-bc38-2d16-8920-7d07c0f1b6c0/825646249701.jpg/600x600bb.jpg', null, false, 500, null, timestamptz '2026-09-01 00:00:00+00' + interval '2 seconds'),
+    ('0o-s_8Wt9zc', '寫信給你', '黃韻玲', '平凡', 'https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/68/db/8e/68db8e27-29d5-0cba-837b-6f9dcf489343/4710149911438_cover.jpg/600x600bb.jpg', null, false, 0, null, timestamptz '2026-09-01 00:00:00+00' + interval '3 seconds'),
+    ('bX33UI9ZPLk', '黑色毛衣', '周杰倫', '11月的蕭邦', 'https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/9e/35/ad/9e35ad1e-749e-75b6-0539-1e80cea1817b/JAY11.jpg/600x600bb.jpg', null, false, 3750, null, timestamptz '2026-09-01 00:00:00+00' + interval '4 seconds'),
+    ('RNBiaZbFGII', 'come again', 'm-flo', 'MF10 - 10th ANNIVERSARY BEST', 'https://is1-ssl.mzstatic.com/image/thumb/Music/d8/cc/76/mzi.wmjxzjse.jpg/600x600bb.jpg', null, false, -6800, null, timestamptz '2026-09-01 00:00:00+00' + interval '5 seconds'),
+    ('Dlz_XHeUUis', 'White Ferrari', 'Frank Ocean', 'Blonde', 'https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/bb/45/68/bb4568f3-68cd-619d-fbcb-4e179916545d/BlondCover-Final.jpg/600x600bb.jpg', null, false, 850, null, timestamptz '2026-09-01 00:00:00+00' + interval '6 seconds'),
+    ('xGqZ9lsc6Ck', '心動 (2018錄音棚現場版)', '黃韻玲', '心動 (2018錄音棚現場版)', 'https://is1-ssl.mzstatic.com/image/thumb/Music118/v4/16/03/57/1603573b-def7-eecc-503b-31bc1730f14f/4718009857179.jpg/600x600bb.jpg', null, false, 0, null, timestamptz '2026-09-01 00:00:00+00' + interval '7 seconds'),
+    ('rwFUxoLq3Ss', 'Kiss & Tell', '陳淑樺', '淑樺盛開', 'https://is1-ssl.mzstatic.com/image/thumb/Features114/v4/ea/e2/1c/eae21cef-7f7e-2a86-4a9e-7c81b5f7b70c/dj.rdpbhefl.jpg/600x600bb.jpg', null, false, 0, null, timestamptz '2026-09-01 00:00:00+00' + interval '8 seconds'),
+    ('jG6RnLVX07I', 'Hold On', 'The Internet', 'Hive Mind', 'https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/a7/9a/2d/a79a2dda-d97d-4225-bd7c-6a8b80715a01/886447110089.jpg/600x600bb.jpg', null, false, -850, null, timestamptz '2026-09-01 00:00:00+00' + interval '9 seconds'),
+    ('fXivMSJm_kA', 'YUKON', 'Justin Bieber', 'SWAG', 'https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/f9/09/36/f9093663-c05f-7f95-0a60-4e95d52fbb22/25UMGIM93915.rgb.jpg/600x600bb.jpg', null, false, 650, null, timestamptz '2026-09-01 00:00:00+00' + interval '10 seconds'),
+    ('uUcZHrGnJ54', '三個人的晚餐', '黃韻玲', '平凡', 'https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/68/db/8e/68db8e27-29d5-0cba-837b-6f9dcf489343/4710149911438_cover.jpg/600x600bb.jpg', null, false, 0, null, timestamptz '2026-09-01 00:00:00+00' + interval '11 seconds'),
+    ('kKsivrgoyDw', 'Cool with You', 'NewJeans', 'Get Up', 'https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/d3/4b/7e/d34b7e1e-af3b-43b6-2949-7a8c652a1bc9/196922462726_Cover.jpg/600x600bb.jpg', null, false, 500, null, timestamptz '2026-09-01 00:00:00+00' + interval '12 seconds'),
+    ('jWQx2f-CErU', 'Whiplash', 'aespa', 'Whiplash', 'https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/d5/c1/f5/d5c1f505-f588-775f-df05-c672a8ec22e9/888735949562_Cover.jpg/600x600bb.jpg', null, false, 500, null, timestamptz '2026-09-01 00:00:00+00' + interval '13 seconds'),
+    ('QiYOkmrI1jg', 'IYKYK', 'XG', 'AWE', 'https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/ae/69/ce/ae69ce7b-6007-c83a-f692-93ebfca55449/ANTCD-A0000014930.jpg/600x600bb.jpg', null, false, 500, null, timestamptz '2026-09-01 00:00:00+00' + interval '14 seconds'),
+    ('n59qeMSCAgA', 'opus', 'Ryuichi Sakamoto', 'BTTB -20th Anniversary Edition-', null, 1, true, 0, null, timestamptz '2026-09-01 00:00:00+00' + interval '15 seconds'),
+    ('qG0moUzt2wY', 'sonatine', 'Ryuichi Sakamoto', 'BTTB -20th Anniversary Edition-', null, 2, true, 0, null, timestamptz '2026-09-01 00:00:00+00' + interval '16 seconds'),
+    ('mcBuwynaCsY', 'intermezzo', 'Ryuichi Sakamoto', 'BTTB -20th Anniversary Edition-', null, 3, true, 0, null, timestamptz '2026-09-01 00:00:00+00' + interval '17 seconds'),
+    ('fJKGBLTzHLA', 'lorenz and watson', 'Ryuichi Sakamoto', 'BTTB -20th Anniversary Edition-', null, 4, true, 0, null, timestamptz '2026-09-01 00:00:00+00' + interval '18 seconds'),
+    ('MtiqsRvASDI', 'choral no.1', 'Ryuichi Sakamoto', 'BTTB -20th Anniversary Edition-', null, 5, true, 0, null, timestamptz '2026-09-01 00:00:00+00' + interval '19 seconds'),
+    ('IxnyhXJJyls', 'choral no.2', 'Ryuichi Sakamoto', 'BTTB -20th Anniversary Edition-', null, 6, true, 0, null, timestamptz '2026-09-01 00:00:00+00' + interval '20 seconds'),
+    ('TQ-pIBU5g-E', 'do bacteria sleep?', 'Ryuichi Sakamoto', 'BTTB -20th Anniversary Edition-', null, 7, true, 0, null, timestamptz '2026-09-01 00:00:00+00' + interval '21 seconds'),
+    ('dod5yASOmfU', 'bachata', 'Ryuichi Sakamoto', 'BTTB -20th Anniversary Edition-', null, 8, true, 0, null, timestamptz '2026-09-01 00:00:00+00' + interval '22 seconds'),
+    ('-KS71VBbMpg', 'chanson', 'Ryuichi Sakamoto', 'BTTB -20th Anniversary Edition-', null, 9, true, 0, null, timestamptz '2026-09-01 00:00:00+00' + interval '23 seconds'),
+    ('VtuUg1AcSbA', 'distant echo', 'Ryuichi Sakamoto', 'BTTB -20th Anniversary Edition-', null, 10, true, 0, null, timestamptz '2026-09-01 00:00:00+00' + interval '24 seconds'),
+    ('K-rsp6m55cQ', 'prelude', 'Ryuichi Sakamoto', 'BTTB -20th Anniversary Edition-', null, 11, true, 0, null, timestamptz '2026-09-01 00:00:00+00' + interval '25 seconds'),
+    ('59mCjeHk0sc', 'sonata', 'Ryuichi Sakamoto', 'BTTB -20th Anniversary Edition-', null, 12, true, 0, null, timestamptz '2026-09-01 00:00:00+00' + interval '26 seconds'),
+    ('66HGO2Pl3kk', 'uetax', 'Ryuichi Sakamoto', 'BTTB -20th Anniversary Edition-', null, 13, true, 0, null, timestamptz '2026-09-01 00:00:00+00' + interval '27 seconds'),
+    ('SJcbMTz2oNw', 'aqua', 'Ryuichi Sakamoto', 'BTTB -20th Anniversary Edition-', null, 14, true, 0, null, timestamptz '2026-09-01 00:00:00+00' + interval '28 seconds'),
+    ('jHC_yMY9N0I', 'energy flow', 'Ryuichi Sakamoto', 'BTTB -20th Anniversary Edition-', null, 15, true, 0, null, timestamptz '2026-09-01 00:00:00+00' + interval '29 seconds'),
+    ('H-Tj_pTZ0aM', 'snake eyes', 'Ryuichi Sakamoto', 'BTTB -20th Anniversary Edition-', null, 16, true, 0, null, timestamptz '2026-09-01 00:00:00+00' + interval '30 seconds'),
+    ('4DIWZ5qi03g', 'tong poo', 'Ryuichi Sakamoto', 'BTTB -20th Anniversary Edition-', null, 17, true, 0, null, timestamptz '2026-09-01 00:00:00+00' + interval '31 seconds'),
+    ('WKEuD1Ak3iM', 'reversing', 'Ryuichi Sakamoto', 'BTTB -20th Anniversary Edition-', null, 18, true, 0, null, timestamptz '2026-09-01 00:00:00+00' + interval '32 seconds')
+  on conflict (id) do nothing;
+  insert into public.music_settings (name, value) values ('seeded', 'true');
+end
+$$;
 
