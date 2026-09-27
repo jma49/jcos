@@ -23,8 +23,10 @@ page at `/projects/<slug>/`.
 
 ## Stack
 
-- [Astro](https://astro.build) 7 (Node 22.12 or later), static output, with one client-only
+- [Astro](https://astro.build) 7, static output, with one client-only
   React 19 island for the desktop (`src/os/`), plus zustand and motion.
+  Node 24: `engines` in `package.json`, which Vercel and CI follow; use
+  the same locally (npm warns about another major).
 - [Supabase](https://supabase.com): accounts, Postgres with row-level
   security, Realtime, Storage and Edge Functions (Deno).
 - [Vercel](https://vercel.com): hosting and two small functions in `api/`
