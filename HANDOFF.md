@@ -117,6 +117,11 @@ ryOS (AGPL-3.0).
     Search, lrclib) from the parsed video id.
   Free-plan headroom (checked 2026-09-26): 200 songs are about 100 KB of
   the 500 MB database; the edge cache keeps the 5 GB egress out of reach.
+- **A visitor's iPod is theirs** (decided 2026-09-27): "Listen along"
+  starts the song on the visitor's iPod once, and from then on it's the
+  visitor's. `/stop` only takes the notification away (and stops
+  prompting late arrivals); it never stops anyone's music. `/stop`
+  matters little, since a play ends by itself with its song.
 - **Other people's pointers are opt-in** (decided 2026-09-26): they're
   off unless a visitor turns on "Show other people's pointers" in System
   Preferences › Sharing, and a pointer is only sent while someone else
@@ -173,7 +178,8 @@ folder is `~/Code/personal/jmos` now, like the repository.
 2. **Then, once `main` is deployed** (the iPod opening on Now Playing
    for "Listen along"): `/play` and see the notification arrive on an
    open desktop without a reload, "Listen along" open the iPod on Now
-   Playing, and `/stop` take the notification away.
+   Playing, and `/stop` take the notification away (only that: the
+   visitor's music plays on, section 3).
 
 Checked locally, in production builds (2026-09-27):
 - the clear desktop and the Welcome; Finder's selection on striped rows;
