@@ -49,6 +49,8 @@ curl -fsS "https://api.telegram.org/bot${TOKEN}/setMyCommands" -H 'content-type:
   {"command":"songs","description":"The music library"},
   {"command":"remove","description":"Take a song out"},
   {"command":"offset","description":"Lyrics timing: /offset <song> <ms>"},
+  {"command":"play","description":"Play a song for everyone on the desktop"},
+  {"command":"stop","description":"Stop it"},
   {"command":"help","description":"What I can do"}]}' >/dev/null
 echo "✓ Commands menu set"
 

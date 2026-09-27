@@ -263,4 +263,17 @@ export interface Social {
    * returns a function that stops watching.
    */
   watchChat: (handlers: ChatHandlers) => () => void;
+  /** What Jincheng is playing for everyone, by the database's clock; null when nothing is. */
+  nowPlaying: () => Promise<NowPlaying | null>;
+  /** Calls back when Jincheng plays or stops a song; returns a function that stops watching. */
+  watchNowPlaying: (onChange: () => void) => () => void;
+}
+
+/** A song Jincheng is playing for everyone on the desktop (/play in Telegram). */
+export interface NowPlaying {
+  /** The song's YouTube id. */
+  songId: string;
+  /** How far in it is, and how long it has left, in ms, by the database's clock. */
+  elapsedMs: number;
+  remainingMs: number;
 }

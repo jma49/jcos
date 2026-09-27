@@ -197,8 +197,15 @@ new way of syncing them, planned for later (see below).
      merged and the migration has run, and rerun
      `scripts/setup-soapbox.sh` (or its `setMyCommands` call) for the
      command menu.
-   - M4: `/play`, `/stop` and listening along.
-   Jincheng deploys the bot from `main`, as for earlier changes.
+   - M4, done (`feat/music-together`): `/play`, `/stop` and listening
+     along (`media/together.ts`); `now_playing_position()` also returns
+     the time left, so this changes the M1 migration, which hasn't run
+     anywhere yet.
+   Jincheng deploys the bot from `main`, as for earlier changes. Only a
+   deployment can show the whole loop: `/add` a song and see it in the
+   iPod within five minutes; `/play` it and see the notification on
+   another device, listen along and hear it at the same place; `/stop`
+   and see the notification go.
 
 1. **The database is up to date** (2026-09-26). Every migration in
    `supabase/migrations/`, through `20260926100511_advisor.sql`, has been

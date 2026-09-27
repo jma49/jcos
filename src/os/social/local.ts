@@ -309,6 +309,14 @@ export function localSocial(): Social {
       return () => chatWatchers.delete(handlers);
     },
 
+    // Only the bot plays songs for everyone, and there's no bot here.
+    async nowPlaying() {
+      return null;
+    },
+    watchNowPlaying() {
+      return () => {};
+    },
+
     joinPresence(info, { onVisitors, onCursor, onLeave, onSignal }) {
       const id = crypto.randomUUID();
       const channel = new BroadcastChannel('os-dev-presence');

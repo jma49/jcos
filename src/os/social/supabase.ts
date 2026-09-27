@@ -372,6 +372,25 @@ export function supabaseSocial(url: string, key: string): Social {
       };
     },
 
+    async nowPlaying() {
+      const { data, error } = await client.rpc('now_playing_position');
+      if (error) throw error;
+      const row = (data as { song_id: string; elapsed_ms: number; remaining_ms: number }[] | null)?.[0];
+      return row ? { songId: row.song_id, elapsedMs: Number(row.elapsed_ms), remainingMs: Number(row.remaining_ms) } : null;
+    },
+
+    // Changes to now_playing, which only the bot writes: the payload isn't
+    // trusted, only taken as a cue to ask nowPlaying().
+    watchNowPlaying(onChange) {
+      const channel = client
+        .channel('now-playing')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'now_playing' }, () => onChange())
+        .subscribe();
+      return () => {
+        client.removeChannel(channel);
+      };
+    },
+
     joinPresence(info, { onVisitors, onCursor, onLeave, onSignal }) {
       const id = crypto.randomUUID();
       let me: VisitorInfo = info;
