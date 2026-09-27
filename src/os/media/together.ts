@@ -28,7 +28,7 @@ export async function listenAlong(social: Pick<Social, 'nowPlaying'>) {
   play('ipod', index, [index]);
   // The player starts the song here (player.ts), as it would when taking over from Karaoke.
   useMusic.setState({ resume: { index, time: now.elapsedMs / 1000 } });
-  launch('ipod');
+  launch('ipod', { props: { nowPlaying: String(Date.now()) } });
 }
 
 interface Showing {

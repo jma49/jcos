@@ -70,7 +70,7 @@ describe('listenAlong', () => {
     const s = music.useMusic.getState();
     expect([s.index, s.owner, s.playing]).toEqual([1, 'ipod', true]);
     expect(s.resume).toEqual({ index: 1, time: 83.5 });
-    expect(launch).toHaveBeenCalledWith('ipod');
+    expect(launch).toHaveBeenCalledWith('ipod', { props: { nowPlaying: expect.any(String) } });
   });
 
   test('says so when the song has finished, and plays nothing', async () => {

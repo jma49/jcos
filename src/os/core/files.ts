@@ -87,7 +87,7 @@ export function buildDisk(data: OSData, applets: AppId[]): FileNode {
       look: { image: coverOf(s), lines: [s.title, [s.artist, s.album].filter(Boolean).join(' — ')] },
       open: (el) => {
         useMusic.getState().play('ipod', index, queue);
-        launch('ipod', { origin: rectOf(el) });
+        launch('ipod', { origin: rectOf(el), props: { nowPlaying: String(Date.now()) } });
       }
     };
   };
