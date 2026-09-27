@@ -68,7 +68,8 @@ again.
   `scaleY` the shown target had. Give every target of a component the
   same keys.
 - React holds back content that suspended for about 300 ms before
-  showing it. A lazy Dashboard behind `Suspense` took 350 ms to appear
+  showing it. An installed applet, its code already fetched, took 820 ms
+  to open through `lazy` and 80 ms rendered directly (`readyApp()`). A lazy Dashboard behind `Suspense` took 350 ms to appear
   where it had taken 55, even with its code loaded. For something that
   must open instantly, load the module yourself and render it once it's
   in (`DashboardLayer.tsx`).
@@ -127,6 +128,10 @@ again.
 
 ## Tests and tooling
 
+- A test that mocks a module and then loads several modules with
+  `Promise.all([import(…), …])` failed five times in six: a module could
+  bind the real one before the mock was in place. Load them one after
+  another.
 - A Vitest `expect` inside a per-frame loop made the Pinball test time
   out. Use plain `throw` in hot loops, and give long simulations an
   explicit timeout.

@@ -25,10 +25,48 @@ async function loadApp({ id, load, styles }: AppManifest<AppId>) {
   return app;
 }
 
+const manifests = Object.fromEntries(catalog.map((m) => [m.id, m])) as Record<AppId, AppManifest<AppId>>;
+const loading = new Map<AppId, ReturnType<typeof loadApp>>();
+const ready = new Map<AppId, ComponentType<AppProps>>();
+
+/**
+ * An app whose code has arrived, to render directly: React holds back a
+ * lazy component that suspends for about 300 ms, even when its code is
+ * already here, so an installed applet would open no faster than a new
+ * one. A window chooses once, when it mounts (switching would remount the
+ * app).
+ */
+export function readyApp(id: AppId): ComponentType<AppProps> | undefined {
+  return ready.get(id);
+}
+
+/**
+ * Fetches an app ahead of its first window: installing an applet does, so
+ * it opens at once. Each app is fetched once; a fetch that fails (offline,
+ * or code replaced by a deploy) is forgotten, so it can be tried again.
+ */
+export function preloadApp(id: AppId) {
+  let app = loading.get(id);
+  if (!app) {
+    app = loadApp(manifests[id]).then(
+      (loaded) => {
+        ready.set(id, loaded.default);
+        return loaded;
+      },
+      (error) => {
+        loading.delete(id);
+        throw error;
+      }
+    );
+    loading.set(id, app);
+  }
+  return app;
+}
+
 export const apps = Object.fromEntries(
-  catalog.map(({ window, load, styles, ...app }): [AppId, AppDefinition] => [
+  catalog.map(({ window, load: _load, styles: _styles, ...app }): [AppId, AppDefinition] => [
     app.id,
-    { ...app, ...window, Component: lazy(() => loadApp({ ...app, window, load, styles })) }
+    { ...app, ...window, Component: lazy(() => preloadApp(app.id)) }
   ])
 ) as Record<AppId, AppDefinition>;
 
@@ -57,9 +95,14 @@ interface LaunchOptions {
   center?: boolean;
 }
 
-/** Opens (or focuses) an app window with its registered defaults. */
-export function launch(app: AppId, { key, title, origin, props, center }: LaunchOptions = {}) {
+/**
+ * Opens (or focuses) an app window with its registered defaults. An applet
+ * that isn't installed opens its page in the Applet Store instead, however
+ * it was asked for (a link, the Terminal, a shortcut).
+ */
+export function launch(app: AppId, { key, title, origin, props, center }: LaunchOptions = {}): string {
   const def = apps[app];
+  if (def.applet && !useWindows.getState().applets.includes(app)) return launch('appstore', { origin, props: { applet: app } });
   return useWindows.getState().open(app, {
     key,
     title: title ?? def.name,

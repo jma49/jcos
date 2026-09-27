@@ -139,7 +139,15 @@ around it.
   (table units, 400 × 700); keep it free of anything from Microsoft's
   Space Cadet. Which applets this browser has installed is kept in
   `os-applets`; installed applets appear in Finder's Applets folder and
-  Spotlight. To add one, see [adding.md](adding.md).
+  Spotlight. Getting one downloads its code and styles then (not
+  before; `perf` checks none is in the first load), and it's listed only
+  once they've arrived; a failed download leaves it uninstalled with a
+  notification. An applet that isn't installed, asked for by a link, the
+  Terminal or anything else that calls `launch()`, opens its page in the
+  store. Removing one closes its windows and keeps what it saved, as a
+  Mac keeps an app's preferences. An app whose code has arrived renders
+  directly rather than through `lazy` (`readyApp()` in the registry), so
+  it opens at once. To add one, see [adding.md](adding.md).
 - Open windows survive a reload (`src/os/core/windowSession.ts`, saved in
   `os-windows`); `?open=` wins. A first visit gets the Welcome window
   alone, centred (`os-welcomed`); otherwise the desktop starts clear.
