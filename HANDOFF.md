@@ -80,7 +80,38 @@ ryOS (AGPL-3.0).
   day. To hide a note, set `approved` to false in the Supabase Table
   editor.
 
-## 4. Open issues and next steps
+## 4. To check after the next deploy
+
+Production has run #85 since 2026-09-26: the daily deployment cap held
+back #86–#95, which reach it together with the first push after the
+reset. Checked before deploying, in a local production build: the clear
+desktop and the Welcome on a first visit; Finder's list selection on
+odd and even rows; the Dashboard and Exposé, with and without reduced
+motion; Synth's patch across octave keys; Photos' keys; the résumé
+printed on Letter and A4; every app by the smoke test, and the
+animations frame by frame against the previous build. What only a
+deployment can show:
+
+1. **It's live.** About This Mac shows the build hash of `main`'s head.
+2. **The ignored build step works.** In the Vercel dashboard, a pull
+   request touching only docs or CI shows "Ignored Build Step" and no
+   build, and one touching `src/` builds. See whether skipped ones count
+   toward the daily cap.
+3. **A deploy while the desktop is open.** Keep a tab open across a
+   deploy, then open an app you hadn't opened: the window should say
+   "JM/OS has been updated" with Reload (AppBoundary, #73), not go blank.
+4. **Real network speed.** `node scripts/perf-audit.mjs
+   https://www.majincheng.com/` within budget; the Dashboard opens as
+   quickly on the live site as locally (it loads when the pointer
+   reaches the menu bar or the Dock, or eight seconds in).
+5. **The previews workflow.** Run it by hand once (Actions › Update
+   project previews › Run workflow): it should finish and commit the
+   covers and `og.png` that changed.
+6. **By a person.** Print the résumé from Chrome's and Safari's print
+   dialogs (paper size, headers and footers off); listen to the
+   interface sounds; check the timing of 三個人的晚餐 in Karaoke.
+
+## 5. Open issues and next steps
 
 1. **The database is up to date** (2026-09-26). Every migration in
    `supabase/migrations/`, through `20260926100511_advisor.sql`, has been
