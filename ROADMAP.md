@@ -8,12 +8,6 @@ to HANDOFF.md and take it out of here.
 Each item says why it's worth doing, what it has to respect (the rules
 in [AGENTS.md](AGENTS.md)), and how we'll know it's done.
 
-## Now: finish what's merged
-
-- **Listening along, live:** `/play` reaching an open desktop without a
-  reload, "Listen along" opening Now Playing, `/stop` taking the
-  notification away (HANDOFF.md section 4).
-
 ## 1. Room on the first load
 
 **Why.** The first visit's JavaScript is 157 KB against a budget of 160
