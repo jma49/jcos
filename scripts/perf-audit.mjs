@@ -86,6 +86,11 @@ const FIRST_LOAD_MS = 7000;
 
 async function load() {
   const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+  // The pointer starts at (0, 0), over the menu bar, where it would fetch the
+  // Dashboard ahead (DashboardLayer.tsx) whenever the browser happens to
+  // report it there: a first visit's load is measured before anyone reaches
+  // for the menu bar.
+  await page.mouse.move(720, 450);
   const seen = [];
   const start = Date.now();
   page.on('response', async (res) => {
