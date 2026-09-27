@@ -18,7 +18,10 @@ export function useDesktopPicture(data: OSData, sky: SkyState, root: RefObject<H
   // What's stored: a photo's URL, a generated picture (wallpapers.ts), or null for the default.
   const chosen = useWindows((s) => s.wallpaper);
   // "Now Playing" shows the cover of the song that's on, blurred.
-  const cover = useMusic((s) => (s.owner ? coverOf(SONGS[s.index]) : null));
+  const cover = useMusic((s) => {
+    const song = s.owner ? SONGS[s.index] : undefined;
+    return song ? coverOf(song) : null;
+  });
   const showsCover = chosen === COVER && !!cover;
   const wallpaper = chosen === COVER ? (cover ?? data.wallpaper) : (chosen ?? data.wallpaper);
   // Photos and covers are sampled for their colours; generated pictures know theirs.

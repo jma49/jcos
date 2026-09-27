@@ -19,6 +19,7 @@ import { startChatWatch } from './social/chatState';
 import { startListeningAlong } from './media/together';
 import { startAirDrop } from './social/airdrop';
 import { Notices } from './shell/Notices';
+import { Contained } from './shell/Contained';
 import { useDesktopPicture } from './look/useDesktopPicture';
 import { useAppearance } from './look/useAppearance';
 import { watchWindows } from './core/sound';
@@ -148,12 +149,22 @@ function Shell({ data }: { data: OSData }) {
         <WindowLayer />
 
         <Dock />
-        <DashboardLayer />
+        <Contained name="Dashboard">
+          <DashboardLayer />
+        </Contained>
         <Spotlight />
         <AppSwitcher />
-        <Screensaver />
-        {!booting && <Presence />}
-        <Notices />
+        <Contained name="The screen saver">
+          <Screensaver />
+        </Contained>
+        {!booting && (
+          <Contained name="Presence">
+            <Presence />
+          </Contained>
+        )}
+        <Contained name="Notifications">
+          <Notices />
+        </Contained>
         {menuAt && <DesktopMenu at={menuAt} onClose={closeMenu} />}
 
         <AnimatePresence>{booting && !reduced && <Boot onDone={finishBoot} />}</AnimatePresence>
