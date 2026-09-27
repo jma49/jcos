@@ -24,10 +24,15 @@ export interface SystemSettings {
   clockDate: boolean;
   /** Whether others on the desktop see this visitor's city. */
   shareCity: boolean;
-  /** Whether others see this visitor's pointer. */
+  /** Whether this visitor's pointer is sent to those who've chosen to see pointers. */
   sharePointer: boolean;
-  /** Whether other visitors' pointers are drawn here. */
-  showPointers: boolean;
+  /**
+   * Whether other visitors' pointers are drawn here. Off unless chosen:
+   * nobody's pointer moves across someone else's screen uninvited. (It
+   * replaced `showPointers`, which was on by default, so that setting
+   * doesn't carry over.)
+   */
+  showOthersPointers: boolean;
 }
 
 export const SYSTEM_DEFAULTS: SystemSettings = {
@@ -40,7 +45,7 @@ export const SYSTEM_DEFAULTS: SystemSettings = {
   clockDate: true,
   shareCity: true,
   sharePointer: true,
-  showPointers: true
+  showOthersPointers: false
 };
 
 /** Icon sizes in the Dock, at rest. */
@@ -54,8 +59,14 @@ interface SystemState extends SystemSettings {
   reset: () => void;
 }
 
+/** The saved settings over their defaults, keeping only settings that still exist. */
+function savedSettings(): SystemSettings {
+  const saved = loadSettings(SYSTEM_KEY, SYSTEM_DEFAULTS);
+  return Object.fromEntries(Object.keys(SYSTEM_DEFAULTS).map((key) => [key, saved[key as keyof SystemSettings]])) as unknown as SystemSettings;
+}
+
 export const useSystem = create<SystemState>((set, get) => ({
-  ...loadSettings(SYSTEM_KEY, SYSTEM_DEFAULTS),
+  ...savedSettings(),
   set: (patch) => {
     set(patch);
     const { set: _set, reset: _reset, ...settings } = get();
