@@ -99,8 +99,10 @@ around it.
 - `src/os/shell/genie.ts`: the displacement map behind the Genie minimize in
   `Window.tsx`.
 - `src/os/social/social.ts`: Stickies (a guestbook) and presence (who's
-  online and from which city, and other visitors' cursors labelled with
-  it) on Supabase. See [supabase.md](supabase.md).
+  online and from which city, and, for a visitor who turns them on in
+  System Preferences › Sharing, other visitors' pointers labelled with
+  it) on Supabase. Other people's pointers are off by default: nobody's
+  pointer crosses another screen uninvited. See [supabase.md](supabase.md).
 - `src/os/apps/soapbox/`: Jincheng's own notes and rants, with
   photos. Posts come from a Telegram bot, `supabase/functions/soapbox-bot`
   (setup in its README): text, photos with captions, albums (one post)

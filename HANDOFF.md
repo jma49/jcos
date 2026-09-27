@@ -113,6 +113,12 @@ ryOS (AGPL-3.0).
     Search, lrclib) from the parsed video id.
   Free-plan headroom (checked 2026-09-26): 200 songs are about 100 KB of
   the 500 MB database; the edge cache keeps the 5 GB egress out of reach.
+- **Other people's pointers are opt-in** (decided 2026-09-26): they're
+  off unless a visitor turns on "Show other people's pointers" in System
+  Preferences › Sharing, and a pointer is only sent while someone else
+  has, so one visitor's mouse never moves across another's screen
+  uninvited. The setting has a new key (`showOthersPointers`), so the
+  old default (on) doesn't carry over for visitors who saved settings.
 - No link back to a classic site; Chinese is on hold.
 - Don't change ocra for now; it will be redesigned.
 - The "Ask me" AI assistant is on hold.
@@ -134,6 +140,11 @@ own pull request, merged in this order after it:
    phone layouts);
 4. `feat/applet-install`: applets fetched on Get, not before; an
    installed app opens in 80 ms instead of 820.
+5. `feat/music-db`, `feat/music-api`, `feat/music-bot`,
+   `feat/music-together`: the music library on Supabase (section 5,
+   item 0);
+6. `feat/pointers-opt-in`: other people's pointers only for those who
+   ask.
 Rebase each onto `main` once the one below merges (pitfalls: never stack
 on merged history).
 

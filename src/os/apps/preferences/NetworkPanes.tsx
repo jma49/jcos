@@ -10,7 +10,7 @@ import { Group, Option } from './controls';
 // Backup & Restore.
 
 export function SharingPane() {
-  const { shareCity, sharePointer, showPointers, set } = useSystem();
+  const { shareCity, sharePointer, showOthersPointers, set } = useSystem();
   const discoverable = useAirDrop((s) => s.discoverable);
   const { account } = useAccount();
   const place = usePlace();
@@ -24,7 +24,7 @@ export function SharingPane() {
             “Somewhere”.
           </Option>
           <Option checked={sharePointer} onChange={(on) => set({ sharePointer: on })} title="Share my pointer">
-            Your pointer appears on other people’s screens as you move it.
+            Your pointer appears for people who’ve chosen to see pointers, and no one else.
           </Option>
           <Option
             checked={!!account && discoverable === 'everyone'}
@@ -40,8 +40,9 @@ export function SharingPane() {
       </Group>
       <Group title="What I see">
         <div className="os-prefs-radios">
-          <Option checked={showPointers} onChange={(on) => set({ showPointers: on })} title="Show other people’s pointers">
-            Everyone else’s pointer, labelled with their name or city.
+          <Option checked={showOthersPointers} onChange={(on) => set({ showOthersPointers: on })} title="Show other people’s pointers">
+            Off, nobody else’s pointer moves across your screen. On, you see the pointers of those who share theirs,
+            labelled with their name or city.
           </Option>
         </div>
       </Group>

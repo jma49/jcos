@@ -46,7 +46,12 @@ security and triggers in `supabase/schema.sql` do the enforcing.
   open chat room, whether AirDrop can reach them), their cursors, and
   signals: short-lived messages such as typing, nudges and AirDrop
   offers. Anyone can send anything there, so receivers check what
-  arrives (`cleanInfo()` for presence). Past `CROWD` (12) people, every
+  arrives (`cleanInfo()` for presence). Pointers are drawn only for a
+  visitor who has turned on "Show other people's pointers" (off by
+  default, `showOthersPointers`), who says so in their presence
+  (`watching`); a pointer is sent only while someone else watches
+  (`anyoneWatching()`), so a desktop where nobody does sends none, the
+  bulk of Realtime's messages otherwise. Past `CROWD` (12) people, every
   visitor stops sending and drawing pointers, since pointer traffic grows
   with the square of the crowd; they come back at `CALM` (10). The menu
   bar's list names the first 30.

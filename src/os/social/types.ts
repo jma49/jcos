@@ -49,6 +49,8 @@ export interface VisitorInfo {
   room?: string;
   /** False when they've turned AirDrop off. */
   airdrop?: boolean;
+  /** True when they've chosen to see other people's pointers: only then are pointers sent. */
+  watching?: boolean;
 }
 
 const text = (value: unknown, max: number) => (typeof value === 'string' && value.trim() ? value.trim().slice(0, max) : undefined);
@@ -65,7 +67,8 @@ export function cleanInfo(raw: unknown, fallbackColor: string): VisitorInfo {
     country: text(info.country, 2),
     username: username && USERNAME.test(username) ? username : undefined,
     room: room && /^[a-z0-9-]+$/.test(room) ? room : undefined,
-    airdrop: info.airdrop === false ? false : undefined
+    airdrop: info.airdrop === false ? false : undefined,
+    watching: info.watching === true ? true : undefined
   };
 }
 
