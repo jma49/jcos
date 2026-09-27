@@ -3,7 +3,7 @@
 // Music's match. The commands themselves are walked in bot.test.mjs.
 
 import { describe, expect, test } from 'vitest';
-import { coverOf, guessFromVideo, parseAdd, pickTrack, videoIdOf } from './music.ts';
+import { coverOf, guessFromVideo, minutes, parseAdd, pickTrack, videoIdOf } from './music.ts';
 
 describe('videoIdOf', () => {
   test.each([
@@ -81,4 +81,13 @@ describe('parseAdd', () => {
   test('a link alone', () => expect(parseAdd('https://youtu.be/OxtZF0WGXtE')).toEqual({ id: 'OxtZF0WGXtE' }));
   test('a link with what to look for', () =>
     expect(parseAdd('https://youtu.be/OxtZF0WGXtE  寧夏 - 梁靜茹')).toEqual({ id: 'OxtZF0WGXtE', hint: { title: '寧夏', artist: '梁靜茹' } }));
+});
+
+describe('minutes', () => {
+  test.each([
+    [252000, '4:12'],
+    [239600, '4:00'],
+    [59_500, '1:00'],
+    [5000, '0:05']
+  ])('%i ms is %s', (ms, shown) => expect(minutes(ms)).toBe(shown));
 });

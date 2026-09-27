@@ -79,6 +79,11 @@ globalThis.fetch = async (input, init = {}) => {
     if (table === 'music_settings') {
       const name = eq('name');
       if (method === 'POST') return (world.music[body.name] = body.value), new Response(null, { status: 201 });
+      if (method === 'DELETE' && params.get('name') === 'like.draft:*') {
+        const before = params.get('value->>created')?.replace(/^lt\./, '');
+        for (const [key, value] of Object.entries(world.music)) if (key.startsWith('draft:') && value.created < before) delete world.music[key];
+        return new Response(null, { status: 204 });
+      }
       if (method === 'DELETE') {
         // As Postgres does: only one delete finds the row.
         if (!(name in world.music)) return json([]);
@@ -339,7 +344,7 @@ test('Cancel adds nothing; without Apple Music the video’s own title and thumb
   await send({ message_id: 208, text: `/add ${NINGXIA}` });
   assert.match(world.replies.at(-1), /寧夏 — 梁靜茹/);
   assert.match(world.replies.at(-1), /the video’s thumbnail/);
-  assert.equal(world.music[`draft:${NINGXIA}`].cover, `https://i.ytimg.com/vi/${NINGXIA}/hqdefault.jpg`);
+  assert.equal(world.music[`draft:${NINGXIA}`].song.cover, `https://i.ytimg.com/vi/${NINGXIA}/hqdefault.jpg`);
   await press(`song:cancel:${NINGXIA}`, 'preview');
   assert.equal(world.songs.length, 0);
   assert.match(world.edits.at(-1).text, /Not added/);
@@ -374,7 +379,11 @@ test('someone else’s /add is ignored', async () => {
 
 test('/play plays a song for everyone, learning its length first; /stop stops it', async () => {
   world.songs.push({ id: NINGXIA, title: '寧夏', artist: '梁靜茹', duration_ms: null });
-  world.lrclib = [{ duration: 252.4, syncedLyrics: '[00:12.00] …' }];
+  // lrclib's first hit is another song: its length isn't taken.
+  world.lrclib = [
+    { trackName: '寧夏 (Live)', artistName: '某翻唱', duration: 301 },
+    { trackName: '寧夏', artistName: '梁靜茹', duration: 252.4, syncedLyrics: '[00:12.00] …' }
+  ];
   await send({ message_id: 216, text: '/play 寧夏' });
   assert.equal(world.playing, NINGXIA);
   assert.equal(world.songs[0].duration_ms, 252400);
@@ -395,4 +404,36 @@ test('two presses of Add at once add the song once, and each says what happened'
   assert.equal(outcomes.filter((t) => t.startsWith('✅ Added')).length, 1);
   assert.equal(outcomes.filter((t) => /already answered/.test(t)).length, 1);
   assert.ok(!outcomes.some((t) => t.startsWith('⚠️')), 'no press reports a failure that didn’t happen');
+});
+
+test('a title starting with an 11-letter word is found by title', async () => {
+  world.songs.push({ id: NINGXIA, title: 'Butterflies', artist: 'Someone' }, { id: 'EEEEEEEEEEE', title: 'Other', artist: 'C' });
+  await send({ message_id: 220, text: '/remove Butterflies' });
+  assert.deepEqual(world.songs.map((s) => s.id), ['EEEEEEEEEEE']);
+});
+
+test('the last song stays', async () => {
+  world.songs.push({ id: NINGXIA, title: '寧夏', artist: '梁靜茹' });
+  await send({ message_id: 221, text: '/remove 寧夏' });
+  assert.equal(world.songs.length, 1);
+  assert.match(world.replies.at(-1), /last song/);
+});
+
+test('Add on a song added meanwhile says it’s there, even with the library full', async () => {
+  world.youtube[NINGXIA] = { title: '寧夏', author_name: '梁靜茹 - Topic' };
+  await send({ message_id: 222, text: `/add ${NINGXIA}` });
+  world.songs.push({ id: NINGXIA, title: '寧夏', artist: '梁靜茹' });
+  world.music.song_limit = 1;
+  await press(`song:add:${NINGXIA}`, 'preview');
+  assert.match(world.edits.at(-1).text, /already in the library/);
+});
+
+test('drafts nobody answered within a day are cleared by the next /add', async () => {
+  world.music['draft:OLDOLDOLD00'] = { song: {}, created: '2020-01-01T00:00:00.000Z' };
+  world.music['draft:NEWNEWNEW00'] = { song: {}, created: new Date().toISOString() };
+  world.youtube[NINGXIA] = { title: '寧夏', author_name: '梁靜茹 - Topic' };
+  await send({ message_id: 223, text: `/add ${NINGXIA}` });
+  assert.ok(!('draft:OLDOLDOLD00' in world.music));
+  assert.ok('draft:NEWNEWNEW00' in world.music);
+  assert.ok(`draft:${NINGXIA}` in world.music);
 });

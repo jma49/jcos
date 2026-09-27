@@ -62,7 +62,7 @@ asks for the token (without echoing it) and your user ID, and does steps
 | `/watch on` / `/watch off` | new Stickies notes and public chat messages sent to you, each with a 🙈 Hide button (on by default) |
 | `/add <YouTube link>` | looks the song up (YouTube, Apple Music for its title, album, cover and length, lrclib for lyrics) and shows it with ✅ Add and ✖︎ Cancel; `/add <link> Title - Artist` says what to search for |
 | `/songs [words]` | how many songs of the limit (200), and the latest or those matching |
-| `/remove <title or id>` | takes a song out of the library |
+| `/remove <title or id>` | takes a song out of the library (not the last one: an empty library would send the site back to its snapshot) |
 | `/offset <title or id> <ms>` | how far its lyrics run ahead of the video (negative: behind) |
 | `/play <title or id>` | plays it for everyone on the desktop: they get a notification and can listen along from where it is |
 | `/stop` | stops it |
