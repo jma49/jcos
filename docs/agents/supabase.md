@@ -1,4 +1,4 @@
-# Accounts, Stickies, Chat and presence (Supabase)
+# Accounts, Stickies, Chat, presence and music (Supabase)
 
 The browser talks to Supabase directly with the public anon key; row-level
 security and triggers in `supabase/schema.sql` do the enforcing.
@@ -20,6 +20,17 @@ security and triggers in `supabase/schema.sql` do the enforcing.
   `approved` to false in the Table editor.
 - **Soapbox reactions**: members react as themselves and can change or take
   back a reaction; everyone else gets one per post, by salted IP hash.
+- **The music library** (`public.songs`, `public.albums`; migration
+  `20260927030802_music_library.sql`): the iPod's and Karaoke's songs,
+  read by everyone and written only by the Telegram bot (service role).
+  At most `music_settings.song_limit` songs (200; change it in the Table
+  editor); a full library refuses new songs. Covers are links to
+  Apple's or YouTube's image hosts only (the `music_cover` domain).
+  `public.now_playing` is the one song Jincheng is playing for everyone:
+  the bot calls `music_play()` and `music_stop()`, visitors hear of it
+  through Realtime (`postgres_changes`, which only a real write can
+  trigger) and join at `now_playing_position()`, by the database's clock.
+  (Moving the site and the bot onto it is still to come; HANDOFF.md.)
 - **Chat** (`apps/chat/`, `social/chatState.ts`): public rooms listed
   in `public.chat_rooms` (add one in the Table editor) and private
   conversations between two members (rooms named

@@ -46,3 +46,20 @@ wait
 links=$(psql -tA -d "$DB" -c "select count(*) from private.password_resets where user_id = '$DAVE'")
 [ "$links" = 3 ] || { echo "FAILED: six reset requests at once made $links links, not 3"; exit 1; }
 echo "ok: six reset requests at once, three links"
+
+# Songs: with room for three more, six added at once by the bot.
+psql -q -v ON_ERROR_STOP=1 -d "$DB" -c "update public.music_settings set value = to_jsonb((select count(*) from public.songs) + 3) where name = 'song_limit'" >/dev/null
+before=$(psql -tA -d "$DB" -c "select count(*) from public.songs")
+for i in 1 2 3 4 5 6; do
+  psql -q -d "$DB" >/dev/null 2>&1 <<SQL &
+begin;
+set local role service_role;
+insert into public.songs (id, title, artist) values ('race0000${i}xx', 'Race $i', 'Racer');
+select pg_sleep(0.3);
+commit;
+SQL
+done
+wait
+added=$(( $(psql -tA -d "$DB" -c "select count(*) from public.songs") - before ))
+[ "$added" = 3 ] || { echo "FAILED: six songs at once with room for three added $added"; exit 1; }
+echo "ok: six songs at once, room for three, three added"
