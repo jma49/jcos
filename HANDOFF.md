@@ -119,6 +119,16 @@ ryOS (AGPL-3.0).
   has, so one visitor's mouse never moves across another's screen
   uninvited. The setting has a new key (`showOthersPointers`), so the
   old default (on) doesn't carry over for visitors who saved settings.
+- **Concurrency is part of every design** (decided 2026-09-26): the
+  checklist is in docs/agents/self-audit.md. Audited then: tabs of one
+  visitor no longer overwrite each other's settings, scores, photos,
+  lyric tweaks or installed applets; the bot's Add button claims its
+  draft atomically; a song starting doesn't send every visitor to the
+  database. Left as is, on purpose: open windows are per tab (last
+  writer wins, as browsers restore tabs); past 200 visitors at once the
+  free plan's Realtime refuses more connections, and those visitors
+  simply don't see presence, chat or listening along (the desktop works
+  without them).
 - No link back to a classic site; Chinese is on hold.
 - Don't change ocra for now; it will be redesigned.
 - The "Ask me" AI assistant is on hold.
@@ -145,6 +155,8 @@ own pull request, merged in this order after it:
    item 0);
 6. `feat/pointers-opt-in`: other people's pointers only for those who
    ask.
+7. `fix/concurrency`: tabs sharing storage, the bot's atomic Add, and
+   no database stampede when a song starts.
 Rebase each onto `main` once the one below merges (pitfalls: never stack
 on merged history).
 

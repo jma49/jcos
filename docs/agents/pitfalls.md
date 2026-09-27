@@ -132,6 +132,18 @@ again.
   `/api/songs` answered 404. Import TypeScript with its `.ts` extension
   there, and try a new function with `npm run serve`.
 
+- Every tab saved its whole copy of a setting or score. A best score of
+  5000 set in one tab was overwritten by 4000 from a tab that had loaded
+  before it, and changing the Dock size in one tab turned pointers back
+  off after another tab had turned them on. Build on what's stored
+  (`updateJSON`) and listen for other tabs (`onStored`).
+- Pressing Add under a song twice read the draft twice, so both presses
+  tried to add it and the second reported a failure over the first's
+  success. Claim with the delete itself (`delete … returning`).
+- Every visitor asking the database what's playing when a song starts is
+  a stampede of one query per visitor. Use what the Realtime event
+  carries, and ask only when someone acts on it.
+
 ## Tests and tooling
 
 - A test that mocks a module and then loads several modules with
