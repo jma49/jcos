@@ -3,7 +3,7 @@
 The browser talks to Supabase directly with the public anon key; row-level
 security and triggers in `supabase/schema.sql` do the enforcing.
 
-- **Accounts** (`src/os/social/`, `apps/Account.tsx`): a username and a
+- **Accounts** (`src/os/social/`, `apps/account/`): a username and a
   password, with an optional recovery address. They're Supabase Auth users
   whose address is made from the username
   (`<username>@users.majincheng.com`), so Authentication › Providers ›
@@ -20,7 +20,7 @@ security and triggers in `supabase/schema.sql` do the enforcing.
   `approved` to false in the Table editor.
 - **Soapbox reactions**: members react as themselves and can change or take
   back a reaction; everyone else gets one per post, by salted IP hash.
-- **Chat** (`apps/Chat.tsx`, `social/chatState.ts`): public rooms listed
+- **Chat** (`apps/chat/`, `social/chatState.ts`): public rooms listed
   in `public.chat_rooms` (add one in the Table editor) and private
   conversations between two members (rooms named
   `dm:<account id>:<account id>`, smaller id first, readable only by

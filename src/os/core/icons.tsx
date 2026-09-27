@@ -4,7 +4,7 @@ import { useId, type ComponentType } from 'react';
 
 export type IconComponent = ComponentType<{ size?: number }>;
 
-function pngIcon(name: string): IconComponent {
+export function pngIcon(name: string): IconComponent {
   const Icon = ({ size = 64 }: { size?: number }) => (
     <img
       src={`/os/icons/${name}.png`}
@@ -31,8 +31,6 @@ export const DiskIcon = pngIcon('disk');
 export const PhotosIcon = pngIcon('images');
 export const DashboardIcon = pngIcon('dashboard');
 export const PreferencesIcon = pngIcon('preferences');
-export const MinesweeperIcon = pngIcon('minesweeper');
-export const CalculatorIcon = pngIcon('calculator');
 export const IPodIcon = pngIcon('ipod');
 export const KaraokeIcon = pngIcon('karaoke');
 export const ChatIcon = pngIcon('chat');
@@ -42,7 +40,6 @@ export const AppletsFolderIcon = pngIcon('applets');
 export const DocumentsFolderIcon = pngIcon('documents');
 export const AirDropIcon = pngIcon('airdrop');
 export const PhotoBoothIcon = pngIcon('photo-booth');
-export const SynthIcon = pngIcon('synth');
 /** Finder's face, as in the Dock. */
 export const FinderIcon = pngIcon('mac');
 export const AppleIcon = pngIcon('apple');
@@ -98,64 +95,6 @@ export function MusicFolderIcon({ size = 64 }: { size?: number }) {
         />
       </svg>
     </span>
-  );
-}
-
-/** Spider Solitaire: two fanned cards, a spade on top. Drawn here. */
-export function SpiderIcon({ size = 64 }: { size?: number }) {
-  // Unique per instance, as for Stickies: a hidden copy's gradients can't be borrowed.
-  const id = `spider${useId().replace(/[^\w-]/g, '')}`;
-  return (
-    <svg className="os-icon" width={size} height={size} viewBox="0 0 64 64" aria-hidden="true">
-      <defs>
-        <linearGradient id={`${id}-back`} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#5aa0e8" />
-          <stop offset="1" stopColor="#1f5fb8" />
-        </linearGradient>
-        <filter id={`${id}-shadow`} x="-20%" y="-20%" width="140%" height="140%">
-          <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" floodOpacity="0.35" />
-        </filter>
-      </defs>
-      <g filter={`url(#${id}-shadow)`}>
-        <rect x="10" y="10" width="30" height="42" rx="3" fill={`url(#${id}-back)`} stroke="#fff" strokeWidth="2" transform="rotate(-12 25 31)" />
-        <rect x="24" y="12" width="30" height="42" rx="3" fill="#fff" stroke="#bbb" transform="rotate(8 39 33)" />
-      </g>
-      <g transform="rotate(8 39 33)">
-        <text x="28" y="23" fontSize="9" fontWeight="700" fontFamily="Helvetica, Arial" fill="#111">A</text>
-        <path d="M39 26c-5 5-8 7-8 10.5a3.6 3.6 0 0 0 6.4 2.2L36 44h6l-1.4-5.3A3.6 3.6 0 0 0 47 36.5C47 33 44 31 39 26z" fill="#111" />
-      </g>
-    </svg>
-  );
-}
-
-/** Pinball: a silver ball over a flipper and a lit bumper. Drawn here. */
-export function PinballIcon({ size = 64 }: { size?: number }) {
-  // Unique per instance, as for Stickies: a hidden copy's gradients can't be borrowed.
-  const id = `pinball${useId().replace(/[^\w-]/g, '')}`;
-  return (
-    <svg className="os-icon" width={size} height={size} viewBox="0 0 64 64" aria-hidden="true">
-      <defs>
-        <linearGradient id={`${id}-table`} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#1b2a6b" />
-          <stop offset="1" stopColor="#0a0f2e" />
-        </linearGradient>
-        <radialGradient id={`${id}-ball`} cx="0.35" cy="0.3" r="0.7">
-          <stop offset="0" stopColor="#fff" />
-          <stop offset="0.5" stopColor="#b9c0cc" />
-          <stop offset="1" stopColor="#4a5160" />
-        </radialGradient>
-        <radialGradient id={`${id}-bumper`} cx="0.5" cy="0.4" r="0.6">
-          <stop offset="0" stopColor="#ffe27a" />
-          <stop offset="1" stopColor="#e5484d" />
-        </radialGradient>
-      </defs>
-      <rect x="6" y="4" width="52" height="56" rx="10" fill={`url(#${id}-table)`} stroke="#8fa3ff" strokeWidth="1.5" />
-      <path d="M12 16l3 1-1 3 3 1-3 1 1 3-3-1-1 3-1-3-3 1 1-3-3-1 3-1-1-3z" fill="#ffe27a" opacity="0.8" transform="translate(30 -2) scale(0.8)" />
-      <circle cx="22" cy="22" r="7" fill={`url(#${id}-bumper)`} stroke="#fff" strokeWidth="1.5" />
-      <path d="M14 50l18-6" stroke="#e5484d" strokeWidth="5" strokeLinecap="round" />
-      <path d="M50 50l-10-4" stroke="#e5484d" strokeWidth="5" strokeLinecap="round" />
-      <circle cx="38" cy="34" r="6" fill={`url(#${id}-ball)`} />
-    </svg>
   );
 }
 
@@ -322,55 +261,3 @@ export function AppletStoreIcon({ size = 64 }: { size?: number }) {
   );
 }
 
-/** Tile Game: a landscape cut into sliding tiles, one of them loose. Drawn here. */
-export function TileGameIcon({ size = 64 }: { size?: number }) {
-  const id = `tiles${useId().replace(/[^\w-]/g, '')}`;
-  return (
-    <svg className="os-icon" width={size} height={size} viewBox="2.5 3 59 59" aria-hidden="true">
-      <defs>
-        <linearGradient id={`${id}-sky`} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#6fb6f2" />
-          <stop offset="0.55" stopColor="#cfe6f7" />
-          <stop offset="1" stopColor="#f6d9a8" />
-        </linearGradient>
-        <linearGradient id={`${id}-frame`} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#f4f4f4" />
-          <stop offset="1" stopColor="#b9b9b9" />
-        </linearGradient>
-        <clipPath id={`${id}-pic`}>
-          <rect x="10" y="10" width="44" height="44" />
-        </clipPath>
-        <mask id={`${id}-gaps`}>
-          <rect x="0" y="0" width="64" height="64" fill="#fff" />
-          <path d="M21 10v44M32 10v44M43 10v44M10 21h44M10 32h44M10 43h44" stroke="#000" strokeWidth="0.9" />
-          <rect x="43" y="43" width="11" height="11" fill="#000" />
-        </mask>
-        <filter id={`${id}-shadow`} x="-20%" y="-20%" width="140%" height="140%">
-          <feDropShadow dx="0" dy="1.5" stdDeviation="1.6" floodOpacity="0.35" />
-        </filter>
-      </defs>
-      <g filter={`url(#${id}-shadow)`}>
-        <rect x="6" y="6" width="52" height="52" rx="5" fill={`url(#${id}-frame)`} stroke="#8a8a8a" strokeWidth="0.8" />
-        <rect x="10" y="10" width="44" height="44" fill="#e6e6e6" />
-        <rect x="43.6" y="43.6" width="10.4" height="10.4" fill="#9a9a9a" />
-        <path d="M43.6 54V43.6H54" fill="none" stroke="#6d6d6d" strokeWidth="1.2" />
-        <g clipPath={`url(#${id}-pic)`} mask={`url(#${id}-gaps)`}>
-          <rect x="10" y="10" width="44" height="44" fill={`url(#${id}-sky)`} />
-          <circle cx="41" cy="22" r="5" fill="#fff4c2" />
-          <path d="M10 42l12-11 9 8 8-6 15 11v10H10z" fill="#3f7d4a" />
-          <path d="M10 47l14-6 12 5 18-5v13H10z" fill="#2d5f37" />
-          <path
-            d="M10 10.7h44M10 21.7h44M10 32.7h44M10 43.7h44M10.7 10v44M21.7 10v44M32.7 10v44M43.7 10v44"
-            stroke="#fff"
-            strokeOpacity="0.45"
-            strokeWidth="0.8"
-          />
-        </g>
-        <g transform="translate(44.5 45.5) rotate(-6)">
-          <rect x="-1" y="-1" width="11.5" height="11.5" rx="1" fill="#2d5f37" stroke="#fff" strokeWidth="1" />
-          <path d="M-1 3l5 -2 6 3v6.5H-1z" fill="#3f7d4a" />
-        </g>
-      </g>
-    </svg>
-  );
-}

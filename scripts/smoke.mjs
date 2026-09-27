@@ -4,7 +4,7 @@
 //
 // The unit tests check logic and the build checks that everything compiles,
 // but neither runs the apps. This loads /?open=<app> for each app in the
-// registry (and a project, the Dashboard and the screen saver) in a fresh
+// catalog (and a project, the Dashboard and the screen saver) in a fresh
 // page and fails on an uncaught error, a console error, or an app showing
 // AppBoundary's crash panel. Network failures are ignored: dist/ is served
 // without the /api functions or Supabase, and third parties can be slow.
@@ -19,12 +19,15 @@ const ROOT = new URL('..', import.meta.url).pathname;
 const SETTLE = 2500;
 const PARALLEL = 4;
 
-/** Every app ?open= can name, read from the registry's entries. */
+/** Every app ?open= can name, read from the manifests the catalog lists. */
 async function targets() {
-  const registry = await readFile(join(ROOT, 'src/os/core/registry.tsx'), 'utf8');
-  const body = registry.slice(registry.indexOf('export const apps'));
-  const entries = [...body.matchAll(/^  (\w+): \{\n([\s\S]*?)^  \}/gm)];
-  const apps = entries.filter(([, , fields]) => !/^\s*internal: true/m.test(fields)).map(([, id]) => id);
+  const catalog = await readFile(join(ROOT, 'src/os/catalog.ts'), 'utf8');
+  const manifests = [...catalog.matchAll(/from '\.\/(.+\/manifest)'/g)].map(([, path]) => path);
+  const apps = [];
+  for (const path of manifests) {
+    const manifest = await readFile(join(ROOT, 'src/os', `${path}.ts`), 'utf8');
+    if (!/^\s*internal: true/m.test(manifest)) apps.push(manifest.match(/^\s*id: '(\w+)'/m)[1]);
+  }
   const projects = await readdir(join(ROOT, 'src/content/projects/en'));
   const project = projects.find((f) => f.endsWith('.md'))?.replace(/\.md$/, '');
   return [...apps, project, 'dashboard', 'screensaver'].filter(Boolean);

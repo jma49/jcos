@@ -4,8 +4,7 @@
 // That keeps each applet a self-contained unit the OS can load on demand,
 // and keeps the OS free to change underneath them.
 
-export type { AppProps } from '../core/registry';
-export type { OSPhoto } from '../core/types';
+export type { AppProps, OSPhoto } from '../core/types';
 export { play, audio, type Sound } from '../core/sound';
 export { useGameLoop } from './loop';
 export { saved, type Saved } from './saved';

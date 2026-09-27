@@ -1,339 +1,25 @@
 import { lazy, type ComponentType, type LazyExoticComponent } from 'react';
-import {
-  AboutIcon,
-  AccountIcon,
-  AirDropIcon,
-  PhotoBoothIcon,
-  SynthIcon,
-  FinderIcon,
-  AppleIcon,
-  SpiderIcon,
-  PinballIcon,
-  ChatIcon,
-  AppletStoreIcon,
-  CalculatorIcon,
-  TileGameIcon,
-  BrowserIcon,
-  DiskIcon,
-  FolderIcon,
-  IPodIcon,
-  KaraokeIcon,
-  MinesweeperIcon,
-  PhotosIcon,
-  PreferencesIcon,
-  ProjectIcon,
-  ResumeIcon,
-  SoapboxIcon,
-  StickiesIcon,
-  TerminalIcon
-} from './icons';
+import { catalog } from '../catalog';
+import type { AppManifest } from '../kit/manifest';
 import { useWindows } from './store';
-import type { AppId, Rect, WindowState } from './types';
+import type { AppId, AppProps, OSProject, Rect } from './types';
 
-export interface AppProps {
-  win: WindowState;
-}
+// The apps as the OS uses them, built from their manifests (src/os/catalog.ts).
 
-export interface AppDefinition {
-  name: string;
-  Icon: ComponentType<{ size?: number }>;
+export type { AppProps };
+
+export interface AppDefinition extends Omit<AppManifest<AppId>, 'window' | 'load'> {
   width: number;
   height: number;
   minWidth: number;
   minHeight: number;
-  /** Brushed metal instead of pinstripes, as Tiger's Finder, Safari and iTunes had. */
-  material?: 'metal';
   /** Loaded on first open, so the desktop itself stays small. */
   Component: LazyExoticComponent<ComponentType<AppProps>>;
-  /** Kept in the Dock, at this position from the left. */
-  dock?: number;
-  /** Also in the phone's four-slot Dock (with the Dashboard). */
-  phoneDock?: boolean;
-  /** Listed in Finder's Applications folder. */
-  inApplications?: boolean;
-  /** Installed from the Applet Store (see applets.ts) rather than always there. */
-  applet?: boolean;
-  /** Only opens for something (a project), never by name. */
-  internal?: boolean;
-  /** A panel rather than an app (About This Mac, the welcome): no Dock icon while open. */
-  noDock?: boolean;
-  /** Opened from a menu (System Preferences, from the Apple menu), so not listed as an app. */
-  menuOnly?: boolean;
 }
 
-export const apps: Record<AppId, AppDefinition> = {
-  about: {
-    name: 'About Me',
-    Icon: AboutIcon,
-    width: 560,
-    height: 520,
-    minWidth: 360,
-    minHeight: 280,
-    Component: lazy(() => import('../apps/About'))
-  },
-  resume: {
-    name: 'Résumé',
-    Icon: ResumeIcon,
-    width: 900,
-    height: 760,
-    minWidth: 420,
-    minHeight: 320,
-    Component: lazy(() => import('../apps/Resume'))
-  },
-  projects: {
-    dock: 2,
-    phoneDock: true,
-    name: 'Projects',
-    Icon: FolderIcon,
-    width: 700,
-    height: 460,
-    minWidth: 420,
-    minHeight: 280,
-    Component: lazy(() => import('../apps/Projects'))
-  },
-  project: {
-    internal: true,
-    name: 'Project',
-    Icon: ProjectIcon,
-    width: 640,
-    height: 640,
-    minWidth: 380,
-    minHeight: 300,
-    Component: lazy(() => import('../apps/ProjectDetail'))
-  },
-  browser: {
-    inApplications: true,
-    material: 'metal',
-    name: 'Browser',
-    Icon: BrowserIcon,
-    width: 1040,
-    height: 700,
-    minWidth: 420,
-    minHeight: 300,
-    Component: lazy(() => import('../apps/Browser'))
-  },
-  terminal: {
-    inApplications: true,
-    name: 'Terminal',
-    Icon: TerminalIcon,
-    width: 640,
-    height: 420,
-    minWidth: 360,
-    minHeight: 220,
-    Component: lazy(() => import('../apps/Terminal'))
-  },
-  photos: {
-    dock: 3,
-    phoneDock: true,
-    inApplications: true,
-    material: 'metal',
-    name: 'Photos',
-    Icon: PhotosIcon,
-    width: 1000,
-    height: 680,
-    minWidth: 420,
-    minHeight: 320,
-    Component: lazy(() => import('../apps/Photos'))
-  },
-  stickies: {
-    inApplications: true,
-    name: 'Stickies',
-    Icon: StickiesIcon,
-    width: 720,
-    height: 540,
-    minWidth: 360,
-    minHeight: 320,
-    Component: lazy(() => import('../apps/Stickies'))
-  },
-  soapbox: {
-    inApplications: true,
-    name: 'Soapbox',
-    Icon: SoapboxIcon,
-    width: 560,
-    height: 600,
-    minWidth: 360,
-    minHeight: 300,
-    Component: lazy(() => import('../apps/Soapbox'))
-  },
-  finder: {
-    dock: 1,
-    material: 'metal',
-    name: 'Finder',
-    Icon: FinderIcon,
-    width: 760,
-    height: 480,
-    minWidth: 440,
-    minHeight: 300,
-    Component: lazy(() => import('../apps/finder/Finder'))
-  },
-  appstore: {
-    inApplications: true,
-    name: 'Applet Store',
-    Icon: AppletStoreIcon,
-    width: 680,
-    height: 540,
-    minWidth: 420,
-    minHeight: 360,
-    Component: lazy(() => import('../apps/AppletStore'))
-  },
-  calculator: {
-    applet: true,
-    material: 'metal',
-    name: 'Calculator',
-    Icon: CalculatorIcon,
-    width: 250,
-    height: 360,
-    minWidth: 230,
-    minHeight: 340,
-    Component: lazy(() => import('../applets/calculator/Calculator'))
-  },
-  tilegame: {
-    applet: true,
-    name: 'Tile Game',
-    Icon: TileGameIcon,
-    width: 380,
-    height: 470,
-    minWidth: 360,
-    minHeight: 450,
-    Component: lazy(() => import('../applets/tilegame/TileGame'))
-  },
-  minesweeper: {
-    applet: true,
-    name: 'Minesweeper',
-    Icon: MinesweeperIcon,
-    width: 400,
-    height: 470,
-    minWidth: 300,
-    minHeight: 360,
-    Component: lazy(() => import('../applets/minesweeper/Minesweeper'))
-  },
-  ipod: {
-    dock: 4,
-    inApplications: true,
-    name: 'iPod',
-    Icon: IPodIcon,
-    width: 300,
-    height: 492,
-    minWidth: 300,
-    minHeight: 492,
-    Component: lazy(() => import('../apps/ipod/IPod'))
-  },
-  karaoke: {
-    inApplications: true,
-    name: 'Karaoke',
-    Icon: KaraokeIcon,
-    width: 760,
-    height: 500,
-    minWidth: 460,
-    minHeight: 320,
-    Component: lazy(() => import('../apps/Karaoke'))
-  },
-  chat: {
-    dock: 5,
-    phoneDock: true,
-    inApplications: true,
-    name: 'Chat',
-    Icon: ChatIcon,
-    width: 560,
-    height: 600,
-    minWidth: 360,
-    minHeight: 340,
-    Component: lazy(() => import('../apps/Chat'))
-  },
-  airdrop: {
-    inApplications: true,
-    name: 'AirDrop',
-    Icon: AirDropIcon,
-    width: 520,
-    height: 500,
-    minWidth: 380,
-    minHeight: 400,
-    Component: lazy(() => import('../apps/AirDrop'))
-  },
-  photobooth: {
-    inApplications: true,
-    material: 'metal',
-    name: 'Photo Booth',
-    Icon: PhotoBoothIcon,
-    width: 640,
-    height: 620,
-    minWidth: 420,
-    minHeight: 460,
-    Component: lazy(() => import('../apps/PhotoBooth'))
-  },
-  synth: {
-    applet: true,
-    material: 'metal',
-    name: 'Synth',
-    Icon: SynthIcon,
-    width: 640,
-    height: 380,
-    minWidth: 520,
-    minHeight: 340,
-    Component: lazy(() => import('../applets/synth/Synth'))
-  },
-  spider: {
-    applet: true,
-    name: 'Spider Solitaire',
-    Icon: SpiderIcon,
-    width: 760,
-    height: 560,
-    minWidth: 520,
-    minHeight: 400,
-    Component: lazy(() => import('../applets/spider/Spider'))
-  },
-  pinball: {
-    applet: true,
-    name: 'Pinball',
-    Icon: PinballIcon,
-    width: 440,
-    height: 700,
-    minWidth: 340,
-    minHeight: 520,
-    Component: lazy(() => import('../applets/pinball/Pinball'))
-  },
-  aboutmac: {
-    name: 'About This Mac',
-    Icon: AppleIcon,
-    noDock: true,
-    width: 300,
-    height: 420,
-    minWidth: 280,
-    minHeight: 380,
-    Component: lazy(() => import('../apps/AboutThisMac'))
-  },
-  account: {
-    name: 'Account',
-    Icon: AccountIcon,
-    width: 420,
-    height: 470,
-    minWidth: 380,
-    minHeight: 400,
-    Component: lazy(() => import('../apps/Account'))
-  },
-  welcome: {
-    internal: true,
-    noDock: true,
-    name: 'Welcome',
-    Icon: ProjectIcon,
-    width: 580,
-    height: 450,
-    minWidth: 380,
-    minHeight: 420,
-    Component: lazy(() => import('../apps/Welcome'))
-  },
-  preferences: {
-    menuOnly: true,
-    noDock: true,
-    name: 'System Preferences',
-    Icon: PreferencesIcon,
-    width: 668,
-    height: 540,
-    minWidth: 480,
-    minHeight: 380,
-    Component: lazy(() => import('../apps/preferences/Preferences'))
-  }
-};
+export const apps = Object.fromEntries(
+  catalog.map(({ window, load, ...app }): [AppId, AppDefinition] => [app.id, { ...app, ...window, Component: lazy(load) }])
+) as Record<AppId, AppDefinition>;
 
 const appIds = Object.keys(apps) as AppId[];
 
@@ -372,6 +58,11 @@ export function launch(app: AppId, { key, title, origin, props, center }: Launch
     props,
     center
   });
+}
+
+/** Opens a project's window, growing from `el` if given. */
+export function openProject(p: OSProject, el?: Element | null) {
+  launch('project', { key: `project:${p.slug}`, title: p.title, origin: rectOf(el ?? null), props: { slug: p.slug } });
 }
 
 /** The on-screen rect of an element, for launch animations. */
