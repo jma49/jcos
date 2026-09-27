@@ -192,8 +192,11 @@ new way of syncing them, planned for later (see below).
      the order doesn't matter.
    - M2, done (`feat/music-api`): `/api/songs`, and the library loaded
      when a music app first opens, not on the first visit.
-   - M3: the bot's `/add` (with a preview to confirm), `/remove`, `/songs`
-     and `/offset`.
+   - M3, done (`feat/music-bot`): the bot's `/add` (with a preview to
+     confirm), `/songs`, `/remove` and `/offset`. Deploy the bot once it's
+     merged and the migration has run, and rerun
+     `scripts/setup-soapbox.sh` (or its `setMyCommands` call) for the
+     command menu.
    - M4: `/play`, `/stop` and listening along.
    Jincheng deploys the bot from `main`, as for earlier changes.
 
