@@ -71,6 +71,12 @@ function Shell({ data }: { data: OSData }) {
   // Unread counts, and alerts for private messages and @mentions.
   useEffect(startChatWatch, []);
   useEffect(() => startAirDrop(data), [data]);
+  // The page's plain-text copy (index.astro) is for screen readers, which
+  // still read it; with the desktop running, its links would only be
+  // invisible stops for someone moving through the page with Tab.
+  useEffect(() => {
+    document.querySelectorAll<HTMLElement>('.os-text-copy a').forEach((a) => (a.tabIndex = -1));
+  }, []);
 
   const glass = useWindows((s) => s.glass);
   const picture = useDesktopPicture(data, sky, root);
