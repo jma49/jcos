@@ -19,14 +19,17 @@ let loading: Promise<void> | null = null;
 /**
  * Loads the library, once. Without /api/songs (`astro dev`, or no
  * network) it falls back to the snapshot in the repository, fetched only
- * then.
+ * then. If both fail, that's forgotten, so the next call tries again.
  */
 export function loadLibrary(): Promise<void> {
   loading ??= (async () => {
     const library = (await fromApi().catch(() => null)) ?? ((await import('../../data/songs.json')).default as Library);
     ALBUMS = library.albums;
     SONGS = library.songs;
-  })();
+  })().catch((error) => {
+    loading = null;
+    throw error;
+  });
   return loading;
 }
 
