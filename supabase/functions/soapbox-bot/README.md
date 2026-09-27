@@ -62,15 +62,15 @@ asks for the token (without echoing it) and your user ID, and does steps
 | `/watch on` / `/watch off` | new Stickies notes and public chat messages sent to you, each with a 🙈 Hide button (on by default) |
 | `/add <YouTube link>` | looks the song up (YouTube, Apple Music for its title, album, cover and length, lrclib for lyrics) and shows it with ✅ Add and ✖︎ Cancel; `/add <link> Title - Artist` says what to search for |
 | `/songs [words]` | how many songs of the limit (200), and the latest or those matching |
-| `/remove <title or id>` | takes a song out of the library (not the last one: an empty library would send the site back to its snapshot) |
-| `/offset <title or id> <ms>` | how far its lyrics run ahead of the video (negative: behind) |
-| `/play <title or id>` | plays it for everyone on the desktop: they get a notification and can listen along from where it is |
+| `/remove <title>` | takes a song out of the library (not the last one: an empty library would send the site back to its snapshot) |
+| `/offset <title> <ms>` | how far its lyrics run ahead of the video (negative: behind) |
+| `/play <title>` | plays it for everyone on the desktop: they get a notification and can listen along from where it is |
 | `/stop` | stops it |
 
 The music commands (`music.ts`) need the music library migration
-(`20260927030802_music_library.sql`). A song is named by its YouTube id
-or words from its title; when several match, the bot lists them and asks
-for the id. Only the id is taken from a link: every address the bot
+(`20260927030802_music_library.sql`). A song is named by words from its
+title (its YouTube id works too); when several match, the bot shows a
+button for each, and pressing one does the command to that song. Only the id is taken from a link: every address the bot
 fetches is one it builds, on YouTube, Apple or lrclib.
 
 Stickers, voice messages and videos are answered with a note that they

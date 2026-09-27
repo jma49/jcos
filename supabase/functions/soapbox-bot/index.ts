@@ -158,9 +158,9 @@ const HELP = [
   'Music (the iPod and Karaoke):',
   '/add <YouTube link>: add a song (then Add or Cancel); /add <link> Title - Artist to say what to look for',
   '/songs [words]: how many, and the latest or those matching',
-  '/remove <title or id>: take a song out',
-  '/offset <title or id> <ms>: how far its lyrics run ahead',
-  '/play <title or id>: play it for everyone on the desktop to listen along; /stop to stop',
+  '/remove <title>: take a song out',
+  '/offset <title> <ms>: how far its lyrics run ahead',
+  '/play <title>: play it for everyone on the desktop to listen along; /stop to stop',
   '',
   'Edit a message to edit its post.'
 ].join('\n');
