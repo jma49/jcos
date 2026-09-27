@@ -152,20 +152,22 @@ purpose: `song_limit()` callable by `anon` and `authenticated` (it
 returns only the limit), `my_reactions()` by `authenticated`, and leaked
 password protection (Pro plan). Every branch but `main` is deleted.
 
-**Open: production may still run the old code.** At 06:52 UTC the live
-`/api/songs` answered from the database (no `x-library: snapshot`) but
-without `limit`, which #124 adds. Either the redeploy didn't take (a
-rate-limited deployment, or an older one redeployed), or `song_limit()`
-fails from Vercel. The Vercel connector here can't list deployments
-(403), so it wasn't told apart.
+**Production still runs `35a7e26`** (#122, deployed 2026-09-27 06:17
+UTC). GitHub's deployment records (`gh api repos/jma49/jmos/deployments`,
+and the Vercel status on each commit) show every `main` merge since,
+`a997868`, `a699b0b` and `20dbe28`, as "Deployment rate limited — retry
+in 24 hours", so the redeploy didn't bring #123–#127 live. The live
+`/api/songs` has no `limit` for that reason. A rate-limited merge is
+refused before the ignored build step runs, so docs-only merges are
+refused too.
 
 **To do, in order:**
-1. **Check what production runs:** About This Mac should show
-   `a699b0b` (or `a997868`: #126 only touched docs, so its build may
-   have been skipped). If it shows `35a7e26`, redeploy the latest `main`
-   deployment once the cap resets. If it shows `main`'s hash and
-   `/api/songs` still has no `limit`, read the function's logs for
-   `song_limit`. Then check the iPod's Music menu shows "Songs 34/200".
+1. **Redeploy the latest `main` once the cap resets** (Vercel
+   dashboard, the newest `main` deployment, Redeploy; not an older
+   one). Then check `gh api repos/jma49/jmos/deployments?per_page=3`
+   lists a Production deployment of `main`'s head, About This Mac shows
+   its hash, `/api/songs` carries `limit`, and the iPod's Music menu
+   shows "Songs 34/200". Hold other merges until then.
 2. **The whole music loop, live:** `/add` a song and see it in the iPod
    within five minutes; `/play` it and see the notification on another
    device, listen along at the same place; `/stop` and see it go.
