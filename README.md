@@ -29,8 +29,9 @@ page at `/projects/<slug>/`.
   the same locally (npm warns about another major).
 - [Supabase](https://supabase.com): accounts, Postgres with row-level
   security, Realtime, Storage and Edge Functions (Deno).
-- [Vercel](https://vercel.com): hosting and two small functions in `api/`
-  (the visitor's location, and a lyrics relay).
+- [Vercel](https://vercel.com): hosting and three small functions in
+  `api/` (the visitor's location, a lyrics relay, and the music library,
+  cached at the edge).
 - Vitest, Playwright for preview images, and GitHub Actions.
 
 ## Running it
@@ -88,7 +89,7 @@ src/pages/         the home page, project pages, robots.txt, llms.txt
 src/content/       projects (Markdown, one file per language) and their covers
 src/i18n/          the site's copy (English; the Chinese copy is kept for later)
 src/data/          songs, desktop pictures, the photo snapshot
-api/               Vercel Functions: geo, lyrics
+api/               Vercel Functions: geo, lyrics, songs
 tests/api/         the Vercel Functions' unit tests (not in api/, or Vercel would deploy them)
 supabase/          schema, migrations, Edge Functions, database tests
 scripts/           preview capture, photo refresh, favicon and portrait builders, bot setup
@@ -145,6 +146,7 @@ significant change goes through.
 | `npm run lint` | Checks the rules of React hooks and effects' dependencies (ESLint, hooks rules only). CI runs it on every pull request. |
 | `npm run perf` | Measures a production build against the performance budgets (see `docs/agents/performance.md`). |
 | `npm run photos:update` | Refreshes `src/data/photos.json` from Unsplash. |
+| `npm run songs:snapshot` | Saves the music library from Supabase to `src/data/songs.json`, the fallback. |
 | `node scripts/build-favicon.mjs` | Regenerates the favicons from one vector mark. |
 | `node scripts/build-portrait.mjs <photo>` | Crops `public/portrait.jpg` from the source photo. |
 | `bash scripts/setup-soapbox.sh` | Sets up the Soapbox bot's secrets, deploy and webhook. |

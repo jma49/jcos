@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { AppProps } from '../../core/registry';
 import { useFocusedId } from '../../core/store';
 import { lineAt, useLyrics, type LyricLine } from '../../media/lyrics';
-import { albumOf, ALBUMS, coverOf, lyricOffset, SONGS, tracksOf, type Song } from '../../media/library';
+import { albumOf, ALBUMS, coverOf, fromLibrary, lyricOffset, SONGS, tracksOf, type Song } from '../../media/library';
 import { currentTime, formatTime, seek, seekBy, useClock, useMusic } from '../../media/music';
 import { useKeys } from '../../core/useKeys';
 import { usePlayer } from '../../media/player';
@@ -22,10 +22,10 @@ import { usePlayer } from '../../media/player';
 const NUDGE = 100;
 
 /** The song picker's sections: each whole album, then everything else. */
-const SECTIONS = [
+const sections = fromLibrary(() => [
   ...ALBUMS.map((album) => ({ album, list: tracksOf(album) })),
   { album: null, list: SONGS.flatMap((s, i) => (albumOf(s) ? [] : [i])) }
-];
+]);
 
 /** For a song with nothing to sing: its cover, what it is, and what's next. */
 function Listening({ song, next, note }: { song: Song; next: Song | null; note?: string }) {
@@ -181,7 +181,7 @@ export default function Karaoke({ win }: AppProps) {
 
       {picking && (
         <div className="os-karaoke-picker" role="dialog" aria-label="Songs">
-          {SECTIONS.map(({ album, list }) => (
+          {sections().map(({ album, list }) => (
             <section key={album?.title ?? 'singles'}>
               {album ? (
                 <header className="os-karaoke-album">

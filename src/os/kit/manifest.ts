@@ -41,6 +41,8 @@ export interface AppManifest<Id extends string = string> {
   load: () => Promise<{ default: ComponentType<AppProps> }>;
   /** Its stylesheet, as text: `() => import('./app.css?inline')`. Fetched alongside `load`. */
   styles?: () => Promise<{ default: string }>;
+  /** What it needs before it renders, such as the music library. Fetched alongside `load`. */
+  data?: () => Promise<unknown>;
   /** Kept in the Dock, at this position from the left. */
   dock?: number;
   /** Also in the phone's four-slot Dock (with the Dashboard). */

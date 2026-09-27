@@ -101,10 +101,12 @@ ryOS (AGPL-3.0).
     key could forge; the visitor clicks to listen (browsers don't play
     sound unasked), under the one sound switch;
   - the site reads the library through `/api/songs`, cached at the edge
-    with `stale-if-error` for a week, falling back to a snapshot in the
+    for five minutes and served stale while it's refreshed for a day.
+    When Supabase can't be read, the function serves the snapshot in the
     repository (`npm run songs:snapshot`, refreshed by hand, not by a
-    daily commit that would spend a deployment); the library leaves the
-    first load;
+    daily commit that would spend a deployment): Vercel's CDN doesn't
+    honour `stale-if-error`, so an older cached answer can't stand in. The
+    library left the first load;
   - covers stay links (Apple's and YouTube's image hosts only, checked by
     the database); songs are validated in the database, not only by the
     bot, which builds every URL it fetches itself (YouTube oEmbed, iTunes
@@ -181,16 +183,19 @@ new way of syncing them, planned for later (see below).
 ## 5. Open issues and next steps
 
 0. **The music library on Supabase**, as decided in section 3, in four
-   pull requests: (M1, done on `feat/music-db`, stacked on
-   `feat/applet-install`) the `songs`, `albums` and `now_playing` tables
-   with row-level security, column grants, the 200-song limit and a race
-   test, seeded with today's library: **run
-   `20260927030802_music_library.sql` in the SQL editor, then the
-   Security Advisor**, once it's merged; (M2) `/api/songs` and the library loaded
-   on demand; (M3) the bot's `/add` (with a preview to confirm),
-   `/remove`, `/songs` and `/offset`; (M4) `/play`, `/stop` and listening
-   along. Jincheng runs the migration in the SQL editor and deploys the
-   bot from `main`, as for earlier ones.
+   pull requests, stacked on `feat/applet-install`:
+   - M1, done (`feat/music-db`): the `songs`, `albums` and `now_playing`
+     tables with row-level security, column grants, the 200-song limit and
+     a race test, seeded with today's library. Once merged, **run
+     `20260927030802_music_library.sql` in the SQL editor, then the
+     Security Advisor**. Until then `/api/songs` serves the snapshot, so
+     the order doesn't matter.
+   - M2, done (`feat/music-api`): `/api/songs`, and the library loaded
+     when a music app first opens, not on the first visit.
+   - M3: the bot's `/add` (with a preview to confirm), `/remove`, `/songs`
+     and `/offset`.
+   - M4: `/play`, `/stop` and listening along.
+   Jincheng deploys the bot from `main`, as for earlier changes.
 
 1. **The database is up to date** (2026-09-26). Every migration in
    `supabase/migrations/`, through `20260926100511_advisor.sql`, has been
@@ -290,8 +295,9 @@ new way of syncing them, planned for later (see below).
    (#81); pointers stop past 12 people on the desktop (crowd mode). Open:
    - First-visit JavaScript went from 172 to 154 KB (LazyMotion, #85;
      the Dashboard and screen saver after the desktop settles, #86), and
-     the budget from 180 to 160. The song and wallpaper catalogues (about
-     5 KB together) stay: they're read synchronously in ten places.
+     the budget from 180 to 160. The song library left the first load
+     with its move to Supabase; the wallpaper catalogue stays (it's read
+     synchronously on the first screen).
    - Contrast (measured 2026-09-27): secondary text in the light theme
      is `rgb(128,128,128)`-ish on light grey, 3.2–3.9:1 against the 4.5:1
      text needs (Finder's metadata, dates, empty states, the résumé's

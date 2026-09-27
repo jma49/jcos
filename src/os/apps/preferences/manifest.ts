@@ -12,5 +12,7 @@ export default defineApp({
   // Preferences isn't listed as an app; its panes are found by name.
   shortcuts: PANES.map((p) => ({ id: p.id, name: p.name, Icon: p.Icon, props: { pane: p.id } })),
   styles: () => import('./preferences.css?inline'),
+  // Its music, songs or Finder's Music folder.
+  data: () => import('../../media/library').then((library) => library.loadLibrary()),
   load: () => import('./Preferences')
 });
