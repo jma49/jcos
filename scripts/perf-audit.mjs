@@ -81,6 +81,10 @@ async function load() {
   await page.waitForTimeout(3000);
   await page.close();
   const sum = (type, key = 'bytes') => seen.filter((r) => r.type === type).reduce((n, r) => n + r[key], 0);
+  // What the first load's JavaScript is, largest first, to see what a change added.
+  for (const r of seen.filter((r) => r.type === 'script').sort((a, b) => b.gzip - a.gzip)) {
+    console.log(`     ${(r.gzip / 1024).toFixed(1).padStart(5)} KB  ${r.path.replace('/_astro/', '')}`);
+  }
   const counts = new Map();
   for (const r of seen) counts.set(r.path, (counts.get(r.path) ?? 0) + 1);
   return {
