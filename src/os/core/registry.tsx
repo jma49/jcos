@@ -109,6 +109,15 @@ export const launcherApps = openableApps.filter((id) => !apps[id].applet && !app
 /** Finder's Applications folder. */
 export const applicationApps = appIds.filter((id) => apps[id].inApplications);
 
+// An applet that's no longer installed, whether removed here or in another
+// tab (store.ts picks that up), has its windows closed.
+useWindows.subscribe((state, prev) => {
+  if (state.applets === prev.applets) return;
+  for (const w of Object.values(state.windows)) {
+    if (apps[w.app]?.applet && !state.applets.includes(w.app)) state.close(w.id);
+  }
+});
+
 interface LaunchOptions {
   key?: string;
   title?: string;
