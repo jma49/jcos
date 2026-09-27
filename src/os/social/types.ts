@@ -1,3 +1,4 @@
+import type { Song } from '../../lib/library';
 // What the social features share, whichever backend serves them: Supabase
 // in production (supabase.ts) or a stand-in during `astro dev` (local.ts).
 
@@ -266,6 +267,8 @@ export interface Social {
    * returns a function that stops watching.
    */
   watchChat: (handlers: ChatHandlers) => () => void;
+  /** One song from the library, as the database has it now; null if there's no such song. */
+  song: (id: string) => Promise<Song | null>;
   /** What Jincheng is playing for everyone, by the database's clock; null when nothing is. */
   nowPlaying: () => Promise<NowPlaying | null>;
   /**

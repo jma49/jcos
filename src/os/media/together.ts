@@ -11,21 +11,15 @@ import { dismiss, notify } from '../core/notices';
 import { launch } from '../core/registry';
 import { getSocial } from '../social/social';
 import type { NowPlaying, Social } from '../social/types';
-import { loadLibrary, SONGS } from './library';
+import { findSong, SONGS } from './library';
 import { useMusic } from './music';
 
 const NOTICE = 'listen-along';
 
-/** The song's place in the library, once it's loaded; -1 if it isn't there (removed since). */
-async function indexOf(songId: string) {
-  await loadLibrary();
-  return SONGS.findIndex((s) => s.id === songId);
-}
-
 /** Plays the song from where Jincheng is in it, on the iPod. */
 export async function listenAlong(social: Pick<Social, 'nowPlaying'>) {
   const now = await social.nowPlaying().catch(() => null);
-  const index = now ? await indexOf(now.songId) : -1;
+  const index = now ? await findSong(now.songId) : -1;
   if (!now || index < 0) {
     notify({ id: NOTICE, title: 'That song has finished', body: 'Jincheng isn’t playing anything right now.' });
     return;
@@ -48,7 +42,7 @@ interface Showing {
 async function show(social: Social, now: Pick<NowPlaying, 'songId' | 'remainingMs'> | null, stop: Showing) {
   const turn = ++stop.turn;
   clearTimeout(stop.timer);
-  const index = now ? await indexOf(now.songId) : -1;
+  const index = now ? await findSong(now.songId) : -1;
   // A play waiting for the library must not undo a stop that came after it.
   if (turn !== stop.turn) return;
   if (!now || index < 0) return dismiss(NOTICE, true);

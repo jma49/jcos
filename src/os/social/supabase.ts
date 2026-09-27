@@ -4,6 +4,7 @@
 
 import { createClient, type PostgrestError, type User } from '@supabase/supabase-js';
 import { CURSOR_COLORS } from './social';
+import { songOf } from '../../lib/library';
 import {
   LOBBY,
   NOTES_PER_DAY,
@@ -370,6 +371,16 @@ export function supabaseSocial(url: string, key: string): Social {
         client.removeChannel(chatChannel);
         chatChannel = null;
       };
+    },
+
+    async song(id) {
+      const { data, error } = await client
+        .from('songs')
+        .select('id,title,artist,album,cover,track,instrumental,lyrics_offset,lyrics_id')
+        .eq('id', id)
+        .maybeSingle();
+      if (error) throw error;
+      return data ? songOf(data) : null;
     },
 
     async nowPlaying() {
