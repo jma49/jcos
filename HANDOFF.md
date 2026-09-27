@@ -142,33 +142,31 @@ ryOS (AGPL-3.0).
 
 ## 4. To check after the next deploy
 
-**Where things stand (2026-09-27, early morning).** Production runs
-`35a7e26` (everything through #122). `main` is at `a997868`: #123 (the
-albums grant), #124 ("34/200" in the iPod, `song_limit()`, the API logs
-why it falls back) and #125 (the bot reads 《》 titles; only `main`
-deploys) are merged but not deployed, because every deployment since
-was rate-limited. Every migration has run, through
-`20260927062914_song_limit.sql`, and the live `/api/songs` reads the
-database (34 songs). Every branch but `main` is deleted; no pull
-request is open.
+**Where things stand (2026-09-27, morning).** `main` is at `a699b0b`
+(through #126). Jincheng redeployed `main` and the bot, and fixed
+周傳雄《青花》, whose row now reads 青花 / 周傳雄 / 藍色土耳其 with an
+Apple cover, and whose lyrics `/api/lyrics` finds on NetEase. Every
+migration has run, through `20260927062914_song_limit.sql`. The
+Security Advisor (2026-09-27 06:51 UTC) lists only what's kept on
+purpose: `song_limit()` callable by `anon` and `authenticated` (it
+returns only the limit), `my_reactions()` by `authenticated`, and leaked
+password protection (Pro plan). Every branch but `main` is deleted.
+
+**Open: production may still run the old code.** At 06:52 UTC the live
+`/api/songs` answered from the database (no `x-library: snapshot`) but
+without `limit`, which #124 adds. Either the redeploy didn't take (a
+rate-limited deployment, or an older one redeployed), or `song_limit()`
+fails from Vercel. The Vercel connector here can't list deployments
+(403), so it wasn't told apart.
 
 **To do, in order:**
-1. **Redeploy `main` once the cap resets** (Vercel dashboard, the
-   latest `main` deployment, Redeploy): a rate-limited deployment isn't
-   retried. Then check About This Mac shows `main`'s hash, the iPod's
-   Music menu shows "Songs 34/200", and `/api/songs` carries `limit`.
-   From now on only `main` deploys, so each merge spends one deployment.
-2. **Redeploy the bot** from an up-to-date `main`: `supabase functions
-   deploy soapbox-bot --no-verify-jwt --project-ref hszogpoyyqgwjuznbegd`.
-   It brings songs named by title with buttons instead of ids (#122) and
-   《》 titles (#125).
-3. **Fix 周傳雄《青花》高清MV**, added before #125: `/remove 青花`, then
-   `/add` its link again (or correct `title` and `artist` in the Table
-   editor).
-4. **Security Advisor** after the last migrations: it should list
-   `song_limit()` as callable by visitors, which is on purpose (it
-   returns only the limit). Anything else is new.
-5. **The whole music loop, live:** `/add` a song and see it in the iPod
+1. **Check what production runs:** About This Mac should show
+   `a699b0b` (or `a997868`: #126 only touched docs, so its build may
+   have been skipped). If it shows `35a7e26`, redeploy the latest `main`
+   deployment once the cap resets. If it shows `main`'s hash and
+   `/api/songs` still has no `limit`, read the function's logs for
+   `song_limit`. Then check the iPod's Music menu shows "Songs 34/200".
+2. **The whole music loop, live:** `/add` a song and see it in the iPod
    within five minutes; `/play` it and see the notification on another
    device, listen along at the same place; `/stop` and see it go.
 
@@ -218,9 +216,10 @@ new way of syncing them, planned for later (see below).
 1. **The database is up to date** (2026-09-27). Every migration in
    `supabase/migrations/`, through `20260927062914_song_limit.sql`, has
    been run in the SQL editor. Password reset (`account-recovery`) is live and
-   sends mail. The Security Advisor showed only the two findings kept on
-   purpose (before the music migrations; `song_limit()` is a third, see
-   section 4):
+   sends mail. The Security Advisor (run 2026-09-27, after the music
+   migrations) shows only the findings kept on purpose, with
+   `song_limit()` callable by visitors as a third (it returns only the
+   limit):
    - members can call `my_reactions` and the other member-only helpers;
    - leaked password protection (an Auth setting on the Pro plan).
 2. **Moderation** is in (2026-09-26): every new Stickies note and public
