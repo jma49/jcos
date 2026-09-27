@@ -139,6 +139,13 @@
   background: rgba(255, 255, 255, 0.04);
 }
 
+/* A selected row is highlighted on a stripe too: these match the stripes'
+   specificity and come after them. */
+.os-files-list button[data-selected='true'],
+:root[data-theme='dark'] .os-files-list button[data-selected='true'] {
+  background: var(--os-select);
+}
+
 .os-files-list button > span:not(.os-files-name) {
   color: var(--os-dim);
 }
