@@ -29,13 +29,12 @@ export function useInstalledApplets() {
  */
 export async function installApplet(app: AppId) {
   await preloadApp(app);
-  const { applets, setApplets } = useWindows.getState();
-  if (!applets.includes(app)) setApplets([...applets, app]);
+  useWindows.getState().changeApplets((installed) => (installed.includes(app) ? installed : [...installed, app]));
 }
 
 /** Removes an applet and closes its windows. What it saved stays, as a Mac keeps an app's preferences. */
 export function removeApplet(app: AppId) {
-  const { applets, setApplets, windows, close } = useWindows.getState();
+  const { changeApplets, windows, close } = useWindows.getState();
   for (const w of Object.values(windows)) if (w.app === app) close(w.id);
-  setApplets(applets.filter((a) => a !== app));
+  changeApplets((installed) => installed.filter((a) => a !== app));
 }

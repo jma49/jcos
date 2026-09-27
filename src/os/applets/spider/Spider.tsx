@@ -61,9 +61,9 @@ export default function Spider({ win }: AppProps) {
   const onWon = useEffectEvent(() => {
     play('chime');
     if (game.score > (best[suits] ?? 0)) {
-      const next = { ...best, [suits]: game.score };
-      setBest(next);
-      settings.save({ suits, best: next });
+      // The better of this score and what's stored, which another tab may have raised.
+      const stored = settings.update({ suits, best: {} }, (s) => ({ ...s, best: { ...s.best, [suits]: Math.max(s.best[suits] ?? 0, game.score) } }));
+      setBest(stored.best);
     }
   });
   useEffect(() => {
@@ -72,7 +72,7 @@ export default function Spider({ win }: AppProps) {
 
   const restart = (n: Suits = suits) => {
     setSuits(n);
-    settings.save({ suits: n, best });
+    settings.update({ suits: n, best }, (s) => ({ ...s, suits: n }));
     setGame(newGame(n));
     setHistory([]);
     setLit(null);

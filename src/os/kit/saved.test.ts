@@ -47,3 +47,20 @@ describe('saved', () => {
     expect(saved('spider').load({ suits: 1 })).toEqual({ suits: 1 });
   });
 });
+
+describe('update', () => {
+  test('builds on what’s stored now, not on what this tab last read', () => {
+    const best = saved<number>('pinball', 'best');
+    best.save(3000); // this tab read 3000…
+    map.set('os-pinball-best', '5000'); // …then another tab scored 5000
+    expect(best.update(0, (stored) => Math.max(stored, 4000))).toBe(5000);
+    expect(map.get('os-pinball-best')).toBe('5000');
+  });
+
+  test('merges an object’s fields, keeping another tab’s', () => {
+    const settings = saved<{ suits: number; best: Record<string, number> }>('spider');
+    map.set('os-spider', JSON.stringify({ suits: 1, best: { 4: 900 } }));
+    settings.update({ suits: 1, best: {} }, (s) => ({ ...s, best: { ...s.best, 1: 700 } }));
+    expect(JSON.parse(map.get('os-spider')!)).toEqual({ suits: 1, best: { 1: 700, 4: 900 } });
+  });
+});

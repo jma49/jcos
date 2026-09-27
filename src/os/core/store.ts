@@ -5,7 +5,7 @@ import type { AppId, Rect, WindowState } from './types';
 import type { Place } from '../ambient/place';
 import type { Visitor } from '../social/social';
 import type { AccentChoice } from '../look/accent';
-import { load, loadJSON, loadSettings, save, saveJSON } from './storage';
+import { load, loadJSON, loadSettings, onStored, save, saveJSON } from './storage';
 
 export const MENU_BAR_HEIGHT = 22;
 export const DOCK_CLEARANCE = 78;
@@ -97,7 +97,8 @@ interface WindowStore {
   applyTheme: (theme: 'light' | 'dark') => void;
   setSaver: (saver: Partial<SaverPrefs>) => void;
   setIconPositions: (positions: IconPositions | null) => void;
-  setApplets: (applets: AppId[]) => void;
+  /** Changes the installed applets, starting from what's stored now. */
+  changeApplets: (change: (installed: AppId[]) => AppId[]) => void;
   setAccent: (accent: AccentChoice) => void;
   setGlass: (glass: boolean) => void;
   setSound: (on: boolean) => void;
@@ -137,6 +138,8 @@ function savedApplets(): AppId[] {
   return Array.isArray(saved) ? saved : DEFAULT_APPLETS;
 }
 
+const savedSaver = () => loadSettings<SaverPrefs>(SAVER_KEY, { style: 'photos', idle: 2 });
+
 function savedAppearance(): Appearance {
   const saved = load(APPEARANCE_KEY);
   return saved === 'light' || saved === 'dark' || saved === 'sun' ? saved : 'system';
@@ -173,7 +176,7 @@ export const useWindows = create<WindowStore>((set, get) => ({
   order: [],
   theme: 'light',
   appearance: savedAppearance(),
-  saver: loadSettings<SaverPrefs>(SAVER_KEY, { style: 'photos', idle: 2 }),
+  saver: savedSaver(),
   ...savedSound(),
   iconPositions: loadJSON<IconPositions | null>(ICONS_KEY, null),
   applets: savedApplets(),
@@ -268,20 +271,22 @@ export const useWindows = create<WindowStore>((set, get) => ({
     save(ACCENT_KEY, accent);
     set({ accent });
   },
-  setApplets: (applets) => {
+  // Each builds on what's stored now, so another tab's change stands (see storage.ts).
+  changeApplets: (change) => {
+    const applets = change(savedApplets());
     saveJSON(APPLETS_KEY, applets);
     set({ applets });
   },
   setSound: (soundOn) => {
-    saveJSON(SOUND_KEY, { on: soundOn, volume: get().volume });
+    saveJSON(SOUND_KEY, { on: soundOn, volume: savedSound().volume });
     set({ soundOn });
   },
   setVolume: (volume) => {
-    saveJSON(SOUND_KEY, { on: get().soundOn, volume });
+    saveJSON(SOUND_KEY, { on: savedSound().soundOn, volume });
     set({ volume });
   },
   setSaver: (saver) => {
-    const next = { ...get().saver, ...saver };
+    const next = { ...savedSaver(), ...saver };
     saveJSON(SAVER_KEY, next);
     set({ saver: next });
   },
@@ -301,6 +306,18 @@ export const useWindows = create<WindowStore>((set, get) => ({
   },
   setPlace: (place) => set({ place })
 }));
+
+// What another tab of this visitor's changes, this one picks up.
+onStored(APPLETS_KEY, () => useWindows.setState({ applets: savedApplets() }));
+onStored(SOUND_KEY, () => useWindows.setState(savedSound()));
+onStored(SAVER_KEY, () => useWindows.setState({ saver: savedSaver() }));
+onStored(ACCENT_KEY, () => useWindows.setState({ accent: savedAccent() }));
+onStored(GLASS_KEY, () => useWindows.setState({ glass: load(GLASS_KEY) === '1' }));
+onStored(ICONS_KEY, () => useWindows.setState({ iconPositions: loadJSON<IconPositions | null>(ICONS_KEY, null) }));
+onStored(APPEARANCE_KEY, () => {
+  const appearance = savedAppearance();
+  useWindows.setState(appearance === 'light' || appearance === 'dark' ? { appearance, theme: appearance } : { appearance });
+});
 
 /** The focused window: the frontmost one that isn't minimized. */
 /** An open window as the chrome sees it: no position or size. */

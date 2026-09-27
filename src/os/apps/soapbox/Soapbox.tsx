@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { getSocial, REACTIONS, SocialError, type Post, type PostImage, type Reaction, type Social } from '../../social/social';
 import { useAccount } from '../../social/account';
-import { loadJSON, saveJSON } from '../../core/storage';
+import { loadJSON, updateJSON } from '../../core/storage';
 import { clockTimeZone, usePlace } from '../../ambient/place';
 import type { AppProps } from '../../core/registry';
 import { play } from '../../core/sound';
@@ -20,7 +20,9 @@ type Filter = 'all' | 'note' | 'rant';
 type Load = { state: 'loading' } | { state: 'offline' } | { state: 'ready'; social: Social; posts: Post[] };
 
 const readReacted = () => loadJSON<Record<string, Reaction>>(REACTED_KEY, {});
-const saveReacted = (reacted: Record<string, Reaction>) => saveJSON(REACTED_KEY, reacted);
+/** Stores one post's reaction over what's stored now (another tab may have reacted elsewhere). */
+const saveReacted = (postId: string, reaction: Reaction | null) =>
+  updateJSON<Record<string, Reaction>>(REACTED_KEY, {}, ({ [postId]: _old, ...rest }) => (reaction ? { ...rest, [postId]: reaction } : rest));
 
 /** Links in a post become clickable; everything else stays plain text. */
 function Linked({ text }: { text: string }) {
@@ -238,7 +240,7 @@ export default function Soapbox({ win }: AppProps) {
       setReacted((all) => {
         const { [post.id]: _old, ...rest } = all;
         const result = value ? { ...rest, [post.id]: value } : rest;
-        if (!account) saveReacted(result);
+        if (!account) saveReacted(post.id, value);
         return result;
       });
     };

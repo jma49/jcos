@@ -5,7 +5,7 @@
 
 import { create } from 'zustand';
 import { useReducedMotion } from 'motion/react';
-import { loadSettings, saveJSON } from './storage';
+import { loadSettings, onStored, saveJSON } from './storage';
 
 export const SYSTEM_KEY = 'os-system';
 
@@ -67,10 +67,11 @@ function savedSettings(): SystemSettings {
 
 export const useSystem = create<SystemState>((set, get) => ({
   ...savedSettings(),
+  // What's stored now, with this change: a setting changed in another tab stands.
   set: (patch) => {
-    set(patch);
-    const { set: _set, reset: _reset, ...settings } = get();
+    const settings = { ...savedSettings(), ...patch };
     saveJSON(SYSTEM_KEY, settings);
+    set(settings);
   },
   reset: () => {
     set(SYSTEM_DEFAULTS);
@@ -84,3 +85,6 @@ export function useReduceMotion() {
   const choice = useSystem((s) => s.motion);
   return choice === 'system' ? !!device : choice === 'reduce';
 }
+
+// Settings changed in another tab of this visitor's.
+onStored(SYSTEM_KEY, () => useSystem.setState(savedSettings()));
