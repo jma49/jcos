@@ -14,7 +14,7 @@
     "serve": "node scripts/serve.mjs",
     "astro": "astro",
     "check": "astro check",
-    "lint": "eslint src",
+    "lint": "eslint src api",
     "preview:capture": "node scripts/capture-previews.mjs",
     "photos:update": "node scripts/update-photos.mjs",
     "songs:snapshot": "node --env-file-if-exists=.env scripts/songs-snapshot.mjs",

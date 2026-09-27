@@ -11,7 +11,7 @@
 // snapshot is the fallback rather than an older cached answer.
 
 import snapshot from '../src/data/songs.json' with { type: 'json' };
-import { fetchLibrary, type Library } from '../src/lib/library.ts';
+import { fetchLibrary, type Library } from '../src/lib/library.js';
 
 const FRESH = 'public, s-maxage=300, stale-while-revalidate=86400';
 const FALLBACK = 'public, s-maxage=60';
