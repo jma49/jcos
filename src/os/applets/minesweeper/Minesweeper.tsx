@@ -63,9 +63,8 @@ export default function Minesweeper({ win }: AppProps) {
       setNow(Date.now());
       play('chime');
       if (bestTimes[level] === undefined || time < bestTimes[level]!) {
-        const updated = { ...bestTimes, [level]: time };
-        setBestTimes(updated);
-        best.save(updated);
+        // The faster of this time and what's stored, which another tab may have beaten.
+        setBestTimes(best.update({}, (stored) => ({ ...stored, [level]: Math.min(stored[level] ?? time, time) })));
       }
     }
   };

@@ -8,7 +8,7 @@ import { create } from 'zustand';
 import { launch } from '../core/registry';
 import { notify } from '../core/notices';
 import { play } from '../core/sound';
-import { loadJSON, saveJSON } from '../core/storage';
+import { loadJSON, updateJSON } from '../core/storage';
 import { useWindows } from '../core/store';
 import { useAccount } from './account';
 import { getSocial } from './social';
@@ -42,11 +42,9 @@ export function showRoom(room: string | null) {
 
 /** Everything in a room up to `at` (default: now) has been seen. */
 export function markRead(room: string, at = new Date().toISOString()) {
-  useChatState.setState((s) => {
-    const read = { ...s.read, [room]: at > (s.read[room] ?? '') ? at : s.read[room] };
-    saveJSON(READ_KEY, read);
-    return { read, unread: { ...s.unread, [room]: 0 }, alerts: { ...s.alerts, [room]: 0 } };
-  });
+  // The latest of this tab's and every other tab's marks.
+  const read = updateJSON<Record<string, string>>(READ_KEY, {}, (stored) => ({ ...stored, [room]: at > (stored[room] ?? '') ? at : stored[room] }));
+  useChatState.setState((s) => ({ read, unread: { ...s.unread, [room]: 0 }, alerts: { ...s.alerts, [room]: 0 } }));
 }
 
 /** How many messages are waiting for the member, for the Dock. */

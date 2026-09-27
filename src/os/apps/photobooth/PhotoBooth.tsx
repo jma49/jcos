@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { AppProps } from '../../core/registry';
 import { useWindows } from '../../core/store';
 import { play } from '../../core/sound';
-import { loadJSON, saveJSON } from '../../core/storage';
+import { loadJSON, updateJSON } from '../../core/storage';
 
 // Photo Booth, as Leopard's: the camera in a mirror, a grid of effects to
 // look through, a 3-2-1 countdown with a white flash, and a strip of the
@@ -117,13 +117,8 @@ export default function PhotoBooth(_: AppProps) {
     if (video.current && stream) video.current.srcObject = stream;
   }, [stream, browsing, viewing]);
 
-  const keep = (url: string) => {
-    setPhotos((all) => {
-      const next = [url, ...all].slice(0, KEEP);
-      saveJSON(KEY, next);
-      return next;
-    });
-  };
+  // Both build on what's stored, so a photo taken in another tab isn't lost.
+  const keep = (url: string) => setPhotos(updateJSON<string[]>(KEY, [], (stored) => [url, ...stored].slice(0, KEEP)));
 
   const shoot = async () => {
     const v = video.current;
@@ -149,11 +144,7 @@ export default function PhotoBooth(_: AppProps) {
   };
 
   const remove = (url: string) => {
-    setPhotos((all) => {
-      const next = all.filter((p) => p !== url);
-      saveJSON(KEY, next);
-      return next;
-    });
+    setPhotos(updateJSON<string[]>(KEY, [], (stored) => stored.filter((p) => p !== url)));
     if (viewing === url) setViewing(null);
   };
 

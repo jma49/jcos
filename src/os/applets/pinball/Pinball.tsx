@@ -224,8 +224,8 @@ export default function Pinball({ win }: AppProps) {
   // A new best score is kept when the game ends.
   const keepBest = useEffectEvent(() => {
     if (hud.score <= bestScore) return;
-    setBestScore(hud.score);
-    best.save(hud.score);
+    // The better of this score and what's stored, which another tab may have raised.
+    setBestScore(best.update(0, (stored) => Math.max(stored, hud.score)));
   });
   useEffect(() => {
     if (hud.over) keepBest();

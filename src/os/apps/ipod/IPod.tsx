@@ -13,7 +13,7 @@ import { Brick } from './Brick';
 import { Quiz } from './Quiz';
 import { Marquee } from './Marquee';
 import type { ScreenInput } from './input';
-import { loadSettings, saveJSON } from '../../core/storage';
+import { loadSettings, updateJSON } from '../../core/storage';
 
 // An iPod with a click wheel. Drag round the wheel (or scroll, or use the
 // arrow keys) to move through the menus; MENU goes back, the centre button
@@ -129,9 +129,8 @@ export default function IPod({ win }: AppProps) {
 
   const setPref = <K extends keyof Prefs>(key: K, value: Prefs[K]) =>
     setPrefs((p) => {
-      const next = { ...p, [key]: value };
-      saveJSON(PREFS_KEY, next);
-      return next;
+      updateJSON(PREFS_KEY, p, (stored) => ({ ...stored, [key]: value }));
+      return { ...p, [key]: value };
     });
 
   /** Plays a song, with `queue` (an album, an artist, everything) to follow it. */

@@ -5,6 +5,12 @@ export interface Saved<T> {
   /** The stored value, or `fallback`. An object is merged over `fallback`, so fields added later get their default. */
   load(fallback: T): T;
   save(value: T): void;
+  /**
+   * Changes it starting from what's stored now, and returns the result:
+   * every tab of the visitor shares it, so a best score set in another tab
+   * since this one loaded isn't overwritten by a lower one.
+   */
+  update(fallback: T, change: (current: T) => T): T;
 }
 
 const isRecord = (value: unknown): value is object =>
@@ -18,8 +24,14 @@ const isRecord = (value: unknown): value is object =>
  */
 export function saved<T>(app: AppId, name?: string): Saved<T> {
   const key = name ? `os-${app}-${name}` : `os-${app}`;
+  const load = (fallback: T): T => (isRecord(fallback) ? (loadSettings(key, fallback) as T) : loadJSON(key, fallback));
   return {
-    load: (fallback) => (isRecord(fallback) ? loadSettings(key, fallback) : loadJSON(key, fallback)),
-    save: (value) => saveJSON(key, value)
+    load,
+    save: (value) => saveJSON(key, value),
+    update: (fallback, change) => {
+      const next = change(load(fallback));
+      saveJSON(key, next);
+      return next;
+    }
   };
 }

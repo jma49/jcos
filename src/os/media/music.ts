@@ -7,7 +7,7 @@
 import { useEffect, useState } from 'react';
 import { create } from 'zustand';
 import { useWindows } from '../core/store';
-import { loadSettings, saveJSON } from '../core/storage';
+import { loadSettings, onStored, updateJSON } from '../core/storage';
 import { SONGS } from './library';
 
 /** Every song, as a queue. */
@@ -75,9 +75,9 @@ export const useMusic = create<MusicStore>((set, get) => {
     const { owner, index } = get();
     return owner && owner !== app ? { owner: app, resume: { index, time: clocks.get(owner)?.() ?? 0 } } : { owner: app };
   };
-  const save = () => {
-    const { shuffle, repeat, volume } = get();
-    saveJSON(SETTINGS_KEY, { shuffle, repeat, volume });
+  /** Stores one setting over what's stored now, so another tab's settings stand. */
+  const save = (patch: Partial<typeof settings>) => {
+    updateJSON(SETTINGS_KEY, settings, (stored) => ({ ...stored, ...patch }));
   };
   /** Another song from the queue, at random. */
   const randomOther = (index: number, queue: number[]) => {
@@ -132,20 +132,21 @@ export const useMusic = create<MusicStore>((set, get) => {
     },
     setShuffle: (shuffle) => {
       set({ shuffle });
-      save();
+      save({ shuffle });
     },
     setRepeat: (repeat) => {
       set({ repeat });
-      save();
+      save({ repeat });
     },
     setVolume: (volume) => {
-      set({ volume: Math.round(Math.min(100, Math.max(0, volume))) });
-      save();
+      const rounded = Math.round(Math.min(100, Math.max(0, volume)));
+      set({ volume: rounded });
+      save({ volume: rounded });
     },
     nudge: (id, ms) => {
-      const offsets = { ...get().offsets, [id]: (get().offsets[id] ?? 0) + ms };
+      // From the stored tweaks, so another tab's tweak to another song stands.
+      const offsets = updateJSON<Record<string, number>>(OFFSETS_KEY, {}, (stored) => ({ ...stored, [id]: (stored[id] ?? 0) + ms }));
       set({ offsets });
-      saveJSON(OFFSETS_KEY, offsets);
     }
   };
 });
@@ -190,3 +191,6 @@ export const formatTime = (seconds: number) => {
   const s = Math.max(0, Math.floor(seconds));
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 };
+
+// Lyric tweaks made in another tab of this visitor's.
+onStored(OFFSETS_KEY, () => useMusic.setState({ offsets: loadSettings<Record<string, number>>(OFFSETS_KEY, {}) }));
