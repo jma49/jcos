@@ -142,41 +142,33 @@ ryOS (AGPL-3.0).
 
 ## 4. To check after the next deploy
 
-**Where things stand (2026-09-26, late evening).** The whole stack
-(#107–#118) merged through #118 and deployed to production as
-`3d5739f`. #119 (the iPod's lists scroll; control glyphs drawn, not
-emoji) merged as `96e8071`, but its production deployment was
-rate-limited: production still runs `3d5739f`. Every branch but `main`
-is deleted; no pull request is open.
+**Where things stand (2026-09-27, early morning).** Production runs
+`35a7e26` (everything through #122). `main` is at `a997868`: #123 (the
+albums grant), #124 ("34/200" in the iPod, `song_limit()`, the API logs
+why it falls back) and #125 (the bot reads 《》 titles; only `main`
+deploys) are merged but not deployed, because every deployment since
+was rate-limited. Every migration has run, through
+`20260927062914_song_limit.sql`, and the live `/api/songs` reads the
+database (34 songs). Every branch but `main` is deleted; no pull
+request is open.
 
 **To do, in order:**
-1. **CI on #118: done**, green (2026-09-26). Its perf check had counted
-   the Dashboard in the first load on some runs: a pointer resting at
-   the top was reported over the menu bar as it painted, and that
-   fetched the Dashboard ahead. Only real movement counts now (a product
-   fix, not a raised budget); first-load JS on CI is 156 KB.
-2. **Merge once, deploy once: done.** #118 carried #107–#117 to `main`;
-   the others were closed as merged through it, and issues #96–#106
-   closed with it.
-3. **Deploy `96e8071` (#119) after the cap resets.** A rate-limited
-   deployment isn't retried: redeploy `main`'s head from the Vercel
-   dashboard, and check About This Mac shows its hash.
-4. **Database.** `20260927030802_music_library.sql` has run (the
-   library is readable). **Run `20260927062226_albums_added_at.sql`**
-   too: without it, visitors can't order albums by `added_at`, the
-   albums query is refused, and `/api/songs` serves the snapshot, so
-   songs added from Telegram don't show. It needs no deployment.
-   **Then `20260927062914_song_limit.sql`**: `song_limit()` lets the iPod
-   show how full the library is ("34/200"); until it runs, the site shows
-   the default 200. The Security Advisor lists it as callable by
-   visitors, on purpose (it returns only the limit).
-   Earlier note: run `supabase/migrations/20260927030802_music_library.sql`
-   in the SQL editor, then Advisors › Security. Until then `/api/songs`
-   serves the snapshot, so the site works either way.
-5. **Bot.** Deploy `soapbox-bot` from an up-to-date `main`
-   (`supabase functions deploy soapbox-bot --no-verify-jwt`) and rerun
-   the command menu in `scripts/setup-soapbox.sh`.
-6. **The whole music loop, live:** `/add` a song and see it in the iPod
+1. **Redeploy `main` once the cap resets** (Vercel dashboard, the
+   latest `main` deployment, Redeploy): a rate-limited deployment isn't
+   retried. Then check About This Mac shows `main`'s hash, the iPod's
+   Music menu shows "Songs 34/200", and `/api/songs` carries `limit`.
+   From now on only `main` deploys, so each merge spends one deployment.
+2. **Redeploy the bot** from an up-to-date `main`: `supabase functions
+   deploy soapbox-bot --no-verify-jwt --project-ref hszogpoyyqgwjuznbegd`.
+   It brings songs named by title with buttons instead of ids (#122) and
+   《》 titles (#125).
+3. **Fix 周傳雄《青花》高清MV**, added before #125: `/remove 青花`, then
+   `/add` its link again (or correct `title` and `artist` in the Table
+   editor).
+4. **Security Advisor** after the last migrations: it should list
+   `song_limit()` as callable by visitors, which is on purpose (it
+   returns only the limit). Anything else is new.
+5. **The whole music loop, live:** `/add` a song and see it in the iPod
    within five minutes; `/play` it and see the notification on another
    device, listen along at the same place; `/stop` and see it go.
 
@@ -202,8 +194,9 @@ Checked locally, in production builds (2026-09-27):
 
 Only a deployment or a push can show:
 1. that it's live: About This Mac shows the build hash of `main`'s head;
-2. that the ignored build step skips a docs-only pull request and builds
-   one touching `src/`, and whether a skipped one counts toward the cap;
+2. that the ignored build step skips a docs-only merge to `main` and
+   builds one touching `src/` (branches no longer deploy at all: checked
+   on #125, which got no Vercel check);
 3. that Vercel builds on Node 24 (the build log's first lines), and that
    CI reads Node 24 from `package.json`;
 4. that CI installs only Playwright's headless shell, and on the second
@@ -217,36 +210,17 @@ new way of syncing them, planned for later (see below).
 
 ## 5. Open issues and next steps
 
-0. **The music library on Supabase**, as decided in section 3, in four
-   pull requests, stacked on `feat/applet-install`:
-   - M1, done (`feat/music-db`): the `songs`, `albums` and `now_playing`
-     tables with row-level security, column grants, the 200-song limit and
-     a race test, seeded with today's library. Once merged, **run
-     `20260927030802_music_library.sql` in the SQL editor, then the
-     Security Advisor**. Until then `/api/songs` serves the snapshot, so
-     the order doesn't matter.
-   - M2, done (`feat/music-api`): `/api/songs`, and the library loaded
-     when a music app first opens, not on the first visit.
-   - M3, done (`feat/music-bot`): the bot's `/add` (with a preview to
-     confirm), `/songs`, `/remove` and `/offset`. Deploy the bot once it's
-     merged and the migration has run, and rerun
-     `scripts/setup-soapbox.sh` (or its `setMyCommands` call) for the
-     command menu.
-   - M4, done (`feat/music-together`): `/play`, `/stop` and listening
-     along (`media/together.ts`); `now_playing_position()` also returns
-     the time left, so this changes the M1 migration, which hasn't run
-     anywhere yet.
-   Jincheng deploys the bot from `main`, as for earlier changes. Only a
-   deployment can show the whole loop: `/add` a song and see it in the
-   iPod within five minutes; `/play` it and see the notification on
-   another device, listen along and hear it at the same place; `/stop`
-   and see the notification go.
+0. **The music library on Supabase is done** (2026-09-27): the tables,
+   the 200-song limit, `/api/songs`, the bot's `/add`, `/songs`,
+   `/remove`, `/offset`, `/play` and `/stop`, and listening along
+   (section 3 has the decisions, section 4 what's left to deploy).
 
-1. **The database is up to date** (2026-09-26). Every migration in
-   `supabase/migrations/`, through `20260926100511_advisor.sql`, has been
-   run in the SQL editor. Password reset (`account-recovery`) is live and
-   sends mail. The Security Advisor shows only the two findings kept on
-   purpose:
+1. **The database is up to date** (2026-09-27). Every migration in
+   `supabase/migrations/`, through `20260927062914_song_limit.sql`, has
+   been run in the SQL editor. Password reset (`account-recovery`) is live and
+   sends mail. The Security Advisor showed only the two findings kept on
+   purpose (before the music migrations; `song_limit()` is a third, see
+   section 4):
    - members can call `my_reactions` and the other member-only helpers;
    - leaked password protection (an Auth setting on the Pro plan).
 2. **Moderation** is in (2026-09-26): every new Stickies note and public
