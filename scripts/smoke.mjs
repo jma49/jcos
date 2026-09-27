@@ -19,6 +19,9 @@ const ROOT = new URL('..', import.meta.url).pathname;
 const SETTLE = 2500;
 const PARALLEL = 4;
 
+/** The applets, installed in each page so ?open= opens them rather than their store page. */
+const applets = [];
+
 /** Every app ?open= can name, read from the manifests the catalog lists. */
 async function targets() {
   const catalog = await readFile(join(ROOT, 'src/os/catalog.ts'), 'utf8');
@@ -26,7 +29,9 @@ async function targets() {
   const apps = [];
   for (const path of manifests) {
     const manifest = await readFile(join(ROOT, 'src/os', `${path}.ts`), 'utf8');
-    if (!/^\s*internal: true/m.test(manifest)) apps.push(manifest.match(/^\s*id: '(\w+)'/m)[1]);
+    const id = manifest.match(/^\s*id: '(\w+)'/m)[1];
+    if (/^\s*applet: \{/m.test(manifest)) applets.push(id);
+    if (!/^\s*internal: true/m.test(manifest)) apps.push(id);
   }
   const projects = await readdir(join(ROOT, 'src/content/projects/en'));
   const project = projects.find((f) => f.endsWith('.md'))?.replace(/\.md$/, '');
@@ -44,7 +49,10 @@ const failures = [];
 async function check(target) {
   const context = await browser.newContext({ viewport: { width: 1280, height: 800 }, reducedMotion: 'reduce' });
   // Skip the boot animation.
-  await context.addInitScript(() => sessionStorage.setItem('os-booted', '1'));
+  await context.addInitScript((installed) => {
+    sessionStorage.setItem('os-booted', '1');
+    localStorage.setItem('os-applets', JSON.stringify(installed));
+  }, applets);
   const page = await context.newPage();
   const problems = [];
   page.on('pageerror', (e) => problems.push(`uncaught: ${e.message}`));

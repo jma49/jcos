@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { APPLETS, FEATURED, installApplet, removeApplet, useInstalledApplets, type Applet } from '../../core/applets';
 import { apps, launch, rectOf, type AppProps } from '../../core/registry';
+import { notify } from '../../core/notices';
 import { play } from '../../core/sound';
 import type { AppId } from '../../core/types';
 
@@ -9,12 +10,16 @@ import type { AppId } from '../../core/types';
 
 type Section = 'featured' | 'Games' | 'Utilities';
 
-/** "Get" → a moment of "Installing…" → "Open". */
+/** Long enough to see "Installing…" when the applet arrives at once. */
+const MIN_INSTALL_MS = 400;
+
+/** "Get" → "Installing…" while the applet downloads → "Open". */
 function GetButton({ app, big = false }: { app: AppId; big?: boolean }) {
+  const { Icon, name } = apps[app];
   const installed = useInstalledApplets().includes(app);
   const [installing, setInstalling] = useState(false);
 
-  if (installed) {
+  if (installed && !installing) {
     return (
       <button
         type="button"
@@ -33,14 +38,18 @@ function GetButton({ app, big = false }: { app: AppId; big?: boolean }) {
       type="button"
       className={`os-button os-button-primary os-store-get${big ? ' os-store-get-big' : ''}`}
       disabled={installing}
-      onClick={(e) => {
+      onClick={async (e) => {
         e.stopPropagation();
         setInstalling(true);
-        setTimeout(() => {
-          installApplet(app);
-          setInstalling(false);
+        try {
+          await Promise.all([installApplet(app), new Promise((done) => setTimeout(done, MIN_INSTALL_MS))]);
           play('pop');
-        }, 700);
+        } catch {
+          play('error');
+          notify({ title: `${name} couldn’t be installed`, body: 'Check your connection and try again.', icon: <Icon size={32} /> });
+        } finally {
+          setInstalling(false);
+        }
       }}
     >
       {installing ? <span className="os-store-spinner" aria-label="Installing" /> : 'Get'}
