@@ -221,10 +221,15 @@ again.
   production deployment after it was rate-limited. Before pushing
   several branches, count what they'll build; to get CI on a stack
   without spending deployments, push only its top branch.
-- A guess made to get a check green went wrong twice in one evening:
-  a perf failure was put down to the pointer resting on the menu bar,
-  and the change didn't fix it. Make the cause observable first (the
-  perf listing now prints when each file was asked for).
+- A guess made to get a check green went wrong: CI's perf counted the
+  Dashboard (161 KB against 160) and the pointer was moved away before
+  loading, which CI's Chromium ignored. Listing when each file was asked
+  for, then the pointer events, showed the cause: a pointer resting at
+  (0, 0) was reported over the menu bar as it painted, and
+  `pointerover` fetched the Dashboard ahead. Real visitors whose pointer
+  rests at the top did the same. The fix was in the product (only real
+  movement counts), not the measurement. Make the cause observable
+  first.
 
 - Check `git status` and `git diff --cached` before committing. A staged
   rename from other work once rode along in an unrelated fix.
