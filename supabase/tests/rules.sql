@@ -250,3 +250,17 @@ select pg_temp.check(not exists (
     and statement ~* '\m(delete\s+from|update\s+[a-z_."]+\s+set)\M'
     and statement !~* '\mwhere\M'
 ), 'every function''s DELETE and UPDATE has a WHERE (Supabase''s pg_safeupdate refuses one without)');
+
+-- Realtime reads each changed row by its primary key, as the subscriber,
+-- before sending it; a visitor who can't read the key gets nothing (plays
+-- never reached open desktops until now_playing.id was granted).
+select pg_temp.check(not exists (
+  select 1
+  from pg_publication_tables t
+  join pg_class c on c.relname = t.tablename
+  join pg_namespace n on n.oid = c.relnamespace and n.nspname = t.schemaname
+  join pg_index i on i.indrelid = c.oid and i.indisprimary
+  join pg_attribute a on a.attrelid = c.oid and a.attnum = any (i.indkey)
+  where t.pubname = 'supabase_realtime' and t.schemaname = 'public'
+    and not has_column_privilege('anon', c.oid, a.attname, 'select')
+), 'visitors can read the primary key of every table Realtime sends them');
