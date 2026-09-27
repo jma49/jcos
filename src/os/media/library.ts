@@ -6,7 +6,7 @@
 // the same for the rest of the visit, so a song's place in SONGS is a
 // stable handle until the page is reloaded.
 
-import type { Album, Library, Song } from '../../lib/library';
+import { DEFAULT_LIMIT, type Album, type Library, type Song } from '../../lib/library';
 import { getSocial } from '../social/social';
 
 export type { Album, Song };
@@ -14,6 +14,8 @@ export type { Album, Song };
 /** Every album and song. Empty until loadLibrary() has finished. */
 export let ALBUMS: Album[] = [];
 export let SONGS: Song[] = [];
+/** How many songs the library may hold. */
+export let SONG_LIMIT = DEFAULT_LIMIT;
 
 let loading: Promise<void> | null = null;
 
@@ -27,6 +29,7 @@ export function loadLibrary(): Promise<void> {
     const library = (await fromApi().catch(() => null)) ?? ((await import('../../data/songs.json')).default as Library);
     ALBUMS = library.albums;
     SONGS = library.songs;
+    SONG_LIMIT = library.limit ?? DEFAULT_LIMIT;
   })().catch((error) => {
     loading = null;
     throw error;
