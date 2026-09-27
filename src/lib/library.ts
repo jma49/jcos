@@ -81,6 +81,9 @@ export function albumOf(row: AlbumRow): Album {
   return { title: row.title, artist: row.artist, year: row.year, cover: row.cover, ...(row.note ? { note: row.note } : {}) };
 }
 
+// Visitors may read exactly these columns and order by added_at: the grants
+// are in the music migrations, and supabase/tests/rules.sql runs these
+// queries as a visitor. Change both together.
 const SONG_COLUMNS = 'id,title,artist,album,cover,track,instrumental,lyrics_offset,lyrics_id';
 const ALBUM_COLUMNS = 'title,artist,year,cover,note';
 
