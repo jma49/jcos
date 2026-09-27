@@ -40,7 +40,12 @@ export interface Album {
 export interface Library {
   albums: Album[];
   songs: Song[];
+  /** How many songs the library may hold (music_settings.song_limit). */
+  limit?: number;
 }
+
+/** The limit when it isn't known (the snapshot, or before song_limit() exists). */
+export const DEFAULT_LIMIT = 200;
 
 interface SongRow {
   id: string;
@@ -100,9 +105,29 @@ export async function fetchLibrary(url: string, key: string, signal?: AbortSigna
     if (!Array.isArray(rows)) throw new Error(`Supabase sent something other than a list for ${path.split('?')[0]}`);
     return rows as T[];
   };
-  const [albums, songs] = await Promise.all([
+  const [albums, songs, limit] = await Promise.all([
     get<AlbumRow>(`albums?select=${ALBUM_COLUMNS}&order=added_at.asc,title.asc`),
-    get<SongRow>(`songs?select=${SONG_COLUMNS}&order=added_at.asc,id.asc`)
+    get<SongRow>(`songs?select=${SONG_COLUMNS}&order=added_at.asc,id.asc`),
+    songLimit(url, key, signal)
   ]);
-  return { albums: albums.map(albumOf), songs: songs.map(songOf) };
+  return { albums: albums.map(albumOf), songs: songs.map(songOf), ...(limit ? { limit } : {}) };
+}
+
+/**
+ * The library's limit (song_limit()), or undefined if it can't be read: a
+ * missing number mustn't cost the library (the site shows the default).
+ */
+async function songLimit(url: string, key: string, signal?: AbortSignal): Promise<number | undefined> {
+  try {
+    const res = await fetch(`${url.replace(/\/$/, '')}/rest/v1/rpc/song_limit`, {
+      method: 'POST',
+      headers: { apikey: key, 'content-type': 'application/json' },
+      body: '{}',
+      signal
+    });
+    const limit = res.ok ? await res.json() : undefined;
+    return Number.isInteger(limit) && limit > 0 ? limit : undefined;
+  } catch {
+    return undefined;
+  }
 }
