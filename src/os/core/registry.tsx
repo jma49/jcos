@@ -14,8 +14,6 @@ export interface AppDefinition extends Omit<AppManifest<AppId>, 'window' | 'load
   height: number;
   minWidth: number;
   minHeight: number;
-  /** Loaded on first open, so the desktop itself stays small. */
-  Component: LazyExoticComponent<ComponentType<AppProps>>;
 }
 
 /** Fetches an app's code, stylesheet and data together, and adopts the stylesheet before the app renders. */
@@ -63,10 +61,34 @@ export function preloadApp(id: AppId) {
   return app;
 }
 
+const lazies = new Map<AppId, LazyExoticComponent<ComponentType<AppProps>>>();
+
+/**
+ * What a window renders: the app itself once its code has arrived
+ * (readyApp), or a lazy one that loads it, so the desktop stays small. A
+ * lazy one whose download failed is dropped, since React.lazy keeps a
+ * failure for good: the next window, or Try Again, downloads it afresh.
+ */
+export function appComponent(id: AppId): ComponentType<AppProps> {
+  const ready = readyApp(id);
+  if (ready) return ready;
+  let app = lazies.get(id);
+  if (!app) {
+    app = lazy(() =>
+      preloadApp(id).catch((error) => {
+        lazies.delete(id);
+        throw error;
+      })
+    );
+    lazies.set(id, app);
+  }
+  return app;
+}
+
 export const apps = Object.fromEntries(
   catalog.map(({ window, load: _load, styles: _styles, data: _data, ...app }): [AppId, AppDefinition] => [
     app.id,
-    { ...app, ...window, Component: lazy(() => preloadApp(app.id)) }
+    { ...app, ...window }
   ])
 ) as Record<AppId, AppDefinition>;
 

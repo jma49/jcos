@@ -4,10 +4,10 @@ import { Component, type ReactNode } from 'react';
 // thrown while rendering an app, or an app's code failing to download,
 // unmounts the whole desktop and leaves a blank page.
 //
-// The usual download failure comes after a deploy: a visitor who has had
-// the desktop open since before it asks for an app whose old chunk no
-// longer exists. Only a reload fetches the new build, so that case offers
-// one instead of trying again.
+// An app's code can fail to download for two reasons it can't tell apart:
+// a deploy since the page loaded removed the old chunk (only a reload
+// fetches the new build), or the connection dropped (trying again is
+// enough). Offline, it offers to try again; online, both.
 
 /** An app's code failed to download (the wording differs by browser). */
 export function isChunkError(error: unknown) {
@@ -31,6 +31,8 @@ interface Props {
   /** The app's name, for the message. */
   name: string;
   onClose: () => void;
+  /** Before opening it again: a failed download needs a fresh start (appComponent). */
+  onRetry?: () => void;
   children: ReactNode;
 }
 
@@ -48,30 +50,36 @@ export class AppBoundary extends Component<Props, { error: unknown }> {
   render() {
     const { error } = this.state;
     if (!error) return this.props.children;
-    const { name, onClose } = this.props;
-    const updated = isChunkError(error);
+    const { name, onClose, onRetry } = this.props;
+    const download = isChunkError(error);
+    const offline = download && typeof navigator !== 'undefined' && !navigator.onLine;
+    const retry = () => {
+      onRetry?.();
+      this.setState({ error: null });
+    };
     return (
       <div className="os-app os-crash" role="alert">
         <img src="/os/icons/apple.png" alt="" width={40} height={40} />
-        <h3>{updated ? 'JM/OS has been updated' : `${name} quit unexpectedly`}</h3>
+        <h3>{download ? `${name} couldn’t be opened` : `${name} quit unexpectedly`}</h3>
         <p>
-          {updated
-            ? `Reload the page to open ${name} in the new version. Your open windows come back.`
-            : 'The rest of the desktop is fine. You can open it again or close this window.'}
+          {offline
+            ? 'You’re offline. Try again once you’re connected.'
+            : download
+              ? 'JM/OS may have been updated since this page loaded, or the connection dropped. Reloading brings your open windows back.'
+              : 'The rest of the desktop is fine. You can open it again or close this window.'}
         </p>
         <div className="os-crash-buttons">
           <button type="button" className="os-button" onClick={onClose}>
             Close
           </button>
-          {updated ? (
-            <button type="button" className="os-button os-button-primary" onClick={reloadWithWindows}>
+          {download && !offline && (
+            <button type="button" className="os-button" onClick={reloadWithWindows}>
               Reload
             </button>
-          ) : (
-            <button type="button" className="os-button os-button-primary" onClick={() => this.setState({ error: null })}>
-              Reopen
-            </button>
           )}
+          <button type="button" className="os-button os-button-primary" onClick={retry}>
+            {download ? 'Try Again' : 'Reopen'}
+          </button>
         </div>
       </div>
     );
