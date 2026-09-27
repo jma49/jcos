@@ -29,8 +29,10 @@ export async function GET() {
       // empty library is a database not seeded yet, or emptied by hand in
       // the Table editor, and the snapshot stands in.
       if (library.songs.length) return Response.json(library, { headers: { 'cache-control': FRESH } });
-    } catch {
-      // Fall through to the snapshot.
+    } catch (error) {
+      // Say why in the function's logs: a refused query looks like a
+      // working site that never shows new songs.
+      console.error('/api/songs: serving the snapshot, Supabase failed:', error instanceof Error ? error.message : error);
     }
   }
   return Response.json(snapshot as Library, { headers: { 'cache-control': FALLBACK, 'x-library': 'snapshot' } });
