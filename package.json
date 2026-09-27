@@ -17,6 +17,7 @@
     "lint": "eslint src",
     "preview:capture": "node scripts/capture-previews.mjs",
     "photos:update": "node scripts/update-photos.mjs",
+    "songs:snapshot": "node --env-file-if-exists=.env scripts/songs-snapshot.mjs",
     "test": "vitest run",
     "test:db": "bash supabase/tests/run.sh",
     "test:smoke": "node scripts/smoke.mjs",

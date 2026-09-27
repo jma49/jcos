@@ -3,7 +3,7 @@ import type { AppProps } from '../../core/registry';
 import { launch } from '../../core/registry';
 import { useFocusedId } from '../../core/store';
 import { lineAt, useLyrics } from '../../media/lyrics';
-import { albumNamed, albumOf, coverOf, lyricOffset, SONGS, tracksOf } from '../../media/library';
+import { albumNamed, albumOf, coverOf, fromLibrary, lyricOffset, SONGS, tracksOf } from '../../media/library';
 import { formatTime, useClock, useMusic, type Repeat } from '../../media/music';
 import { useKeys } from '../../core/useKeys';
 import { usePlayer } from '../../media/player';
@@ -87,19 +87,22 @@ const MENU_HEIGHT = 183;
 /** Degrees of wheel travel per step. */
 const STEP = (18 * Math.PI) / 180;
 
-const artists = [...new Set(SONGS.map((s) => s.artist))].sort((a, b) => a.localeCompare(b));
-/** Every album a song comes from, whole albums first. */
-const albums = [...new Set(SONGS.map((s) => s.album).filter((a): a is string => !!a))].sort(
-  (a, b) => Number(!!albumNamed(b)) - Number(!!albumNamed(a)) || a.localeCompare(b)
-);
-const ALL = SONGS.map((_, i) => i);
+/** The library's artists, its albums (whole ones first) and every song. */
+const shelves = fromLibrary(() => ({
+  artists: [...new Set(SONGS.map((s) => s.artist))].sort((a, b) => a.localeCompare(b)),
+  albums: [...new Set(SONGS.map((s) => s.album).filter((a): a is string => !!a))].sort(
+    (a, b) => Number(!!albumNamed(b)) - Number(!!albumNamed(a)) || a.localeCompare(b)
+  ),
+  all: SONGS.map((_, i) => i)
+}));
 /** Songs of an album in track order (or the library's order for singles' albums). */
 const albumTracks = (title: string) => {
   const whole = albumNamed(title);
-  return whole ? tracksOf(whole) : ALL.filter((i) => SONGS[i].album === title);
+  return whole ? tracksOf(whole) : shelves().all.filter((i) => SONGS[i].album === title);
 };
 
 export default function IPod({ win }: AppProps) {
+  const { artists, albums, all: ALL } = shelves();
   const { host, status, live } = usePlayer('ipod');
   const music = useMusic();
   const { time, duration } = useClock();

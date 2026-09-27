@@ -42,8 +42,8 @@ browser goes through `src/os/core/storage.ts`.
 
 ## A song or an album
 
-See [media.md](media.md): the entry in `src/data/songs.json`, its cover,
-and tuning its lyrics' `offset`.
+See [media.md](media.md): a row in Supabase's `songs` (or `albums`), its
+cover, and tuning its lyrics' offset. At most 200 songs.
 
 ## A desktop picture
 

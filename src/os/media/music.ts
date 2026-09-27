@@ -11,7 +11,7 @@ import { loadSettings, saveJSON } from '../core/storage';
 import { SONGS } from './library';
 
 /** Every song, as a queue. */
-const EVERYTHING = SONGS.map((_, i) => i);
+const everything = () => SONGS.map((_, i) => i);
 
 export type MusicApp = 'ipod' | 'karaoke';
 export type Repeat = 'off' | 'all' | 'one';
@@ -92,7 +92,8 @@ export const useMusic = create<MusicStore>((set, get) => {
 
   return {
     index: 0,
-    queue: EVERYTHING,
+    // Every song, once the library is here (see play).
+    queue: [],
     playing: false,
     owner: null,
     resume: null,
@@ -104,7 +105,8 @@ export const useMusic = create<MusicStore>((set, get) => {
     play: (app, index = get().index, queue) => {
       soundOnToPlay();
       // A different song starts from the top; the same one carries on.
-      set({ ...claim(app), ...(index !== get().index ? { resume: null } : {}), ...(queue ? { queue } : {}), index, playing: true });
+      const following = queue ?? (get().queue.length ? undefined : everything());
+      set({ ...claim(app), ...(index !== get().index ? { resume: null } : {}), ...(following ? { queue: following } : {}), index, playing: true });
     },
     toggle: (app) => {
       const { owner, playing } = get();

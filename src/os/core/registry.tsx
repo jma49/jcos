@@ -9,7 +9,7 @@ import type { AppId, AppProps, OSProject, Rect } from './types';
 
 export type { AppProps };
 
-export interface AppDefinition extends Omit<AppManifest<AppId>, 'window' | 'load' | 'styles'> {
+export interface AppDefinition extends Omit<AppManifest<AppId>, 'window' | 'load' | 'styles' | 'data'> {
   width: number;
   height: number;
   minWidth: number;
@@ -18,9 +18,9 @@ export interface AppDefinition extends Omit<AppManifest<AppId>, 'window' | 'load
   Component: LazyExoticComponent<ComponentType<AppProps>>;
 }
 
-/** Fetches an app's code and stylesheet together, and adopts the stylesheet before the app renders. */
-async function loadApp({ id, load, styles }: AppManifest<AppId>) {
-  const [app, css] = await Promise.all([load(), styles?.()]);
+/** Fetches an app's code, stylesheet and data together, and adopts the stylesheet before the app renders. */
+async function loadApp({ id, load, styles, data }: AppManifest<AppId>) {
+  const [app, css] = await Promise.all([load(), styles?.(), data?.()]);
   if (css) adoptStyles(id, css.default);
   return app;
 }
@@ -64,7 +64,7 @@ export function preloadApp(id: AppId) {
 }
 
 export const apps = Object.fromEntries(
-  catalog.map(({ window, load: _load, styles: _styles, ...app }): [AppId, AppDefinition] => [
+  catalog.map(({ window, load: _load, styles: _styles, data: _data, ...app }): [AppId, AppDefinition] => [
     app.id,
     { ...app, ...window, Component: lazy(() => preloadApp(app.id)) }
   ])

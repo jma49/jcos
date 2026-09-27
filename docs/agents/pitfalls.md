@@ -126,6 +126,12 @@ again.
   load with their apps, anything outside the app that uses a class or
   keyframes has to live in `src/os/styles/`.
 
+- A function in `api/` imported `../src/lib/library` without `.ts`.
+  Vitest resolved it and every test passed, but Node's own module
+  loader (`npm run serve`, and plain ESM) needs the extension, and
+  `/api/songs` answered 404. Import TypeScript with its `.ts` extension
+  there, and try a new function with `npm run serve`.
+
 ## Tests and tooling
 
 - A test that mocks a module and then loads several modules with
