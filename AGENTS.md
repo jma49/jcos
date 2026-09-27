@@ -102,10 +102,12 @@ and the database tests on every pull request.
 ## Pull requests
 
 - Branch from an up-to-date `main`, one logical change per pull request.
-  Merge when CI and the Vercel check pass, then delete the branch. A
-  Vercel failure that says "Deployment rate limited" is the plan's daily
-  cap, not the change: CI is the gate then, and merges are best batched
-  until it resets (HANDOFF.md).
+  Merge when CI passes, then delete the branch. Only `main` deploys
+  (`git.deploymentEnabled` in `vercel.json`): branches get no preview,
+  since CI already builds the site, opens every app and checks the
+  budgets, and each preview spent one of the Hobby plan's few daily
+  deployments. A deployment of `main` that says "Deployment rate
+  limited" is that cap: redeploy `main` once it resets (HANDOFF.md).
 - Check `git status` and `git diff --cached` before committing.
 - When a file, script or asset is no longer used, delete it in the same
   change, and update the README and these docs.
