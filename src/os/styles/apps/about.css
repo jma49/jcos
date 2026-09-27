@@ -35,6 +35,13 @@
   text-decoration: underline;
 }
 
+/* The same blue, lighter, so links read on the dark page too (the light
+   theme's measured 2.6:1 there). */
+:root[data-theme='dark'] .os-document a,
+:root[data-theme='dark'] .os-prose a {
+  color: #6aa2f5;
+}
+
 .os-document-sign {
   margin-top: 22px !important;
   font-family: var(--os-display);
