@@ -36,6 +36,8 @@ interface Showing {
   timer: number;
   /** The latest event's turn: one that finishes after a later one has started is dropped. */
   turn: number;
+  /** Changes heard from Realtime so far: an answer asked for before the latest is out of date. */
+  changes: number;
 }
 
 /** Tells the visitor what Jincheng is playing, or takes the notification away when he stops. */
@@ -62,21 +64,29 @@ async function show(social: Social, now: Pick<NowPlaying, 'songId' | 'remainingM
 export function startListeningAlong() {
   let cancelled = false;
   let unwatch = () => {};
-  const stop: Showing = { timer: 0, turn: 0 };
+  const stop: Showing = { timer: 0, turn: 0, changes: 0 };
   getSocial().then((social) => {
     if (!social || cancelled) return;
-    // Once on arrival, for a song already playing; after that, a change
-    // brings the song with it, so a play doesn't send every visitor to the
-    // database at once. Only "Listen along" asks for the exact second.
-    social
-      .nowPlaying()
-      .catch(() => null)
-      .then((now) => {
-        if (!cancelled) return show(social, now, stop);
-      });
+    // Asked on arrival, for a song already playing, and again each time
+    // the watch (re)connects, since a play or stop made while it was down
+    // isn't sent again. An answer that a change overtook is dropped. After
+    // that, a change brings the song with it, so a play doesn't send every
+    // visitor to the database at once. Only "Listen along" asks for the
+    // exact second.
+    const ask = () => {
+      const changes = stop.changes;
+      social
+        .nowPlaying()
+        .catch(() => null)
+        .then((now) => {
+          if (!cancelled && changes === stop.changes) return show(social, now, stop);
+        });
+    };
+    ask();
     unwatch = social.watchNowPlaying((now) => {
+      stop.changes++;
       if (!cancelled) void show(social, now, stop);
-    });
+    }, ask);
   });
   return () => {
     cancelled = true;
