@@ -4,9 +4,10 @@
 //
 // The unit tests check logic and the build checks that everything compiles,
 // but neither runs the apps. This loads /?open=<app> for each app in the
-// registry (and a project, the Dashboard and the screen saver) in a fresh
+// catalog (and a project, the Dashboard and the screen saver) in a fresh
 // page and fails on an uncaught error, a console error, or an app showing
-// AppBoundary's crash panel. Network failures are ignored: dist/ is served
+// AppBoundary's crash panel. Errors logged by third-party frames (the
+// YouTube player) don't count. Network failures are ignored: dist/ is served
 // without the /api functions or Supabase, and third parties can be slow.
 
 import { readFile, readdir } from 'node:fs/promises';
@@ -19,12 +20,20 @@ const ROOT = new URL('..', import.meta.url).pathname;
 const SETTLE = 2500;
 const PARALLEL = 4;
 
-/** Every app ?open= can name, read from the registry's entries. */
+/** The applets, installed in each page so ?open= opens them rather than their store page. */
+const applets = [];
+
+/** Every app ?open= can name, read from the manifests the catalog lists. */
 async function targets() {
-  const registry = await readFile(join(ROOT, 'src/os/core/registry.tsx'), 'utf8');
-  const body = registry.slice(registry.indexOf('export const apps'));
-  const entries = [...body.matchAll(/^  (\w+): \{\n([\s\S]*?)^  \}/gm)];
-  const apps = entries.filter(([, , fields]) => !/^\s*internal: true/m.test(fields)).map(([, id]) => id);
+  const catalog = await readFile(join(ROOT, 'src/os/catalog.ts'), 'utf8');
+  const manifests = [...catalog.matchAll(/from '\.\/(.+\/manifest)'/g)].map(([, path]) => path);
+  const apps = [];
+  for (const path of manifests) {
+    const manifest = await readFile(join(ROOT, 'src/os', `${path}.ts`), 'utf8');
+    const id = manifest.match(/^\s*id: '(\w+)'/m)[1];
+    if (/^\s*applet: \{/m.test(manifest)) applets.push(id);
+    if (!/^\s*internal: true/m.test(manifest)) apps.push(id);
+  }
   const projects = await readdir(join(ROOT, 'src/content/projects/en'));
   const project = projects.find((f) => f.endsWith('.md'))?.replace(/\.md$/, '');
   return [...apps, project, 'dashboard', 'screensaver'].filter(Boolean);
@@ -41,12 +50,21 @@ const failures = [];
 async function check(target) {
   const context = await browser.newContext({ viewport: { width: 1280, height: 800 }, reducedMotion: 'reduce' });
   // Skip the boot animation.
-  await context.addInitScript(() => sessionStorage.setItem('os-booted', '1'));
+  await context.addInitScript((installed) => {
+    sessionStorage.setItem('os-booted', '1');
+    localStorage.setItem('os-applets', JSON.stringify(installed));
+  }, applets);
   const page = await context.newPage();
   const problems = [];
   page.on('pageerror', (e) => problems.push(`uncaught: ${e.message}`));
   page.on('console', (m) => {
-    if (m.type() === 'error' && !ignored.test(m.text())) problems.push(`console: ${m.text().slice(0, 300)}`);
+    // Only this site's errors count: third-party frames (YouTube's player)
+    // log their own, such as a permissions-policy violation when they ask
+    // for something the embed doesn't grant, and whether that happens within
+    // the settle time varies from run to run.
+    const source = m.location()?.url ?? '';
+    const thirdParty = /^https?:/.test(source) && !source.startsWith(base);
+    if (m.type() === 'error' && !thirdParty && !ignored.test(m.text())) problems.push(`console: ${m.text().slice(0, 300)}`);
   });
   try {
     await page.goto(`${base}/?open=${target}`, { waitUntil: 'load' });

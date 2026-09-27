@@ -172,3 +172,63 @@ select pg_temp.act_as('authenticated', '33333333-3333-3333-3333-333333333333');
 select pg_temp.check(pg_temp.refused($$insert into public.soapbox_reactions (post_id, emoji) values (current_setting('test.post')::uuid, '😂')$$), 'no reacting to a hidden post');
 reset role;
 select set_config('request.headers', '', false);
+
+-- The music library ------------------------------------------------------
+
+select pg_temp.check((select count(*) from public.songs) = 33 and (select count(*) from public.albums) = 1, 'the library starts as songs.json had it');
+
+select pg_temp.act_as('anon');
+select pg_temp.check((select count(*) from public.songs) = 33, 'visitors read the library');
+select pg_temp.check(pg_temp.refused($$insert into public.songs (id, title, artist) values ('aaaaaaaaaaa', 'x', 'y')$$), 'visitors can''t add songs');
+select pg_temp.check(pg_temp.refused($$update public.songs set title = 'x'$$), 'visitors can''t change songs');
+select pg_temp.check(pg_temp.refused($$delete from public.songs$$), 'visitors can''t remove songs');
+select pg_temp.check(pg_temp.refused($$select * from public.music_settings$$), 'visitors can''t read the library''s settings');
+select pg_temp.check(pg_temp.refused($$insert into public.now_playing (song_id, ends_at) values ('OxtZF0WGXtE', now() + interval '1 minute')$$), 'visitors can''t play songs for everyone');
+select pg_temp.check(pg_temp.refused($$select public.music_play('OxtZF0WGXtE')$$), 'visitors can''t call music_play');
+select pg_temp.act_as('authenticated', '11111111-1111-1111-1111-111111111111');
+select pg_temp.check(pg_temp.refused($$insert into public.songs (id, title, artist) values ('aaaaaaaaaaa', 'x', 'y')$$), 'members can''t add songs');
+select pg_temp.check(pg_temp.refused($$select public.music_stop()$$), 'members can''t stop what''s playing');
+
+select pg_temp.act_as('service_role');
+insert into public.songs (id, title, artist, cover, duration_ms) values ('dQw4w9WgXcQ', 'Test Song', 'Tester', 'https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg', 213000);
+select pg_temp.check(exists (select 1 from public.songs where id = 'dQw4w9WgXcQ'), 'the bot adds a song');
+select pg_temp.check(pg_temp.refused($$insert into public.songs (id, title, artist) values ('not a video', 'x', 'y')$$), 'a song is a YouTube video id');
+select pg_temp.check(pg_temp.refused($$insert into public.songs (id, title, artist) values ('bbbbbbbbbbb', '   ', 'y')$$), 'a song has a title');
+select pg_temp.check(pg_temp.refused(format($$insert into public.songs (id, title, artist) values ('bbbbbbbbbbb', %L, 'y')$$, repeat('x', 201))), 'titles are at most 200 characters');
+select pg_temp.check(pg_temp.refused($$insert into public.songs (id, title, artist, cover) values ('bbbbbbbbbbb', 'x', 'y', 'https://evil.example.com/a.jpg')$$), 'covers come from Apple''s or YouTube''s image hosts only');
+select pg_temp.check(pg_temp.refused($$insert into public.songs (id, title, artist, cover) values ('bbbbbbbbbbb', 'x', 'y', 'http://i.ytimg.com/vi/a/b.jpg')$$), 'covers are https');
+select pg_temp.check(pg_temp.refused($$insert into public.songs (id, title, artist, cover) values ('bbbbbbbbbbb', 'x', 'y', 'https://i.ytimg.com/a.jpg");background:url(x')$$), 'a cover can''t break out of url()');
+select pg_temp.check(pg_temp.refused($$insert into public.songs (id, title, artist, lyrics_offset) values ('bbbbbbbbbbb', 'x', 'y', 99999)$$), 'lyric offsets stay within 30 seconds');
+
+-- Playing: by the database's clock, public while it plays.
+select pg_temp.check((select song_id from public.music_play('dQw4w9WgXcQ')) = 'dQw4w9WgXcQ', 'the bot plays a song');
+select pg_temp.check((select ends_at - started_at from public.now_playing) = interval '213 seconds', 'a play lasts the song''s length');
+select public.music_play('OxtZF0WGXtE');
+select pg_temp.check((select count(*) from public.now_playing) = 1 and (select song_id from public.now_playing) = 'OxtZF0WGXtE', 'playing another song replaces the first');
+select pg_temp.check((select ends_at - started_at from public.now_playing) = interval '10 minutes', 'a song of unknown length plays for ten minutes');
+select pg_temp.check(pg_temp.refused($$select public.music_play('nosuchsongx')$$), 'only songs in the library play');
+
+select pg_temp.act_as('anon');
+select pg_temp.check((select song_id from public.now_playing_position()) = 'OxtZF0WGXtE' and (select elapsed_ms from public.now_playing_position()) >= 0 and (select remaining_ms from public.now_playing_position()) between 1 and 600000, 'visitors see what''s playing, how far in and how long it has left');
+reset role;
+update public.now_playing set started_at = now() - interval '2 hours', ends_at = now() - interval '1 hour';
+select pg_temp.act_as('anon');
+select pg_temp.check(not exists (select 1 from public.now_playing) and not exists (select 1 from public.now_playing_position()), 'a song that has ended isn''t playing');
+select pg_temp.act_as('service_role');
+select public.music_play('dQw4w9WgXcQ');
+delete from public.songs where id = 'dQw4w9WgXcQ';
+select pg_temp.check(not exists (select 1 from public.now_playing), 'removing the song playing stops it');
+select public.music_play('OxtZF0WGXtE');
+select public.music_stop();
+select pg_temp.check(not exists (select 1 from public.now_playing), 'the bot stops what''s playing');
+reset role;
+select pg_temp.check(exists (select 1 from pg_publication_tables where pubname = 'supabase_realtime' and tablename = 'now_playing'), 'what''s playing reaches visitors over Realtime');
+
+-- The limit: a full library refuses another song.
+update public.music_settings set value = to_jsonb((select count(*) from public.songs) + 1) where name = 'song_limit';
+select pg_temp.act_as('service_role');
+insert into public.songs (id, title, artist) values ('ccccccccccc', 'Last', 'One');
+select pg_temp.check(pg_temp.refused($$insert into public.songs (id, title, artist) values ('ddddddddddd', 'Too many', 'One')$$), 'a full library refuses another song');
+reset role;
+delete from public.songs where id = 'ccccccccccc';
+update public.music_settings set value = '200' where name = 'song_limit';

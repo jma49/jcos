@@ -27,8 +27,8 @@ export function NowPlaying() {
     };
   }, [open]);
 
-  if (!owner) return null;
-  const song = SONGS[index];
+  const song = owner ? SONGS[index] : undefined;
+  if (!owner || !song) return null;
   const album = albumOf(song) ?? (song.album ? { title: song.album } : null);
   const label = `${playing ? 'Playing' : 'Paused'}: ${song.title} by ${song.artist}`;
 

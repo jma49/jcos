@@ -67,8 +67,16 @@ again.
   their opening size because the Exposé target lacked the `scaleX` and
   `scaleY` the shown target had. Give every target of a component the
   same keys.
+- A module import that failed (offline for a moment) fails again for the
+  rest of the page's life: Chrome keeps the failure for that URL and
+  makes no request, even once the network is back, while the same file
+  with `?retry=1` loads. So a failed chunk isn't retried in the page:
+  the crash panel and the Applet Store offer a reload (the open windows
+  come back), and only `fetch()` paths such as `/api/songs` recover by
+  themselves.
 - React holds back content that suspended for about 300 ms before
-  showing it. A lazy Dashboard behind `Suspense` took 350 ms to appear
+  showing it. An installed applet, its code already fetched, took 820 ms
+  to open through `lazy` and 80 ms rendered directly (`readyApp()`). A lazy Dashboard behind `Suspense` took 350 ms to appear
   where it had taken 55, even with its code loaded. For something that
   must open instantly, load the module yourself and render it once it's
   in (`DashboardLayer.tsx`).
@@ -112,8 +120,47 @@ again.
 - `table.test.ts` plays the table with bots; run it after any change to
   the table or physics.
 
+- Astro hoists every stylesheet imported anywhere in the island, lazy
+  imports included, into the page. Importing each app's CSS from its
+  component put 36 KB of styles inline and seven stylesheets in the
+  first load (the HTML grew from 15 to 23 KB gzipped). Apps' styles are
+  imported as text (`?inline`) by their manifests instead; check the
+  built `index.html` after changing how styles load.
+- Styles several apps shared lived in one app's stylesheet: the button
+  in Account's, the segmented control's disabled state in Finder's, the
+  sidebar in Projects', and `@keyframes os-spin`, which spins every
+  window's loading indicator, in the Applet Store's. Once app styles
+  load with their apps, anything outside the app that uses a class or
+  keyframes has to live in `src/os/styles/`.
+
+- A function in `api/` imported `../src/lib/library` without `.ts`.
+  Vitest resolved it and every test passed, but Node's own module
+  loader (`npm run serve`, and plain ESM) needs the extension, and
+  `/api/songs` answered 404. Import TypeScript with its `.ts` extension
+  there, and try a new function with `npm run serve`.
+
+- Every tab saved its whole copy of a setting or score. A best score of
+  5000 set in one tab was overwritten by 4000 from a tab that had loaded
+  before it, and changing the Dock size in one tab turned pointers back
+  off after another tab had turned them on. Build on what's stored
+  (`updateJSON`) and listen for other tabs (`onStored`).
+- Pressing Add under a song twice read the draft twice, so both presses
+  tried to add it and the second reported a failure over the first's
+  success. Claim with the delete itself (`delete … returning`).
+- Every visitor asking the database what's playing when a song starts is
+  a stampede of one query per visitor. Use what the Realtime event
+  carries, and ask only when someone acts on it.
+
 ## Tests and tooling
 
+- A test that mocks a module and then loads several modules with
+  `Promise.all([import(…), …])` failed five times in six: a module could
+  bind the real one before the mock was in place. Load them one after
+  another.
+- The same goes for the code under test: two calls at once that each
+  `await import()` a mocked module can get the real one the second time.
+  `findSong()` looked like it lost a race until its import of the social
+  module was made static (it was in the first load anyway).
 - A Vitest `expect` inside a per-frame loop made the Pinball test time
   out. Use plain `throw` in hot loops, and give long simulations an
   explicit timeout.
@@ -156,12 +203,33 @@ again.
 - Hooks that do real work (`useSky`) must not sit in a component that
   re-renders every frame. `Desktop` subscribed to `windows`, so a drag
   recomputed the sun and the weather tint sixty times a second.
+- ESLint's flat config replaces a rule's options when a later block
+  matching the same file sets the same rule; it doesn't merge them. A
+  block for manifests silently lifted the applet rule from applets'
+  manifests. Use a different rule, or keep the file sets apart.
 - There's no Prettier config. Don't reformat whole files; it buries the
   change in the diff.
 - Wrapping a big JSX tree reindents all of it. Wrap through a small
   outer component instead, as `Desktop` wraps `Shell` in `MotionConfig`.
 
 ## Git and pull requests
+
+- Pushing a branch for the first time builds a Vercel preview even when
+  the change looks small: with no earlier deployment of the branch,
+  `vercel-ignore.sh` compares with `main`. Pushing a stack of twelve
+  branches spent twelve of the day's deployments at once, and the
+  production deployment after it was rate-limited. Before pushing
+  several branches, count what they'll build; to get CI on a stack
+  without spending deployments, push only its top branch.
+- A guess made to get a check green went wrong: CI's perf counted the
+  Dashboard (161 KB against 160) and the pointer was moved away before
+  loading, which CI's Chromium ignored. Listing when each file was asked
+  for, then the pointer events, showed the cause: a pointer resting at
+  (0, 0) was reported over the menu bar as it painted, and
+  `pointerover` fetched the Dashboard ahead. Real visitors whose pointer
+  rests at the top did the same. The fix was in the product (only real
+  movement counts), not the measurement. Make the cause observable
+  first.
 
 - Check `git status` and `git diff --cached` before committing. A staged
   rename from other work once rode along in an unrelated fix.

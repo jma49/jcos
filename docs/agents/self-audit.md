@@ -36,6 +36,30 @@ vulnerability or bottleneck. Significant means any of these:
   subscriptions are narrow. New timers and listeners stop and clean up.
 - New images are sized and compressed; new fonts are subset.
 
+**Concurrency.** JM/OS is used by many people at once, and by one
+person in several tabs. Every feature is checked against these before
+it's called done:
+- **Limits** hold when requests arrive together: an advisory lock, and a
+  race in `supabase/tests/race.sh` that fails without it.
+- **Claims are atomic** in the database (`update`/`delete … returning`,
+  `on conflict`, a unique key), never read-then-write across two
+  requests: two taps on a button, or Telegram delivering an update twice,
+  act once and say so.
+- **Every tab of a visitor shares storage.** A change builds on what's
+  stored now (`updateJSON`, `saved().update`), never on this tab's copy,
+  and state other tabs change is picked up (`onStored`). Deliberately
+  per tab: the open windows (`os-windows`), last writer wins.
+- **Fan-out** stays proportional to what's used: an event that reaches
+  every visitor carries what they need (a Realtime row) rather than
+  sending all of them to the database at once; nothing is sent that no
+  one has asked to see (pointers go only to those watching); count what
+  a change costs in Realtime messages and requests per visitor against
+  the free plan (2 million messages and 200 connections).
+- **One visitor's actions don't reach another's screen uninvited.**
+  Anything shared (pointers, plays, AirDrop) is opt-in or asks first.
+- **Order-independent**: a Realtime event before the data it refers to,
+  a song removed while someone plays it, a deploy under an open page.
+
 **Record it.** The pull request says what was checked, with the numbers
 from `npm run perf`. Findings are fixed in the same pull request.
 Anything deliberately left goes to HANDOFF.md with the reason.

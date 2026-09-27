@@ -35,8 +35,13 @@ function fit(win: WindowState, index: number): WindowState {
 /** Puts back the windows of the last visit. Returns whether there were any. */
 export function restoreWindows(): boolean {
   const saved = loadJSON<Saved | null>(KEY, null);
-  // Only windows of apps that still exist, and nothing half-formed.
-  const windows = (saved?.windows ?? []).filter((w) => w && typeof w.id === 'string' && w.app in apps);
+  // Only windows of apps that still exist (own keys: not "constructor"),
+  // applets that are still installed, and nothing half-formed.
+  const { applets } = useWindows.getState();
+  const windows = (saved?.windows ?? []).filter(
+    (w) =>
+      w && typeof w.id === 'string' && Object.hasOwn(apps, w.app) && (!apps[w.app].applet || applets.includes(w.app))
+  );
   if (!windows.length || !saved) return false;
   useWindows.getState().restore(windows.map(fit), saved.order);
   return true;

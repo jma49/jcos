@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { animate, m, useMotionValue, useMotionValueEvent, useTransform, type MotionValue } from 'motion/react';
-import { albumNamed, coverOf, SONGS, tracksOf } from '../../media/library';
+import { albumNamed, coverOf, fromLibrary, SONGS, tracksOf } from '../../media/library';
 import type { ScreenInput } from './input';
 import { useReduceMotion } from '../../core/system';
 
@@ -35,8 +35,7 @@ function flowAlbums(): FlowAlbum[] {
     .sort((a, b) => a.artist.localeCompare(b.artist) || a.title.localeCompare(b.title));
 }
 
-const ALBUMS = flowAlbums();
-const LAST = ALBUMS.length - 1;
+const shelf = fromLibrary(flowAlbums);
 /** Pixels of drag per album. */
 const SPACING = 42;
 /** The spring every move settles with. */
@@ -82,6 +81,8 @@ export function CoverFlow({
   start?: string;
   onPlay: (index: number, queue: number[]) => void;
 }) {
+  const ALBUMS = shelf();
+  const LAST = ALBUMS.length - 1;
   const first = Math.max(0, ALBUMS.findIndex((a) => a.title === start));
   const pos = useMotionValue(first);
   const [at, setAt] = useState(first);

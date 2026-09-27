@@ -4,6 +4,7 @@
 
 import { createClient, type PostgrestError, type User } from '@supabase/supabase-js';
 import { CURSOR_COLORS } from './social';
+import { songOf } from '../../lib/library';
 import {
   LOBBY,
   NOTES_PER_DAY,
@@ -369,6 +370,42 @@ export function supabaseSocial(url: string, key: string): Social {
         if (chatWatchers.size || !chatChannel) return;
         client.removeChannel(chatChannel);
         chatChannel = null;
+      };
+    },
+
+    async song(id) {
+      const { data, error } = await client
+        .from('songs')
+        .select('id,title,artist,album,cover,track,instrumental,lyrics_offset,lyrics_id')
+        .eq('id', id)
+        .maybeSingle();
+      if (error) throw error;
+      return data ? songOf(data) : null;
+    },
+
+    async nowPlaying() {
+      const { data, error } = await client.rpc('now_playing_position');
+      if (error) throw error;
+      const row = (data as { song_id: string; elapsed_ms: number; remaining_ms: number }[] | null)?.[0];
+      return row ? { songId: row.song_id, elapsedMs: Number(row.elapsed_ms), remainingMs: Number(row.remaining_ms) } : null;
+    },
+
+    // Changes to now_playing, which only the bot writes. Realtime reads them
+    // from the database's log, so the row can be believed; reading it here
+    // saves every visitor asking the database at the same moment when a song
+    // starts. (Joining at the right second asks, see media/together.ts.)
+    watchNowPlaying(onChange) {
+      const channel = client
+        .channel('now-playing')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'now_playing' }, ({ eventType, new: row }) => {
+          const r = row as { song_id?: unknown; ends_at?: unknown } | null;
+          const ends = typeof r?.ends_at === 'string' ? Date.parse(r.ends_at) : NaN;
+          if (eventType === 'DELETE' || typeof r?.song_id !== 'string' || !Number.isFinite(ends)) return onChange(null);
+          onChange({ songId: r.song_id, remainingMs: Math.max(0, ends - Date.now()) });
+        })
+        .subscribe();
+      return () => {
+        client.removeChannel(channel);
       };
     },
 

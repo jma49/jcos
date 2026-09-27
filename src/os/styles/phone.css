@@ -160,15 +160,6 @@
     display: none;
   }
 
-  .os-document,
-  .os-project {
-    padding: 22px 20px 32px;
-  }
-
-  .os-photo-bar input {
-    display: none;
-  }
-
   /* Dashboard widgets stack in a scrolling column. */
   .os-dashboard {
     place-items: start center;
@@ -193,11 +184,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .os-progress[data-loading='true'] {
-    animation: none;
-    transform: scaleX(0.6);
-  }
-
   .os-root .os-button-primary,
   .os-loading,
   .os-boot-bar {

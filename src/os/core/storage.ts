@@ -3,6 +3,11 @@
 // site data) or full, and stored values can be stale or hand-edited, so
 // every read has a fallback and every write may quietly do nothing: the
 // desktop should behave the same, just without remembering.
+//
+// Every tab of a visitor shares this storage, and each keeps its own copy
+// in memory. So a change builds on what's stored now (updateJSON), not on
+// a copy another tab may have overtaken, which would undo that tab's
+// change; and state other tabs change is picked up (onStored).
 
 const store = () => (typeof window === 'undefined' ? null : window.localStorage);
 
@@ -43,4 +48,28 @@ export function saveJSON(key: string, value: unknown) {
 export function loadSettings<T extends object>(key: string, defaults: T): T {
   const saved = loadJSON<Partial<T> | null>(key, null);
   return saved && typeof saved === 'object' && !Array.isArray(saved) ? { ...defaults, ...saved } : defaults;
+}
+
+/**
+ * Changes a stored JSON value starting from what's stored now, and returns
+ * the result: a best score, a setting or an item added in another tab
+ * since this one last looked isn't overwritten.
+ */
+export function updateJSON<T>(key: string, fallback: T, change: (current: T) => T): T {
+  const next = change(loadJSON(key, fallback));
+  saveJSON(key, next);
+  return next;
+}
+
+/**
+ * Calls back when another tab changes `key` (or clears storage). The tab
+ * that writes isn't told: it already knows. Returns a function that stops.
+ */
+export function onStored(key: string, callback: () => void): () => void {
+  if (typeof window === 'undefined' || !window.addEventListener) return () => {};
+  const listener = (e: StorageEvent) => {
+    if (e.key === key || e.key === null) callback();
+  };
+  window.addEventListener('storage', listener);
+  return () => window.removeEventListener('storage', listener);
 }

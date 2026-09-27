@@ -85,3 +85,20 @@ describe('restoreWindows', () => {
     expect(restored.origin).toBeUndefined();
   });
 });
+
+describe('what isn’t put back', () => {
+  const ids = () => Object.keys(store.useWindows.getState().windows).sort();
+
+  test('an applet that isn’t installed any more', () => {
+    store.useWindows.setState({ applets: ['minesweeper'] });
+    put([win('a', 'minesweeper'), win('b', 'pinball'), win('c', 'about')], ['a', 'b', 'c']);
+    session.restoreWindows();
+    expect(ids()).toEqual(['a', 'c']);
+  });
+
+  test('anything that isn’t an app of its own, such as "constructor"', () => {
+    put([win('a', 'constructor'), win('b', 'toString'), win('c', 'about')], ['a', 'b', 'c']);
+    session.restoreWindows();
+    expect(ids()).toEqual(['c']);
+  });
+});

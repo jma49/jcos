@@ -1,3 +1,4 @@
+import type { Song } from '../../lib/library';
 // What the social features share, whichever backend serves them: Supabase
 // in production (supabase.ts) or a stand-in during `astro dev` (local.ts).
 
@@ -49,6 +50,8 @@ export interface VisitorInfo {
   room?: string;
   /** False when they've turned AirDrop off. */
   airdrop?: boolean;
+  /** True when they've chosen to see other people's pointers: only then are pointers sent. */
+  watching?: boolean;
 }
 
 const text = (value: unknown, max: number) => (typeof value === 'string' && value.trim() ? value.trim().slice(0, max) : undefined);
@@ -65,7 +68,8 @@ export function cleanInfo(raw: unknown, fallbackColor: string): VisitorInfo {
     country: text(info.country, 2),
     username: username && USERNAME.test(username) ? username : undefined,
     room: room && /^[a-z0-9-]+$/.test(room) ? room : undefined,
-    airdrop: info.airdrop === false ? false : undefined
+    airdrop: info.airdrop === false ? false : undefined,
+    watching: info.watching === true ? true : undefined
   };
 }
 
@@ -263,4 +267,23 @@ export interface Social {
    * returns a function that stops watching.
    */
   watchChat: (handlers: ChatHandlers) => () => void;
+  /** One song from the library, as the database has it now; null if there's no such song. */
+  song: (id: string) => Promise<Song | null>;
+  /** What Jincheng is playing for everyone, by the database's clock; null when nothing is. */
+  nowPlaying: () => Promise<NowPlaying | null>;
+  /**
+   * Calls back when Jincheng plays or stops a song, with the song and the
+   * time it has left (null when stopped); returns a function that stops
+   * watching.
+   */
+  watchNowPlaying: (onChange: (now: Pick<NowPlaying, 'songId' | 'remainingMs'> | null) => void) => () => void;
+}
+
+/** A song Jincheng is playing for everyone on the desktop (/play in Telegram). */
+export interface NowPlaying {
+  /** The song's YouTube id. */
+  songId: string;
+  /** How far in it is, and how long it has left, in ms, by the database's clock. */
+  elapsedMs: number;
+  remainingMs: number;
 }

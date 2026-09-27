@@ -16,8 +16,10 @@ import { Sky, useSky } from './ambient/Sky';
 import { Presence } from './social/Presence';
 import { startAccount } from './social/account';
 import { startChatWatch } from './social/chatState';
+import { startListeningAlong } from './media/together';
 import { startAirDrop } from './social/airdrop';
 import { Notices } from './shell/Notices';
+import { Contained } from './shell/Contained';
 import { useDesktopPicture } from './look/useDesktopPicture';
 import { useAppearance } from './look/useAppearance';
 import { watchWindows } from './core/sound';
@@ -70,7 +72,15 @@ function Shell({ data }: { data: OSData }) {
   useEffect(startAccount, []);
   // Unread counts, and alerts for private messages and @mentions.
   useEffect(startChatWatch, []);
+  // Songs Jincheng plays for everyone from Telegram, to listen along to.
+  useEffect(startListeningAlong, []);
   useEffect(() => startAirDrop(data), [data]);
+  // The page's plain-text copy (index.astro) is for screen readers, which
+  // still read it; with the desktop running, its links would only be
+  // invisible stops for someone moving through the page with Tab.
+  useEffect(() => {
+    document.querySelectorAll<HTMLElement>('.os-text-copy a').forEach((a) => (a.tabIndex = -1));
+  }, []);
 
   const glass = useWindows((s) => s.glass);
   const picture = useDesktopPicture(data, sky, root);
@@ -139,12 +149,22 @@ function Shell({ data }: { data: OSData }) {
         <WindowLayer />
 
         <Dock />
-        <DashboardLayer />
+        <Contained name="Dashboard">
+          <DashboardLayer />
+        </Contained>
         <Spotlight />
         <AppSwitcher />
-        <Screensaver />
-        {!booting && <Presence />}
-        <Notices />
+        <Contained name="The screen saver">
+          <Screensaver />
+        </Contained>
+        {!booting && (
+          <Contained name="Presence">
+            <Presence />
+          </Contained>
+        )}
+        <Contained name="Notifications">
+          <Notices />
+        </Contained>
         {menuAt && <DesktopMenu at={menuAt} onClose={closeMenu} />}
 
         <AnimatePresence>{booting && !reduced && <Boot onDone={finishBoot} />}</AnimatePresence>

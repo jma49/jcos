@@ -56,7 +56,52 @@ const unlink = (text: string) => text.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1');
 <Layout lang="en" tabTitle="Jincheng">
   <Desktop client:only="react" data={data} />
 
-  <article class="sr-only">
+  <noscript>
+    <style>
+      .os-text-copy {
+        position: static;
+        width: auto;
+        height: auto;
+        margin: 0 auto;
+        overflow: visible;
+        clip: auto;
+        clip-path: none;
+        padding: 0 1rem 3rem;
+        white-space: normal;
+        max-width: 38rem;
+        font: 16px/1.6 -apple-system, system-ui, sans-serif;
+      }
+      .os-text-copy h1 {
+        font-size: 1.6rem;
+      }
+      .os-text-copy p {
+        margin: 0 0 0.8rem;
+      }
+      .os-text-copy h2 {
+        margin-top: 1.6rem;
+        font-size: 1.1rem;
+      }
+      .os-text-copy ul {
+        padding-left: 1.2rem;
+        list-style: disc;
+      }
+      .os-text-copy a {
+        text-decoration: underline;
+      }
+      .os-noscript-note {
+        max-width: 38rem;
+        margin: 2rem auto 1rem;
+        padding: 0 1rem;
+        font: 14px/1.5 -apple-system, system-ui, sans-serif;
+        color: #666;
+      }
+    </style>
+    <p class="os-noscript-note">This site is a desktop that needs JavaScript. Here is what's on it, as text.</p>
+  </noscript>
+
+  {/* The content as plain text: for screen readers and crawlers, and shown
+      to visitors without JavaScript (the <noscript> above). */}
+  <article class="sr-only os-text-copy">
     <h1>{profile.name.en} — {t.role}</h1>
     {t.bio.shortParagraphs.map((p) => <p>{unlink(p)}</p>)}
     <h2>Projects</h2>
@@ -88,8 +133,4 @@ const unlink = (text: string) => text.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1');
       <li><a href={profile.photography}>Photography on Unsplash</a></li>
     </ul>
   </article>
-
-  <noscript>
-    <p>This desktop needs JavaScript. The text above has the same content.</p>
-  </noscript>
 </Layout>

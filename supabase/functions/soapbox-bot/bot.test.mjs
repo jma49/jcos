@@ -24,6 +24,8 @@ const JPEG = Buffer.from('FFD8FFE000104A46494600010100000100010000FFC00011080005
 let world;
 beforeEach(() => {
   world = { replies: [], sent: [], uploads: [], posts: [], groups: new Map(), patches: [], bucket: true, settings: {}, moderation: null, webhook: null, answered: [], edits: [], failRpc: false };
+  // The music library: its songs, drafts and limit, and what YouTube, Apple Music and lrclib say.
+  Object.assign(world, { songs: [], music: { song_limit: 200 }, fetched: [], youtube: {}, itunes: [], lrclib: [] });
 });
 
 const json = (value, status = 200) => new Response(JSON.stringify(value), { status, headers: { 'content-type': 'application/json' } });
@@ -36,7 +38,8 @@ globalThis.fetch = async (input, init = {}) => {
   if (tg) {
     const [, call] = tg;
     if (call === 'getFile') return json({ ok: true, result: { file_path: `files/${body.file_id}` } });
-    if (call === 'sendMessage' && body.chat_id === OWNER && body.reply_markup) world.sent.push(body);
+    if (call === 'sendMessage' && body.chat_id === OWNER && body.reply_markup?.inline_keyboard?.[0]?.[0]?.callback_data?.startsWith('song:')) world.replies.push(body.text), world.sent.push(body);
+    else if (call === 'sendMessage' && body.chat_id === OWNER && body.reply_markup) world.sent.push(body);
     else if (call === 'sendMessage') world.replies.push(body.text);
     if (call === 'setWebhook') world.webhook = body;
     if (call === 'answerCallbackQuery') world.answered.push(body);
@@ -56,6 +59,52 @@ globalThis.fetch = async (input, init = {}) => {
     if (!world.bucket) return json({ statusCode: '404', error: 'Bucket not found', code: 'NoSuchBucket' }, 400);
     world.uploads.push({ path: url.split('soapbox/')[1], type: init.headers['content-type'] });
     return json({ Key: 'x' });
+  }
+  // What the music commands look up. Every address they fetch is recorded.
+  if (/youtube\.com\/oembed|itunes\.apple\.com|lrclib\.net/.test(url)) world.fetched.push(url);
+  if (url.startsWith('https://www.youtube.com/oembed?')) {
+    const id = new URL(new URL(url).searchParams.get('url')).searchParams.get('v');
+    const video = world.youtube[id];
+    return video === 401 ? new Response('Unauthorized', { status: 401 }) : video ? json(video) : new Response('Not Found', { status: 404 });
+  }
+  if (url.startsWith('https://itunes.apple.com/search?')) return json({ resultCount: world.itunes.length, results: world.itunes });
+  if (url.startsWith('https://lrclib.net/api/search?')) return json(world.lrclib);
+  if (url.endsWith('/rest/v1/rpc/music_play')) return (world.playing = body.p_song), json({ song_id: body.p_song });
+  if (url.endsWith('/rest/v1/rpc/music_stop')) return (world.playing = null), new Response(null, { status: 204 });
+  const music = url.match(/db\.example\/rest\/v1\/(songs|music_settings)(\?.*)?$/);
+  if (music) {
+    const [, table, query = ''] = music;
+    const params = new URLSearchParams(query.slice(1));
+    const eq = (key) => params.get(key)?.replace(/^eq\./, '');
+    if (table === 'music_settings') {
+      const name = eq('name');
+      if (method === 'POST') return (world.music[body.name] = body.value), new Response(null, { status: 201 });
+      if (method === 'DELETE' && params.get('name') === 'like.draft:*') {
+        const before = params.get('value->>created')?.replace(/^lt\./, '');
+        for (const [key, value] of Object.entries(world.music)) if (key.startsWith('draft:') && value.created < before) delete world.music[key];
+        return new Response(null, { status: 204 });
+      }
+      if (method === 'DELETE') {
+        // As Postgres does: only one delete finds the row.
+        if (!(name in world.music)) return json([]);
+        const value = world.music[name];
+        delete world.music[name];
+        return json([{ name, value }]);
+      }
+      return json(name in world.music ? [{ value: world.music[name] }] : []);
+    }
+    if (method === 'POST') {
+      if (world.songs.length >= world.music.song_limit) return json({ code: 'P0429', message: `The library is full (${world.music.song_limit} songs). Remove one first.` }, 400);
+      if (world.songs.some((s) => s.id === body.id)) return json({ code: '23505', message: 'duplicate key value violates unique constraint "songs_pkey"' }, 409);
+      world.songs.push(body);
+      return new Response(null, { status: 201 });
+    }
+    const id = eq('id');
+    const title = params.get('title')?.replace(/^ilike\.\*|\*$/g, '');
+    const matching = world.songs.filter((s) => (id ? s.id === id : title ? s.title.toLowerCase().includes(title.toLowerCase()) : true));
+    if (method === 'DELETE') return (world.songs = world.songs.filter((s) => !matching.includes(s))), new Response(null, { status: 204 });
+    if (method === 'PATCH') return matching.forEach((s) => Object.assign(s, body)), new Response(null, { status: 204 });
+    return json(matching);
   }
   const rest = url.match(/db\.example\/rest\/v1\/(.*)$/)?.[1];
   if (rest?.startsWith('rpc/soapbox_add_images')) {
@@ -220,4 +269,171 @@ test('Hide and Show again change the row and the notice', async () => {
   await call({ callback_query: { id: 'q', from: { id: 7 }, data: `hide:note:${id}` } });
   await call(cb('hide:note:../../etc'));
   assert.equal(world.patches.length, before);
+});
+
+// ---------- The music library ----------
+
+const NINGXIA = 'OxtZF0WGXtE';
+const press = (data, text = '') => call({ callback_query: { id: 'cb', from: { id: OWNER }, data, message: { chat: { id: OWNER }, message_id: 900, text } } });
+const addButtons = () => world.sent.at(-1).reply_markup.inline_keyboard[0].map((b) => b.callback_data);
+
+test('/add looks a video up, shows what it found, and adds it when told to', async () => {
+  world.youtube[NINGXIA] = { title: '梁靜茹 Fish Leong【寧夏】Official MV', author_name: 'Rock Records' };
+  world.itunes = [
+    { trackName: '寧夏', artistName: '梁靜茹', collectionName: '燕尾蝶', artworkUrl100: 'https://is1-ssl.mzstatic.com/image/thumb/x/100x100bb.jpg', trackTimeMillis: 252000 }
+  ];
+  world.lrclib = [{ syncedLyrics: '[00:12.00] 宁静夏天' }];
+  await send({ message_id: 200, text: `/add https://youtu.be/${NINGXIA}?si=share` });
+  assert.match(world.replies.at(-1), /寧夏 — 梁靜茹 · 燕尾蝶 · 4:12/);
+  assert.match(world.replies.at(-1), /Cover: Apple Music/);
+  assert.match(world.replies.at(-1), /Lyrics: synced/);
+  assert.deepEqual(addButtons(), [`song:add:${NINGXIA}`, `song:cancel:${NINGXIA}`]);
+  assert.equal(world.songs.length, 0, 'nothing is added before Add is pressed');
+
+  await press(`song:add:${NINGXIA}`, world.replies.at(-1));
+  assert.deepEqual(world.songs, [
+    { id: NINGXIA, title: '寧夏', artist: '梁靜茹', album: '燕尾蝶', cover: 'https://is1-ssl.mzstatic.com/image/thumb/x/600x600bb.jpg', duration_ms: 252000 }
+  ]);
+  assert.match(world.edits.at(-1).text, /✅ Added\. 1\/200 songs/);
+  assert.equal(world.music[`draft:${NINGXIA}`], undefined, 'the draft is gone');
+
+  await press(`song:add:${NINGXIA}`);
+  assert.equal(world.songs.length, 1, 'pressing Add twice adds it once');
+});
+
+test('/add only ever fetches addresses it built, from the video id', async () => {
+  world.youtube[NINGXIA] = { title: 'x', author_name: 'y - Topic' };
+  await send({ message_id: 201, text: `/add https://www.youtube.com/watch?v=${NINGXIA}&redirect=http://169.254.169.254/` });
+  for (const url of world.fetched) {
+    assert.match(new URL(url).hostname, /^(www\.youtube\.com|itunes\.apple\.com|lrclib\.net)$/);
+    assert.doesNotMatch(url, /169\.254/);
+  }
+  await send({ message_id: 202, text: '/add https://evil.example.com/watch?v=OxtZF0WGXtE' });
+  assert.match(world.replies.at(-1), /Send a YouTube link/);
+});
+
+test('/add says why a video can’t be added', async () => {
+  world.youtube.AAAAAAAAAAA = 401;
+  await send({ message_id: 203, text: '/add https://youtu.be/AAAAAAAAAAA' });
+  assert.match(world.replies.at(-1), /embedding off/);
+  await send({ message_id: 204, text: '/add https://youtu.be/BBBBBBBBBBB' });
+  assert.match(world.replies.at(-1), /doesn’t know that video/);
+  world.songs.push({ id: NINGXIA, title: '寧夏', artist: '梁靜茹' });
+  await send({ message_id: 205, text: `/add ${NINGXIA}` });
+  assert.match(world.replies.at(-1), /already in the library/);
+});
+
+test('a full library refuses a new song, before and after the preview', async () => {
+  world.music.song_limit = 1;
+  world.songs.push({ id: 'CCCCCCCCCCC', title: 'One', artist: 'A' });
+  await send({ message_id: 206, text: `/add ${NINGXIA}` });
+  assert.match(world.replies.at(-1), /library is full \(1 songs\)/);
+
+  // Filled up while the preview was waiting: the database refuses it.
+  world.music.song_limit = 2;
+  world.youtube[NINGXIA] = { title: '寧夏', author_name: '梁靜茹 - Topic' };
+  await send({ message_id: 207, text: `/add ${NINGXIA}` });
+  world.songs.push({ id: 'DDDDDDDDDDD', title: 'Two', artist: 'B' });
+  await press(`song:add:${NINGXIA}`, 'preview');
+  assert.equal(world.songs.length, 2);
+  assert.match(world.edits.at(-1).text, /library is full \(2 songs\)/);
+});
+
+test('Cancel adds nothing; without Apple Music the video’s own title and thumbnail do', async () => {
+  world.youtube[NINGXIA] = { title: '寧夏', author_name: '梁靜茹 - Topic' };
+  await send({ message_id: 208, text: `/add ${NINGXIA}` });
+  assert.match(world.replies.at(-1), /寧夏 — 梁靜茹/);
+  assert.match(world.replies.at(-1), /the video’s thumbnail/);
+  assert.equal(world.music[`draft:${NINGXIA}`].song.cover, `https://i.ytimg.com/vi/${NINGXIA}/hqdefault.jpg`);
+  await press(`song:cancel:${NINGXIA}`, 'preview');
+  assert.equal(world.songs.length, 0);
+  assert.match(world.edits.at(-1).text, /Not added/);
+});
+
+test('/songs, /remove and /offset find a song by title or id', async () => {
+  world.songs.push({ id: NINGXIA, title: '寧夏', artist: '梁靜茹' }, { id: 'EEEEEEEEEEE', title: '夏天', artist: 'C' });
+  await send({ message_id: 209, text: '/songs' });
+  assert.match(world.replies.at(-1), /2\/200 songs/);
+
+  await send({ message_id: 210, text: '/offset 夏 850' });
+  assert.match(world.replies.at(-1), /Which one\?/, 'two titles match: it asks rather than guess');
+  await send({ message_id: 211, text: '/offset 寧夏 -850' });
+  assert.equal(world.songs[0].lyrics_offset, -850);
+  assert.match(world.replies.at(-1), /850 ms behind/);
+  await send({ message_id: 212, text: '/offset 寧夏 99999' });
+  assert.match(world.replies.at(-1), /within 30 seconds/);
+
+  await send({ message_id: 213, text: `/remove ${NINGXIA}` });
+  assert.deepEqual(world.songs.map((s) => s.id), ['EEEEEEEEEEE']);
+  assert.match(world.replies.at(-1), /Removed 寧夏 — 梁靜茹\. 1\/200 songs/);
+  await send({ message_id: 214, text: '/remove nothing like it' });
+  assert.match(world.replies.at(-1), /No song matches/);
+});
+
+test('someone else’s /add is ignored', async () => {
+  await call({ message: { from: { id: 7 }, chat: { id: 7 }, message_id: 215, text: `/add ${NINGXIA}` } });
+  await call({ callback_query: { id: 'cb', from: { id: 7 }, data: `song:add:${NINGXIA}` } });
+  assert.equal(world.fetched.length, 0);
+  assert.equal(world.songs.length, 0);
+});
+
+test('/play plays a song for everyone, learning its length first; /stop stops it', async () => {
+  world.songs.push({ id: NINGXIA, title: '寧夏', artist: '梁靜茹', duration_ms: null });
+  // lrclib's first hit is another song: its length isn't taken.
+  world.lrclib = [
+    { trackName: '寧夏 (Live)', artistName: '某翻唱', duration: 301 },
+    { trackName: '寧夏', artistName: '梁靜茹', duration: 252.4, syncedLyrics: '[00:12.00] …' }
+  ];
+  await send({ message_id: 216, text: '/play 寧夏' });
+  assert.equal(world.playing, NINGXIA);
+  assert.equal(world.songs[0].duration_ms, 252400);
+  assert.match(world.replies.at(-1), /Playing 寧夏 — 梁靜茹 for everyone on the desktop \(4:12\)/);
+  await send({ message_id: 217, text: '/stop' });
+  assert.equal(world.playing, null);
+  assert.match(world.replies.at(-1), /Stopped/);
+  await send({ message_id: 218, text: '/play nothing like it' });
+  assert.match(world.replies.at(-1), /No song matches/);
+});
+
+test('two presses of Add at once add the song once, and each says what happened', async () => {
+  world.youtube[NINGXIA] = { title: '寧夏', author_name: '梁靜茹 - Topic' };
+  await send({ message_id: 219, text: `/add ${NINGXIA}` });
+  await Promise.all([press(`song:add:${NINGXIA}`, 'preview'), press(`song:add:${NINGXIA}`, 'preview')]);
+  assert.equal(world.songs.length, 1);
+  const outcomes = world.edits.slice(-2).map((e) => e.text.split('\n').at(-1)).sort();
+  assert.equal(outcomes.filter((t) => t.startsWith('✅ Added')).length, 1);
+  assert.equal(outcomes.filter((t) => /already answered/.test(t)).length, 1);
+  assert.ok(!outcomes.some((t) => t.startsWith('⚠️')), 'no press reports a failure that didn’t happen');
+});
+
+test('a title starting with an 11-letter word is found by title', async () => {
+  world.songs.push({ id: NINGXIA, title: 'Butterflies', artist: 'Someone' }, { id: 'EEEEEEEEEEE', title: 'Other', artist: 'C' });
+  await send({ message_id: 220, text: '/remove Butterflies' });
+  assert.deepEqual(world.songs.map((s) => s.id), ['EEEEEEEEEEE']);
+});
+
+test('the last song stays', async () => {
+  world.songs.push({ id: NINGXIA, title: '寧夏', artist: '梁靜茹' });
+  await send({ message_id: 221, text: '/remove 寧夏' });
+  assert.equal(world.songs.length, 1);
+  assert.match(world.replies.at(-1), /last song/);
+});
+
+test('Add on a song added meanwhile says it’s there, even with the library full', async () => {
+  world.youtube[NINGXIA] = { title: '寧夏', author_name: '梁靜茹 - Topic' };
+  await send({ message_id: 222, text: `/add ${NINGXIA}` });
+  world.songs.push({ id: NINGXIA, title: '寧夏', artist: '梁靜茹' });
+  world.music.song_limit = 1;
+  await press(`song:add:${NINGXIA}`, 'preview');
+  assert.match(world.edits.at(-1).text, /already in the library/);
+});
+
+test('drafts nobody answered within a day are cleared by the next /add', async () => {
+  world.music['draft:OLDOLDOLD00'] = { song: {}, created: '2020-01-01T00:00:00.000Z' };
+  world.music['draft:NEWNEWNEW00'] = { song: {}, created: new Date().toISOString() };
+  world.youtube[NINGXIA] = { title: '寧夏', author_name: '梁靜茹 - Topic' };
+  await send({ message_id: 223, text: `/add ${NINGXIA}` });
+  assert.ok(!('draft:OLDOLDOLD00' in world.music));
+  assert.ok('draft:NEWNEWNEW00' in world.music);
+  assert.ok(`draft:${NINGXIA}` in world.music);
 });
