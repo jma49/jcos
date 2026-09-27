@@ -168,18 +168,19 @@ rate-limited; the cap seems to count a rolling day that the branch
 previews made before only `main` deployed (#125) had filled. The local
 folder is `~/Code/personal/jmos` now, like the repository.
 
-**To do, in order:**
-1. **Run `20260927100000_now_playing_realtime.sql`** in the SQL editor
-   (`20260927093000_music_stop_where.sql` has run). Checked by Jincheng
-   2026-09-27: `/play` showed on another desktop only after a reload, and
-   `/stop` never; Realtime drops changes to a table whose key visitors
-   can't read, and `now_playing.id` wasn't granted (pitfalls.md). No
-   deploy is needed for this part.
-2. **Then, once `main` is deployed** (the iPod opening on Now Playing
-   for "Listen along"): `/play` and see the notification arrive on an
-   open desktop without a reload, "Listen along" open the iPod on Now
-   Playing, and `/stop` take the notification away (only that: the
-   visitor's music plays on, section 3).
+Every migration has run, through
+`20260927100000_now_playing_realtime.sql` (2026-09-27). It fixed `/play`
+reaching an open desktop only after a reload, and `/stop` never:
+Realtime drops changes to a table whose key visitors can't read, and
+`now_playing.id` wasn't granted (pitfalls.md). The Security Advisor
+after it (09:35 UTC) lists the same four findings kept on purpose
+(section 5, item 1).
+
+**To do:** check listening along live (`main` is deployed, `8c9b6e5` or
+later): `/play` and see the notification arrive on an open desktop
+without a reload, "Listen along" open the iPod on Now Playing, and
+`/stop` take the notification away (only that: the visitor's music
+plays on, section 3).
 
 Checked locally, in production builds (2026-09-27):
 - the clear desktop and the Welcome; Finder's selection on striped rows;
@@ -228,10 +229,10 @@ first load, lyrics that line up, then visitors asking for songs.
    `/remove`, `/offset`, `/play` and `/stop`, and listening along
    (section 3 has the decisions, section 4 what's left to deploy).
 
-1. **The database needs one migration** (2026-09-27). Every migration in
+1. **The database is up to date** (2026-09-27). Every migration in
    `supabase/migrations/` through `20260927062914_song_limit.sql` has
-   been run in the SQL editor, and `20260927093000_music_stop_where.sql`;
-   `20260927100000_now_playing_realtime.sql` is next (section 4). Password reset (`account-recovery`) is live and
+   been run in the SQL editor, through
+   `20260927100000_now_playing_realtime.sql`. Password reset (`account-recovery`) is live and
    sends mail. The Security Advisor (run 2026-09-27, after the music
    migrations) shows only the findings kept on purpose, with
    `song_limit()` callable by visitors as a third (it returns only the
