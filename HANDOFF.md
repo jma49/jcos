@@ -181,9 +181,12 @@ new way of syncing them, planned for later (see below).
 ## 5. Open issues and next steps
 
 0. **The music library on Supabase**, as decided in section 3, in four
-   pull requests: (M1) the `songs`, `albums` and `now_playing` tables with
-   row-level security, column grants, the 200-song limit and a race test,
-   seeded with today's library; (M2) `/api/songs` and the library loaded
+   pull requests: (M1, done on `feat/music-db`, stacked on
+   `feat/applet-install`) the `songs`, `albums` and `now_playing` tables
+   with row-level security, column grants, the 200-song limit and a race
+   test, seeded with today's library: **run
+   `20260927030802_music_library.sql` in the SQL editor, then the
+   Security Advisor**, once it's merged; (M2) `/api/songs` and the library loaded
    on demand; (M3) the bot's `/add` (with a preview to confirm),
    `/remove`, `/songs` and `/offset`; (M4) `/play`, `/stop` and listening
    along. Jincheng runs the migration in the SQL editor and deploys the
