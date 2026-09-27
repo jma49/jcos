@@ -84,6 +84,8 @@ export const useMusic = create<MusicStore>((set, get) => {
     const others = queue.filter((i) => i !== index);
     return others.length ? others[Math.floor(Math.random() * others.length)] : index;
   };
+  /** What ⏭ and ⏮ step through: the queue, or every song before anything has played. */
+  const following = () => (get().queue.length ? get().queue : everything());
   /** The song `step` places along the queue from `index`, wrapping round. */
   const along = (index: number, queue: number[], step: number) => {
     const at = queue.indexOf(index);
@@ -116,8 +118,11 @@ export const useMusic = create<MusicStore>((set, get) => {
     },
     pause: () => set({ playing: false }),
     next: (app, ended = false) => {
-      const { index, queue, shuffle, repeat } = get();
-      const owner = { ...claim(app), resume: null };
+      const { index, shuffle, repeat } = get();
+      const queue = following();
+      // Nothing to step through (no library): ⏭ does nothing.
+      if (!queue.length) return;
+      const owner = { ...claim(app), resume: null, queue };
       if (shuffle) return set({ ...owner, index: randomOther(index, queue), playing: true });
       const last = queue.indexOf(index) === queue.length - 1;
       // The end of the queue stops (back at its start), unless it repeats.
@@ -125,10 +130,12 @@ export const useMusic = create<MusicStore>((set, get) => {
       set({ ...owner, index: along(index, queue, 1), ...(ended ? { playing: true } : {}) });
     },
     previous: (app) => {
-      const { index, queue, owner } = get();
+      const { index, owner } = get();
+      const queue = following();
+      if (!queue.length) return;
       // Like an iPod: a few seconds in, ⏮ goes back to the start of this song.
       if (owner === app && (clocks.get(app)?.() ?? 0) > 3) return set({ resume: { index, time: 0 } });
-      set({ ...claim(app), resume: null, index: along(index, queue, -1) });
+      set({ ...claim(app), resume: null, queue, index: along(index, queue, -1) });
     },
     setShuffle: (shuffle) => {
       set({ shuffle });

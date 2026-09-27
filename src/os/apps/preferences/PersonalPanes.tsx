@@ -75,7 +75,10 @@ export function DesktopPane() {
   const [collection, setCollection] = useState<Collection>(() => collectionOf(custom));
   const skyNow = backgroundFor(SKY, data.wallpaper, sky);
   // The cover of the song that's on, or the first album's for the thumbnail.
-  const playing = useMusic((s) => (s.owner ? coverOf(SONGS[s.index]) : null));
+  const playing = useMusic((s) => {
+    const song = s.owner ? SONGS[s.index] : undefined;
+    return song ? coverOf(song) : null;
+  });
   const nowCover = playing ?? coverOf(SONGS[0]);
 
   const pictures: Record<Collection, Picture[]> = {

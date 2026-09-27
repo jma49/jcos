@@ -5,6 +5,7 @@ import { useOSData } from '../core/context';
 import { SkyStatus, type SkyState } from '../ambient/Sky';
 import { OnlineStatus } from '../social/Presence';
 import { NowPlaying } from './NowPlaying';
+import { Contained } from './Contained';
 import { clockTimeZone, HOME, sameTime } from '../ambient/place';
 import { play } from '../core/sound';
 import { useMusic } from '../media/music';
@@ -234,7 +235,9 @@ export function MenuBar({ sky }: { sky: SkyState }) {
             <span>{accounts.account.username}</span>
           </button>
         )}
-        <NowPlaying />
+        <Contained name="Now Playing">
+          <NowPlaying />
+        </Contained>
         <SoundToggle />
         <OnlineStatus />
         <SkyStatus sky={sky} onOpen={() => useWindows.getState().setDashboard(true)} />
