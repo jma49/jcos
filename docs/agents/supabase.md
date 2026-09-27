@@ -24,7 +24,8 @@ security and triggers in `supabase/schema.sql` do the enforcing.
   `20260927030802_music_library.sql`): the iPod's and Karaoke's songs,
   read by everyone and written only by the Telegram bot (service role).
   At most `music_settings.song_limit` songs (200; change it in the Table
-  editor); a full library refuses new songs. Covers are links to
+  editor); a full library refuses new songs. The migration seeds today's
+  library once (`music_settings.seeded`), so a rerun changes nothing. Covers are links to
   Apple's or YouTube's image hosts only (the `music_cover` domain).
   `public.now_playing` is the one song Jincheng is playing for everyone:
   the bot calls `music_play()` and `music_stop()`, visitors hear of it
