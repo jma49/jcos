@@ -21,7 +21,8 @@ imports only `src/os/kit` and its own files, never the rest of the OS or
 another applet (the lint enforces it). The kit gives them sounds, the
 sound setting, whether their window is in front, a game loop that stops
 when it isn't (`useGameLoop`), storage under their own `os-<id>` keys
-(`saved`), a way to resize their window and the photo library. Anything
+(`saved`, whose `update` builds on what's stored and `watch` hears the
+visitor's other tabs), a way to resize their window and the photo library. Anything
 new an applet needs from the OS is added to the kit, not imported
 around it.
 

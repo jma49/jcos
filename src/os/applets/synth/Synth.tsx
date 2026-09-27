@@ -133,6 +133,16 @@ export default function Synth({ win }: AppProps) {
     return p;
   });
   const [octave, setOctave] = useState(() => Math.min(6, Math.max(2, savedPatch().octave)));
+  // A patch changed in another tab: this one plays it too, and builds on it.
+  useEffect(
+    () =>
+      settings.watch(() => {
+        const { octave: next, ...p } = savedPatch();
+        setPatch(p);
+        setOctave(Math.min(6, Math.max(2, next)));
+      }),
+    []
+  );
   const [held, setHeld] = useState<Set<number>>(new Set());
   const engine = useRef<Engine | null>(null);
   const scope = useRef<HTMLCanvasElement>(null);

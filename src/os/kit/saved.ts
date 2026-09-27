@@ -1,4 +1,4 @@
-import { loadJSON, loadSettings, saveJSON } from '../core/storage';
+import { loadJSON, loadSettings, onStored, saveJSON } from '../core/storage';
 import type { AppId } from '../core/types';
 
 export interface Saved<T> {
@@ -11,6 +11,8 @@ export interface Saved<T> {
    * since this one loaded isn't overwritten by a lower one.
    */
   update(fallback: T, change: (current: T) => T): T;
+  /** Calls back when another tab of the visitor's changes it; returns a function that stops. */
+  watch(callback: () => void): () => void;
 }
 
 const isRecord = (value: unknown): value is object =>
@@ -32,6 +34,7 @@ export function saved<T>(app: AppId, name?: string): Saved<T> {
       const next = change(load(fallback));
       saveJSON(key, next);
       return next;
-    }
+    },
+    watch: (callback) => onStored(key, callback)
   };
 }

@@ -199,5 +199,9 @@ export const formatTime = (seconds: number) => {
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 };
 
-// Lyric tweaks made in another tab of this visitor's.
+// Lyric tweaks, shuffle, repeat and volume changed in another tab of this visitor's.
 onStored(OFFSETS_KEY, () => useMusic.setState({ offsets: loadSettings<Record<string, number>>(OFFSETS_KEY, {}) }));
+onStored(SETTINGS_KEY, () => {
+  const { shuffle, repeat, volume } = loadSettings(SETTINGS_KEY, settings);
+  useMusic.setState({ shuffle, repeat, volume });
+});

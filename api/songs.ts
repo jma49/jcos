@@ -25,7 +25,9 @@ export async function GET() {
   if (url && key) {
     try {
       const library = await fetchLibrary(url, key, AbortSignal.timeout(5000));
-      // An empty library is a database not seeded yet, not a choice.
+      // Empty isn't served: the bot keeps at least one song (music.ts), so an
+      // empty library is a database not seeded yet, or emptied by hand in
+      // the Table editor, and the snapshot stands in.
       if (library.songs.length) return Response.json(library, { headers: { 'cache-control': FRESH } });
     } catch {
       // Fall through to the snapshot.

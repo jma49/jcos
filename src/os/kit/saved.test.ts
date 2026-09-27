@@ -64,3 +64,21 @@ describe('update', () => {
     expect(JSON.parse(map.get('os-spider')!)).toEqual({ suits: 1, best: { 1: 700, 4: 900 } });
   });
 });
+
+describe('watch', () => {
+  test('hears another tab change it, until stopped', () => {
+    const target = new EventTarget();
+    vi.stubGlobal('window', {
+      localStorage: { getItem: (k: string) => map.get(k) ?? null, setItem: () => {}, removeItem: () => {} },
+      addEventListener: target.addEventListener.bind(target),
+      removeEventListener: target.removeEventListener.bind(target)
+    });
+    const heard = vi.fn();
+    const stop = saved('synth').watch(heard);
+    target.dispatchEvent(Object.assign(new Event('storage'), { key: 'os-synth' }));
+    target.dispatchEvent(Object.assign(new Event('storage'), { key: 'os-pinball-best' }));
+    stop();
+    target.dispatchEvent(Object.assign(new Event('storage'), { key: 'os-synth' }));
+    expect(heard).toHaveBeenCalledTimes(1);
+  });
+});
