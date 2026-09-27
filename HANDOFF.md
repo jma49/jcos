@@ -133,6 +133,10 @@ ryOS (AGPL-3.0).
   free plan's Realtime refuses more connections, and those visitors
   simply don't see presence, chat or listening along (the desktop works
   without them).
+- **No crash reports from visitors' browsers** (decided 2026-09-27):
+  for a personal site, a table, a public write path with abuse limits
+  and a bot change aren't worth it. Each window's error boundary keeps a
+  crash to that window; crashes only show in the visitor's console.
 - No link back to a classic site; Chinese is on hold.
 - Don't change ocra for now; it will be redesigned.
 - The "Ask me" AI assistant is on hold.
@@ -211,9 +215,8 @@ new way of syncing them, planned for later (see below).
 
 ## 5. Open issues and next steps
 
-What comes next, in order, is in [ROADMAP.md](ROADMAP.md): errors
-visitors hit reaching Jincheng, room on the first load, lyrics that line
-up, then visitors asking for songs.
+What comes next, in order, is in [ROADMAP.md](ROADMAP.md): room on the
+first load, lyrics that line up, then visitors asking for songs.
 
 0. **The music library on Supabase is done** (2026-09-27): the tables,
    the 200-song limit, `/api/songs`, the bot's `/add`, `/songs`,
@@ -343,8 +346,9 @@ up, then visitors asking for songs.
    - the type checker's 25 hints: deprecated `z` and `FormEvent`, unused
      code, and an icon nothing used (#131);
    - the snapshot lacked 青花 (#133).
-   Found and planned, not fixed here (ROADMAP.md): a crash in a
-   visitor's browser reaches no one; the first load is 157 of 160 KB.
+   Found and planned, not fixed here (ROADMAP.md): the first load is
+   157 of 160 KB. Found and left: a crash in a visitor's browser reaches
+   no one (section 3).
    Checked and fine: `knip`'s unused files are the documented one-off
    scripts (favicon, portrait, the reset email preview), and its unused
    exports are the applet kit's types and test helpers.
