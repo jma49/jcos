@@ -78,6 +78,39 @@ ryOS (AGPL-3.0).
   only and mentions bouldering (V6) and photography. Projects, in order:
   ocra (in progress), Assay, JM/OS.
 
+- **Apps are self-contained** (decided 2026-09-26; docs/agents/adding.md).
+  Each app is a folder with a manifest listed once in
+  `src/os/catalog.ts`; its code and styles load on first open, an
+  applet's when it's got in the Applet Store, never on a first visit
+  (`perf` checks). Applets use the OS only through `src/os/kit`, apps
+  don't import each other, and the OS reaches apps only through the
+  catalog; the lint enforces all of it. Removing an applet keeps what it
+  saved.
+- **The music library moves to Supabase** (decided 2026-09-26, not yet
+  built): Jincheng adds songs and plays them for whoever is on the desktop
+  from the Telegram bot. Limits and choices:
+  - at most 200 songs, enforced in the database with an advisory lock; a
+    full library refuses new songs (the bot says so) rather than dropping
+    old ones;
+  - only Jincheng requests songs for now; visitors requesting, approved
+    from Telegram, may come later;
+  - "listen along" joins at Jincheng's position, from the elapsed time the
+    database computes (`now() - started_at`), not the visitor's clock;
+  - requests reach visitors through `postgres_changes` on a table only the
+    Edge Function writes, never a broadcast, which anyone with the public
+    key could forge; the visitor clicks to listen (browsers don't play
+    sound unasked), under the one sound switch;
+  - the site reads the library through `/api/songs`, cached at the edge
+    with `stale-if-error` for a week, falling back to a snapshot in the
+    repository (`npm run songs:snapshot`, refreshed by hand, not by a
+    daily commit that would spend a deployment); the library leaves the
+    first load;
+  - covers stay links (Apple's and YouTube's image hosts only, checked by
+    the database); songs are validated in the database, not only by the
+    bot, which builds every URL it fetches itself (YouTube oEmbed, iTunes
+    Search, lrclib) from the parsed video id.
+  Free-plan headroom (checked 2026-09-26): 200 songs are about 100 KB of
+  the 500 MB database; the edge cache keeps the 5 GB egress out of reach.
 - No link back to a classic site; Chinese is on hold.
 - Don't change ocra for now; it will be redesigned.
 - The "Ask me" AI assistant is on hold.
@@ -86,6 +119,21 @@ ryOS (AGPL-3.0).
   editor.
 
 ## 4. To check after the next deploy
+
+**Also unpushed, stacked on that branch** (2026-09-26), each meant as its
+own pull request, merged in this order after it:
+1. `refactor/app-kit`: applets behind `src/os/kit`, the game loop that
+   stops behind other windows (54 → 5 ms idle with Pinball and Synth in
+   the background), Minesweeper's rules tested;
+2. `refactor/app-manifests`: a manifest per app, the catalog, the lint
+   boundaries;
+3. `perf/app-styles`: each app's styles load with it (first-load CSS
+   26.7 → 11.3 KB gzipped; every app pixel-identical in light, dark and
+   phone layouts);
+4. `feat/applet-install`: applets fetched on Get, not before; an
+   installed app opens in 80 ms instead of 820.
+Rebase each onto `main` once the one below merges (pitfalls: never stack
+on merged history).
 
 Production has run #85 since 2026-09-26: the daily deployment cap held
 back #86–#95. Since then, work has been committed locally and not
@@ -131,6 +179,15 @@ the desktop with VoiceOver. The lyrics' timing in Karaoke is left for a
 new way of syncing them, planned for later (see below).
 
 ## 5. Open issues and next steps
+
+0. **The music library on Supabase**, as decided in section 3, in four
+   pull requests: (M1) the `songs`, `albums` and `now_playing` tables with
+   row-level security, column grants, the 200-song limit and a race test,
+   seeded with today's library; (M2) `/api/songs` and the library loaded
+   on demand; (M3) the bot's `/add` (with a preview to confirm),
+   `/remove`, `/songs` and `/offset`; (M4) `/play`, `/stop` and listening
+   along. Jincheng runs the migration in the SQL editor and deploys the
+   bot from `main`, as for earlier ones.
 
 1. **The database is up to date** (2026-09-26). Every migration in
    `supabase/migrations/`, through `20260926100511_advisor.sql`, has been
