@@ -38,7 +38,7 @@ export async function listenAlong(social: Pick<Social, 'nowPlaying'>) {
 }
 
 /** Tells the visitor what Jincheng is playing, or takes the notification away when he stops. */
-async function show(social: Social, now: NowPlaying | null, stop: { timer: number }) {
+async function show(social: Social, now: Pick<NowPlaying, 'songId' | 'remainingMs'> | null, stop: { timer: number }) {
   clearTimeout(stop.timer);
   const index = now ? await indexOf(now.songId) : -1;
   if (!now || index < 0) return dismiss(NOTICE, true);
@@ -61,15 +61,18 @@ export function startListeningAlong() {
   const stop = { timer: 0 };
   getSocial().then((social) => {
     if (!social || cancelled) return;
-    const check = () =>
-      social
-        .nowPlaying()
-        .catch(() => null)
-        .then((now) => {
-          if (!cancelled) return show(social, now, stop);
-        });
-    check();
-    unwatch = social.watchNowPlaying(check);
+    // Once on arrival, for a song already playing; after that, a change
+    // brings the song with it, so a play doesn't send every visitor to the
+    // database at once. Only "Listen along" asks for the exact second.
+    social
+      .nowPlaying()
+      .catch(() => null)
+      .then((now) => {
+        if (!cancelled) return show(social, now, stop);
+      });
+    unwatch = social.watchNowPlaying((now) => {
+      if (!cancelled) void show(social, now, stop);
+    });
   });
   return () => {
     cancelled = true;
