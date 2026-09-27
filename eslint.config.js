@@ -25,7 +25,7 @@ export default [
         {
           patterns: [
             {
-              regex: '^\\.\\./(?!\\.\\./kit$)',
+              regex: '^\\.\\./(?!\\.\\./kit(/manifest)?$)',
               message: 'Applets import only src/os/kit and their own folder.'
             }
           ]

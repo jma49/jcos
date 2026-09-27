@@ -101,7 +101,7 @@ around it.
 - `src/os/social/social.ts`: Stickies (a guestbook) and presence (who's
   online and from which city, and other visitors' cursors labelled with
   it) on Supabase. See [supabase.md](supabase.md).
-- `src/os/apps/Soapbox.tsx`: Jincheng's own notes and rants, with
+- `src/os/apps/soapbox/`: Jincheng's own notes and rants, with
   photos. Posts come from a Telegram bot, `supabase/functions/soapbox-bot`
   (setup in its README): text, photos with captions, albums (one post)
   and images sent as files; photos are copied into the public `soapbox`
@@ -112,7 +112,7 @@ around it.
   Music, Pictures, Projects), browsed in Finder with icon, list and
   column views, Quick Look (Space), keyboard navigation and a
   right-click menu. A file's `look` is what Quick Look shows.
-- `src/os/social/airdrop.ts` and `apps/AirDrop.tsx`: AirDrop between
+- `src/os/social/airdrop.ts` and `apps/airdrop/`: AirDrop between
   signed-in members on the desktop (signed out, it asks you to sign in).
   Only a Macintosh HD path is sent, and the receiver looks it up on its
   own disk, so only JM/OS's own content can
@@ -121,26 +121,25 @@ around it.
 - `src/os/core/notices.ts` and `shell/Notices.tsx`: Growl-style
   notifications (chat mentions, AirDrop offers). `shell/ContextMenu.tsx`
   is the right-click menu the desktop and Finder share.
-- `src/os/apps/PhotoBooth.tsx`: the camera with CSS-filter effects, a
+- `src/os/apps/photobooth/`: the camera with CSS-filter effects, a
   countdown and one or four pictures, kept in `os-photobooth` (the last
   eight, as small JPEGs). The camera is only on while the window is open.
 - `src/os/applets/synth/`: an applet synthesizer on the shared
   AudioContext (`audio()` from the kit); it follows the sound switch
   and volume, and a note turns sound on. Settings in `os-synth`.
-- `src/os/apps/AboutThisMac.tsx`: the Apple menu's About This Mac.
+- `src/os/apps/aboutmac/`: the Apple menu's About This Mac.
   `__JMOS_BUILD__` (defined in `astro.config.mjs` from Vercel's
   `VERCEL_GIT_COMMIT_SHA`) is the build's short commit hash.
-- The Terminal (`apps/Terminal.tsx`) has a working folder on Macintosh
+- The Terminal (`apps/terminal/`) has a working folder on Macintosh
   HD (`cd`, `pwd`, `ls`, `cat`, `open <path>`), and the Dock and the
   desktop share `shell/ContextMenu.tsx` for their right-click menus.
-- `src/os/core/applets.ts` and `apps/AppletStore.tsx`: the Applet Store's
-  catalog (Minesweeper, Tile Game, Spider Solitaire, Pinball, Calculator,
-  Synth). Pinball's table, physics and rules are in `applets/pinball/table.ts`
+- `src/os/core/applets.ts` and `apps/appstore/`: the Applet Store
+  (Minesweeper, Tile Game, Calculator, Spider Solitaire, Pinball, Synth;
+  each store page is the `applet` field of the applet's manifest). Pinball's table, physics and rules are in `applets/pinball/table.ts`
   (table units, 400 × 700); keep it free of anything from Microsoft's
   Space Cadet. Which applets this browser has installed is kept in
   `os-applets`; installed applets appear in Finder's Applets folder and
-  Spotlight. To add one, write the app,
-  register it, and add an entry to `APPLETS`.
+  Spotlight. To add one, see [adding.md](adding.md).
 - Open windows survive a reload (`src/os/core/windowSession.ts`, saved in
   `os-windows`); `?open=` wins. A first visit gets the Welcome window
   alone, centred (`os-welcomed`); otherwise the desktop starts clear.
@@ -150,13 +149,16 @@ around it.
 - Phones are anything narrower than 768px or a short touch screen (a phone
   sideways): `isPhone()` and `PHONE_QUERY` in `src/os/core/store.ts`, and
   the same media query in the stylesheets.
-- `src/os/core/registry.tsx`: every app's name, icon, default and minimum size,
-  and lazily imported component. `dockApps` and `mobileDockApps` pick what
+- `src/os/catalog.ts` lists every app's manifest (`apps/<id>/manifest.ts`
+  or `applets/<id>/manifest.ts`: name, icon, window size, where it
+  appears, and how to load it); `AppId` is derived from it.
+  `src/os/core/registry.tsx` turns the manifests into what the OS uses,
+  with each app's component loaded lazily, and `launch()` opens one. `dockApps` and `mobileDockApps` pick what
   the Dock keeps (other apps appear there while open, except `noDock`
   panels); `launcherApps` is what Spotlight lists. Keep the Dock and the
   desktop (`shell/DesktopIcons.tsx`: Macintosh HD, About Me, Résumé,
   Projects) short; a phone's home screen lists every app.
-- `src/os/apps/`: one component per app. Content comes from `OSData`,
+- `src/os/apps/`: one folder per built-in app. Content comes from `OSData`,
   assembled at build time in `index.astro` from `src/i18n/content.ts`, the
   projects collection and `src/lib/photos.ts` (Unsplash, fetched at build).
 - `src/os/os.css`: the Aqua theme, split by part of the desktop into

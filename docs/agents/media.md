@@ -5,7 +5,7 @@ everywhere: the sound switch and volume in the menu bar govern every
 sound, the music included (`setLoudness()` in `music.ts`), and YouTube's
 own chrome never shows.
 
-- `src/os/media/music.ts`, `lyrics.ts`, `apps/ipod/IPod.tsx` and `apps/Karaoke.tsx`:
+- `src/os/media/music.ts`, `lyrics.ts`, `apps/ipod/IPod.tsx` and `apps/karaoke/`:
   the iPod (click wheel, menus, Now Playing with the video and a line of
   lyrics) and Karaoke (full-window video with lyrics that fill as they're
   sung, or a listening view for instrumentals). `src/data/songs.json`

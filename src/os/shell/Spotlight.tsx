@@ -1,10 +1,9 @@
 import { useEffect, useMemo, useRef, useState, type ComponentType } from 'react';
 import { AnimatePresence, m } from 'motion/react';
-import { apps, launch, launcherApps } from '../core/registry';
+import { apps, launch, launcherApps, openableApps } from '../core/registry';
 import { APPLETS, useInstalledApplets } from '../core/applets';
 import { useWindows } from '../core/store';
 import { useOSData } from '../core/context';
-import { PANES } from '../apps/preferences/panes';
 
 interface Result {
   id: string;
@@ -45,14 +44,16 @@ export function Spotlight() {
               run: () => launch('appstore', { props: { applet: app } })
             }
       ),
-      // System Preferences isn't an app of its own; its panes are found by name.
-      ...PANES.map((p) => ({
-        id: `pane:${p.id}`,
-        label: p.name,
-        hint: 'System Preferences',
-        Icon: p.Icon,
-        run: () => launch('preferences', { props: { pane: p.id } })
-      })),
+      // Places inside apps that their manifests list, such as Preferences' panes.
+      ...openableApps.flatMap((id) =>
+        (apps[id].shortcuts ?? []).map((s) => ({
+          id: `${id}:${s.id}`,
+          label: s.name,
+          hint: apps[id].name,
+          Icon: s.Icon,
+          run: () => launch(id, { props: s.props })
+        }))
+      ),
       ...data.projects.map((p) => ({
         id: `project:${p.slug}`,
         label: p.title,

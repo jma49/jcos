@@ -2,23 +2,36 @@
 
 ## An app
 
-To add an app: add its id to `AppId` in `src/os/core/types.ts`, write the
-component in `src/os/apps/` (a folder for one with several parts), its
-styles in `src/os/styles/apps/` (imported from `os.css`), and register it
-in `src/os/core/registry.tsx`. The entry says where it appears: `dock`
-(its position), `phoneDock`, `inApplications`, `applet`, `menuOnly` or
-`internal`;
-Spotlight, the Terminal and `?open=` pick it up by itself. Add a desktop
-shortcut in `Desktop.tsx` if it needs one. Anything remembered in the
-browser goes through `src/os/core/storage.ts`.
+An app is a folder named by its id: `src/os/apps/<id>/` for one built
+into the desktop, `src/os/applets/<id>/` for an applet from the Applet
+Store. In it:
 
-An applet (a small app installed from the Applet Store) lives in its own
-folder, `src/os/applets/<id>/`: the component, its rules or physics in a
-plain module with tests, and nothing from outside but `src/os/kit`
-(what it needs from the OS goes into the kit). It's registered with
-`applet: true` and has an entry in `APPLETS` in `src/os/core/applets.ts`.
-A game runs its frames through `useGameLoop(tick, front)`, so it stops
-behind another window, and keeps scores with `saved(id, 'best')`.
+- `manifest.ts`: `defineApp({ id, name, Icon, window, load, … })` from
+  `src/os/kit/manifest.ts`. `load` is `() => import('./TheApp')`, so the
+  code arrives on first open. The fields say where it appears: `dock`
+  (its position), `phoneDock`, `inApplications`, `menuOnly`, `internal`,
+  `noDock`; `applet` is its page in the Applet Store (category, tagline,
+  description, date added); `shortcuts` are places inside it that
+  Spotlight finds, as Preferences' panes. The manifest is part of the
+  first load: it imports only `kit/manifest`, `core/icons` and its own
+  folder (the lint enforces it).
+- The component (the default export `load` fetches), and its rules or
+  physics in a plain module with tests.
+
+Then add one line for it to `src/os/catalog.ts`. `AppId`, the Dock,
+Finder, Spotlight, the Terminal, `?open=`, the Applet Store and the
+smoke test all follow from the catalog; `catalog.test.ts` checks the
+folders and manifests agree. Styles go in `src/os/styles/apps/`
+(imported from `os.css`). Add a desktop shortcut in `Desktop.tsx` if it
+needs one.
+
+A built-in app may use the OS (`core/`, `social/`, `media/`…) but not
+another app: what two apps share belongs in the OS. An applet imports
+nothing but `src/os/kit` and its own folder; what it needs from the OS
+goes into the kit. A game runs its frames through
+`useGameLoop(tick, front)`, so it stops behind another window, and
+keeps scores with `saved(id, 'best')`. Anything else remembered in the
+browser goes through `src/os/core/storage.ts`.
 
 ## A song or an album
 

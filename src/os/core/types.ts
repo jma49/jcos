@@ -1,3 +1,5 @@
+import type { AppId } from '../catalog';
+
 // Shapes shared by the OS shell and its apps.
 
 /** Content handed from Astro to the React shell. Everything is serialisable. */
@@ -50,33 +52,8 @@ export interface OSProject {
   html: string;
 }
 
-export type AppId =
-  | 'about'
-  | 'resume'
-  | 'projects'
-  | 'project'
-  | 'browser'
-  | 'terminal'
-  | 'photos'
-  | 'stickies'
-  | 'preferences'
-  | 'soapbox'
-  | 'minesweeper'
-  | 'finder'
-  | 'appstore'
-  | 'calculator'
-  | 'tilegame'
-  | 'ipod'
-  | 'karaoke'
-  | 'chat'
-  | 'airdrop'
-  | 'photobooth'
-  | 'synth'
-  | 'aboutmac'
-  | 'spider'
-  | 'pinball'
-  | 'account'
-  | 'welcome';
+/** An app's id: one of the manifests in src/os/catalog.ts. */
+export type { AppId };
 
 export interface Rect {
   x: number;
@@ -99,4 +76,9 @@ export interface WindowState {
   origin?: Rect;
   /** App-specific input, e.g. which project or URL to show. */
   props?: Record<string, string>;
+}
+
+/** What every app's component is given: its window. */
+export interface AppProps {
+  win: WindowState;
 }
