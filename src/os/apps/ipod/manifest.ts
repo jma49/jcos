@@ -8,5 +8,6 @@ export default defineApp({
   window: { width: 300, height: 492, minWidth: 300, minHeight: 492 },
   dock: 4,
   inApplications: true,
+  styles: () => import('./styles.css?inline'),
   load: () => import('./IPod')
 });

@@ -532,23 +532,6 @@
   color: var(--os-dim);
 }
 
-.os-prefs-facts {
-  display: grid;
-  grid-template-columns: max-content 1fr;
-  gap: 4px 14px;
-  margin: 0 0 10px;
-  font-size: 12px;
-}
-
-.os-prefs-facts dt {
-  color: var(--os-dim);
-  text-align: right;
-}
-
-.os-prefs-facts dd {
-  margin: 0;
-}
-
 .os-prefs-search {
   display: flex;
   align-items: flex-start;
@@ -615,7 +598,3 @@
 }
 
 /* A button that reads as a link. */
-.os-root .os-link {
-  color: var(--os-accent);
-  text-decoration: underline;
-}

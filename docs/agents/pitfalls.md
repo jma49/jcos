@@ -112,6 +112,19 @@ again.
 - `table.test.ts` plays the table with bots; run it after any change to
   the table or physics.
 
+- Astro hoists every stylesheet imported anywhere in the island, lazy
+  imports included, into the page. Importing each app's CSS from its
+  component put 36 KB of styles inline and seven stylesheets in the
+  first load (the HTML grew from 15 to 23 KB gzipped). Apps' styles are
+  imported as text (`?inline`) by their manifests instead; check the
+  built `index.html` after changing how styles load.
+- Styles several apps shared lived in one app's stylesheet: the button
+  in Account's, the segmented control's disabled state in Finder's, the
+  sidebar in Projects', and `@keyframes os-spin`, which spins every
+  window's loading indicator, in the Applet Store's. Once app styles
+  load with their apps, anything outside the app that uses a class or
+  keyframes has to live in `src/os/styles/`.
+
 ## Tests and tooling
 
 - A Vitest `expect` inside a per-frame loop made the Pinball test time
@@ -156,6 +169,10 @@ again.
 - Hooks that do real work (`useSky`) must not sit in a component that
   re-renders every frame. `Desktop` subscribed to `windows`, so a drag
   recomputed the sun and the weather tint sixty times a second.
+- ESLint's flat config replaces a rule's options when a later block
+  matching the same file sets the same rule; it doesn't merge them. A
+  block for manifests silently lifted the applet rule from applets'
+  manifests. Use a different rule, or keep the file sets apart.
 - There's no Prettier config. Don't reformat whole files; it buries the
   change in the diff.
 - Wrapping a big JSX tree reindents all of it. Wrap through a small

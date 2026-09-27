@@ -8,5 +8,6 @@ export default defineApp({
   window: { width: 580, height: 450, minWidth: 380, minHeight: 420 },
   internal: true,
   noDock: true,
+  styles: () => import('./welcome.css?inline'),
   load: () => import('./Welcome')
 });

@@ -13,5 +13,6 @@ export default defineApp({
       'After the Tile Game widget in Mac OS X Tiger: a sliding puzzle made from a photo in the Photos library. Slide the tiles back into place with the mouse or the arrow keys, then try another photo.',
     added: '2026-09-26'
   },
+  styles: () => import('./tile-game.css?inline'),
   load: () => import('./TileGame')
 });

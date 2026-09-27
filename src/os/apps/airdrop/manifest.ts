@@ -7,5 +7,6 @@ export default defineApp({
   Icon: AirDropIcon,
   window: { width: 520, height: 500, minWidth: 380, minHeight: 400 },
   inApplications: true,
+  styles: () => import('./airdrop.css?inline'),
   load: () => import('./AirDrop')
 });

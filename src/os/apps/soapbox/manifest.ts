@@ -7,5 +7,6 @@ export default defineApp({
   Icon: SoapboxIcon,
   window: { width: 560, height: 600, minWidth: 360, minHeight: 300 },
   inApplications: true,
+  styles: () => import('./soapbox.css?inline'),
   load: () => import('./Soapbox')
 });

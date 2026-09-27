@@ -39,6 +39,8 @@ export interface AppManifest<Id extends string = string> {
   material?: 'metal';
   /** The app itself, fetched when it's first opened (or an applet is installed). */
   load: () => Promise<{ default: ComponentType<AppProps> }>;
+  /** Its stylesheet, as text: `() => import('./app.css?inline')`. Fetched alongside `load`. */
+  styles?: () => Promise<{ default: string }>;
   /** Kept in the Dock, at this position from the left. */
   dock?: number;
   /** Also in the phone's four-slot Dock (with the Dashboard). */

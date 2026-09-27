@@ -1,7 +1,6 @@
 /* ---------- About (a TextEdit document) ---------- */
 
-.os-about .os-scroll,
-.os-project {
+.os-about .os-scroll {
   background: var(--os-content);
 }
 
@@ -29,16 +28,14 @@
   margin: 0 0 12px;
 }
 
-.os-document a,
-.os-prose a {
+.os-document a {
   color: #1a5cc8;
   text-decoration: underline;
 }
 
 /* The same blue, lighter, so links read on the dark page too (the light
    theme's measured 2.6:1 there). */
-:root[data-theme='dark'] .os-document a,
-:root[data-theme='dark'] .os-prose a {
+:root[data-theme='dark'] .os-document a {
   color: #6aa2f5;
 }
 
@@ -47,4 +44,10 @@
   font-family: var(--os-display);
   font-size: 20px;
   color: var(--os-dim);
+}
+
+@media (max-width: 767px), (max-height: 500px) and (pointer: coarse) {
+  .os-document {
+    padding: 22px 20px 32px;
+  }
 }

@@ -7,8 +7,8 @@
 //
 // It reports three things, each compared with its budget:
 //   load  what a first visit downloads before the desktop settles
-//         (initial JS gzip, images, fonts) and whether anything is
-//         fetched twice
+//         (initial JS and CSS gzip, images, fonts), whether anything is
+//         fetched twice, and that no applet's code or styles are among it
 //   drag  script time while dragging a window with six apps open
 //   idle  script time over five quiet seconds with the same six apps
 //
@@ -18,6 +18,7 @@
 // are reported but only the download budgets can fail it.
 
 import { chromium } from 'playwright';
+import { readFile } from 'node:fs/promises';
 import { gzipSync } from 'node:zlib';
 import { serveDist } from './serve-dist.mjs';
 
@@ -28,11 +29,28 @@ const TIMED = new Set(['dragScriptMs', 'idleScriptMs']);
 const strict = (key) => !(process.env.CI && TIMED.has(key));
 const BUDGET = {
   initialJsGzipKB: 160,
+  initialCssGzipKB: 20,
   imagesKB: 1100,
   fontsKB: 250,
   dragScriptMs: 400,
   idleScriptMs: 50
 };
+
+/**
+ * The chunks only an applet brings: the files its manifest loads (`load`
+ * and `styles`), named as Vite names chunks, after the file. An applet is
+ * fetched when it's opened or installed, never on a first visit.
+ */
+async function appletChunks() {
+  const catalog = await readFile(new URL('../src/os/catalog.ts', import.meta.url), 'utf8');
+  const names = new Set();
+  for (const [, path] of catalog.matchAll(/from '\.\/(applets\/\w+)\/manifest'/g)) {
+    const manifest = await readFile(new URL(`../src/os/${path}/manifest.ts`, import.meta.url), 'utf8');
+    for (const [, file] of manifest.matchAll(/import\('\.\/([\w-]+)/g)) names.add(file);
+  }
+  return names;
+}
+const APPLET_CHUNKS = await appletChunks();
 
 const browser = await chromium.launch(process.env.PLAYWRIGHT_CHROMIUM ? { executablePath: process.env.PLAYWRIGHT_CHROMIUM } : {});
 
@@ -89,6 +107,8 @@ async function load() {
   for (const r of seen) counts.set(r.path, (counts.get(r.path) ?? 0) + 1);
   return {
     initialJsGzipKB: Math.round(sum('script', 'gzip') / 1024),
+    initialCssGzipKB: Math.round(sum('stylesheet', 'gzip') / 1024),
+    appletsInFirstLoad: seen.map((r) => r.path.split('/').pop().split('.')[0]).filter((name) => APPLET_CHUNKS.has(name)),
     imagesKB: Math.round(sum('image') / 1024),
     fontsKB: Math.round(sum('font') / 1024),
     fetchedTwice: [...counts].filter(([, n]) => n > 1).map(([path]) => path)
@@ -133,6 +153,9 @@ for (const [key, budget] of Object.entries(BUDGET)) {
   const mark = ok ? 'ok  ' : strict(key) ? 'OVER' : 'slow';
   console.log(`${mark} ${key.padEnd(16)} ${String(result[key]).padStart(6)}  (budget ${budget}${strict(key) ? '' : ', reported only'})`);
 }
+const lean = result.appletsInFirstLoad.length === 0;
+over ||= !lean;
+console.log(`${lean ? 'ok  ' : 'OVER'} appletsInFirstLoad ${lean ? 'none' : result.appletsInFirstLoad.join(', ')}`);
 const twice = result.fetchedTwice.length === 0;
 over ||= !twice;
 console.log(`${twice ? 'ok  ' : 'OVER'} fetchedTwice     ${twice ? 'none' : result.fetchedTwice.join(', ')}`);

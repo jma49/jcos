@@ -17,12 +17,6 @@
   color: var(--os-faint);
 }
 
-.os-sidebar .os-sidebar-heading + .os-sidebar-heading,
-.os-sidebar button + .os-sidebar-heading,
-.os-sidebar a + .os-sidebar-heading {
-  margin-top: 14px;
-}
-
 .os-photo-library {
   padding: 6px 16px 20px;
   background: var(--os-content);
@@ -150,4 +144,10 @@
 .os-photos-empty {
   gap: 12px;
   align-content: center;
+}
+
+@media (max-width: 767px), (max-height: 500px) and (pointer: coarse) {
+  .os-photo-bar input {
+    display: none;
+  }
 }

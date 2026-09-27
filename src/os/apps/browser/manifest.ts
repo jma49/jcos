@@ -8,5 +8,6 @@ export default defineApp({
   window: { width: 1040, height: 700, minWidth: 420, minHeight: 300 },
   material: 'metal',
   inApplications: true,
+  styles: () => import('./browser.css?inline'),
   load: () => import('./Browser')
 });

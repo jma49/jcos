@@ -8,5 +8,6 @@ export default defineApp({
   window: { width: 760, height: 480, minWidth: 440, minHeight: 300 },
   material: 'metal',
   dock: 1,
+  styles: () => import('./finder.css?inline'),
   load: () => import('./Finder')
 });

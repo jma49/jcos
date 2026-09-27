@@ -232,15 +232,3 @@
 }
 
 /* Who's signed in, at the right of the menu bar. */
-.os-status .os-account-status {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 13px;
-}
-
-@media (max-width: 767px), (max-height: 500px) and (pointer: coarse) {
-  .os-status .os-account-status span {
-    display: none;
-  }
-}

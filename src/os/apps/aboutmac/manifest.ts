@@ -7,5 +7,6 @@ export default defineApp({
   Icon: AppleIcon,
   window: { width: 300, height: 420, minWidth: 280, minHeight: 380 },
   noDock: true,
+  styles: () => import('./about-mac.css?inline'),
   load: () => import('./AboutThisMac')
 });

@@ -48,3 +48,10 @@
     transform: scaleX(0.85);
   }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .os-progress[data-loading='true'] {
+    animation: none;
+    transform: scaleX(0.6);
+  }
+}

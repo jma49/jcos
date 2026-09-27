@@ -7,5 +7,6 @@ export default defineApp({
   Icon: TerminalIcon,
   window: { width: 640, height: 420, minWidth: 360, minHeight: 220 },
   inApplications: true,
+  styles: () => import('./terminal.css?inline'),
   load: () => import('./Terminal')
 });

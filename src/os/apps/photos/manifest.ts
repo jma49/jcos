@@ -10,5 +10,6 @@ export default defineApp({
   dock: 3,
   phoneDock: true,
   inApplications: true,
+  styles: () => import('./photos.css?inline'),
   load: () => import('./Photos')
 });
