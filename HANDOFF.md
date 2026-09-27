@@ -211,6 +211,12 @@ deployment can show:
      the Dashboard and screen saver after the desktop settles, #86), and
      the budget from 180 to 160. The song and wallpaper catalogues (about
      5 KB together) stay: they're read synchronously in ten places.
+   - Contrast (measured 2026-09-27): secondary text in the light theme
+     is `rgb(128,128,128)`-ish on light grey, 3.2–3.9:1 against the 4.5:1
+     text needs (Finder's metadata, dates, empty states, the résumé's
+     dates; the sidebar headings are 3.7:1 light, 2.9:1 dark). Meeting it
+     means greys near `#6a6a6a`, a visibly heavier look, so it's a design
+     call left open. Links on the dark theme's documents were fixed.
    - Considered and not done: a spec template for changes, `llms.txt` in
      robots.txt (no crawler reads it there), splitting the largest app
      components.
