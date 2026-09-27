@@ -157,7 +157,12 @@ is deleted; no pull request is open.
 3. **Deploy `96e8071` (#119) after the cap resets.** A rate-limited
    deployment isn't retried: redeploy `main`'s head from the Vercel
    dashboard, and check About This Mac shows its hash.
-4. **Database.** Run `supabase/migrations/20260927030802_music_library.sql`
+4. **Database.** `20260927030802_music_library.sql` has run (the
+   library is readable). **Run `20260927062226_albums_added_at.sql`**
+   too: without it, visitors can't order albums by `added_at`, the
+   albums query is refused, and `/api/songs` serves the snapshot, so
+   songs added from Telegram don't show. It needs no deployment.
+   Earlier note: run `supabase/migrations/20260927030802_music_library.sql`
    in the SQL editor, then Advisors › Security. Until then `/api/songs`
    serves the snapshot, so the site works either way.
 5. **Bot.** Deploy `soapbox-bot` from an up-to-date `main`
