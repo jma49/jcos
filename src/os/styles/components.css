@@ -46,3 +46,9 @@
     rotate: 360deg;
   }
 }
+
+/* Drawn control glyphs (core/glyphs.tsx), sitting on the text like a character. */
+.os-glyph {
+  flex: none;
+  vertical-align: -0.125em;
+}

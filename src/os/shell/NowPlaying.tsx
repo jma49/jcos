@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { NextGlyph, PauseGlyph, PlayGlyph, PreviousGlyph } from '../core/glyphs';
 import { launch } from '../core/registry';
 import { albumOf, coverOf, SONGS } from '../media/library';
 import { useMusic } from '../media/music';
@@ -62,13 +63,13 @@ export function NowPlaying() {
           </div>
           <div className="os-nowplaying-controls">
             <button type="button" onClick={() => previous(owner)} aria-label="Previous">
-              ⏮
+              <PreviousGlyph />
             </button>
             <button type="button" onClick={() => toggle(owner)} aria-label={playing ? 'Pause' : 'Play'}>
-              {playing ? '❚❚' : '▶'}
+              {playing ? <PauseGlyph /> : <PlayGlyph />}
             </button>
             <button type="button" onClick={() => next(owner)} aria-label="Next">
-              ⏭
+              <NextGlyph />
             </button>
           </div>
           <button
