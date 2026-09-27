@@ -69,3 +69,14 @@ describe('applets', () => {
     expect(store.useWindows.getState().applets).toEqual([]);
   });
 });
+
+describe('removed in another tab', () => {
+  test('its windows close here too', () => {
+    store.useWindows.setState({ applets: ['minesweeper', 'pinball'] });
+    registry.launch('minesweeper');
+    registry.launch('about');
+    // What store.ts does when another tab writes os-applets.
+    store.useWindows.setState({ applets: ['pinball'] });
+    expect(openApps().map(([app]) => app)).toEqual(['about']);
+  });
+});
