@@ -4,6 +4,10 @@
   padding-right: 8px;
 }
 
+.os-ipod-menu:not([data-scrolls]) .os-ipod-scrollbar {
+  display: none;
+}
+
 .os-ipod-scrollbar {
   position: absolute;
   top: 2px;

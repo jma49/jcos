@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
+import { NextGlyph, PauseGlyph, PlayGlyph, PlayPauseGlyph, PreviousGlyph, ShuffleGlyph, SpeakerHighGlyph, SpeakerLowGlyph } from '../../core/glyphs';
 import type { AppProps } from '../../core/registry';
 import { launch } from '../../core/registry';
 import { useFocusedId } from '../../core/store';
@@ -26,8 +27,8 @@ import { loadSettings, updateJSON } from '../../core/storage';
 
 interface Item {
   label: string;
-  /** Shown on the right, for settings. */
-  value?: string;
+  /** Shown on the right, for settings (text, or a glyph). */
+  value?: ReactNode;
   /** Opens another menu. */
   more?: boolean;
   /** Album art, for a taller row with `sub` under the label. */
@@ -79,11 +80,6 @@ const TITLES: Record<Exclude<Screen['kind'], 'menu'>, string> = {
 };
 
 const REPEATS: Repeat[] = ['off', 'one', 'all'];
-const ROW = 19;
-const TALL_ROW = 34;
-const ALBUM_CARD = 74;
-/** The menu's height: the screen less its header. */
-const MENU_HEIGHT = 183;
 /** Degrees of wheel travel per step. */
 const STEP = (18 * Math.PI) / 180;
 
@@ -221,7 +217,7 @@ export default function IPod({ win }: AppProps) {
           return [
             {
               label: 'Play',
-              value: '▶',
+              value: <PlayGlyph />,
               action: () => {
                 music.setShuffle(false);
                 playSong(list[0], list);
@@ -229,7 +225,7 @@ export default function IPod({ win }: AppProps) {
             },
             {
               label: 'Shuffle',
-              value: '⤮',
+              value: <ShuffleGlyph />,
               action: () => {
                 music.setShuffle(true);
                 playSong(list[Math.floor(Math.random() * list.length)], list);
@@ -309,6 +305,33 @@ export default function IPod({ win }: AppProps) {
     return () => clearTimeout(t);
   }, [touched, prefs.backlight, playingGame]);
 
+  // The list scrolls natively (a wheel, a trackpad, a finger), which leaves
+  // the choice where it is; turning the wheel or the arrow keys move the
+  // choice, and the list scrolls just enough to keep it in view. The iPod's
+  // own scroll bar follows by the element, not a render per frame.
+  const list = useRef<HTMLDivElement>(null);
+  const thumb = useRef<HTMLSpanElement>(null);
+  const placeThumb = useCallback(() => {
+    const el = list.current;
+    if (!el || !thumb.current) return;
+    thumb.current.style.top = `${(el.scrollTop / el.scrollHeight) * 100}%`;
+    thumb.current.style.height = `${(el.clientHeight / el.scrollHeight) * 100}%`;
+  }, []);
+  useLayoutEffect(() => {
+    const el = list.current;
+    if (!el) return;
+    el.parentElement?.toggleAttribute('data-scrolls', el.scrollHeight > el.clientHeight + 1);
+    const row = el.querySelector<HTMLElement>('[role="option"][aria-selected="true"]');
+    if (row) {
+      // The first row shows the album card above it too.
+      const rowTop = top.selected === 0 ? 0 : row.offsetTop;
+      const rowBottom = row.offsetTop + row.offsetHeight;
+      if (rowTop < el.scrollTop) el.scrollTop = rowTop;
+      else if (rowBottom > el.scrollTop + el.clientHeight) el.scrollTop = rowBottom - el.clientHeight;
+    }
+    placeThumb();
+  }, [top.selected, top.screen, items.length, placeThumb]);
+
   useKeys(focused, {
     ArrowUp: () => step(-1),
     ArrowDown: () => step(1),
@@ -324,12 +347,6 @@ export default function IPod({ win }: AppProps) {
   const line = lyrics.state === 'ready' ? lyrics.lines[lineAt(lyrics.lines, time + offset)]?.text : undefined;
   const now = kind === 'now';
   const showVideo = now && prefs.show === 'video';
-  // Keep the chosen row in view: scroll just enough to show its bottom edge.
-  const heights = items.map((item) => (item.cover ? TALL_ROW : ROW));
-  const card = albumPage ? ALBUM_CARD : 0;
-  const total = card + heights.reduce((a, b) => a + b, 0);
-  const rowBottom = card + heights.slice(0, top.selected + 1).reduce((a, b) => a + b, 0);
-  const scroll = Math.max(0, rowBottom - MENU_HEIGHT);
   const { queue } = music;
   const position = queue.indexOf(music.index);
   const album = albumOf(song);
@@ -342,7 +359,7 @@ export default function IPod({ win }: AppProps) {
         <div className="os-ipod-screen" data-now={now || undefined} data-dim={dim || undefined} onPointerDown={wake} onWheel={wake}>
           <header className="os-ipod-header">
             <span className="os-ipod-state" aria-hidden="true">
-              {music.playing ? '▶' : music.owner ? '❚❚' : ''}
+              {music.playing ? <PlayGlyph /> : music.owner ? <PauseGlyph /> : null}
             </span>
             <span>{title}</span>
             <span className="os-ipod-battery" aria-hidden="true" />
@@ -382,11 +399,11 @@ export default function IPod({ win }: AppProps) {
               </div>
               {showVolume ? (
                 <div className="os-ipod-bar" aria-label={`Volume ${music.volume}`}>
-                  <span aria-hidden="true">🔈</span>
+                  <SpeakerLowGlyph />
                   <div className="os-ipod-progress">
                     <span style={{ width: `${music.volume}%` }} />
                   </div>
-                  <span aria-hidden="true">🔊</span>
+                  <SpeakerHighGlyph />
                 </div>
               ) : (
                 <div className="os-ipod-bar">
@@ -401,54 +418,55 @@ export default function IPod({ win }: AppProps) {
           )}
 
           {kind === 'menu' && (
-            <div className="os-ipod-menu" data-scrolls={total > MENU_HEIGHT || undefined}>
-              <ul role="listbox" aria-label={title} style={{ translate: `0 ${-scroll}px` }}>
-                {albumPage && (
-                  <li className="os-ipod-album" role="presentation">
-                    <img src={coverOf(albumPage.first)} alt="" />
-                    <div>
-                      <strong>{albumPage.title}</strong>
-                      <span>{albumPage.first.artist}</span>
-                      <small>
-                        {albumPage.whole ? `${albumPage.whole.year} · ` : ''}
-                        {items.length - 2} {items.length === 3 ? 'song' : 'songs'}
-                      </small>
-                    </div>
-                  </li>
-                )}
-                {items.map((item, i) => (
-                  <li
-                    key={`${i}:${item.label}`}
-                    role="option"
-                    aria-selected={i === top.selected}
-                    data-tall={item.cover ? true : undefined}
-                    onClick={() => {
-                      setStack((s) => [...s.slice(0, -1), { ...s[s.length - 1], selected: i }]);
-                      playSound('click');
-                      wake();
-                      item.action?.();
-                    }}
-                  >
-                    {item.cover && <img className="os-ipod-thumb" src={item.cover} alt="" />}
-                    {item.number !== undefined && <span className="os-ipod-number">{item.number}</span>}
-                    {item.sub ? (
-                      <span className="os-ipod-two">
-                        <Marquee text={item.label} run={i === top.selected} />
-                        <small>{item.sub}</small>
-                      </span>
-                    ) : (
-                      <Marquee className="os-ipod-label-text" text={item.label} run={i === top.selected} />
-                    )}
-                    {item.value && <span className="os-ipod-value">{item.value}</span>}
-                    {item.more && <span aria-hidden="true">›</span>}
-                  </li>
-                ))}
-              </ul>
-              {total > MENU_HEIGHT && (
-                <div className="os-ipod-scrollbar" aria-hidden="true">
-                  <span style={{ top: `${(scroll / total) * 100}%`, height: `${(MENU_HEIGHT / total) * 100}%` }} />
-                </div>
-              )}
+            <div className="os-ipod-menu">
+              {/* Keyed by the menu, so a new one starts at the top. */}
+              <div key={`${stack.length}:${title}`} ref={list} className="os-ipod-scroll" onScroll={placeThumb}>
+                <ul role="listbox" aria-label={title}>
+                  {albumPage && (
+                    <li className="os-ipod-album" role="presentation">
+                      <img src={coverOf(albumPage.first)} alt="" />
+                      <div>
+                        <strong>{albumPage.title}</strong>
+                        <span>{albumPage.first.artist}</span>
+                        <small>
+                          {albumPage.whole ? `${albumPage.whole.year} · ` : ''}
+                          {items.length - 2} {items.length === 3 ? 'song' : 'songs'}
+                        </small>
+                      </div>
+                    </li>
+                  )}
+                  {items.map((item, i) => (
+                    <li
+                      key={`${i}:${item.label}`}
+                      role="option"
+                      aria-selected={i === top.selected}
+                      data-tall={item.cover ? true : undefined}
+                      onClick={() => {
+                        setStack((s) => [...s.slice(0, -1), { ...s[s.length - 1], selected: i }]);
+                        playSound('click');
+                        wake();
+                        item.action?.();
+                      }}
+                    >
+                      {item.cover && <img className="os-ipod-thumb" src={item.cover} alt="" />}
+                      {item.number !== undefined && <span className="os-ipod-number">{item.number}</span>}
+                      {item.sub ? (
+                        <span className="os-ipod-two">
+                          <Marquee text={item.label} run={i === top.selected} />
+                          <small>{item.sub}</small>
+                        </span>
+                      ) : (
+                        <Marquee className="os-ipod-label-text" text={item.label} run={i === top.selected} />
+                      )}
+                      {item.value && <span className="os-ipod-value">{item.value}</span>}
+                      {item.more && <span aria-hidden="true">›</span>}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="os-ipod-scrollbar" aria-hidden="true">
+                <span ref={thumb} />
+              </div>
             </div>
           )}
 
@@ -537,13 +555,13 @@ function Wheel({
         MENU
       </span>
       <span className="os-ipod-label" data-at="right" aria-hidden="true">
-        ⏭
+        <NextGlyph />
       </span>
       <span className="os-ipod-label" data-at="bottom" aria-hidden="true">
-        ⏯
+        <PlayPauseGlyph />
       </span>
       <span className="os-ipod-label" data-at="left" aria-hidden="true">
-        ⏮
+        <PreviousGlyph />
       </span>
       <button
         type="button"
