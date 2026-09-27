@@ -312,7 +312,7 @@ export default function Chat({ win }: AppProps) {
     requestAnimationFrame(() => el && (el.scrollTop = el.scrollHeight - from));
   };
 
-  const send = async (e: React.FormEvent) => {
+  const send = async (e: React.SubmitEvent) => {
     e.preventDefault();
     const text = draft.trim();
     if (!social || !text) return;

@@ -17,7 +17,7 @@ const SAO_PAULO = {
 
 describe('GET /api/geo', () => {
   test('decodes the place and is never cached', async () => {
-    const res = await ask(SAO_PAULO);
+    const res = ask(SAO_PAULO);
     expect(res.headers.get('cache-control')).toBe('private, no-store');
     expect(await res.json()).toEqual({
       city: 'São Paulo',
@@ -30,12 +30,12 @@ describe('GET /api/geo', () => {
   });
 
   test('no location (a local build, an unknown address) is a 204', async () => {
-    expect((await ask({})).status).toBe(204);
-    expect((await ask({ ...SAO_PAULO, 'x-vercel-ip-latitude': 'north' })).status).toBe(204);
+    expect(ask({}).status).toBe(204);
+    expect(ask({ ...SAO_PAULO, 'x-vercel-ip-latitude': 'north' }).status).toBe(204);
   });
 
   test('a malformed or overlong city is dropped or cut, not an error', async () => {
-    expect((await (await ask({ ...SAO_PAULO, 'x-vercel-ip-city': '%E0%A4%A' })).json()).city).toBeNull();
-    expect((await (await ask({ ...SAO_PAULO, 'x-vercel-ip-city': 'a'.repeat(500) })).json()).city).toHaveLength(100);
+    expect((await ask({ ...SAO_PAULO, 'x-vercel-ip-city': '%E0%A4%A' }).json()).city).toBeNull();
+    expect((await ask({ ...SAO_PAULO, 'x-vercel-ip-city': 'a'.repeat(500) }).json()).city).toHaveLength(100);
   });
 });
