@@ -46,7 +46,8 @@ migration, a dependency, anything touching accounts, data, Realtime,
 the window manager or the first load), go through
 [docs/agents/self-audit.md](docs/agents/self-audit.md).
 [HANDOFF.md](HANDOFF.md) is the project's current state and open
-issues.
+issues; [ROADMAP.md](ROADMAP.md) is the plan: take the next item from
+it, and when one is done, record it in HANDOFF.md and take it out.
 
 ## Rules that always hold
 

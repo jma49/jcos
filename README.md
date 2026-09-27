@@ -101,7 +101,7 @@ docs/agents/       guidance for coding agents, by part (AGENTS.md is the entry p
 change; [docs/agents/](docs/agents/) maps every part of the desktop and
 how to add an app, a project, a song or a desktop picture.
 [HANDOFF.md](HANDOFF.md) is the running state of the project and its open
-issues.
+issues; [ROADMAP.md](ROADMAP.md) is what comes next, in order.
 
 ## Security
 
