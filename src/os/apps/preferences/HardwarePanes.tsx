@@ -1,4 +1,5 @@
 import { launch } from '../../core/registry';
+import { SpeakerHighGlyph, SpeakerLowGlyph } from '../../core/glyphs';
 import { useWindows } from '../../core/store';
 import { play } from '../../core/sound';
 import { useReduceMotion, useSystem, type MotionChoice, type NightShift } from '../../core/system';
@@ -94,7 +95,7 @@ export function SoundPane() {
       </div>
       <div className="os-prefs-row os-prefs-volume os-prefs-slider">
         <label htmlFor="os-volume">Output volume:</label>
-        <span aria-hidden="true">🔈</span>
+        <SpeakerLowGlyph />
         <input
           id="os-volume"
           type="range"
@@ -107,7 +108,7 @@ export function SoundPane() {
           onPointerUp={() => play('pop')}
           onKeyUp={() => play('pop')}
         />
-        <span aria-hidden="true">🔊</span>
+        <SpeakerHighGlyph />
       </div>
     </Group>
   );

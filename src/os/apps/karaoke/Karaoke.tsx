@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { NextGlyph, PauseGlyph, PlayGlyph, PreviousGlyph } from '../../core/glyphs';
 import type { AppProps } from '../../core/registry';
 import { useFocusedId } from '../../core/store';
 import { lineAt, useLyrics, type LyricLine } from '../../media/lyrics';
@@ -140,7 +141,7 @@ export default function Karaoke({ win }: AppProps) {
           <p className="os-karaoke-note">YouTube can’t be reached, so there’s nothing to sing along to.</p>
         ) : !mine ? (
           <button type="button" className="os-karaoke-start" onClick={() => music.play('karaoke')}>
-            <span aria-hidden="true">▶</span>
+            <PlayGlyph />
             <strong>{song.title}</strong>
             <small>{song.artist}</small>
           </button>
@@ -241,13 +242,13 @@ export default function Karaoke({ win }: AppProps) {
         </button>
         <div className="os-karaoke-transport">
           <button type="button" onClick={() => music.previous('karaoke')} aria-label="Previous song">
-            ⏮
+            <PreviousGlyph />
           </button>
           <button type="button" onClick={() => music.toggle('karaoke')} aria-label={mine && music.playing ? 'Pause' : 'Play'}>
-            {mine && music.playing ? '❚❚' : '▶'}
+            {mine && music.playing ? <PauseGlyph /> : <PlayGlyph />}
           </button>
           <button type="button" onClick={() => music.next('karaoke')} aria-label="Next song">
-            ⏭
+            <NextGlyph />
           </button>
         </div>
         <div className="os-karaoke-time">

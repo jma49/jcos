@@ -46,6 +46,10 @@ own chrome never shows.
   since browsers don't play sound unasked, and then follows the sound
   switch like all music. The notification goes when the song ends
   (`remaining_ms`) or when he sends `/stop`.
+- The iPod's menus scroll natively (a finger, a mouse wheel, a
+  trackpad), which leaves the choice where it is; the click wheel and the
+  arrow keys move the choice, and the list scrolls just enough to show
+  it. Control glyphs everywhere come from `core/glyphs.tsx`.
 - `src/os/apps/ipod/`: the iPod's full-screen views (Cover Flow, Brick,
   Music Quiz), which take the wheel through a `ScreenInput`, and the
   `Marquee` used for long titles. The iPod's own settings (theme,
