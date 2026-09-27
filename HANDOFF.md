@@ -142,8 +142,8 @@ ryOS (AGPL-3.0).
 
 ## 4. To check after the next deploy
 
-**Where things stand (2026-09-27, morning).** `main` is at `a699b0b`
-(through #126). Jincheng redeployed `main` and the bot, and fixed
+**Where things stand (2026-09-27).** Jincheng deployed the bot from
+`main` (through #125) and fixed
 周傳雄《青花》, whose row now reads 青花 / 周傳雄 / 藍色土耳其 with an
 Apple cover, and whose lyrics `/api/lyrics` finds on NetEase. Every
 migration has run, through `20260927062914_song_limit.sql`. The
@@ -152,17 +152,23 @@ purpose: `song_limit()` callable by `anon` and `authenticated` (it
 returns only the limit), `my_reactions()` by `authenticated`, and leaked
 password protection (Pro plan). Every branch but `main` is deleted.
 
-**Production runs `94806fc`** (everything through #128), deployed
-2026-09-27 07:07 UTC once the cap reset: GitHub's deployment records
-(`gh api repos/jma49/jmos/deployments`) list it as Production. The live
-`/api/songs` reads the database and carries `limit: 200` (34 songs).
-The merges between #122 and #128 had been rate-limited, which refuses a
-merge before the ignored build step runs, docs-only ones included.
+**Production runs `a4a0780`** (through #131), deployed 2026-09-27.
+`main` is at the head of the audit's pull requests: #132 (listening
+along catches up after a dropped connection) and #133 (the snapshot has
+34 songs) were rate-limited. The cap seems to count a rolling day
+(one deployment went through at 07:07 and one after #131, each followed
+by refusals), filled by the previews branches made before only `main`
+deployed (#125), so it frees a deployment at a time. The
+live `/api/songs` reads the database and carries `limit: 200`.
 
 **To do, in order:**
-1. **Look at it:** About This Mac shows `94806fc` and the iPod's Music
+1. **Redeploy `main`** when the cap allows (Vercel dashboard, the newest
+   `main` deployment, Redeploy), and check `gh api
+   repos/jma49/jmos/deployments?per_page=1` lists `main`'s head as
+   Production. Until then, batch merges.
+2. **Look at it:** About This Mac shows that hash and the iPod's Music
    menu shows "Songs 34/200".
-2. **The whole music loop, live:** `/add` a song and see it in the iPod
+3. **The whole music loop, live:** `/add` a song and see it in the iPod
    within five minutes; `/play` it and see the notification on another
    device, listen along at the same place; `/stop` and see it go.
 
@@ -204,6 +210,10 @@ the desktop with VoiceOver. The lyrics' timing in Karaoke is left for a
 new way of syncing them, planned for later (see below).
 
 ## 5. Open issues and next steps
+
+What comes next, in order, is in [ROADMAP.md](ROADMAP.md): errors
+visitors hit reaching Jincheng, room on the first load, lyrics that line
+up, then visitors asking for songs.
 
 0. **The music library on Supabase is done** (2026-09-27): the tables,
    the 200-song limit, `/api/songs`, the bot's `/add`, `/songs`,
@@ -323,3 +333,18 @@ new way of syncing them, planned for later (see below).
    - Considered and not done: a spec template for changes, `llms.txt` in
      robots.txt (no crawler reads it there), splitting the largest app
      components.
+9. **Audit (2026-09-27).** Found nothing failing: types, lint, 192 unit
+   tests, the smoke test, `npm audit` (0), every `npm run perf` line
+   within budget, the bot's webhook checks (owner only, secret, signed
+   database notices), the music tables' grants and limit. Fixed:
+   - listening along missed a play or stop made while a visitor's
+     connection was down, and an answer on arrival could land after a
+     stop and show the song again (#132; two tests that failed before);
+   - the type checker's 25 hints: deprecated `z` and `FormEvent`, unused
+     code, and an icon nothing used (#131);
+   - the snapshot lacked 青花 (#133).
+   Found and planned, not fixed here (ROADMAP.md): a crash in a
+   visitor's browser reaches no one; the first load is 157 of 160 KB.
+   Checked and fine: `knip`'s unused files are the documented one-off
+   scripts (favicon, portrait, the reset email preview), and its unused
+   exports are the applet kit's types and test helpers.
