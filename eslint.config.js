@@ -15,6 +15,19 @@ export default [
       'react-hooks/exhaustive-deps': 'error'
     }
   },
+  // Vercel's builder compiles each file in api/ to .js without rewriting
+  // imports, so a local import names the compiled file (library.js), not
+  // the source (library.ts), which isn't deployed.
+  {
+    files: ['api/**/*.ts'],
+    languageOptions: { parser: tseslint.parser },
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        { patterns: [{ regex: '^\\.{1,2}/.*\\.tsx?$', message: 'Import local TypeScript by its .js name: Vercel deploys the compiled file.' }] }
+      ]
+    }
+  },
   // The app boundaries (docs/agents/desktop.md). Applets reach JM/OS only
   // through the kit and never each other, so each stays a self-contained
   // unit loaded on demand.
