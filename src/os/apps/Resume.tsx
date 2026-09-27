@@ -1,6 +1,8 @@
-import { useState } from 'react';
+import { useState, type CSSProperties } from 'react';
+import { createPortal } from 'react-dom';
 import { useOSData } from '../core/context';
 import { plain } from '../core/inline';
+import type { OSData } from '../core/types';
 
 const ZOOMS = [0.75, 0.9, 1, 1.15, 1.3];
 
@@ -8,12 +10,6 @@ const ZOOMS = [0.75, 0.9, 1, 1.15, 1.3];
 export default function Resume() {
   const data = useOSData();
   const [zoom, setZoom] = useState(2);
-  // Short forms that fit the sidebar: github.com/jma49, in/jincheng-ma-professional.
-  const handle = (url: string) =>
-    url
-      .replace(/^https?:\/\/(www\.)?/, '')
-      .replace(/^linkedin\.com\//, '')
-      .replace(/\/$/, '');
 
   return (
     <div className="os-app os-pages">
@@ -36,84 +32,102 @@ export default function Resume() {
       </div>
 
       <div className="os-scroll os-pages-canvas">
-        <article className="os-page" style={{ zoom: ZOOMS[zoom] }}>
-          <header className="os-cv-header">
-            <h1>{data.name}</h1>
-            <p className="os-cv-role">{data.role}</p>
-            <p className="os-cv-where">{data.location}</p>
-          </header>
-
-          <div className="os-cv-body">
-            <aside className="os-cv-side">
-              <section>
-                <h2>Contact</h2>
-                <ul className="os-cv-contact">
-                  <li>
-                    <a href={`mailto:${data.email}`}>{data.email}</a>
-                  </li>
-                  <li>
-                    <a href={data.links.github} target="_blank" rel="noopener">
-                      {handle(data.links.github)}
-                    </a>
-                  </li>
-                  <li>
-                    <a href={data.links.linkedin} target="_blank" rel="noopener">
-                      {handle(data.links.linkedin)}
-                    </a>
-                  </li>
-                </ul>
-              </section>
-
-              <section>
-                <h2>Skills</h2>
-                {data.skills.map((g) => (
-                  <div key={g.name} className="os-cv-skill">
-                    <h3>{g.name}</h3>
-                    <p>{g.items.join(' · ')}</p>
-                  </div>
-                ))}
-              </section>
-
-              <section>
-                <h2>Education</h2>
-                {data.education.map((e) => (
-                  <div key={e.school} className="os-cv-edu">
-                    <h3>{e.school}</h3>
-                    <p>{e.degree}</p>
-                    <p className="os-cv-date">{e.period}</p>
-                  </div>
-                ))}
-              </section>
-            </aside>
-
-            <main className="os-cv-main">
-              <section>
-                <h2>Profile</h2>
-                <p className="os-cv-profile">{plain(data.bio.short[0])}</p>
-              </section>
-
-              <section>
-                <h2>Experience</h2>
-                {data.jobs.map((job) => (
-                  <div key={job.company + job.period} className="os-cv-job">
-                    <div className="os-cv-job-head">
-                      <h3>{job.company}</h3>
-                      <span className="os-cv-date">{job.period}</span>
-                    </div>
-                    <p className="os-cv-job-role">{job.role}</p>
-                    <p className="os-cv-job-summary">{job.summary}</p>
-                    <ul>
-                      {job.bullets.map((b, i) => (
-                        <li key={i}>{b}</li>
-                      ))}
-                    </ul>
-                  </div>
-                ))}
-              </section>
-            </main>
-          </div>
-        </article>
+        <ResumeSheet data={data} className="os-page" style={{ zoom: ZOOMS[zoom] }} />
       </div>
+      {/* What prints: the same résumé outside the desktop, so it flows onto
+          as many pages as it needs. A window's transform would otherwise
+          shift and clip it. Hidden on screen. */}
+      {createPortal(<ResumeSheet data={data} className="os-page os-cv-print" />, document.body)}
     </div>
+  );
+}
+
+/** Short forms that fit the sidebar: github.com/jma49, in/jincheng-ma-professional. */
+const handle = (url: string) =>
+  url
+    .replace(/^https?:\/\/(www\.)?/, '')
+    .replace(/^linkedin\.com\//, '')
+    .replace(/\/$/, '');
+
+/** The résumé itself, one page of it. */
+function ResumeSheet({ data, className, style }: { data: OSData; className: string; style?: CSSProperties }) {
+  return (
+    <article className={className} style={style}>
+      <header className="os-cv-header">
+        <h1>{data.name}</h1>
+        <p className="os-cv-role">{data.role}</p>
+        <p className="os-cv-where">{data.location}</p>
+      </header>
+
+      <div className="os-cv-body">
+        <aside className="os-cv-side">
+          <section>
+            <h2>Contact</h2>
+            <ul className="os-cv-contact">
+              <li>
+                <a href={`mailto:${data.email}`}>{data.email}</a>
+              </li>
+              <li>
+                <a href={data.links.github} target="_blank" rel="noopener">
+                  {handle(data.links.github)}
+                </a>
+              </li>
+              <li>
+                <a href={data.links.linkedin} target="_blank" rel="noopener">
+                  {handle(data.links.linkedin)}
+                </a>
+              </li>
+            </ul>
+          </section>
+
+          <section>
+            <h2>Skills</h2>
+            {data.skills.map((g) => (
+              <div key={g.name} className="os-cv-skill">
+                <h3>{g.name}</h3>
+                <p>{g.items.join(' · ')}</p>
+              </div>
+            ))}
+          </section>
+
+          <section>
+            <h2>Education</h2>
+            {data.education.map((e) => (
+              <div key={e.school} className="os-cv-edu">
+                <h3>{e.school}</h3>
+                <p>{e.degree}</p>
+                <p className="os-cv-date">{e.period}</p>
+              </div>
+            ))}
+          </section>
+        </aside>
+
+        <main className="os-cv-main">
+          <section>
+            <h2>Profile</h2>
+            <p className="os-cv-profile">{plain(data.bio.short[0])}</p>
+          </section>
+
+          <section>
+            <h2>Experience</h2>
+            {data.jobs.map((job) => (
+              <div key={job.company + job.period} className="os-cv-job">
+                <div className="os-cv-job-head">
+                  <h3>{job.company}</h3>
+                  <span className="os-cv-date">{job.period}</span>
+                </div>
+                <p className="os-cv-job-role">{job.role}</p>
+                <p className="os-cv-job-summary">{job.summary}</p>
+                <ul>
+                  {job.bullets.map((b, i) => (
+                    <li key={i}>{b}</li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </section>
+        </main>
+      </div>
+    </article>
   );
 }
