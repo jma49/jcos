@@ -126,9 +126,16 @@
   font-size: 14px;
 }
 
-.os-menu-list button:hover:not(:disabled) {
+.os-menu-list button:hover:not(:disabled),
+.os-root .os-menu-list button:focus-visible {
   background: var(--os-select-grad);
   color: #fff;
+  outline: none;
+}
+
+/* Focus rests on the menu itself when all its items are disabled. */
+.os-root .os-menu-list:focus-visible {
+  outline: none;
 }
 
 .os-menu-list button:disabled {
