@@ -94,7 +94,8 @@ create policy "What's playing is public while it plays" on public.now_playing fo
 revoke all on public.albums, public.songs, public.music_settings, public.now_playing from anon, authenticated;
 grant select (title, artist, year, cover, note) on public.albums to anon, authenticated;
 grant select (id, title, artist, album, cover, track, instrumental, lyrics_offset, lyrics_id, duration_ms, added_at) on public.songs to anon, authenticated;
-grant select (song_id, started_at, ends_at) on public.now_playing to anon, authenticated;
+-- id too: Realtime reads a changed row by its primary key, as the subscriber.
+grant select (id, song_id, started_at, ends_at) on public.now_playing to anon, authenticated;
 grant select, insert, update, delete on public.albums, public.songs, public.music_settings, public.now_playing to service_role;
 
 -- At most song_limit songs.
