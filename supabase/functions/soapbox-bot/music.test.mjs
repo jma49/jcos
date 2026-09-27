@@ -40,6 +40,23 @@ describe('guessFromVideo', () => {
     expect(guessFromVideo('梁靜茹 Fish Leong【寧夏】Official MV', 'Rock Records')).toEqual({ title: '寧夏', artist: '梁靜茹 Fish Leong' });
   });
 
+  test('"Artist《Song》高清MV", the book-title marks', () => {
+    expect(guessFromVideo('周傳雄《青花》高清MV', 'Rock Records')).toEqual({ title: '青花', artist: '周傳雄' });
+  });
+
+  test('"《Song》Artist 官方MV", the song first', () => {
+    expect(guessFromVideo('《青花》周傳雄 官方MV', 'Some Channel')).toEqual({ title: '青花', artist: '周傳雄' });
+  });
+
+  test('"Artist【Song】- Official Music Video"', () => {
+    expect(guessFromVideo('周杰倫 Jay Chou【黑色毛衣】- Official Music Video', 'JVR Music')).toEqual({ title: '黑色毛衣', artist: '周杰倫 Jay Chou' });
+  });
+
+  test('a trailing video word goes; a song that merely contains one stays', () => {
+    expect(guessFromVideo('Taylor Swift - Love Story (Official Music Video)', 'Taylor Swift').title).toBe('Love Story');
+    expect(guessFromVideo('Madonna - Video Games', 'Madonna').title).toBe('Video Games');
+  });
+
   test('otherwise the title, by the channel', () => {
     expect(guessFromVideo('energy flow [HD]', 'Ryuichi Sakamoto')).toEqual({ title: 'energy flow', artist: 'Ryuichi Sakamoto' });
   });
