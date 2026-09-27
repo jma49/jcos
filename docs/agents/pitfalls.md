@@ -142,12 +142,18 @@ again.
   load with their apps, anything outside the app that uses a class or
   keyframes has to live in `src/os/styles/`.
 
-- A function in `api/` imported `../src/lib/library` without `.ts`.
-  Vitest resolved it and every test passed, but Node's own module
-  loader (`npm run serve`, and plain ESM) needs the extension, and
-  `/api/songs` answered 404. Import TypeScript with its `.ts` extension
-  there, and try a new function with `npm run serve`.
-
+- A function in `api/` imports local TypeScript by its compiled name
+  (`../src/lib/library.js`). Vercel's builder (`@vercel/node`) compiles
+  each file to `.js` without rewriting imports, so `library.ts` isn't
+  deployed: importing it by that name made `/api/songs` crash in
+  production (FUNCTION_INVOCATION_FAILED) while every test passed, and
+  an extensionless import fails too, since the functions run as ES
+  modules. An earlier fix wrote `.ts` to make `npm run serve` work,
+  which is what broke production; `serve.mjs` now maps a missing `.js`
+  to its `.ts` instead, and the lint rejects a `.ts` import in `api/`.
+  To check a function the way Vercel runs it, build it with
+  `@vercel/node` into a separate directory and run the output (a build
+  whose files and work path are the same directory truncates them).
 - Every tab saved its whole copy of a setting or score. A best score of
   5000 set in one tab was overwritten by 4000 from a tab that had loaded
   before it, and changing the Dock size in one tab turned pointers back
