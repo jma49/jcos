@@ -156,23 +156,17 @@ purpose: `song_limit()` callable by `anon` and `authenticated` (it
 returns only the limit), `my_reactions()` by `authenticated`, and leaked
 password protection (Pro plan). Every branch but `main` is deleted.
 
-**Production runs `a4a0780`** (through #131), deployed 2026-09-27.
-`main` is at the head of the audit's pull requests: #132 (listening
-along catches up after a dropped connection) and #133 (the snapshot has
-34 songs) were rate-limited. The cap seems to count a rolling day
-(one deployment went through at 07:07 and one after #131, each followed
-by refusals), filled by the previews branches made before only `main`
-deployed (#125), so it frees a deployment at a time. The
-live `/api/songs` reads the database and carries `limit: 200`.
+**Production runs `1b9f680`** (`main`'s head, through #136), deployed
+2026-09-27 08:52 UTC: the audit's fixes (#131–#133) and the package
+name `jmos` (#136) are live. Earlier merges that day had been
+rate-limited; the cap seems to count a rolling day that the branch
+previews made before only `main` deployed (#125) had filled. The local
+folder is `~/Code/personal/jmos` now, like the repository.
 
 **To do, in order:**
-1. **Redeploy `main`** when the cap allows (Vercel dashboard, the newest
-   `main` deployment, Redeploy), and check `gh api
-   repos/jma49/jmos/deployments?per_page=1` lists `main`'s head as
-   Production. Until then, batch merges.
-2. **Look at it:** About This Mac shows that hash and the iPod's Music
+1. **Look at it:** About This Mac shows `1b9f680` and the iPod's Music
    menu shows "Songs 34/200".
-3. **The whole music loop, live:** `/add` a song and see it in the iPod
+2. **The whole music loop, live:** `/add` a song and see it in the iPod
    within five minutes; `/play` it and see the notification on another
    device, listen along at the same place; `/stop` and see it go.
 
