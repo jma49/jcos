@@ -109,12 +109,10 @@ Only a deployment can show:
 2. that the ignored build step skips a docs-only pull request and builds
    one touching `src/`, and whether a skipped one counts toward the cap.
 
-Only a person can check:
-3. printing the résumé from Chrome's and Safari's print dialogs (paper
-   size, headers and footers off);
-4. how the interface sounds sound; the lyrics' timing of 三個人的晚餐 in
-   Karaoke;
-5. the desktop with VoiceOver, beyond the automated checks.
+Checked by Jincheng on `npm run serve` (2026-09-27): printing the
+résumé from Chrome's and Safari's print dialogs, the interface sounds,
+the desktop with VoiceOver. The lyrics' timing in Karaoke is left for a
+new way of syncing them, planned for later (see below).
 
 ## 5. Open issues and next steps
 
@@ -129,7 +127,9 @@ Only a person can check:
    chat message goes to the owner on Telegram with Hide / Show again;
    `/watch off` stops it. Automatic filtering in front of it is still an
    option if spam gets heavy.
-3. **Songs.** Ten of the starter songs remain (timing carried over from
+3. **Songs.** Lyric timing will be reworked as a whole rather than tuned
+   song by song with `offset` (decided 2026-09-27). Ten of the starter
+   songs remain (timing carried over from
    ryOS's values, unchecked by ear), plus 寧夏, Kiss & Tell, 寫信給你,
    心動 and 三個人的晚餐 (lyrics from NetEase) and BTTB. 三個人的晚餐
    uses the official MV, which is ten seconds shorter than the album cut,
