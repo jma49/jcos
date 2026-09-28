@@ -54,6 +54,15 @@ own chrome never shows.
   Music Quiz), which take the wheel through a `ScreenInput`, and the
   `Marquee` used for long titles. The iPod's own settings (theme,
   backlight, artwork or video) live in `os-ipod`.
+- `src/os/shell/DesktopLyrics.tsx`: the lyrics floating over the desktop,
+  two lines (the one being sung fills as Karaoke's does, via `lineFill()`
+  in `lyrics.ts`), off until the visitor turns them on (the iPod's
+  Settings › Desktop Lyrics, or the ♫ card; `desktopLyrics` in `os-music`).
+  They sit above the Dock or where they were dragged (`os-desktop-lyrics`,
+  as a share of the screen), step aside while Karaoke is playing in a
+  window that's showing, and never show on phones. `DesktopLyricsLayer`
+  fetches their code the first time they're on while a song plays, so
+  it isn't in the first load.
 - `src/os/shell/NowPlaying.tsx`: the menu bar's ♫ while a song is on, with a
   card to control it; it also feeds the Media Session API. The Dynamic
   desktop picture `dynamic:cover` shows the playing song's cover,

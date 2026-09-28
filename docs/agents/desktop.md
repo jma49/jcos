@@ -128,6 +128,9 @@ only `kit/`. The lint enforces all three.
   `data-backdrop` on `.os-root`. It turns opaque over a zoomed window and
   on phones while an app is open. The Apple logo is tinted with the
   accent.
+- `src/os/shell/DesktopLyrics.tsx`: the playing song's lyrics floating
+  over the desktop, when the visitor turns them on; see
+  [media.md](media.md).
 - `src/os/shell/Screensaver.tsx` and `savers.tsx`: Desktop Pictures (a
   slideshow of Mac OS X's scenic desktop pictures, `SCENIC` in
   `wallpapers.ts`), Flurry, Soapbox (the latest posts in large type),
