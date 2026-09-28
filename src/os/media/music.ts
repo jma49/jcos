@@ -41,6 +41,8 @@ export interface MusicStore {
   volume: number;
   /** The visitor's own lyric timing tweaks, in ms per song, on top of Song.offset. */
   offsets: Record<string, number>;
+  /** Whether the lyrics float over the desktop while a song plays (off until the visitor turns them on). */
+  desktopLyrics: boolean;
 
   /** Plays from `app`: the song at `index`, or the current one; `queue` is what follows it. */
   play: (app: MusicApp, index?: number, queue?: number[]) => void;
@@ -54,6 +56,7 @@ export interface MusicStore {
   setRepeat: (repeat: Repeat) => void;
   setVolume: (volume: number) => void;
   nudge: (id: string, ms: number) => void;
+  setDesktopLyrics: (on: boolean) => void;
 }
 
 /** Each mounted player's clock, so a new owner can pick up at the right second. */
@@ -67,7 +70,7 @@ export function currentTime() {
   return (owner && clocks.get(owner)?.()) || 0;
 }
 
-const settings = loadSettings(SETTINGS_KEY, { shuffle: false, repeat: 'all' as Repeat, volume: 80 });
+const settings = loadSettings(SETTINGS_KEY, { shuffle: false, repeat: 'all' as Repeat, volume: 80, desktopLyrics: false });
 
 export const useMusic = create<MusicStore>((set, get) => {
   /** The change that makes `app` the owner, noting where the old owner was. */
@@ -102,6 +105,7 @@ export const useMusic = create<MusicStore>((set, get) => {
     shuffle: settings.shuffle,
     repeat: settings.repeat,
     volume: settings.volume,
+    desktopLyrics: settings.desktopLyrics,
     offsets: loadSettings<Record<string, number>>(OFFSETS_KEY, {}),
 
     play: (app, index = get().index, queue) => {
@@ -154,6 +158,10 @@ export const useMusic = create<MusicStore>((set, get) => {
       // From the stored tweaks, so another tab's tweak to another song stands.
       const offsets = updateJSON<Record<string, number>>(OFFSETS_KEY, {}, (stored) => ({ ...stored, [id]: (stored[id] ?? 0) + ms }));
       set({ offsets });
+    },
+    setDesktopLyrics: (desktopLyrics) => {
+      set({ desktopLyrics });
+      save({ desktopLyrics });
     }
   };
 });
@@ -199,9 +207,9 @@ export const formatTime = (seconds: number) => {
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 };
 
-// Lyric tweaks, shuffle, repeat and volume changed in another tab of this visitor's.
+// Lyric tweaks, shuffle, repeat, volume and desktop lyrics changed in another tab of this visitor's.
 onStored(OFFSETS_KEY, () => useMusic.setState({ offsets: loadSettings<Record<string, number>>(OFFSETS_KEY, {}) }));
 onStored(SETTINGS_KEY, () => {
-  const { shuffle, repeat, volume } = loadSettings(SETTINGS_KEY, settings);
-  useMusic.setState({ shuffle, repeat, volume });
+  const { shuffle, repeat, volume, desktopLyrics } = loadSettings(SETTINGS_KEY, settings);
+  useMusic.setState({ shuffle, repeat, volume, desktopLyrics });
 });

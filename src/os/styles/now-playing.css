@@ -136,3 +136,11 @@
   color: var(--os-accent);
   font-size: 12px;
 }
+
+.os-nowplaying-lyrics {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 12px;
+}

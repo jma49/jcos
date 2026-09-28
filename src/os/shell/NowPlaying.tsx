@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { NextGlyph, PauseGlyph, PlayGlyph, PreviousGlyph } from '../core/glyphs';
 import { launch } from '../core/registry';
+import { isPhone } from '../core/store';
 import { albumOf, coverOf, SONGS } from '../media/library';
 import { useMusic } from '../media/music';
 import { watchMediaSession } from '../media/session';
@@ -10,7 +11,7 @@ import { watchMediaSession } from '../media/session';
 // playing. It also hands the song to the browser's media controls.
 
 export function NowPlaying() {
-  const { owner, index, playing, toggle, next, previous } = useMusic();
+  const { owner, index, playing, toggle, next, previous, desktopLyrics, setDesktopLyrics } = useMusic();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -72,6 +73,12 @@ export function NowPlaying() {
               <NextGlyph />
             </button>
           </div>
+          {!isPhone() && (
+            <label className="os-nowplaying-lyrics">
+              <input type="checkbox" checked={desktopLyrics} onChange={(e) => setDesktopLyrics(e.target.checked)} />
+              Lyrics on the desktop
+            </label>
+          )}
           <button
             type="button"
             className="os-nowplaying-open"

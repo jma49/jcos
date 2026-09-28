@@ -1,0 +1,80 @@
+/* ---------- Desktop lyrics (shell/DesktopLyrics.tsx) ---------- */
+
+/* Over the windows, under the Dock's menus and the menu bar. Only the text
+   takes the pointer, so the desktop and windows under the rest stay usable. */
+.os-desktop-lyrics {
+  --lyrics-fill: color-mix(in srgb, var(--os-accent) 45%, white);
+  position: absolute;
+  left: 50%;
+  bottom: calc(var(--dock-icon, 50px) + 44px);
+  z-index: 950;
+  width: min(900px, 90%);
+  transform: translateX(-50%);
+  display: grid;
+  justify-items: center;
+  pointer-events: none;
+  text-align: center;
+}
+
+.os-desktop-lyrics[data-placed] {
+  bottom: auto;
+  transform: translate(-50%, -50%);
+}
+
+.os-desktop-lyrics-text {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  padding: 4px 14px;
+  border-radius: 10px;
+  pointer-events: auto;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  transition: background-color 0.2s;
+}
+
+.os-desktop-lyrics-text:hover {
+  background: rgba(0, 0, 0, 0.18);
+}
+
+.os-desktop-lyrics-text:active {
+  cursor: grabbing;
+}
+
+.os-desktop-lyrics p {
+  margin: 0;
+  min-height: 1.25em;
+  font-weight: 700;
+  line-height: 1.25;
+  text-wrap: balance;
+  color: rgba(255, 255, 255, 0.95);
+  /* Readable over any picture or window: a dark hairline and a soft shadow. */
+  filter: drop-shadow(0 0 1px rgba(0, 0, 0, 0.85)) drop-shadow(0 2px 5px rgba(0, 0, 0, 0.55));
+}
+
+/* The line being sung fills from the left as it goes (--fill, set every frame). */
+.os-desktop-lyrics p[data-at='now'] {
+  --fill: 0%;
+  font-size: 30px;
+  background: linear-gradient(90deg, var(--lyrics-fill) var(--fill), rgba(255, 255, 255, 0.95) var(--fill));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.os-desktop-lyrics p[data-at='title'] {
+  font-size: 22px;
+}
+
+.os-desktop-lyrics p[data-at='next'] {
+  font-size: 19px;
+  opacity: 0.72;
+}
+
+@media (max-width: 767px), (max-height: 500px) and (pointer: coarse) {
+  .os-desktop-lyrics {
+    display: none;
+  }
+}
