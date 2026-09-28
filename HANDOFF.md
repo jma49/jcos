@@ -226,15 +226,19 @@ What comes next, in order, is in [ROADMAP.md](ROADMAP.md).
    one; receivers act only on well-formed ones, which carry nothing but
    names and Macintosh HD paths. Proper identity would need Realtime
    Authorization and server-checked presence.
-4. **The first load** is 157 of its 160 KB budget, mostly react-dom
+4. **Assay's demo shows a blank Browser window.** assay.majincheng.com
+   sends `X-Frame-Options: DENY` and `frame-ancestors 'none'`, so it
+   can't be framed. The Browser work (a page that says so, with "Open in
+   a new tab") will handle it; or Assay could allow majincheng.com.
+5. **The first load** is 157 of its 160 KB budget, mostly react-dom
    (ROADMAP.md, item 1).
-5. **Not ported from ryOS**, in Chat: @ryo (AI replies, on hold with the
+6. **Not ported from ryOS**, in Chat: @ryo (AI replies, on hold with the
    AI assistant), voice messages, IRC rooms and admins making rooms from
    the app.
-6. **Upkeep in the Supabase dashboard:** run Advisors › Security after
+7. **Upkeep in the Supabase dashboard:** run Advisors › Security after
    each migration, and keep Settings › API › Exposed schemas to `public`
    (plus `graphql_public` only if GraphQL is used).
-7. **What CI checks** on every pull request: `npm audit --omit=dev
+8. **What CI checks** on every pull request: `npm audit --omit=dev
    --audit-level=high`, the type check, the hooks lint, the unit tests
    (Vitest), the build, a smoke test that opens every app in a browser,
    the download budgets of `npm run perf`, and `npm run test:db` (the

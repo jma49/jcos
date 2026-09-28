@@ -6,9 +6,9 @@ status: wip
 order: 1
 stack: [TypeScript, Node.js, OpenCode, LLM APIs]
 repo: https://github.com/jma49/Open-CR-Agent
-demo: https://ocra-nine.vercel.app/
+demo: https://ocra.majincheng.com/
 cover: ../covers/ocra.jpg
-capture: https://ocra-nine.vercel.app/
+capture: https://ocra.majincheng.com/
 ---
 
 ocra (Open-CR-Agent) reviews code changes with a set of specialised LLM reviewers inside a deterministic pipeline. File selection, grouping, rule matching and anchoring comments to lines are ordinary, tested code; the models are only asked for judgment.
