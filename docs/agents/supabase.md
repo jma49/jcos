@@ -3,6 +3,42 @@
 The browser talks to Supabase directly with the public anon key; row-level
 security and triggers in `supabase/schema.sql` do the enforcing.
 
+## At a glance
+
+Every place the site keeps or fetches data, who can read it, who can
+write it, and the limit the database holds it to. "Members" are
+signed-in accounts; "the bot" is `supabase/functions/soapbox-bot`,
+which writes with the service role. Limits that count rows take an
+advisory lock (Security, below).
+
+| Data | Read by | Written by | Limit |
+| --- | --- | --- | --- |
+| `profiles` | everyone (id, username) | the sign-up trigger | |
+| `notes` (Stickies) | everyone, approved notes | members; each can delete their own | 3 per member in 24 hours |
+| `chat_rooms` | everyone | Jincheng, in the Table editor | |
+| `chat_messages` | everyone in rooms; only the two members in a `dm:` room | members; each can delete their own | 8 per member in 30 s, 120 a minute in all |
+| `soapbox_posts` | everyone, visible posts | the bot | |
+| `soapbox_reactions` | everyone | anyone; members can change or take back theirs | one per post per visitor (members by account, others by salted IP hash) |
+| `soapbox_settings` | the bot only | the bot | |
+| `songs`, `albums` | everyone | the bot | `music_settings.song_limit` songs (200) |
+| `music_settings` | the bot; visitors only through `song_limit()` | Jincheng, in the Table editor | |
+| `now_playing` | everyone, while the song plays | the bot, through `music_play()` and `music_stop()` | one song |
+| `private.recovery_emails`, `private.password_resets`, `private.secrets` | not reachable through the API | account functions and the database | resets: 3 per account and 3 per address an hour, 60 an hour in all; a link lasts 30 minutes |
+| `soapbox` storage bucket | everyone | the bot | images only, 10 MB each |
+| Presence channel (Realtime) | everyone on the desktop | anyone, unchecked: receivers check what arrives | pointers stop past 12 people |
+
+The code that isn't in the browser:
+
+| Function | Where | What it does | Caching |
+| --- | --- | --- | --- |
+| `/api/geo` | Vercel, `api/geo.ts` | the visitor's city, coordinates and time zone, from Vercel's IP headers; stores nothing | none; 204 without the headers |
+| `/api/lyrics` | Vercel, `api/lyrics.ts` | relays NetEase's synced lyrics for songs lrclib doesn't have | a day at the edge, misses an hour |
+| `/api/songs` | Vercel, `api/songs.ts` | the music library from Supabase, or the repository's snapshot when Supabase can't be read | fresh 5 minutes, stale for a day; the snapshot a minute |
+| `account-recovery` | Supabase Edge Function | emails a one-time reset link through Resend | |
+| `soapbox-bot` | Supabase Edge Function | Jincheng's Telegram bot: Soapbox posts, the music commands, moderation buttons | |
+
+## In detail
+
 - **Accounts** (`src/os/social/`, `apps/account/`): a username and a
   password, with an optional recovery address. They're Supabase Auth users
   whose address is made from the username

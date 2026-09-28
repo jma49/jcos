@@ -1,7 +1,7 @@
 # Roadmap: majincheng.com (JM/OS)
 
-What to build next and in what order, as of 2026-09-27, after the audit
-recorded in [HANDOFF.md](HANDOFF.md) (section 5). HANDOFF.md is the state
+What to build next and in what order, as of 2026-09-27, after that
+day's audit (#131–#133). HANDOFF.md is the state
 of things; this file is the plan. When an item is done, move what matters
 to HANDOFF.md and take it out of here.
 

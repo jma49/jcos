@@ -1,6 +1,6 @@
 # Handoff: majincheng.com (JM/OS)
 
-State of the project as of 2026-09-26, for picking the work up in a new
+State of the project as of 2026-09-28, for picking the work up in a new
 session: where it runs, how we work, what was decided, and what's open.
 Conventions and a map of the code are in [AGENTS.md](AGENTS.md) and
 [docs/agents/](docs/agents/); what was built when is in the git history.
@@ -146,6 +146,27 @@ ryOS (AGPL-3.0).
   free plan's Realtime refuses more connections, and those visitors
   simply don't see presence, chat or listening along (the desktop works
   without them).
+- **Windows have no focus trap** (decided 2026-09-26): they aren't
+  modal, so Tab moves on to the rest of the desktop.
+- **No full script CSP** (decided 2026-09-26): Astro's inline hydration
+  and the YouTube player would need it loosened too far to help. The
+  other security headers are in `vercel.json`.
+- **The secondary greys stay** (decided 2026-09-27). Secondary text in
+  the light theme is about `rgb(128,128,128)` on light grey, 3.2–3.9:1
+  against the 4.5:1 text needs (Finder's metadata, dates, empty states;
+  the sidebar headings are 3.7:1 light, 2.9:1 dark). Meeting it means
+  greys near `#6a6a6a`, a visibly heavier look.
+- **The Dashboard may open slower in the first seconds on 3G** (accepted
+  2026-09-27): it loads after the desktop settles (#86), so opening it
+  in the first eight seconds takes 210 ms instead of 90 on fast 3G (the
+  same 90 on 4G). Loading it up front would add 4 KB to every first load.
+- **Considered and left out** (2026-09-26 and 27 audits): a "continue
+  playing" prompt for hidden tabs, more reduced-motion fallbacks, a spec
+  template for changes, `llms.txt` in robots.txt (no crawler reads it
+  there) and splitting the largest app components. `knip`'s unused files
+  are the documented one-off scripts (favicon, portrait, the reset email
+  preview), and its unused exports are the applet kit's types and test
+  helpers: not dead code.
 - **No crash reports from visitors' browsers** (decided 2026-09-27):
   for a personal site, a table, a public write path with abuse limits
   and a bot change aren't worth it. Each window's error boundary keeps a
@@ -157,212 +178,64 @@ ryOS (AGPL-3.0).
   day. To hide a note, set `approved` to false in the Supabase Table
   editor.
 
-## 4. To check after the next deploy
+## 4. Current state
 
-**Where things stand (2026-09-27).** Jincheng deployed the bot from
-`main` (through #125) and fixed
-周傳雄《青花》, whose row now reads 青花 / 周傳雄 / 藍色土耳其 with an
-Apple cover, and whose lyrics `/api/lyrics` finds on NetEase. Every
-migration has run, through `20260927062914_song_limit.sql`. The
-Security Advisor (2026-09-27 06:51 UTC) lists only what's kept on
-purpose: `song_limit()` callable by `anon` and `authenticated` (it
-returns only the limit), `my_reactions()` by `authenticated`, and leaked
-password protection (Pro plan). Every branch but `main` is deleted.
+**Nothing is waiting on Jincheng** (2026-09-28).
 
-**Production runs `1b9f680`** (`main`'s head, through #136), deployed
-2026-09-27 08:52 UTC: the audit's fixes (#131–#133) and the package
-name `jmos` (#136) are live. Earlier merges that day had been
-rate-limited; the cap seems to count a rolling day that the branch
-previews made before only `main` deployed (#125) had filled. The local
-folder is `~/Code/personal/jmos` now, like the repository.
+- Every migration in `supabase/migrations/` has been run, through
+  `20260927100000_now_playing_realtime.sql`. Both Edge Functions are
+  deployed from `main` and work: password reset sends mail, and the
+  whole music loop (`/add`, `/play`, "Listen along", `/stop`) was
+  checked live on 2026-09-27.
+- The Security Advisor shows only the findings kept on purpose, listed
+  in `supabase/migrations/20260926100511_advisor.sql`: `song_limit()`
+  callable by visitors (it returns only the limit), `my_reactions()` and
+  the other member-only helpers callable by members, and leaked password
+  protection (an Auth setting on the Pro plan).
+- Merges to `main` deploy, except those the ignored build step skips
+  (only docs, tests, CI, Supabase or tooling). Still unconfirmed: that
+  Vercel builds on Node 24; only a deployment's build log shows it (its
+  first lines).
+- Only `main` is left; every other branch is deleted.
 
-Every migration has run, through
-`20260927100000_now_playing_realtime.sql` (2026-09-27). It fixed `/play`
-reaching an open desktop only after a reload, and `/stop` never:
-Realtime drops changes to a table whose key visitors can't read, and
-`now_playing.id` wasn't granted (pitfalls.md). The Security Advisor
-after it (09:35 UTC) lists the same four findings kept on purpose
-(section 5, item 1).
+What's been built and checked, and when, is in the git history and the
+pull requests.
 
-**Checked live by Jincheng (2026-09-27):** the whole music loop.
-`/add` and `/play` from Telegram; the notification arrives on an open
-desktop without a reload; "Listen along" opens the iPod on Now Playing
-at his place in the song; `/stop` takes the notification away and the
-visitor's music plays on. Nothing is waiting on the owner.
+## 5. Open issues and known limits
 
-Checked locally, in production builds (2026-09-27):
-- the clear desktop and the Welcome; Finder's selection on striped rows;
-  the Dashboard and Exposé with and without reduced motion; Synth's
-  patch across octaves; Photos' keys; the résumé on Letter and A4;
-  every app (smoke test); the animations frame by frame;
-- **a deploy under an open page**, by swapping builds under the local
-  server: opening an app whose code is gone offers Reload, which brings
-  every window back in the new version (since #97 the panel says the
-  page may be out of date or the connection dropped, or that the visitor
-  is offline; either way Reload, since the browser won't fetch a failed
-  chunk again in the same page);
-- **slow networks**, emulated: the desktop is ready in 2.4 s on 4G and
-  7 s on fast 3G. Opening the Dashboard right away takes 90 ms on 4G
-  as before #86, and 210 ms instead of 90 on fast 3G, only in the first
-  eight seconds, before it has loaded ahead (accepted, 2026-09-27: not
-  worth 4 KB more on every first load);
-- the preview capture, run end to end (#81);
-- keyboard use and names for assistive tech (all apps), and the page
-  without JavaScript.
+What comes next, in order, is in [ROADMAP.md](ROADMAP.md).
 
-Checked on CI (2026-09-27): it reads Node 24 from `package.json`, and
-installs only Playwright's headless shell, found in the cache (the
-install step takes 12 s). Branches don't deploy (#125 got no Vercel
-check).
-
-The ignored build step works (2026-09-27): #143's merge, only CI and
-docs, was "Canceled by Ignored Build Step", and merges touching `src/`
-build (#140). Only a deployment's build log can still show that Vercel
-builds on Node 24 (its first lines).
-
-Checked by Jincheng on `npm run serve` (2026-09-27): printing the
-résumé from Chrome's and Safari's print dialogs, the interface sounds,
-the desktop with VoiceOver. The lyrics' timing in Karaoke is left for a
-new way of syncing them, planned for later (see below).
-
-## 5. Open issues and next steps
-
-What comes next, in order, is in [ROADMAP.md](ROADMAP.md): room on the
-first load, lyrics that line up, then visitors asking for songs.
-
-0. **The music library on Supabase is done** (2026-09-27): the tables,
-   the 200-song limit, `/api/songs`, the bot's `/add`, `/songs`,
-   `/remove`, `/offset`, `/play` and `/stop`, and listening along
-   (section 3 has the decisions, section 4 what's left to deploy).
-
-1. **The database is up to date** (2026-09-27). Every migration in
-   `supabase/migrations/` through `20260927062914_song_limit.sql` has
-   been run in the SQL editor, through
-   `20260927100000_now_playing_realtime.sql`. Password reset (`account-recovery`) is live and
-   sends mail. The Security Advisor (run 2026-09-27, after the music
-   migrations) shows only the findings kept on purpose, with
-   `song_limit()` callable by visitors as a third (it returns only the
-   limit):
-   - members can call `my_reactions` and the other member-only helpers;
-   - leaked password protection (an Auth setting on the Pro plan).
-2. **Moderation** is in (2026-09-26): every new Stickies note and public
-   chat message goes to the owner on Telegram with Hide / Show again;
-   `/watch off` stops it. Automatic filtering in front of it is still an
-   option if spam gets heavy.
-3. **Songs.** Lyric timing will be reworked as a whole rather than tuned
-   song by song with `offset` (decided 2026-09-27). Ten of the starter
-   songs remain (timing carried over from
-   ryOS's values, unchecked by ear), plus 寧夏, Kiss & Tell, 寫信給你,
-   心動 and 三個人的晚餐 (lyrics from NetEase) and BTTB. 三個人的晚餐
-   uses the official MV, which is ten seconds shorter than the album cut,
-   so its timing may need an `offset`. Chrome defers YouTube playback in
-   background tabs, so a song started in a hidden tab waits until the tab
-   is shown. `/api/lyrics` only runs on Vercel; under `astro dev` those
-   songs show the listening view.
-4. **Tests and CI.** Every pull request gets `npm audit --omit=dev
-   --audit-level=high` (#143), the type check, the hooks
-   lint, the unit tests (Vitest: game rules, the window manager and
-   window restore, lyrics, the Vercel Functions, the Soapbox bot and the
-   account-recovery function), the build, a smoke test that opens every
-   app in a browser, the download budgets of `npm run perf`, and
-   `npm run test:db` (about 50 database rules, plus races against the
-   per-member limits, on Postgres with stand-ins for Supabase's auth,
-   storage and pg_net). The workflows pin every action to a commit SHA
-   and default to read-only tokens (#143); Dependabot updates both npm
-   and the actions weekly. What's next is in ROADMAP.md.
-5. **Still missing compared with ryOS:** in Chat, @ryo (AI replies), voice
-   messages, IRC rooms and admins making rooms from the app; the first is
-   on hold with the AI assistant, the rest were left out. Signals
-   (typing, nudges, AirDrop) go over the shared presence channel, so they
-   aren't private and anyone could forge one; receivers only act on
-   well-formed ones, and none carries anything but names and Macintosh HD
-   paths. Deliberately skipped: ryOS's Videos app, emulators, a virtual
-   file system, multiple OS themes (System 7, XP, 98), video wallpapers
-   and AI chat. Listen to the sounds once; they were checked by
-   instrumentation, not by ear.
-6. **Outside suggestions reviewed (2026-09-26).** Done: restoring windows
-    after a reload; one storage helper; src/os and os.css split by
-    domain; a declarative app registry; landscape phones and safe areas;
-    Exposé by keyboard; the "Follow the sun" fallback note; a first-visit
-    welcome; a Dashboard widget of visitors' cities; timeouts on the
-    lyrics relay. Already the case, measured: every app is its own lazily
-    loaded chunk; all desktop pictures are WebP ≤ 2560px. Not done, on
-    purpose: a focus trap in windows (they aren't modal); a "continue
-    playing" prompt for hidden tabs; more reduced-motion fallbacks.
-7. **Security review (2026-09-26).** Fixed:
-    - the per-member limits (notes, chat, reset links) let simultaneous
-      requests through; they now take advisory locks, and race.sh proves
-      it;
-    - site-wide caps on chat, sign-ups and reset mail;
-    - an index for the chat limit;
-    - reset mail sent after the answer (no timing oracle);
-    - chat signals tied to the sender's presence;
-    - security headers;
-    - bounded inputs on `/api/*`;
-    - Security Advisor findings (the advisor migration): trigger functions no longer
-      callable over the API, `username_available` runs as the caller,
-      and reactions check the post and the member;
-    - Astro 5 → 7 (with @astrojs/react 7, Vite 8), which clears the
-      Astro, sharp and esbuild advisories: `npm audit` reports none.
-    Performance audit (2026-09-26), measured with `npm run perf`:
-    - a drag with six apps open: script time 640 ms to 210 ms (the desktop
-      no longer re-renders per frame; windows are memoized);
-    - a first visit: images 2.2 MB to 0.95 MB (the desktop picture was
-      fetched twice; quality 75), fonts 389 KB to 185 KB (subset);
-    - the screen saver's views load lazily; an idle desktop costs about
-      10 ms of script in five seconds.
-
-    What's left is mostly framework weight: react-dom (67 KB gzip).
-    Motion now loads lean through `LazyMotion` (#85).
-    Known and accepted:
-    - Presence names are the client's own claim (a signed-out visitor
-      could show up as "jincheng" on a cursor or in AirDrop). Signals
-      only carry names and Macintosh HD paths. Proper identity would
-      need Realtime Authorization and server-checked presence.
-    - There's no full script CSP: Astro's inline hydration and the
-      YouTube player would need it loosened too far to help.
-    In the Supabase dashboard:
-    - run Advisors › Security after each migration;
-    - keep Settings › API › Exposed schemas to `public` (and
-      `graphql_public` only if GraphQL is used; otherwise disable it);
-    - consider CAPTCHA under Auth › Attack Protection if sign-up spam
-      appears (it needs a widget in the Account window).
-8. **Engineering audit (2026-09-26).** Done: each window is isolated by
-   an error boundary, and a chunk missing after a deploy offers a reload
-   (#73); CI type-checks (#74), lints hooks (#79), opens every app (#76)
-   and checks the download budgets (#81); `llms.txt` and the site's
-   project page describe JM/OS (#75, #77); tests for the lyrics relay,
-   geo, lyric parsing and window restore (#78); AGENTS.md split into
-   `docs/agents/` (#80); the preview capture, broken since Astro 7, fixed
-   (#81); pointers stop past 12 people on the desktop (crowd mode). Open:
-   - First-visit JavaScript went from 172 to 154 KB (LazyMotion, #85;
-     the Dashboard and screen saver after the desktop settles, #86), and
-     the budget from 180 to 160. The song library left the first load
-     with its move to Supabase; the wallpaper catalogue stays (it's read
-     synchronously on the first screen).
-   - Contrast (measured 2026-09-27): secondary text in the light theme
-     is `rgb(128,128,128)`-ish on light grey, 3.2–3.9:1 against the 4.5:1
-     text needs (Finder's metadata, dates, empty states, the résumé's
-     dates; the sidebar headings are 3.7:1 light, 2.9:1 dark). Meeting it
-     means greys near `#6a6a6a`, a visibly heavier look. Decided
-     2026-09-27: keep the greys as they are. Links on the dark theme's
-     documents were fixed.
-   - Considered and not done: a spec template for changes, `llms.txt` in
-     robots.txt (no crawler reads it there), splitting the largest app
-     components.
-9. **Audit (2026-09-27).** Found nothing failing: types, lint, 192 unit
-   tests, the smoke test, `npm audit` (0), every `npm run perf` line
-   within budget, the bot's webhook checks (owner only, secret, signed
-   database notices), the music tables' grants and limit. Fixed:
-   - listening along missed a play or stop made while a visitor's
-     connection was down, and an answer on arrival could land after a
-     stop and show the song again (#132; two tests that failed before);
-   - the type checker's 25 hints: deprecated `z` and `FormEvent`, unused
-     code, and an icon nothing used (#131);
-   - the snapshot lacked 青花 (#133).
-   Found and planned, not fixed here (ROADMAP.md): the first load is
-   157 of 160 KB. Found and left: a crash in a visitor's browser reaches
-   no one (section 3).
-   Checked and fine: `knip`'s unused files are the documented one-off
-   scripts (favicon, portrait, the reset email preview), and its unused
-   exports are the applet kit's types and test helpers.
+1. **Songs.** Lyric timing will be reworked as a whole (ROADMAP.md).
+   Ten starter songs carry ryOS's timing, unchecked by ear; 三個人的晚餐
+   uses the official MV, ten seconds shorter than the album cut. Chrome
+   defers YouTube playback in background tabs, so a song started in a
+   hidden tab waits until the tab is shown. `/api/lyrics` only runs on
+   Vercel; under `astro dev` those songs show the listening view.
+2. **Moderation.** Every new Stickies note and public chat message goes
+   to Jincheng on Telegram with Hide / Show again (`/watch off` stops
+   it). Automatic filtering in front of it is an option if spam gets
+   heavy; so is CAPTCHA under Auth › Attack Protection for sign-up spam
+   (it needs a widget in the Account window).
+3. **Presence is a claim, not an identity.** Names on cursors and in
+   AirDrop are what the visitor's browser says, so a signed-out visitor
+   could appear as "jincheng". Signals (typing, nudges, AirDrop) share
+   the presence channel, so they aren't private and anyone could forge
+   one; receivers act only on well-formed ones, which carry nothing but
+   names and Macintosh HD paths. Proper identity would need Realtime
+   Authorization and server-checked presence.
+4. **The first load** is 157 of its 160 KB budget, mostly react-dom
+   (ROADMAP.md, item 1).
+5. **Not ported from ryOS**, in Chat: @ryo (AI replies, on hold with the
+   AI assistant), voice messages, IRC rooms and admins making rooms from
+   the app.
+6. **Upkeep in the Supabase dashboard:** run Advisors › Security after
+   each migration, and keep Settings › API › Exposed schemas to `public`
+   (plus `graphql_public` only if GraphQL is used).
+7. **What CI checks** on every pull request: `npm audit --omit=dev
+   --audit-level=high`, the type check, the hooks lint, the unit tests
+   (Vitest), the build, a smoke test that opens every app in a browser,
+   the download budgets of `npm run perf`, and `npm run test:db` (the
+   database rules and races against the per-member limits, on Postgres
+   with stand-ins for Supabase's auth, storage and pg_net). The
+   workflows pin every action to a commit SHA and default to read-only
+   tokens; Dependabot updates npm and the actions weekly.
