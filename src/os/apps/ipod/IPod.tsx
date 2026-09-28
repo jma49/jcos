@@ -2,7 +2,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNo
 import { NextGlyph, PauseGlyph, PlayGlyph, PlayPauseGlyph, PreviousGlyph, ShuffleGlyph, SpeakerHighGlyph, SpeakerLowGlyph } from '../../core/glyphs';
 import type { AppProps } from '../../core/registry';
 import { launch } from '../../core/registry';
-import { useFocusedId } from '../../core/store';
+import { isPhone, useFocusedId } from '../../core/store';
 import { lineAt, useLyrics } from '../../media/lyrics';
 import { albumNamed, albumOf, coverOf, fromLibrary, lyricOffset, SONG_LIMIT, SONGS, tracksOf } from '../../media/library';
 import { formatTime, useClock, useMusic, type Repeat } from '../../media/music';
@@ -206,6 +206,10 @@ export default function IPod({ win }: AppProps) {
             value: prefs.show === 'artwork' ? 'Artwork' : 'Video',
             action: () => setPref('show', prefs.show === 'artwork' ? 'video' : 'artwork')
           },
+          // Phones have no room on the desktop for them.
+          ...(isPhone()
+            ? []
+            : [{ label: 'Desktop Lyrics', value: music.desktopLyrics ? 'On' : 'Off', action: () => music.setDesktopLyrics(!music.desktopLyrics) }]),
           {
             label: 'Backlight',
             value: prefs.backlight ? `${prefs.backlight} Seconds` : 'Always On',

@@ -160,6 +160,9 @@ ryOS (AGPL-3.0).
   2026-09-27): it loads after the desktop settles (#86), so opening it
   in the first eight seconds takes 210 ms instead of 90 on fast 3G (the
   same 90 on 4G). Loading it up front would add 4 KB to every first load.
+- **Desktop lyrics are opt-in** (decided 2026-09-28): two lines,
+  draggable, off until the visitor turns them on, like other people's
+  pointers. How lyrics get synced is ROADMAP.md item 2.
 - **Considered and left out** (2026-09-26 and 27 audits): a "continue
   playing" prompt for hidden tabs, more reduced-motion fallbacks, a spec
   template for changes, `llms.txt` in robots.txt (no crawler reads it

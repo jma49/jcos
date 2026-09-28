@@ -4,6 +4,7 @@ import { Dock } from './shell/Dock';
 import { MenuBar } from './shell/MenuBar';
 import { Spotlight } from './shell/Spotlight';
 import { DashboardLayer } from './shell/DashboardLayer';
+import { DesktopLyricsLayer } from './shell/DesktopLyricsLayer';
 import { Window } from './shell/Window';
 import { Expose, exposeLayout } from './shell/Expose';
 import { Screensaver } from './shell/Screensaver';
@@ -147,6 +148,9 @@ function Shell({ data }: { data: OSData }) {
         <MenuBar sky={sky} />
         <DesktopIcons />
         <WindowLayer />
+        <Contained name="Desktop lyrics">
+          <DesktopLyricsLayer />
+        </Contained>
 
         <Dock />
         <Contained name="Dashboard">
