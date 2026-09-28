@@ -1,7 +1,7 @@
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import type { AppProps } from '../../core/registry';
 
-const HOME = 'https://ocra-nine.vercel.app/';
+const HOME = 'https://ocra.majincheng.com/';
 
 /** A small browser around an iframe. Sites that forbid framing show blank, so
  *  there is always a way out to a real tab. */
