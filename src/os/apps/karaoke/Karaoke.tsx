@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { NextGlyph, PauseGlyph, PlayGlyph, PreviousGlyph } from '../../core/glyphs';
 import type { AppProps } from '../../core/registry';
 import { useFocusedId } from '../../core/store';
-import { lineAt, useLyrics, type LyricLine } from '../../media/lyrics';
+import { lineAt, lineFill, useLyrics } from '../../media/lyrics';
 import { albumOf, ALBUMS, coverOf, fromLibrary, lyricOffset, SONGS, tracksOf, type Song } from '../../media/library';
 import { currentTime, formatTime, seek, seekBy, useClock, useMusic } from '../../media/music';
 import { useKeys } from '../../core/useKeys';
@@ -53,12 +53,6 @@ function Listening({ song, next, note }: { song: Song; next: Song | null; note?:
   );
 }
 
-/** How long a line takes to fill: until the next one, but not dawdling over long gaps. */
-function span(lines: LyricLine[], i: number) {
-  const next = lines[i + 1]?.time ?? lines[i].time + 4;
-  return Math.min(Math.max(0.6, (next - lines[i].time) * 0.92), 7);
-}
-
 export default function Karaoke({ win }: AppProps) {
   const { host, status, live } = usePlayer('karaoke');
   const music = useMusic();
@@ -89,7 +83,7 @@ export default function Karaoke({ win }: AppProps) {
       const i = lineAt(lines, t);
       setLine(i);
       if (i >= 0 && current.current) {
-        const fill = Math.min(1, Math.max(0, (t - lines[i].time) / span(lines, i)));
+        const fill = lineFill(lines, i, t);
         current.current.style.setProperty('--fill', `${(fill * 100).toFixed(1)}%`);
       }
       frame = requestAnimationFrame(tick);

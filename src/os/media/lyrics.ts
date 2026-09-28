@@ -116,6 +116,17 @@ export function useLyrics(song: Song, duration: number): Lyrics {
   return lines ? { state: 'ready', lines } : { state: 'none' };
 }
 
+/** How long a line takes to fill: until the next one, but not dawdling over long gaps. */
+export function lineSpan(lines: LyricLine[], i: number) {
+  const next = lines[i + 1]?.time ?? lines[i].time + 4;
+  return Math.min(Math.max(0.6, (next - lines[i].time) * 0.92), 7);
+}
+
+/** How far through line `i` the song is at `time`, from 0 to 1. */
+export function lineFill(lines: LyricLine[], i: number, time: number) {
+  return Math.min(1, Math.max(0, (time - lines[i].time) / lineSpan(lines, i)));
+}
+
 /** The index of the line being sung at `time`, or -1 before the first. */
 export function lineAt(lines: LyricLine[], time: number) {
   let lo = 0;
