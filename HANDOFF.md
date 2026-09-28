@@ -67,6 +67,14 @@ ryOS (AGPL-3.0).
 
 ## 3. Decisions
 
+- **The retro assets stay** (decided 2026-09-28). Replacing ryOS's
+  Mac OS X icons, fonts and wallpapers with original drawings was
+  proposed: a greyhound mark in place of the apple (Aqua, Graphite and
+  natural finishes) and five icons redrawn in SVG. Jincheng judged the
+  drafts worse than the originals and dropped the idea. Keep the apple,
+  the icons, the fonts and the pictures as they are (see NOTICE); don't
+  propose replacing them again. New icons for apps ryOS doesn't have
+  (Stickies, Soapbox) are still drawn here to match.
 - **No King of Fighters '98** (decided 2026-09-26). A Neo Geo emulator
   runs well in the browser (EmulatorJS with the FBNeo core), but the
   game ROM and the BIOS are SNK's and can't be hosted; the only lawful
