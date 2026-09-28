@@ -72,5 +72,6 @@ library, and two requests at once from one member make one.
 Decided, with the reasons in HANDOFF.md section 3: commercial games or
 their ROMs (build originals, as Pinball is); Jincheng's photos anywhere
 but Photos; a focus trap in windows; a script CSP; darker secondary
-greys; ryOS's Videos app, emulators, virtual file system, other OS
+greys; replacing the retro Mac OS X assets with original ones
+(decided 2026-09-28); ryOS's Videos app, emulators, virtual file system, other OS
 themes and video wallpapers.
