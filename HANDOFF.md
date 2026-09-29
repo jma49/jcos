@@ -239,8 +239,9 @@ What comes next, in order, is in [ROADMAP.md](ROADMAP.md).
    one; receivers act only on well-formed ones, which carry nothing but
    names and Macintosh HD paths. Proper identity would need Realtime
    Authorization and server-checked presence.
-4. **The first load** is 157 of its 160 KB budget, mostly react-dom
-   (ROADMAP.md, item 1).
+4. **The first load** is 159 of its 160 KB budget (157 before the Dock
+   could be rearranged, 2026-09-28), mostly react-dom. ROADMAP.md item 1
+   comes before anything else that adds to it.
 5. **Not ported from ryOS**, in Chat: @ryo (AI replies, on hold with the
    AI assistant), voice messages, IRC rooms and admins making rooms from
    the app.

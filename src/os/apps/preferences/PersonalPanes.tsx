@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useOSData } from '../../core/context';
-import { apps, launch } from '../../core/registry';
+import { apps, dockApps, launch } from '../../core/registry';
+import { resetDock, useDock } from '../../core/dock';
 import { DOCK_MAGNIFY, DOCK_SIZES, useSystem, type DockSize } from '../../core/system';
 import { Group, Option, Segmented } from './controls';
 import { useWindows, type Appearance } from '../../core/store';
@@ -439,16 +440,19 @@ const DOCK_CHOICES: { value: DockSize; name: string }[] = [
 
 export function DockPane() {
   const { dockSize, magnify, set } = useSystem();
+  const kept = useDock((s) => s.apps);
   const base = DOCK_SIZES[dockSize];
+  const middle = Math.floor(kept.length / 2);
+  const isDefault = kept.join() === dockApps.join();
   return (
     <>
       <Group title="Dock">
         <div className="os-prefs-dock-preview" aria-hidden="true">
           <div className="os-prefs-dock-shelf" style={{ '--size': `${base * 0.7}px` } as React.CSSProperties}>
-            {(['finder', 'projects', 'photos', 'ipod', 'chat'] as const).map((id, i) => {
+            {kept.map((id, i) => {
               const { Icon } = apps[id];
               // The middle icon shows how far magnification goes.
-              const size = magnify && i === 2 ? (base + DOCK_MAGNIFY) * 0.7 : base * 0.7;
+              const size = magnify && i === middle ? (base + DOCK_MAGNIFY) * 0.7 : base * 0.7;
               return (
                 <span key={id} style={{ width: size, height: size }}>
                   <Icon size={Math.round(size)} />
@@ -469,7 +473,13 @@ export function DockPane() {
         </div>
       </Group>
       <p className="os-prefs-note">
-        The Dock keeps Finder, Projects, Photos, the iPod and Chat; other apps join it while they’re open.
+        Drag an app out of the Dock to remove it, along it to move it, or in from Finder’s Applications to keep it; a
+        running app’s icon can be dragged left to stay. Other apps join the Dock while they’re open.
+      </p>
+      <p className="os-prefs-note">
+        <button type="button" className="os-button" disabled={isDefault} onClick={resetDock}>
+          Restore Default Dock
+        </button>
       </p>
     </>
   );

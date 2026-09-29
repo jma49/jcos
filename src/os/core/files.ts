@@ -24,6 +24,8 @@ export interface FileNode {
   /** What Finder's list view shows in the Kind column. */
   kind: string;
   Icon: ComponentType<{ size?: number }>;
+  /** The app it is, for an application or applet: what dragging it onto the Dock keeps there. */
+  app?: AppId;
   /** A picture to show instead of the icon (photos, project covers). */
   thumb?: string;
   /** ISO date for the Date Modified column. */
@@ -40,6 +42,7 @@ const appFile = (dir: string, app: AppId, kind = 'Application'): FileNode => ({
   path: `${dir}/${apps[app].name}`,
   name: apps[app].name,
   kind,
+  app,
   Icon: apps[app].Icon,
   open: (el) => launch(app, { origin: rectOf(el) })
 });
