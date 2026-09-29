@@ -88,4 +88,4 @@ their ROMs (build originals, as Pinball is); Jincheng's photos anywhere
 but Photos; a focus trap in windows; a script CSP; darker secondary
 greys; replacing the retro Mac OS X assets with original ones
 (decided 2026-09-28); ryOS's Videos app, emulators, virtual file system, other OS
-themes and video wallpapers.
+themes and video wallpapers; the Chinese retro web (2026-09-28).
