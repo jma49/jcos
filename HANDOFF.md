@@ -172,7 +172,7 @@ ryOS (AGPL-3.0).
   same 90 on 4G). Loading it up front would add 4 KB to every first load.
 - **Desktop lyrics are opt-in** (decided 2026-09-28): two lines,
   draggable, off until the visitor turns them on, like other people's
-  pointers. How lyrics get synced is ROADMAP.md item 4.
+  pointers. How lyrics get synced is ROADMAP.md item 3.
 - **No Chinese retro web, for now** (decided 2026-09-28). A proposal
   for 1999–2011 Chinese sites (portals from the Internet Archive, a
   hand-made 2008 QQ Zone over Soapbox, Photos and Stickies, a QQ2006
@@ -203,8 +203,13 @@ ryOS (AGPL-3.0).
   New things are only what existed in Tiger or Leopard, drawn with the
   same styles and the ryOS icon set: an idea board framed for job hunting
   and its invented styles were rejected. From prototypes staged in the
-  real site he kept all seven (ROADMAP.md item 3); on the Dock stack:
+  real site Jincheng kept all seven (ROADMAP.md item 2); on the Dock stack:
   "the interaction and the UI have to be done well".
+- **The owner is a database fact** (decided 2026-09-29). ryOS gates its
+  admin by username in code; here `private.owners` holds Jincheng's
+  account id and `public.is_owner()` answers for the caller, so row-level
+  security locks the owner's rooms and nothing in the browser decides
+  who the owner is (docs/agents/supabase.md, "The owner").
 - **Considered and left out** (2026-09-26 and 27 audits): a "continue
   playing" prompt for hidden tabs, more reduced-motion fallbacks, a spec
   template for changes, `llms.txt` in robots.txt (no crawler reads it
@@ -225,12 +230,17 @@ ryOS (AGPL-3.0).
 
 ## 4. Current state
 
-**Waiting on Jincheng** (2026-09-29): deploy `account-recovery` from an
-up-to-date `main` (`supabase functions deploy account-recovery`). Until
-then the old version runs, which lets any site's page call it (CORS `*`)
-and answers other methods with 404; the new one answers CORS for the
-site's own origins only and other methods with 405 (docs/agents/api.md).
-Nothing else is waiting.
+**Waiting on Jincheng** (2026-09-29):
+1. Deploy `account-recovery` from an up-to-date `main` (`supabase
+   functions deploy account-recovery`). Until then the old version runs
+   (checked 2026-09-29, after the first deploy), which lets any site's
+   page call it (CORS `*`) and answers other methods with 404; the new
+   one answers CORS for the site's own origins only and other methods
+   with 405 (docs/agents/api.md).
+2. Run `supabase/migrations/20260929100000_owner.sql` in the SQL editor,
+   then the one `insert` in its header with Jincheng's username. Until
+   then nobody is the owner, so the secret base's locked rooms stay shut
+   for Jincheng too.
 
 - Every migration in `supabase/migrations/` has been run, through
   `20260927100000_now_playing_realtime.sql`. Both Edge Functions are
@@ -241,7 +251,9 @@ Nothing else is waiting.
   in `supabase/migrations/20260926100511_advisor.sql`: `song_limit()`
   callable by visitors (it returns only the limit), `my_reactions()` and
   the other member-only helpers callable by members, and leaked password
-  protection (an Auth setting on the Pro plan).
+  protection (an Auth setting on the Pro plan). Once the owner migration
+  runs, `is_owner()` joins them: callable by everyone, it says only
+  whether the caller is the owner.
 - Merges to `main` deploy, except those the ignored build step skips
   (only docs, tests, CI, Supabase or tooling). Still unconfirmed: that
   Vercel builds on Node 24; only a deployment's build log shows it (its

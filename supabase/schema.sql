@@ -1338,3 +1338,31 @@ end;
 $$;
 revoke execute on function public.songs_within_limit() from public, anon, authenticated;
 
+
+-- ---------------------------------------------------------------------
+-- Jincheng's account is the owner (the same as
+-- supabase/migrations/20260929100000_owner.sql, whose header explains it).
+-- Private tables check `(select public.is_owner())` in their policies.
+-- After a new project is set up, Jincheng's account is added once:
+--   insert into private.owners (user_id)
+--   select id from auth.users where email = '<username>@users.majincheng.com'
+--   on conflict do nothing;
+
+create table if not exists private.owners (
+  user_id uuid primary key references auth.users (id) on delete cascade,
+  added_at timestamptz not null default now()
+);
+alter table private.owners enable row level security;
+revoke all on private.owners from public, anon, authenticated;
+
+create or replace function public.is_owner()
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (select 1 from private.owners where user_id = auth.uid());
+$$;
+revoke all on function public.is_owner() from public;
+grant execute on function public.is_owner() to anon, authenticated;
