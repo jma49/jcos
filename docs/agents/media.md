@@ -73,6 +73,29 @@ own chrome never shows.
   card to control it; it also feeds the Media Session API. The Dynamic
   desktop picture `dynamic:cover` shows the playing song's cover,
   blurred.
+- DVD Player (`apps/dvdplayer/`, `media/discs.ts`, `media/drive.ts`,
+  `media/discArt.tsx`): YouTube videos burned onto discs. Jincheng's
+  discs are the library's `discs` (Supabase's `public.discs`, burned from
+  Telegram with `/dvd` or from the site signed in as the owner); a
+  visitor's own are DVD-Rs kept in `os-dvds` (at most 50), never sent
+  anywhere. Both live in Finder's Movies folder, whose icons are the
+  discs' cases: the video's own picture (its thumbnail or a frame a
+  quarter, half or three quarters in, `maxres` where YouTube made one,
+  cropped at `coverX`; `hq` ones are zoomed past their black bars). The
+  library's copy can be a minute old at the edge, so Movies and DVD
+  Player read the shelf from the database as they open (at most every
+  30 s), and what the owner changes shows at once. Burn reads a link
+  with `supabase/functions/_shared/youtube.ts`, as the bot does, and
+  YouTube's oEmbed from the browser; the four pictures are asked for with
+  HEAD, nothing downloaded. Opening a disc puts it in the drive and
+  opens DVD Player (desktop.md): a video is four chapters of equal
+  length, pictured by YouTube's own frames. DVD Player has its own
+  player, made as the disc goes in and cued so Play Movie starts inside
+  the click; it follows the one sound switch and the music's volume,
+  and shares the speakers with the iPod and Karaoke: playing a disc
+  pauses the music, and music starting (or Listen along) pauses the
+  disc. A disc's length is learned as it plays and kept (a DVD-R's in
+  the browser, one of Jincheng's in the database when the owner watches it).
 - The iTunes Artwork screen saver (`Artwork` in `shell/savers.tsx`, the
   arithmetic in `shell/artwork.ts`) turns the library's covers over on
   a wall. Not being an app with a manifest, it calls `loadLibrary()`

@@ -16,8 +16,8 @@ const everything = () => SONGS.map((_, i) => i);
 export type MusicApp = 'ipod' | 'karaoke';
 export type Repeat = 'off' | 'all' | 'one';
 
-/** Pressing play asks for sound, so it turns the desktop's sounds on if they're off. */
-function soundOnToPlay() {
+/** Pressing play asks for sound, so it turns the desktop's sounds on if they're off (DVD Player's too). */
+export function soundOnToPlay() {
   const { soundOn, setSound } = useWindows.getState();
   if (!soundOn) setSound(true);
 }

@@ -131,6 +131,19 @@ only `kit/`. The lint enforces all three.
   visitor shows the same game, and when two tabs think at once the
   first answer is played and the other tab takes it. New Game is in the
   Game menu and in the status bar (phones have no app menus).
+- `src/os/apps/dvdplayer/`: Tiger's DVD Player, in Applications (not
+  kept in the Dock), for the discs on Finder's Movies shelf (see
+  [media.md](media.md)). A window named after the disc in the drive
+  (`media/drive.ts`) shows its menu (Play Movie, Scene Selection, Loop)
+  and then the picture, always 16:9 with black around it; its own
+  YouTube player (`useDiscPlayer.ts`) takes no pointer, so YouTube's
+  buttons never come up. The Controller is a floating panel, as on a
+  Mac: drawn by the app into `.os-root` just above the windows, shown
+  only while DVD Player is the window in front (not in Exposé or
+  minimized), dragged by its metal and left where it was put
+  (`os-dvd`). On a phone it sits under the picture. The Controls menu
+  and the keys (Space, ←/→ for chapters, ↑/↓ and Return in menus,
+  Escape, ⌘E) do what its buttons do.
 
 ## Windows and the shell
 
@@ -158,7 +171,7 @@ only `kit/`. The lint enforces all three.
 - The menu bar's menus after File come from the front window: the iPod
   and Karaoke's Controls, and any app's own, which it sets with
   `setMenus(win.id, menus)` in the store while it's open (Chess's Game
-  menu). Phones show only the Apple menu, so what's in an app's menus
+  menu, DVD Player's Controls). Phones show only the Apple menu, so what's in an app's menus
   needs a way in from its window too.
 - The menu bar is see-through. Its text is white or black depending on
   how bright the top of the desktop picture is (`topBrightness()` in
@@ -256,9 +269,16 @@ only `kit/`. The lint enforces all three.
   a blank window, from `/api/framing`.
 - `src/os/core/files.ts` and `apps/finder/`: Macintosh HD, a read-only
   file system built from the content (Applications, Applets, Documents,
-  Music, Pictures, Projects), browsed in Finder with icon, list and
-  column views, Quick Look (Space), keyboard navigation and a
-  right-click menu. A file's `look` is what Quick Look shows.
+  Movies, Music, Pictures, Projects), browsed in Finder with icon, list
+  and column views, Quick Look (Space), keyboard navigation and a
+  right-click menu. A file's `look` is what Quick Look shows (a picture,
+  or a `View` of its own), `openLabel` its button ("Play DVD"), `trash`
+  what Move to Trash (⌘⌫) does and `share: false` keeps it from AirDrop.
+  Movies is DVD Player's shelf: Finder builds it (`apps/finder/movies.tsx`
+  from `media/discs.ts`) and hands it to `buildDisk`, so the desktop's
+  own copy of the disk (AirDrop's, in the first load) has no Movies and
+  none of its code. In Movies the toolbar has Burn (`BurnSheet.tsx`) and
+  the list shows Date Added, Length and Kind.
 - `src/os/social/airdrop.ts` and `apps/airdrop/`: AirDrop between
   signed-in members on the desktop (signed out, it asks you to sign in).
   Only a Macintosh HD path is sent, and the receiver looks it up on its
