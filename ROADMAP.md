@@ -1,7 +1,6 @@
 # Roadmap: majincheng.com (JM/OS)
 
-What to build next and in what order, as of 2026-09-27, after that
-day's audit (#131–#133). HANDOFF.md is the state
+What to build next and in what order, as of 2026-09-29. HANDOFF.md is the state
 of things; this file is the plan. When an item is done, move what matters
 to HANDOFF.md and take it out of here.
 
@@ -24,7 +23,62 @@ behind the same "after the desktop settles" loading as the Dashboard
 **Done when** the first load is 150 KB or less, with the reason for each
 kilobyte moved written in `docs/agents/performance.md`.
 
-## 2. Lyrics that line up
+## 2. Jincheng's account is the owner
+
+**Why.** The secret base (item 3) has rooms only Jincheng can enter, and
+the lyrics sync (item 4) saves for everyone from his account. Both need
+the database to know which account is his.
+
+**Shape.** A `private.owners` table holding his account's id (he inserts
+it once, in the SQL editor), and `public.is_owner()`, a `security
+definer` function that says whether the caller is in it. Private tables
+use it in their row-level security; functions that change shared data
+check it. The browser asks once after sign-in, only to decide what to
+show: the database is what keeps the doors shut.
+
+**Done when** an owner-only row is readable from his account and reads
+as nothing from any other account or signed out (tests in `test:db`).
+
+## 3. The secret base
+
+**Why.** Decided 2026-09-29: JM/OS is Jincheng's own hideout, not a job
+portfolio. He chose seven things from prototypes staged in the real site
+(HANDOFF.md section 3): each existed in Tiger or Leopard, and each uses
+the same Aqua styles and the ryOS icon set (new icons from it go in
+`public/os/icons` and NOTICE). One pull request each, in this order:
+
+1. **iTunes Artwork screen saver**: the library's covers as a wall, one
+   turning over at a time; a choice in Desktop & Screen Saver.
+2. **Chess**: Tiger's Chess against the computer, a wooden board in
+   perspective, an app in Applications; a small open-source engine.
+3. **iPod ratings and playlists**: rate the playing song (the Now
+   Playing rating screen), On-The-Go, and the smart playlists (My Top
+   Rated, Recently Played, Top 25 Most Played) plus his own. His ratings,
+   play counts and playlists are shared (owner writes only); a
+   visitor's On-The-Go stays in their browser. Needs item 2.
+4. **His home folder**: Users › jincheng in Finder. Visitors see the
+   real "no access" badges and Tiger's alert on every folder but Public
+   and Sites; signed in as the owner, the folders open and hold his
+   diary and notes, written in a TextEdit window (or sent from
+   Telegram). Needs item 2.
+5. **Stickies and iCal for him**: notes on his own desktop and iCal
+   with his days and to-dos, shown only when he's signed in. What to call
+   them beside the visitors' Stickies is his to decide. Needs item 2.
+6. **Time Machine**: Leopard's starfield, a window per day going back,
+   a timeline on the right: Soapbox, the guestbook and the library as
+   they were. Public things for everyone, locked ones for him.
+7. **A stack in the Dock**: things he sends the bot (screenshots,
+   tickets, links) kept in a Dock stack that fans out as Leopard's did,
+   private or public per item. His note: the interaction and the UI have
+   to be done well. The Dock is on the first screen, so item 1 comes
+   first.
+
+**Done when** each is in the site, checked in a browser with motion on
+and off, and its locked parts are proved locked by `test:db`.
+
+## 4. Lyrics that line up
+
+Paused by Jincheng (2026-09-28): later, after the secret base. It uses item 2's owner check to save a sync for everyone.
 
 **Why.** Decided 2026-09-27: timing gets reworked as a whole, not tuned
 song by song with `/offset`. Ten starter songs carry ryOS's offsets,
@@ -53,7 +107,7 @@ all gated to its admin by username):
 **Done when** every song in the library has been synced by ear once,
 and a sync made in Karaoke reaches another browser.
 
-## 3. Visitors ask for songs
+## 5. Visitors ask for songs
 
 **Why.** Decided as "may come later" with the music library: visitors
 request, Jincheng approves from Telegram.

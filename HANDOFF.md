@@ -172,7 +172,7 @@ ryOS (AGPL-3.0).
   same 90 on 4G). Loading it up front would add 4 KB to every first load.
 - **Desktop lyrics are opt-in** (decided 2026-09-28): two lines,
   draggable, off until the visitor turns them on, like other people's
-  pointers. How lyrics get synced is ROADMAP.md item 2.
+  pointers. How lyrics get synced is ROADMAP.md item 4.
 - **No Chinese retro web, for now** (decided 2026-09-28). A proposal
   for 1999–2011 Chinese sites (portals from the Internet Archive, a
   hand-made 2008 QQ Zone over Soapbox, Photos and Stickies, a QQ2006
@@ -196,6 +196,15 @@ ryOS (AGPL-3.0).
   proxy, which forwards to any public address; the archive allows
   framing, so ours doesn't need one. `/api/framing` only reads headers
   and answers yes or no.
+- **JM/OS is a secret base, not a portfolio** (decided 2026-09-29). It's
+  Jincheng's own hideout: features serve him (music, things kept for
+  himself, looking back, idling), not recruiters. Mostly open to
+  visitors, with a few rooms only he can enter, locked by the database.
+  New things are only what existed in Tiger or Leopard, drawn with the
+  same styles and the ryOS icon set: an idea board framed for job hunting
+  and its invented styles were rejected. From prototypes staged in the
+  real site he kept all seven (ROADMAP.md item 3); on the Dock stack:
+  "the interaction and the UI have to be done well".
 - **Considered and left out** (2026-09-26 and 27 audits): a "continue
   playing" prompt for hidden tabs, more reduced-motion fallbacks, a spec
   template for changes, `llms.txt` in robots.txt (no crawler reads it
