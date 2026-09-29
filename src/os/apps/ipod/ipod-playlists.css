@@ -1,0 +1,152 @@
+/* ---------- iPod: ratings and playlists ---------- */
+
+/* Now Playing's rating, in place of the progress bar: five stars and dots. */
+.os-ipod-bar.os-ipod-rating {
+  display: flex;
+  justify-content: center;
+  height: 11px;
+}
+
+.os-ipod-stars {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #2c3440;
+}
+
+/* A star not given: a dot as wide as a star. */
+.os-ipod-stars i {
+  width: 3px;
+  height: 3px;
+  margin: 0 4px;
+  border-radius: 50%;
+  background: #6b7480;
+}
+
+/* Whose rating it is (a visitor's iPod), or that it didn't save, left of "13 of 34". */
+.os-ipod-info .os-ipod-count {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.os-ipod-info .os-ipod-count > span {
+  margin-right: auto;
+  overflow: hidden;
+  color: #3d6fb8;
+  font-size: 9px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* A song put into On-The-Go: its row flashes, as on an iPod (the title, on Now Playing). */
+@keyframes os-ipod-flash {
+  0%,
+  49% {
+    background: var(--os-select-grad);
+    color: #fff;
+  }
+  50%,
+  100% {
+    background: none;
+    color: #111;
+  }
+}
+
+@keyframes os-ipod-blink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+.os-ipod-menu li[data-flash] {
+  animation: os-ipod-flash 0.2s linear 3;
+}
+
+.os-ipod-now[data-flash] .os-ipod-song {
+  animation: os-ipod-blink 0.2s linear 3;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .os-ipod-menu li[data-flash],
+  .os-ipod-now[data-flash] .os-ipod-song {
+    animation-iteration-count: 1;
+  }
+}
+
+/* A playlist with nothing in it says how songs get there. */
+.os-ipod-empty {
+  margin: 0;
+  padding: 10px 12px;
+  color: #6b7480;
+  font-size: 10px;
+  line-height: 1.35;
+  text-align: center;
+}
+
+/* Something that went wrong, for a moment, along the bottom of the menu. */
+.os-ipod-problem {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  margin: 0;
+  padding: 3px 7px;
+  border-top: 1px solid #98a2ad;
+  background: linear-gradient(#fdfdfd, #e3e7ec);
+  color: #b3261e;
+  font-size: 10px;
+  line-height: 1.25;
+}
+
+/* Saving On-The-Go: the playlist's name. */
+.os-ipod-save {
+  position: absolute;
+  inset: 17px 0 0;
+  z-index: 1;
+  display: grid;
+  align-content: start;
+  gap: 5px;
+  padding: 12px 9px;
+  background: linear-gradient(#fbfcfd, #e7ebf0);
+}
+
+.os-ipod-save label {
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.os-root .os-ipod-save input {
+  width: 100%;
+  height: 22px;
+  padding: 0 5px;
+  border: 1px solid #7d8894;
+  border-radius: 2px;
+  background: #fff;
+  color: #111;
+  font: inherit;
+  font-weight: 700;
+  user-select: text;
+}
+
+.os-ipod-save p {
+  margin: 0;
+  color: #5b6470;
+  font-size: 10px;
+  line-height: 1.3;
+}
+
+.os-ipod-save p[data-problem] {
+  color: #b3261e;
+}
+
+/* Held down on a phone, the centre button is the iPod's, not the browser's. */
+.os-root .os-ipod-center {
+  -webkit-touch-callout: none;
+}

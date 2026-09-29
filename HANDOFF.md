@@ -1,6 +1,6 @@
 # Handoff: majincheng.com (JM/OS)
 
-State of the project as of 2026-09-28, for picking the work up in a new
+State of the project as of 2026-09-29, for picking the work up in a new
 session: where it runs, how we work, what was decided, and what's open.
 Conventions and a map of the code are in [AGENTS.md](AGENTS.md) and
 [docs/agents/](docs/agents/); what was built when is in the git history.
@@ -210,9 +210,9 @@ ryOS (AGPL-3.0).
   framing, so ours doesn't need one. `/api/framing` only reads headers
   and answers yes or no.
 - **JM/OS is a secret base, not a portfolio** (decided 2026-09-29). It's
-  Jincheng's own hideout: features serve him (music, things kept for
-  himself, looking back, idling), not recruiters. Mostly open to
-  visitors, with a few rooms only he can enter, locked by the database.
+  Jincheng's own hideout: features serve Jincheng (music, things kept
+  for later, looking back, idling), not recruiters. Mostly open to
+  visitors, with a few rooms only Jincheng can enter, locked by the database.
   New things are only what existed in Tiger or Leopard, drawn with the
   same styles and the ryOS icon set: an idea board framed for job hunting
   and its invented styles were rejected. From prototypes staged in the
@@ -239,6 +239,21 @@ ryOS (AGPL-3.0).
   shelf's watch cost the first load 0.4 KB: it's at 159.7 of 160 KB now
   (2026-09-29), so ROADMAP.md item 1 (room on the first load) comes
   before anything else on the first screen.
+- **The iPod's ratings and playlists, as Jincheng chose them**
+  (2026-09-29): the Now Playing rating screen, On-The-Go and the smart
+  playlists, from the design board. Where the board left it open:
+  On-The-Go is every visitor's own, Jincheng's included, kept in the
+  browser; Jincheng's has Save Playlist, which makes it one of the
+  playlists everyone sees, named on a screen of its own (a real iPod
+  can't name one; the board asked for "Rainy Days"). The centre button
+  on Now Playing now shows the rating, as the board has it, so artwork
+  or video is chosen in Settings only. Holding the centre button puts
+  a song, an album, an artist or a playlist into On-The-Go, and takes a
+  song out of a playlist that can be changed. A play counts only when
+  Jincheng listens to the end, and visitors see "Jincheng's rating".
+  Plays go through `song_played()`, the one `security definer` function
+  of the three, so no one sets a count or a time; the Security Advisor
+  lists it on purpose. The first load didn't change (159.7 KB).
 - **YouTube's middle button is covered, not shown** (2026-09-29).
   YouTube's embed now shows its own play/pause button for about 4–5 s
   after every start, seek and resume, and no setting turns it off. So the
@@ -267,37 +282,28 @@ ryOS (AGPL-3.0).
 ## 4. Current state
 
 **Waiting on Jincheng** (2026-09-29):
-1. Deploy `account-recovery` from an up-to-date `main` (`supabase
-   functions deploy account-recovery`). Until then the old version runs
-   (checked 2026-09-29, after the first deploy), which lets any site's
-   page call it (CORS `*`) and answers other methods with 404; the new
-   one answers CORS for the site's own origins only and other methods
-   with 405 (docs/agents/api.md).
-2. Run `supabase/migrations/20260929100000_owner.sql` in the SQL editor,
-   then the one `insert` in its header with Jincheng's username. Until
-   then nobody is the owner, so the secret base's locked rooms stay shut
-   for Jincheng too.
-3. Run `supabase/migrations/20260929120000_discs.sql` (after the owner
-   migration), then deploy `soapbox-bot` from an up-to-date `main` for
-   `/dvd`. Until the migration runs, `/api/songs` serves the music
-   without a shelf (no error), so DVD Player's Movies folder holds only
-   a visitor's own DVD-Rs. The bot now imports
-   `supabase/functions/_shared/youtube.ts`, which the CLI bundles with it;
-   the deploy also brings `/add` and `/dvd` the better guess for music
-   videos named "Artist 'Song'" (2026-09-29).
+1. Run `supabase/migrations/20260929140000_playlists.sql` in the SQL
+   editor. Until then the iPod shows no ratings and no playlists of
+   Jincheng's (the read fails quietly), and rating or saving a playlist
+   says it couldn't; On-The-Go works without it.
 
 - Every migration in `supabase/migrations/` has been run, through
-  `20260927100000_now_playing_realtime.sql`. Both Edge Functions are
-  deployed from `main` and work: password reset sends mail, and the
-  whole music loop (`/add`, `/play`, "Listen along", `/stop`) was
-  checked live on 2026-09-27.
+  `20260929120000_discs.sql`, and Jincheng's account is the owner (the
+  `insert` in the owner migration's header), as Jincheng reported on
+  2026-09-29; `/api/songs` serving `discs` confirmed the shelf. Both Edge
+  Functions were deployed from `main` that day: `account-recovery`
+  answers CORS for the site's own origins only and other methods with
+  405 (checked), and `soapbox-bot` has `/dvd`. Password reset sends
+  mail, and the whole music loop (`/add`, `/play`, "Listen along",
+  `/stop`) was checked live on 2026-09-27.
 - The Security Advisor shows only the findings kept on purpose, listed
   in `supabase/migrations/20260926100511_advisor.sql`: `song_limit()`
   callable by visitors (it returns only the limit), `my_reactions()` and
   the other member-only helpers callable by members, and leaked password
-  protection (an Auth setting on the Pro plan). Once the owner migration
-  runs, `is_owner()` joins them: callable by everyone, it says only
-  whether the caller is the owner.
+  protection (an Auth setting on the Pro plan). `is_owner()` joins them
+  (callable by everyone, it says only whether the caller is the owner),
+  and once the playlists migration runs, `song_played()` (callable by
+  members, it counts nothing but the owner's plays).
 - Merges to `main` deploy, except those the ignored build step skips
   (only docs, tests, CI, Supabase or tooling). Still unconfirmed: that
   Vercel builds on Node 24; only a deployment's build log shows it (its

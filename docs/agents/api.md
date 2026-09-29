@@ -22,6 +22,9 @@ and two Supabase Edge Functions.
   | `song_limit()` | everyone | how many songs the library may hold (read by `/api/songs`) |
   | `now_playing_position()` | everyone | where the song Jincheng is playing is now, by the database's clock |
   | `is_owner()` | everyone | whether the caller is Jincheng, the owner; owner-only policies call it, and the site asks only to decide what to show |
+  | `rate_song(song, rating)` | members (only the owner's is kept) | rates a song one to five stars, or clears it with 0; runs as the caller, under the owner-only policies |
+  | `song_played(song)` | members (only the owner's are counted) | counts a play of a song Jincheng listened to the end, at the database's clock |
+  | `save_playlist(name, songs)` | members (only the owner may) | saves songs into the playlist of that name, making it if there's none; returns its id |
   | `my_reactions()` | members | the member's own Soapbox reactions |
   | `my_recovery_email()`, `set_recovery_email(address)` | members | the member's recovery address |
   | `chat_can_read(room)`, `chat_can_write(room)` | everyone / members | used by chat's row-level security, not called by the site |

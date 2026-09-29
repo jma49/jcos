@@ -8,10 +8,11 @@ Around them sits a small working system:
 
 - **Shell:** menu bar, Dock, Exposé, Dashboard, Spotlight, a screen saver,
   and Finder over a read-only Macintosh HD.
-- **Apps and applets:** Terminal, iPod and Karaoke with synced lyrics,
-  DVD Player (YouTube videos burned onto discs, kept in Finder's Movies
-  folder), Chess, Photo Booth, and applets from the Applet Store
-  (Minesweeper, Spider Solitaire, Pinball, Synth and more).
+- **Apps and applets:** Terminal, iPod (with Jincheng's ratings and
+  playlists, and On-The-Go) and Karaoke with synced lyrics, DVD Player
+  (YouTube videos burned onto discs, kept in Finder's Movies folder),
+  Chess, Photo Booth, and applets from the Applet Store (Minesweeper,
+  Spider Solitaire, Pinball, Synth and more).
 - **Social:** member accounts, Chat with rooms and private conversations,
   a Stickies guestbook, AirDrop between visitors, and Soapbox posts sent
   from a Telegram bot.

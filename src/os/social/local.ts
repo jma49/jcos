@@ -1,6 +1,6 @@
 // A stand-in for the Supabase backend during `astro dev`, so accounts,
-// Stickies, reactions, chat, presence and DVD Player's shelf can be tried
-// without a project.
+// Stickies, reactions, chat, presence, DVD Player's shelf and the iPod's
+// ratings and playlists can be tried without a project.
 // Everything lives in this browser's localStorage, and chat and presence go
 // between its tabs over BroadcastChannels. It keeps the same rules as the
 // database (three notes a day, one reaction per visitor unless signed in),
@@ -8,6 +8,7 @@
 
 import type { Disc } from '../../lib/library';
 import { loadJSON, saveJSON } from '../core/storage';
+import { playlistNameProblem } from './playlistNames';
 import {
   CHAT_MAX,
   LOBBY,
@@ -22,6 +23,7 @@ import {
   type ChatHandlers,
   type ChatMessage,
   type ChatRoom,
+  type Listening,
   type Note,
   type Post,
   type Reaction,
@@ -36,6 +38,7 @@ const SESSION_KEY = 'os-dev-session';
 const CHAT_KEY = 'os-dev-chat';
 const RESETS_KEY = 'os-dev-resets';
 const DISCS_KEY = 'os-dev-discs';
+const LISTENING_KEY = 'os-dev-listening';
 /** The member the stand-in treats as the owner: sign up as this to see the owner's rooms. */
 const DEV_OWNER = 'jincheng';
 /** The stand-in's shelf changes, told to this browser's other tabs as Realtime tells other visitors. */
@@ -124,6 +127,18 @@ export function localSocial(): Social {
   const member = () => {
     if (!current) throw new SocialError('signed-out', 'Sign in first.');
     return current;
+  };
+  /** The owner, or a refusal as the database's row-level security would give. */
+  const owner = (what: string) => {
+    if (member().username !== DEV_OWNER) throw new SocialError('failed', `Only Jincheng can change ${what}.`);
+  };
+
+  const listening = () => loadJSON<Listening>(LISTENING_KEY, { stats: {}, playlists: [] });
+  /** Changes the stored listening from what's stored now, as another tab may have changed it. */
+  const changeListening = (change: (l: Listening) => void) => {
+    const l = listening();
+    change(l);
+    saveJSON(LISTENING_KEY, l);
   };
 
   const resets = () => loadJSON<StoredReset[]>(RESETS_KEY, []);
@@ -363,6 +378,54 @@ export function localSocial(): Social {
       const listener = ({ data }: MessageEvent<DiscChange>) => (data.type === 'disc' ? onDisc(data.disc, data.burned) : onRemove(data.id));
       discChannel.addEventListener('message', listener);
       return () => discChannel.removeEventListener('message', listener);
+    },
+
+    // Jincheng's ratings, plays and playlists, in this browser; the member
+    // named DEV_OWNER is the owner, as for the shelf.
+    async listening() {
+      return listening();
+    },
+    async rateSong(id, rating) {
+      owner('the ratings everyone sees');
+      if (!Number.isInteger(rating) || rating < 0 || rating > 5) throw new SocialError('failed', 'A rating is one to five stars.');
+      changeListening((l) => {
+        const { rating: _, ...rest } = l.stats[id] ?? { plays: 0 };
+        l.stats[id] = rating ? { ...rest, rating } : rest;
+      });
+    },
+    async songPlayed(id) {
+      owner('the play counts everyone sees');
+      changeListening((l) => {
+        const was = l.stats[id] ?? { plays: 0 };
+        l.stats[id] = { ...was, plays: was.plays + 1, played: new Date().toISOString() };
+      });
+    },
+    async savePlaylist(name, songs) {
+      owner('the playlists everyone sees');
+      const problem = playlistNameProblem(name);
+      if (problem) throw new SocialError('invalid', problem);
+      let id = 0;
+      changeListening((l) => {
+        const named = l.playlists.find((p) => p.name.toLowerCase() === name.trim().toLowerCase());
+        const list = named ?? { id: Math.max(0, ...l.playlists.map((p) => p.id)) + 1, name: name.trim(), songs: [] };
+        list.songs = [...new Set([...list.songs, ...songs])];
+        if (!named) l.playlists.push(list);
+        id = list.id;
+      });
+      return id;
+    },
+    async unlistSong(playlist, song) {
+      owner('the playlists everyone sees');
+      changeListening((l) => {
+        const list = l.playlists.find((p) => p.id === playlist);
+        if (list) list.songs = list.songs.filter((s) => s !== song);
+      });
+    },
+    async deletePlaylist(playlist) {
+      owner('the playlists everyone sees');
+      changeListening((l) => {
+        l.playlists = l.playlists.filter((p) => p.id !== playlist);
+      });
     },
 
     joinPresence(info, { onVisitors, onCursor, onLeave, onSignal }) {
