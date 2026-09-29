@@ -1,0 +1,81 @@
+/* The iTunes Artwork screen saver (savers.tsx): the library's covers on a
+   wall, one turning over at a time. Adopted when it first shows, so it
+   isn't in the first load. */
+
+.os-artwork {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: #000;
+  container-type: size;
+}
+
+.os-artwork-wall {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(var(--cols), 1fr);
+  align-content: center;
+  animation: os-artwork-in 1.2s ease-out;
+}
+
+/* A card with a cover on each side; --turns half-turns show one or the
+   other. Each turns in its own perspective, four tiles deep. */
+.os-artwork-tile {
+  position: relative;
+  aspect-ratio: 1;
+  transform: perspective(calc(400cqw / var(--cols))) rotateY(calc(var(--turns) * 180deg));
+  transform-style: preserve-3d;
+  transition: transform 1.2s cubic-bezier(0.45, 0.05, 0.35, 1);
+}
+
+.os-artwork-tile[data-turning] {
+  z-index: 1;
+}
+
+.os-artwork-face {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 1px solid #000;
+  object-fit: cover;
+  backface-visibility: hidden;
+}
+
+.os-artwork-back {
+  transform: rotateY(180deg);
+}
+
+/* The cover darkens as it turns edge-on to the light. */
+.os-artwork-tile[data-turning] .os-artwork-face {
+  animation: os-artwork-shade 1.2s ease-in-out;
+}
+
+@keyframes os-artwork-shade {
+  50% {
+    filter: brightness(0.5);
+  }
+}
+
+@keyframes os-artwork-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* Motion reduced: a cover changes where it is, fading into the next. */
+.os-artwork-wall[data-still] .os-artwork-tile {
+  transform: none;
+  transition: none;
+}
+
+.os-artwork-wall[data-still] .os-artwork-face {
+  transform: none;
+  transition: opacity 0.9s ease-in-out;
+  animation: none;
+}
+
+.os-artwork-wall[data-still] .os-artwork-tile:not([data-back]) .os-artwork-back {
+  opacity: 0;
+}

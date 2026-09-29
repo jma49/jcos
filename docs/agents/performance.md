@@ -29,7 +29,11 @@
     once the desktop has settled (`afterSettled()` in
     `core/warmUp.ts`, eight seconds in and idle), so they're instant by
     the time anyone reaches for them. The Dashboard also starts loading
-    when the pointer reaches the menu bar or the Dock.
+    when the pointer reaches the menu bar or the Dock. The screen
+    savers' names and blurbs for System Preferences moved there too
+    (2026-09-29, 0.5 KB off the first load: only that pane shows them),
+    and a view's own stylesheet comes as text with it
+    (`shell/artwork.css`), as an app's does.
   - Motion is loaded lean: `Desktop.tsx` wraps everything in
     `<LazyMotion features={domAnimation} strict>`, so animate with `m.div`
     and friends, never `motion.div` (strict mode throws). `domAnimation`

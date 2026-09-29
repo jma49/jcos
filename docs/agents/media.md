@@ -73,3 +73,8 @@ own chrome never shows.
   card to control it; it also feeds the Media Session API. The Dynamic
   desktop picture `dynamic:cover` shows the playing song's cover,
   blurred.
+- The iTunes Artwork screen saver (`Artwork` in `shell/savers.tsx`, the
+  arithmetic in `shell/artwork.ts`) turns the library's covers over on
+  a wall. Not being an app with a manifest, it calls `loadLibrary()`
+  itself, and stays black if the library can't be read; see
+  [desktop.md](desktop.md).

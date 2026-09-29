@@ -4,16 +4,28 @@ import type { SaverStyle } from '../core/store';
 import { clockTimeZone, usePlace } from '../ambient/place';
 import { describe, useWeather } from '../ambient/weather';
 import { SCENIC } from '../look/wallpapers';
-import { Bounce, Flurry, SoapboxSaver } from './savers';
+import { Artwork, Bounce, Flurry, SoapboxSaver } from './savers';
 import { useReduceMotion } from '../core/system';
 
 // What the screen savers draw. Loaded only when one first starts (or
 // System Preferences shows a preview), so none of it weighs on the
 // desktop's first load; Screensaver.tsx decides when.
 
+/** The screen savers, as System Preferences lists them. */
+export const SAVER_STYLES: { style: SaverStyle; name: string; blurb: string }[] = [
+  { style: 'photos', name: 'Desktop Pictures', blurb: 'A slow pan across Mac OS X’s desktop pictures.' },
+  { style: 'flurry', name: 'Flurry', blurb: 'Glowing ribbons of colour, after the Mac OS X classic.' },
+  { style: 'artwork', name: 'iTunes Artwork', blurb: 'The covers in Jincheng’s music library, turning over one at a time.' },
+  { style: 'soapbox', name: 'Soapbox', blurb: 'Jincheng’s latest notes and rants, one at a time, like Word of the Day.' },
+  { style: 'starfield', name: 'Starfield', blurb: 'Flying through the stars.' },
+  { style: 'clock', name: 'Clock', blurb: 'The time and weather where you are, drifting so nothing burns in.' },
+  { style: 'bounce', name: 'Bounce', blurb: 'JM, bouncing off the edges. Wait for it to hit a corner.' }
+];
+
 /** Every screen saver but the slideshow; also the previews in System Preferences. */
 export const SAVER_VIEWS: Partial<Record<SaverStyle, () => ReactNode>> = {
   flurry: () => <Flurry />,
+  artwork: () => <Artwork />,
   soapbox: () => <SoapboxSaver />,
   starfield: () => <Starfield />,
   clock: () => <DriftingClock />,
