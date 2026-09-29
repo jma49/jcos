@@ -1,8 +1,10 @@
-// The music library's shape, and how it's read from Supabase: shared by
+// The media library's shape, and how it's read from Supabase: shared by
 // /api/songs (api/songs.ts), the snapshot script (npm run songs:snapshot)
-// and the desktop (src/os/media/library.ts). The database checks every
-// field (supabase/migrations/20260927030802_music_library.sql); this
-// turns its rows into what the iPod and Karaoke use.
+// and the desktop (src/os/media/library.ts). It's the music and, as in
+// iTunes, the movies: DVD Player's shelf of discs. The database checks
+// every field (supabase/migrations/20260927030802_music_library.sql and
+// 20260929120000_discs.sql); this turns its rows into what the iPod,
+// Karaoke and DVD Player use.
 
 export interface Song {
   /** The YouTube video id. */
@@ -37,11 +39,32 @@ export interface Album {
   note?: string;
 }
 
+/**
+ * A disc on DVD Player's shelf: a YouTube video Jincheng burned, with a
+ * case made from one of the video's own pictures.
+ */
+export interface Disc {
+  /** The YouTube video id. */
+  id: string;
+  title: string;
+  artist?: string;
+  /** Which of the video's images on i.ytimg.com is the case's picture: "maxresdefault", "hq2"… */
+  cover: string;
+  /** Where the case crops the picture, from its left edge (0) to its right (100). */
+  coverX: number;
+  /** The video's length in milliseconds, once known. */
+  duration?: number;
+  /** When it was burned (ISO 8601). */
+  added: string;
+}
+
 export interface Library {
   albums: Album[];
   songs: Song[];
   /** How many songs the library may hold (music_settings.song_limit). */
   limit?: number;
+  /** DVD Player's shelf, oldest first; missing where the shelf can't be read. */
+  discs?: Disc[];
 }
 
 /** The limit when it isn't known (the snapshot, or before song_limit() exists). */
@@ -57,6 +80,16 @@ interface SongRow {
   instrumental: boolean;
   lyrics_offset: number;
   lyrics_id: number | null;
+}
+
+interface DiscRow {
+  id: string;
+  title: string;
+  artist: string | null;
+  cover: string;
+  cover_x: number;
+  duration_ms: number | null;
+  added_at: string;
 }
 
 interface AlbumRow {
@@ -86,11 +119,25 @@ export function albumOf(row: AlbumRow): Album {
   return { title: row.title, artist: row.artist, year: row.year, cover: row.cover, ...(row.note ? { note: row.note } : {}) };
 }
 
+/** A disc row as the site uses it, leaving out what isn't set. */
+export function discOf(row: DiscRow): Disc {
+  return {
+    id: row.id,
+    title: row.title,
+    ...(row.artist ? { artist: row.artist } : {}),
+    cover: row.cover,
+    coverX: row.cover_x,
+    ...(row.duration_ms ? { duration: row.duration_ms } : {}),
+    added: row.added_at
+  };
+}
+
 // Visitors may read exactly these columns and order by added_at: the grants
 // are in the music migrations, and supabase/tests/rules.sql runs these
 // queries as a visitor. Change both together.
 const SONG_COLUMNS = 'id,title,artist,album,cover,track,instrumental,lyrics_offset,lyrics_id';
 const ALBUM_COLUMNS = 'title,artist,year,cover,note';
+const DISC_COLUMNS = 'id,title,artist,cover,cover_x,duration_ms,added_at';
 
 /**
  * Reads the library from Supabase's REST API with the public key, as any
@@ -105,12 +152,15 @@ export async function fetchLibrary(url: string, key: string, signal?: AbortSigna
     if (!Array.isArray(rows)) throw new Error(`Supabase sent something other than a list for ${path.split('?')[0]}`);
     return rows as T[];
   };
-  const [albums, songs, limit] = await Promise.all([
+  const [albums, songs, limit, discs] = await Promise.all([
     get<AlbumRow>(`albums?select=${ALBUM_COLUMNS}&order=added_at.asc,title.asc`),
     get<SongRow>(`songs?select=${SONG_COLUMNS}&order=added_at.asc,id.asc`),
-    songLimit(url, key, signal)
+    songLimit(url, key, signal),
+    // The shelf is extra: where it can't be read (before its migration has
+    // run), the music is served without it.
+    get<DiscRow>(`discs?select=${DISC_COLUMNS}&order=added_at.asc,id.asc`).catch(() => null)
   ]);
-  return { albums: albums.map(albumOf), songs: songs.map(songOf), ...(limit ? { limit } : {}) };
+  return { albums: albums.map(albumOf), songs: songs.map(songOf), ...(limit ? { limit } : {}), ...(discs ? { discs: discs.map(discOf) } : {}) };
 }
 
 /**

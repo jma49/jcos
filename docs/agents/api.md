@@ -67,7 +67,9 @@ NetEase gives up after five seconds.
 
 ### `GET /api/songs`
 
-The music library (`{ albums, songs, limit }`) from Supabase, fresh at
+The media library (`{ albums, songs, limit, discs }`) from Supabase: the
+music, and DVD Player's shelf, which is left out while it can't be read
+(before its migration has run), without costing the music. Fresh at
 the edge for 30 seconds and stale for 30 more (`public, s-maxage=30,
 stale-while-revalidate=30`). When Supabase can't be read in five seconds,
 or has no songs, the snapshot in `src/data/songs.json` is served with
