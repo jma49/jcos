@@ -138,7 +138,8 @@ only `kit/`. The lint enforces all three.
   (`media/drive.ts`) shows its menu (Play Movie, Scene Selection, Loop)
   and then the picture, always 16:9 with black around it; its own
   YouTube player (`useDiscPlayer.ts`) takes no pointer, so YouTube's
-  buttons never come up. The Controller is a floating panel, as on a
+  hover controls never come up (its middle button after a play or a seek
+  does, and DVD Player masks it: [media.md](media.md)). The Controller is a floating panel, as on a
   Mac: drawn by the app into `.os-root` just above the windows, shown
   only while DVD Player is the window in front (not in Exposé or
   minimized), dragged by its metal and left where it was put
@@ -301,6 +302,44 @@ only `kit/`. The lint enforces all three.
   own copy of the disk (AirDrop's, in the first load) has no Movies and
   none of its code. In Movies the toolbar has Burn (`BurnSheet.tsx`) and
   the list shows Date Added, Length and Kind.
+- Users › jincheng is Jincheng's home folder (`apps/finder/home.tsx`,
+  handed to `buildDisk` as Movies is, and first in the sidebar with the
+  house FileVault puts on a locked home): Desktop, Documents, Downloads,
+  Library, Movies, Music, Pictures, Public and Sites. To anyone but the
+  owner every folder but Public and Sites is `locked`: it wears Mac OS
+  X's red "no access" badge (drawn in `Thumb`, so every view has it) and
+  opening it, from any view, the sidebar or a path, brings up Finder's
+  alert ("The folder … could not be opened because you do not have
+  sufficient access privileges."). Signed in as the owner, they open and
+  hold Jincheng's documents, and Documents holds the diary, a year to a
+  document ("Diary 2026.rtf"). Public holds what Jincheng lets everyone
+  read; Sites, the projects' live sites as Internet locations that open
+  in the Browser. The documents come from the database (`home/home.ts`,
+  [supabase.md](supabase.md)), which gives anyone else only Public's,
+  read when a folder under Users shows (at most every 30 s). Move to
+  Trash on one of the owner's documents asks first ("will be deleted
+  immediately"), since there's no Trash to take it back from.
+- `src/os/apps/textedit/`: TextEdit, in Applications. A white page for
+  one of Jincheng's documents (`DocumentPage.tsx`), or a year of the
+  diary (`DiaryPage.tsx`): the days newest first under their dates in
+  grey, each entry a paragraph that grows as it's typed, and this year's
+  with today at the top and a line to write a new entry on. The owner
+  writes; anyone else can only read a document in Public. What's typed
+  is saved once the typing rests for a second, at once with ⌘S, and when
+  the window closes (`useAutosave.ts`), and kept as a draft in the
+  browser until it is, so a closed tab loses nothing. A save names the
+  version it was typed over, so one from an older copy is refused and
+  the alert offers Revert or Save Anyway. File › New (⌥N; the browser
+  keeps ⌘N) starts a document that goes into Documents as "Untitled.txt"
+  once something is typed; Save As (⇧⌘S, `SaveAsSheet.tsx`) renames it
+  or moves it to another folder, Public included. An emptied diary entry
+  is taken out when it's left.
+- `src/os/shell/Alert.tsx` (with `alert.css`, which an app's stylesheet
+  imports): an app's alert as Tiger drew one, the app's icon beside the
+  message, with OK, Cancel and a third choice, Return and Escape. It
+  takes the keys only while its window is in front: one that comes up
+  behind (a save refused after the window was left) waits, and Return
+  typed in another window stays that window's.
 - `src/os/social/airdrop.ts` and `apps/airdrop/`: AirDrop between
   signed-in members on the desktop (signed out, it asks you to sign in).
   Only a Macintosh HD path is sent, and the receiver looks it up on its
