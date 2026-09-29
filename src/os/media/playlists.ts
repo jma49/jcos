@@ -187,23 +187,39 @@ export async function countPlay(id: string) {
 const DAY_MS = 86_400_000;
 export const RECENT_DAYS = 14;
 export const SMART_MOST = 25;
-const playedAt = (id: string) => Date.parse(statsOf(id).played ?? '') || 0;
+/**
+ * Every song with what the smart playlists sort by, worked out once per
+ * list rather than in each comparison (a list of 200 songs sorts in a
+ * fraction of a millisecond, on every render of Playlists).
+ */
+const scored = () =>
+  SONGS.map((s, i) => {
+    const stats = listening.stats[s.id];
+    return { i, rating: stats?.rating ?? 0, plays: stats?.plays ?? 0, at: Date.parse(stats?.played ?? '') || 0 };
+  });
 
 /** My Top Rated: four stars and up, the best first, then in the library's order. */
 export const topRated = () =>
-  SONGS.flatMap((s, i) => (ratingOf(s.id) >= 4 ? [i] : [])).sort((a, b) => ratingOf(SONGS[b].id) - ratingOf(SONGS[a].id));
+  scored()
+    .filter((s) => s.rating >= 4)
+    .sort((a, b) => b.rating - a.rating)
+    .map((s) => s.i);
 
 /** Recently Played: played to the end in the last two weeks, the latest first, 25 at most. */
 export const recentlyPlayed = (now = Date.now()) =>
-  SONGS.flatMap((s, i) => (playedAt(s.id) > now - RECENT_DAYS * DAY_MS ? [i] : []))
-    .sort((a, b) => playedAt(SONGS[b].id) - playedAt(SONGS[a].id))
-    .slice(0, SMART_MOST);
+  scored()
+    .filter((s) => s.at > now - RECENT_DAYS * DAY_MS)
+    .sort((a, b) => b.at - a.at)
+    .slice(0, SMART_MOST)
+    .map((s) => s.i);
 
 /** Top 25 Most Played: the most plays first, and the latest played first among equals. */
 export const mostPlayed = () =>
-  SONGS.flatMap((s, i) => (statsOf(s.id).plays > 0 ? [i] : []))
-    .sort((a, b) => statsOf(SONGS[b].id).plays - statsOf(SONGS[a].id).plays || playedAt(SONGS[b].id) - playedAt(SONGS[a].id))
-    .slice(0, SMART_MOST);
+  scored()
+    .filter((s) => s.plays > 0)
+    .sort((a, b) => b.plays - a.plays || b.at - a.at)
+    .slice(0, SMART_MOST)
+    .map((s) => s.i);
 
 /** Songs' places in the library by id, for the ids a playlist keeps. */
 const places = fromLibrary(() => new Map(SONGS.map((s, i) => [s.id, i])));

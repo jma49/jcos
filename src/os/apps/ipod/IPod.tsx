@@ -64,8 +64,8 @@ interface Item {
   /** A track number, shown before the label. */
   number?: number;
   action?: () => void;
-  /** The songs (places in SONGS) holding the centre button puts into On-The-Go. */
-  songs?: number[];
+  /** The songs (places in SONGS) holding the centre button puts into On-The-Go, worked out when it's held. */
+  songs?: () => number[];
   /** What holding the centre button does instead, in a playlist that can be changed: takes the song out. */
   remove?: () => void;
 }
@@ -219,11 +219,16 @@ export default function IPod({ win }: AppProps) {
 
   /** Rows for songs, playing `list` from the one chosen; `remove` is what holding the centre button does, where it takes a song out. */
   const songsOf = (list: number[], remove?: (i: number) => () => void): Item[] =>
-    list.map((i) => ({ label: SONGS[i].title, action: () => playSong(i, list), songs: [i], ...(remove ? { remove: remove(i) } : {}) }));
+    list.map((i) => ({ label: SONGS[i].title, action: () => playSong(i, list), songs: () => [i], ...(remove ? { remove: remove(i) } : {}) }));
 
-  /** After On-The-Go is saved: back on Playlists, at the playlist it went into. */
+  /**
+   * After On-The-Go is saved: back on Playlists, at the playlist it went
+   * into. If MENU left the screen while it was saving, the iPod stays where
+   * it has been taken since.
+   */
   const saved = (playlist: Playlist) =>
     setStack((s) => {
+      if (s[s.length - 1].screen.kind !== 'save') return s;
       const rest = s.length > 2 ? s.slice(0, -2) : s.slice(0, 1);
       const last = rest[rest.length - 1];
       if (last.screen.kind !== 'menu' || last.screen.id !== 'playlists') return rest;
@@ -268,10 +273,10 @@ export default function IPod({ win }: AppProps) {
       case 'playlists':
         return [
           { label: 'On-The-Go', more: true, action: menuOf('otg', 'On-The-Go') },
-          { label: 'My Top Rated', more: true, songs: topRated(), action: menuOf('toprated', 'My Top Rated') },
-          { label: 'Recently Played', more: true, songs: recentlyPlayed(), action: menuOf('recent', 'Recently Played') },
-          { label: 'Top 25 Most Played', more: true, songs: mostPlayed(), action: menuOf('mostplayed', 'Top 25 Most Played') },
-          ...playlists().map((p) => ({ label: p.name, more: true, songs: indexesOf(p.songs), action: menuOf(`playlist:${p.id}`, p.name) }))
+          { label: 'My Top Rated', more: true, songs: topRated, action: menuOf('toprated', 'My Top Rated') },
+          { label: 'Recently Played', more: true, songs: () => recentlyPlayed(), action: menuOf('recent', 'Recently Played') },
+          { label: 'Top 25 Most Played', more: true, songs: mostPlayed, action: menuOf('mostplayed', 'Top 25 Most Played') },
+          ...playlists().map((p) => ({ label: p.name, more: true, songs: () => indexesOf(p.songs), action: menuOf(`playlist:${p.id}`, p.name) }))
         ];
       case 'otg': {
         const list = indexesOf(onTheGo());
@@ -308,12 +313,12 @@ export default function IPod({ win }: AppProps) {
             sub: first.artist,
             cover: coverOf(first),
             more: true,
-            songs: albumTracks(title),
+            songs: () => albumTracks(title),
             action: menuOf(`album:${title}`, title)
           };
         });
       case 'artists':
-        return artists.map((a) => ({ label: a, more: true, songs: ALL.filter((i) => SONGS[i].artist === a), action: menuOf(`artist:${a}`, a) }));
+        return artists.map((a) => ({ label: a, more: true, songs: () => ALL.filter((i) => SONGS[i].artist === a), action: menuOf(`artist:${a}`, a) }));
       case 'settings':
         return [
           { label: 'Shuffle', value: music.shuffle ? 'Songs' : 'Off', action: () => music.setShuffle(!music.shuffle) },
@@ -371,7 +376,7 @@ export default function IPod({ win }: AppProps) {
                 playSong(list[Math.floor(Math.random() * list.length)], list);
               }
             },
-            ...list.map((i, n) => ({ label: SONGS[i].title, number: SONGS[i].track ?? n + 1, songs: [i], action: () => playSong(i, list) }))
+            ...list.map((i, n) => ({ label: SONGS[i].title, number: SONGS[i].track ?? n + 1, songs: () => [i], action: () => playSong(i, list) }))
           ];
         }
         if (id.startsWith('artist:')) {
@@ -474,9 +479,10 @@ export default function IPod({ win }: AppProps) {
         return [...s.slice(0, -1), { ...last, selected: Math.max(0, Math.min(last.selected, items.length - 2)) }];
       });
     }
-    if (!item?.songs?.length) return;
+    const songs = item?.songs?.() ?? [];
+    if (!songs.length) return;
     playSound('click');
-    addToGo(item.songs.map((i) => SONGS[i].id));
+    addToGo(songs.map((i) => SONGS[i].id));
     setFlash(Date.now());
   };
 
@@ -746,6 +752,8 @@ function Wheel({
   // The centre button held down: it holds after HOLD_MS, and then letting go doesn't choose too.
   const centre = useRef<{ timer: number; held: boolean } | null>(null);
   const letGo = () => clearTimeout(centre.current?.timer);
+  // Closed while the button is held: nothing goes into On-The-Go afterwards.
+  useEffect(() => () => clearTimeout(centre.current?.timer), []);
 
   const angle = (e: React.PointerEvent) => {
     const r = ref.current!.getBoundingClientRect();
