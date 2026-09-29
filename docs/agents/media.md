@@ -43,7 +43,11 @@ own chrome never shows.
   own timing tweaks live in `os-lyric-offsets`. YouTube's own chrome must
   never show: players go in a `.os-player-frame` (300px taller than the
   space, so the title bar and logo are cut off) and the app covers the
-  video with the artwork until `usePlayer`'s `live` is true.
+  video with the artwork until `usePlayer`'s `live` is true. `live`
+  waits `YOUTUBE_BUTTON_MS` (5 s) after every start, seek and resume,
+  because YouTube's embed shows its own play/pause button in the middle
+  of the picture for about 4–5 s then, whatever the player's settings
+  (`revealAfterButton` in `player.ts`; DVD Player uses it too).
 - `src/os/media/together.ts`: listening along. When Jincheng plays a song
   from Telegram (`/play`), everyone on the desktop gets a notification
   (and so does whoever arrives before it ends); "Listen along" opens the

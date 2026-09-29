@@ -4,7 +4,7 @@ import { launch } from '../../core/registry';
 import { isPhone, useFocusedId, useWindows } from '../../core/store';
 import { useKeys } from '../../core/useKeys';
 import { artOf, DiscIcon } from '../../media/discArt';
-import { chapterAt, chapterPictures, chapterStart, CHAPTERS, noteLength, pictureOf, useShelfRefresh, type ShelfDisc } from '../../media/discs';
+import { chapterAt, chapterPictures, chapterStart, CHAPTERS, noteLength, useShelfRefresh, type ShelfDisc } from '../../media/discs';
 import { ejectDisc, useDrive } from '../../media/drive';
 import { formatTime, useMusic } from '../../media/music';
 import { useIsOwner } from '../../social/owner';
@@ -339,9 +339,16 @@ export default function DVDPlayer({ win }: AppProps) {
           // Keyed, so a disc's player never shares its element with another's or the empty screen.
           <Fragment key={disc.id}>
             {/* YouTube's chrome is cropped off (.os-player-frame); until the
-                video really plays, its cover hides the rest. */}
+                video really plays, and for the few seconds YouTube shows its
+                own button after a start or a seek, the chapter's frame hides
+                the rest. */}
             <div className="os-dvd-video" ref={player.host} aria-hidden="true" />
-            <img className="os-dvd-cover" src={pictureOf(disc.id, 'hqdefault')} alt="" data-show={!player.live || screen !== 'movie' || undefined} />
+            <img
+              className="os-dvd-cover"
+              src={chapterPictures(disc.id)[screen === 'movie' ? chapter : 0]}
+              alt=""
+              data-show={!player.live || screen !== 'movie' || undefined}
+            />
             {screen === 'menu' && <DiscMenu disc={disc} choice={choice} loop={loop} onHover={setChoice} onChoose={choose} />}
             {screen === 'scenes' && <Scenes disc={disc} choice={choice} onHover={setChoice} onChoose={choose} />}
             {player.status === 'offline' && <p className="os-dvd-note">YouTube can’t be reached, so the disc can’t be read.</p>}
