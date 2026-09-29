@@ -196,6 +196,15 @@ only `kit/`. The lint enforces all three.
 
 ## Finder, files and sharing
 
+- `src/os/apps/browser/`: the Browser. A history (◀ ▶ step through the
+  addresses opened in it; links followed inside a page can't be read
+  from another site's frame), Home, a Bookmarks Bar (the projects'
+  demos, then classic sites in their early years) and a year menu that
+  shows the page as the Internet Archive kept it
+  (`web.archive.org/web/<year>0701if_/<address>`, which the archive
+  redirects to its nearest copy; no server of ours in between). A page
+  that forbids framing gets a notice with "Open in a New Tab" instead of
+  a blank window, from `/api/framing`.
 - `src/os/core/files.ts` and `apps/finder/`: Macintosh HD, a read-only
   file system built from the content (Applications, Applets, Documents,
   Music, Pictures, Projects), browsed in Finder with icon, list and
