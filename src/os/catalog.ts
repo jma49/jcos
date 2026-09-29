@@ -8,6 +8,7 @@
 // and applets appear in the Applet Store in theirs.
 
 import about from './apps/about/manifest';
+import textedit from './apps/textedit/manifest';
 import resume from './apps/resume/manifest';
 import projects from './apps/projects/manifest';
 import project from './apps/project/manifest';
@@ -38,6 +39,7 @@ import synth from './applets/synth/manifest';
 
 export const catalog = [
   about,
+  textedit,
   resume,
   projects,
   project,

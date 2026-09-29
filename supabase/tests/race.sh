@@ -114,3 +114,20 @@ wait
 same=$(psql -tA -d "$DB" -c "select count(distinct l.id) || ' ' || count(*) from public.playlists l join public.playlist_songs p on p.playlist_id = l.id where lower(l.name) = 'same name'")
 [ "$same" = "1 4" ] || { echo "FAILED: one name saved from four places at once gave (playlists, songs) $same, not 1 4"; exit 1; }
 echo "ok: one new playlist saved from four places at once is one playlist with all four songs"
+
+# Jincheng's documents: four saves from the same copy at once, one lands;
+# and with room for two, five new documents at once, two are made.
+psql -q -v ON_ERROR_STOP=1 -d "$DB" -c "insert into public.documents (folder, name, body) values ('documents', 'Raced.txt', 'first')" >/dev/null
+for i in 1 2 3 4; do as_jincheng "update public.documents set body = 'save $i' where name = 'Raced.txt' and version = 1" & done
+wait
+saved=$(psql -tA -d "$DB" -c "select version || ' ' || (body ~ '^save [1-4]\$') from public.documents where name = 'Raced.txt'")
+[ "$saved" = "2 true" ] || { echo "FAILED: four saves from one copy at once gave (version, saved) $saved, not 2 true"; exit 1; }
+echo "ok: four saves from one copy at once, one lands"
+psql -q -v ON_ERROR_STOP=1 -d "$DB" -c "update public.music_settings set value = to_jsonb((select count(*) from public.documents) + 2) where name = 'document_limit'" >/dev/null
+before=$(psql -tA -d "$DB" -c "select count(*) from public.documents")
+for i in 1 2 3 4 5; do as_jincheng "insert into public.documents (folder, name) values ('documents', 'Race $i.txt')" & done
+wait
+made=$(( $(psql -tA -d "$DB" -c "select count(*) from public.documents") - before ))
+[ "$made" = 2 ] || { echo "FAILED: five documents at once with room for two made $made"; exit 1; }
+echo "ok: five documents at once, room for two, two made"
+psql -q -v ON_ERROR_STOP=1 -d "$DB" -c "update public.music_settings set value = '500' where name = 'document_limit'" >/dev/null

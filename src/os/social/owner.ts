@@ -24,17 +24,27 @@ export function ownerAnswer(id: string): Promise<boolean> {
   return asked.answer;
 }
 
-/** True while Jincheng is signed in; false for everyone else, and until it's known. */
-export function useIsOwner(): boolean {
+/**
+ * Whether Jincheng is signed in, and whether that's known yet: once the
+ * session has been read and, for a member, the database has answered.
+ * A view that says "that's not yours" waits for `known`, so the owner
+ * never sees it for a moment.
+ */
+export function useOwnerAnswer(): { owner: boolean; known: boolean } {
   const id = useAccount((s) => s.account?.id ?? null);
-  const [known, setKnown] = useState<{ id: string; owner: boolean } | null>(null);
+  const ready = useAccount((s) => s.ready);
+  const [answer, setAnswer] = useState<{ id: string; owner: boolean } | null>(null);
   useEffect(() => {
     if (!id) return;
     let live = true;
-    ownerAnswer(id).then((owner) => live && setKnown({ id, owner }));
+    ownerAnswer(id).then((owner) => live && setAnswer({ id, owner }));
     return () => {
       live = false;
     };
   }, [id]);
-  return known?.id === id && known.owner;
+  if (!id) return { owner: false, known: ready };
+  return answer?.id === id ? { owner: answer.owner, known: true } : { owner: false, known: false };
 }
+
+/** True while Jincheng is signed in; false for everyone else, and until it's known. */
+export const useIsOwner = () => useOwnerAnswer().owner;

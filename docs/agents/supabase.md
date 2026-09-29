@@ -26,6 +26,8 @@ advisory lock (Security, below).
 | `discs` (DVD Player's shelf) | everyone | Jincheng: the bot's `/dvd`, or the site signed in as the owner | `music_settings.disc_limit` discs (200) |
 | `song_stats` (the iPod's ratings and plays) | everyone | Jincheng, signed in: ratings through `rate_song()`, plays only through `song_played()` | a row per song in the library |
 | `playlists`, `playlist_songs` (Jincheng's playlists) | everyone | Jincheng, signed in: `save_playlist()`, and deletes | `music_settings.playlist_limit` playlists (50); a song once per playlist |
+| `documents` (Jincheng's home folder) | everyone, those in Public; the rest, the owner | Jincheng, signed in | `music_settings.document_limit` documents (500), 100,000 characters each |
+| `diary` (Jincheng's diary) | the owner | Jincheng, signed in | `music_settings.diary_limit` entries (10,000), 20,000 characters each |
 | `private.recovery_emails`, `private.password_resets`, `private.secrets` | not reachable through the API | account functions and the database | resets: 3 per account and 3 per address an hour, 60 an hour in all; a link lasts 30 minutes |
 | `private.owners` | not reachable through the API; `is_owner()` tells the caller whether they're in it | Jincheng, once, in the SQL editor | Jincheng's account |
 | `soapbox` storage bucket | everyone | the bot | images only, 10 MB each |
@@ -115,6 +117,21 @@ The code that isn't in the browser (each endpoint's parameters, answers and conv
   most 40 characters, never one of the iPod's own (On-The-Go, My Top
   Rated, Recently Played, Top 25 Most Played). A visitor's On-The-Go
   stays in their browser ([media.md](media.md)).
+- **Jincheng's home folder** (`public.documents`, `public.diary`;
+  migration `20260929160000_home.sql`): Jincheng's documents, each in one
+  of the home's folders, and the diary, an entry at a time on a day.
+  Row-level security gives everyone the documents in Public and nothing
+  else; the rest, and the diary, only the owner reads, and only the owner
+  writes anything (the diary isn't even granted to visitors). A name is
+  one line of at most 80 characters, with no slash or colon, not hidden,
+  and unique in its folder whatever its case. Every save names the
+  `version` it was made from (`update … where id = … and version = …`);
+  a trigger counts saves and stamps the time, so a save from an older
+  copy reaches no row and is refused, and races can't lose one
+  (`race.sh`: four saves from one copy at once, one lands). At most
+  `music_settings.document_limit` documents (500) and `diary_limit`
+  entries (10,000), counted under advisory locks. Finder and TextEdit use
+  it through `home/home.ts` ([desktop.md](desktop.md)).
 - **Chat** (`apps/chat/`, `social/chatState.ts`): public rooms listed
   in `public.chat_rooms` (add one in the Table editor) and private
   conversations between two members (rooms named
