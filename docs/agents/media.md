@@ -87,8 +87,9 @@ own chrome never shows.
   30 s), and what the owner changes shows at once. Burn reads a link
   with `supabase/functions/_shared/youtube.ts`, as the bot does, and
   YouTube's oEmbed from the browser; the four pictures are asked for with
-  HEAD, nothing downloaded. Opening a disc puts it in the drive and
-  opens DVD Player (desktop.md): a video is four chapters of equal
+  HEAD, nothing downloaded. Opening a disc slides it into the drive and
+  opens DVD Player (desktop.md); Eject (the Controller, ⌘E, or the disc
+  dropped on the Dock's Trash) slides it out: a video is four chapters of equal
   length, pictured by YouTube's own frames. DVD Player has its own
   player, made as the disc goes in and cued so Play Movie starts inside
   the click; it follows the one sound switch and the music's volume,
