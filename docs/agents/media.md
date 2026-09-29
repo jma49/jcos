@@ -127,17 +127,27 @@ own chrome never shows.
   YouTube's oEmbed from the browser; the four pictures are asked for with
   HEAD, nothing downloaded. Opening a disc slides it into the drive and
   opens DVD Player (desktop.md); Eject (the Controller or ⌘E) slides it
-  out. Nothing goes on the desktop: no disc icon while it plays. A video is four chapters of equal
+  out. Opening the disc already in the drive only brings DVD Player
+  forward, and what's playing plays on (Jincheng's disc and a visitor's
+  DVD-R of the same video are two discs); a different disc opened while
+  one slides in goes in after it. DVD Player shows the disc as the shelf
+  has it now, so one relabelled while it's in shows its new name.
+  Nothing goes on the desktop: no disc icon while it plays. A video is four chapters of equal
   length, pictured by YouTube's own frames. DVD Player has its own
   player, made as the disc goes in and cued so Play Movie starts inside
   the click; it follows the one sound switch and the music's volume,
   and shares the speakers with the iPod and Karaoke: playing a disc
   pauses the music, and music starting (or Listen along) pauses the
-  disc. A disc's length is learned as it plays and kept (a DVD-R's in
-  the browser, one of Jincheng's in the database when the owner watches it).
+  disc. When YouTube can't be reached, or won't play the video, Play
+  does nothing and a note says why; a player not ready 8 s after Play
+  isn't claimed to be playing. A disc's length is learned as it plays and kept (a DVD-R's in
+  the browser, one of Jincheng's in the database when the owner watches
+  it, once it's known the owner is watching).
   When Jincheng burns a disc, whoever is on the desktop gets a notice
   with Play DVD, as for a song played for everyone (`media/discWatch.ts`,
-  over Realtime; the page that burned it isn't told).
+  over Realtime; the page that burned it isn't told). A change Realtime
+  brings counts as a write: a shelf read already under way is dropped,
+  so it can't put the old shelf back.
 - The iTunes Artwork screen saver (`Artwork` in `shell/savers.tsx`, the
   arithmetic in `shell/artwork.ts`) turns the library's covers over on
   a wall. Not being an app with a manifest, it calls `loadLibrary()`

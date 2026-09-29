@@ -116,9 +116,9 @@ ryOS (AGPL-3.0).
   don't import each other, and the OS reaches apps only through the
   catalog; the lint enforces all of it. Removing an applet keeps what it
   saved.
-- **The music library moves to Supabase** (decided 2026-09-26, not yet
-  built): Jincheng adds songs and plays them for whoever is on the desktop
-  from the Telegram bot. Limits and choices:
+- **The music library is in Supabase** (decided and built 2026-09-26):
+  Jincheng adds songs and plays them for whoever is on the desktop from
+  the Telegram bot. Limits and choices:
   - at most 200 songs, enforced in the database with an advisory lock; a
     full library refuses new songs (the bot says so) rather than dropping
     old ones;

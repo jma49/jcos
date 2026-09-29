@@ -200,6 +200,21 @@ export default function IPod({ win }: AppProps) {
   const push = (screen: Screen) => setStack((s) => [...s, { screen, selected: 0 }]);
   const pop = () => setStack((s) => (s.length > 1 ? s.slice(0, -1) : s));
   const nowPlaying = () => push({ kind: 'now' });
+  /** Back to Playlists, past a playlist that's gone (the menu, if Playlists isn't on the way back). */
+  const toPlaylists = useCallback(
+    () =>
+      setStack((s) => {
+        const at = s.findLastIndex(({ screen }) => screen.kind === 'menu' && screen.id === 'playlists');
+        return at < 0 ? s.slice(0, 1) : s.slice(0, at + 1);
+      }),
+    []
+  );
+  // A playlist deleted elsewhere while it's open here goes as if deleted here.
+  const openList = top.screen.kind === 'menu' ? /^(?:playlist|delete):(\d+)$/.exec(top.screen.id)?.[1] : undefined;
+  const gone = openList !== undefined && !playlists().some((p) => p.id === Number(openList));
+  useEffect(() => {
+    if (gone) toPlaylists();
+  }, [gone, toPlaylists]);
   const menuOf = (id: string, title: string) => () => push({ kind: 'menu', id, title });
 
   const setPref = <K extends keyof Prefs>(key: K, value: Prefs[K]) =>
@@ -399,7 +414,7 @@ export default function IPod({ win }: AppProps) {
             {
               label: 'Delete Playlist',
               // Back to Playlists, past the playlist that's gone.
-              action: () => void deletePlaylist(playlist).then(() => setStack((s) => (s.length > 3 ? s.slice(0, -2) : s)), say)
+              action: () => void deletePlaylist(playlist).then(toPlaylists, say)
             }
           ];
         }
