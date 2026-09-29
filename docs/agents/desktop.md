@@ -72,7 +72,8 @@ only `kit/`. The lint enforces all three.
   A drop lands in one step (`instant`), with the dragged icon kept over
   its place until the slot shows. With motion reduced, slots jump. Keep the Dock and the
   desktop (`shell/DesktopIcons.tsx`: Macintosh HD, About Me, Résumé,
-  Projects, and a disc while one is in DVD Player's drive) short; a phone's home screen lists every app.
+  Projects) short, and nothing is added to them, not even a disc in DVD
+  Player's drive (Jincheng's rule, 2026-09-29); a phone's home screen lists every app.
 - `src/os/apps/`: one folder per built-in app. Content comes from `OSData`,
   assembled at build time in `index.astro` from `src/i18n/content.ts`, the
   projects collection and `src/lib/photos.ts` (Unsplash, fetched at build).
@@ -151,13 +152,10 @@ only `kit/`. The lint enforces all three.
   menu and the keys (Space, ←/→ for chapters, ↑/↓ and Return in menus,
   Escape, ⌘F, ⌘E) do what its buttons do. A disc slides into the slot in the
   screen's right edge on its way in and out (`media/insertion.ts`, Web
-  Animations, skipped with motion reduced), DVD Player's icon bounces in
-  the Dock as it opens, and while the disc is in it's on the desktop
-  under Macintosh HD (the window store's `disc`, so the desktop needn't
-  load the drive), or in the first free place if the icons have been
-  moved (`freePlace` in `media/drive.ts`). Dragging it turns the Dock's
-  Trash into Eject (`ejecting`, drawn in `dock.css`); dropped there, it
-  ejects, and icons that were in their column go back to it.
+  Animations, skipped with motion reduced), and DVD Player's icon
+  bounces in the Dock as it opens. The disc never goes on the desktop:
+  Jincheng wants no icons added there (2026-09-29), so the Controller and
+  ⌘E are the ways to eject it.
 
 ## Windows and the shell
 
