@@ -34,7 +34,7 @@ The code that isn't in the browser:
 | `/api/geo` | Vercel, `api/geo.ts` | the visitor's city, coordinates and time zone, from Vercel's IP headers; stores nothing | none; 204 without the headers |
 | `/api/lyrics` | Vercel, `api/lyrics.ts` | relays NetEase's synced lyrics for songs lrclib doesn't have | a day at the edge, misses an hour |
 | `/api/framing` | Vercel, `api/framing.ts` | whether a page lets the Browser frame it, from its X-Frame-Options and CSP; public addresses only (private ones refused at every redirect), and it passes on no content | a day at the edge |
-| `/api/songs` | Vercel, `api/songs.ts` | the music library from Supabase, or the repository's snapshot when Supabase can't be read | fresh 5 minutes, stale for a day; the snapshot a minute |
+| `/api/songs` | Vercel, `api/songs.ts` | the music library from Supabase, or the repository's snapshot when Supabase can't be read | fresh 30 s, stale 30 s more; the snapshot a minute |
 | `account-recovery` | Supabase Edge Function | emails a one-time reset link through Resend | |
 | `soapbox-bot` | Supabase Edge Function | Jincheng's Telegram bot: Soapbox posts, the music commands, moderation buttons | |
 

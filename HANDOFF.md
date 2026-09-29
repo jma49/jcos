@@ -113,8 +113,13 @@ ryOS (AGPL-3.0).
     key could forge; the visitor clicks to listen (browsers don't play
     sound unasked), under the one sound switch;
   - the site reads the library through `/api/songs`, cached at the edge
-    for five minutes and served stale while it's refreshed for a day.
-    When Supabase can't be read, the function serves the snapshot in the
+    for thirty seconds and served stale for thirty more while it's read
+    again (changed 2026-09-29 from five minutes and a day: on a quiet site
+    the first visitor after a pause got the edge's old copy, so a song
+    added at 05:13 was first served at 05:31; a miss costs about 0.2 s).
+    A visit picks up songs added meanwhile when a music app opens or the
+    tab comes back, at most once a minute, appended so every song keeps
+    its place. When Supabase can't be read, the function serves the snapshot in the
     repository (`npm run songs:snapshot`, refreshed by hand, not by a
     daily commit that would spend a deployment): Vercel's CDN doesn't
     honour `stale-if-error`, so an older cached answer can't stand in. The
