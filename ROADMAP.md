@@ -23,23 +23,7 @@ behind the same "after the desktop settles" loading as the Dashboard
 **Done when** the first load is 150 KB or less, with the reason for each
 kilobyte moved written in `docs/agents/performance.md`.
 
-## 2. Jincheng's account is the owner
-
-**Why.** The secret base (item 3) has rooms only Jincheng can enter, and
-the lyrics sync (item 4) saves for everyone from his account. Both need
-the database to know which account is his.
-
-**Shape.** A `private.owners` table holding his account's id (he inserts
-it once, in the SQL editor), and `public.is_owner()`, a `security
-definer` function that says whether the caller is in it. Private tables
-use it in their row-level security; functions that change shared data
-check it. The browser asks once after sign-in, only to decide what to
-show: the database is what keeps the doors shut.
-
-**Done when** an owner-only row is readable from his account and reads
-as nothing from any other account or signed out (tests in `test:db`).
-
-## 3. The secret base
+## 2. The secret base
 
 **Why.** Decided 2026-09-29: JM/OS is Jincheng's own hideout, not a job
 portfolio. He chose seven things from prototypes staged in the real site
@@ -55,15 +39,16 @@ the same Aqua styles and the ryOS icon set (new icons from it go in
    Playing rating screen), On-The-Go, and the smart playlists (My Top
    Rated, Recently Played, Top 25 Most Played) plus his own. His ratings,
    play counts and playlists are shared (owner writes only); a
-   visitor's On-The-Go stays in their browser. Needs item 2.
+   visitor's On-The-Go stays in their browser. Uses the owner check.
 4. **His home folder**: Users › jincheng in Finder. Visitors see the
    real "no access" badges and Tiger's alert on every folder but Public
    and Sites; signed in as the owner, the folders open and hold his
    diary and notes, written in a TextEdit window (or sent from
-   Telegram). Needs item 2.
+   Telegram). Uses the owner check.
 5. **Stickies and iCal for him**: notes on his own desktop and iCal
    with his days and to-dos, shown only when he's signed in. What to call
-   them beside the visitors' Stickies is his to decide. Needs item 2.
+   them beside the visitors' Stickies is his to decide. Uses the owner
+   check.
 6. **Time Machine**: Leopard's starfield, a window per day going back,
    a timeline on the right: Soapbox, the guestbook and the library as
    they were. Public things for everyone, locked ones for him.
@@ -76,9 +61,9 @@ the same Aqua styles and the ryOS icon set (new icons from it go in
 **Done when** each is in the site, checked in a browser with motion on
 and off, and its locked parts are proved locked by `test:db`.
 
-## 4. Lyrics that line up
+## 3. Lyrics that line up
 
-Paused by Jincheng (2026-09-28): later, after the secret base. It uses item 2's owner check to save a sync for everyone.
+Paused by Jincheng (2026-09-28): later, after the secret base. It uses the owner check (`public.is_owner()`) to save a sync for everyone.
 
 **Why.** Decided 2026-09-27: timing gets reworked as a whole, not tuned
 song by song with `/offset`. Ten starter songs carry ryOS's offsets,
@@ -95,10 +80,9 @@ all gated to its admin by username):
 - **Choose the lyrics.** Every lrclib candidate, with its length against
   the video's; the choice is saved as the song's `lyrics_id`. A wrong
   edit is usually a wrong entry, not a wrong offset.
-- **Saved for everyone, by Jincheng only.** A `private.owners` table
-  holding his account's id, and a `security definer` function that
-  only those accounts may call and that changes only `lyrics_offset`
-  and `lyrics_id`. Visitors' own nudges stay in their browser.
+- **Saved for everyone, by Jincheng only.** A `security definer`
+  function that only the owner may call (`public.is_owner()`) and that
+  changes only `lyrics_offset` and `lyrics_id`. Visitors' own nudges stay in their browser.
 - **Length as a fallback only**: for a song nobody has synced, when the
   video is longer than the lyrics and the difference sits at the start.
 - **Not now:** word-by-word timing. Kugou's KRC (what ryOS uses) and
@@ -107,7 +91,7 @@ all gated to its admin by username):
 **Done when** every song in the library has been synced by ear once,
 and a sync made in Karaoke reaches another browser.
 
-## 5. Visitors ask for songs
+## 4. Visitors ask for songs
 
 **Why.** Decided as "may come later" with the music library: visitors
 request, Jincheng approves from Telegram.
