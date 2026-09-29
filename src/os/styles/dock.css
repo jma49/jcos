@@ -124,16 +124,17 @@
 
 /* ---------- Moving apps in and out of the Dock ---------- */
 
-/* Where a dragged app would land. */
-.os-dock-gap {
-  flex: none;
-  align-self: stretch;
+/* A slot closing (its icon dragged away, or leaving) or not yet open: nothing
+   on it can be pointed at, and its dot and badge go with it. */
+.os-dock-item[data-collapsed] {
+  pointer-events: none;
 }
 
-/* A running app's slot while its icon is being dragged in. */
-.os-dock-item[data-dragging] .os-dock-icon,
-.os-dock-item[data-dragging] .os-dock-dot {
-  visibility: hidden;
+.os-dock-item[data-collapsed] .os-dock-label,
+.os-dock-item[data-collapsed] .os-dock-dot,
+.os-dock-item[data-collapsed] .os-dock-badge {
+  opacity: 0;
+  transition: opacity 0.12s;
 }
 
 /* The icon under the pointer while it's dragged. */
@@ -142,55 +143,92 @@
   z-index: 1150;
   translate: -50% -50%;
   pointer-events: none;
-  opacity: 0.9;
-  transition: opacity 0.15s, scale 0.15s;
+  transition:
+    opacity 0.18s ease,
+    scale 0.18s ease;
 }
 
 .os-dock-ghost .os-icon {
   display: block;
   width: 100%;
   height: 100%;
-  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.35));
+  filter: drop-shadow(0 6px 8px rgba(0, 0, 0, 0.35));
 }
 
 /* Off the Dock, a kept app is about to go. */
 .os-dock-ghost[data-leaving] {
   opacity: 0.55;
-  scale: 0.9;
+  scale: 0.86;
 }
 
-/* The puff of smoke an app leaves the Dock in. */
+/* Let go over the Dock: it glides into the gap waiting for it. */
+.os-dock-ghost[data-gliding] {
+  transition:
+    left 0.19s cubic-bezier(0.2, 0.8, 0.25, 1),
+    top 0.19s cubic-bezier(0.2, 0.8, 0.25, 1),
+    opacity 0.18s ease,
+    scale 0.18s ease;
+}
+
+.os-dock-ghost[data-gliding] .os-icon {
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.3));
+  transition: filter 0.19s;
+}
+
+/* The puff an app leaves the Dock in: a few soft clouds that swell,
+   drift apart and fade. */
 .os-dock-poof {
   position: fixed;
   z-index: 1150;
-  width: 64px;
-  height: 64px;
-  translate: -50% -50%;
+  width: 0;
+  height: 0;
   pointer-events: none;
-  border-radius: 50%;
-  background:
-    radial-gradient(circle at 30% 40%, rgba(255, 255, 255, 0.95) 0 16%, transparent 17%),
-    radial-gradient(circle at 62% 32%, rgba(245, 245, 245, 0.95) 0 19%, transparent 20%),
-    radial-gradient(circle at 50% 62%, rgba(235, 235, 235, 0.95) 0 22%, transparent 23%),
-    radial-gradient(circle at 74% 60%, rgba(250, 250, 250, 0.9) 0 14%, transparent 15%);
-  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
-  animation: os-poof 0.45s steps(5) forwards;
+  animation: os-poof-fade 0.55s linear forwards;
 }
 
-@keyframes os-poof {
+.os-dock-poof i {
+  position: absolute;
+  left: -14px;
+  top: -14px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, #fff, rgba(236, 236, 236, 0.95) 55%, rgba(220, 220, 220, 0));
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.18));
+  animation: os-poof-cloud 0.55s cubic-bezier(0.15, 0.7, 0.3, 1) forwards;
+}
+
+.os-dock-poof i:nth-child(1) { --dx: -18px; --dy: -10px; }
+.os-dock-poof i:nth-child(2) { --dx: 16px; --dy: -14px; }
+.os-dock-poof i:nth-child(3) { --dx: 0px; --dy: 12px; }
+.os-dock-poof i:nth-child(4) { --dx: -12px; --dy: 14px; animation-delay: 0.03s; }
+.os-dock-poof i:nth-child(5) { --dx: 14px; --dy: 8px; animation-delay: 0.05s; }
+
+@keyframes os-poof-cloud {
   from {
-    scale: 0.4;
+    translate: 0 0;
+    scale: 0.35;
     opacity: 1;
   }
   to {
-    scale: 1.4;
+    translate: var(--dx) var(--dy);
+    scale: 1.25;
     opacity: 0;
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .os-dock-poof {
-    animation-timing-function: linear;
-    animation-duration: 0.2s;
+@keyframes os-poof-fade {
+  to {
+    opacity: 0;
   }
+}
+
+/* With motion reduced (System Preferences › Displays, or the device), it just fades. */
+.os-dock-poof[data-reduced] i {
+  animation-name: os-poof-fade;
+  animation-duration: 0.25s;
+}
+
+.os-dock-poof[data-reduced] {
+  animation-duration: 0.25s;
 }
