@@ -2,10 +2,15 @@
 // with cover art and a lyrics offset. It lives in Supabase, managed from
 // the Telegram bot, and arrives through /api/songs (api/songs.ts) the
 // first time something needs it: the apps that play or list music say so
-// in their manifests (`data`), so it's here before they render. It stays
-// the same for the rest of the visit, so a song's place in SONGS is a
-// stable handle until the page is reloaded.
+// in their manifests (`data`), so it's here before they render.
+//
+// Songs Jincheng adds during a visit are picked up while a music app is
+// open (refresh.ts, which isn't in the first load), at most once a minute.
+// They're appended, and changed songs are updated where they are; nothing
+// is removed or reordered until the page is reloaded, so a song's place
+// in SONGS stays a stable handle for the whole visit.
 
+import { useSyncExternalStore } from 'react';
 import { DEFAULT_LIMIT, type Album, type Library, type Song } from '../../lib/library';
 import { getSocial } from '../social/social';
 
@@ -18,6 +23,14 @@ export let SONGS: Song[] = [];
 export let SONG_LIMIT = DEFAULT_LIMIT;
 
 let loading: Promise<void> | null = null;
+/** When the library was last read, and how many times it has changed this visit. */
+let readAt = 0;
+let version = 0;
+const listeners = new Set<() => void>();
+function changed() {
+  version++;
+  listeners.forEach((listener) => listener());
+}
 
 /**
  * Loads the library, once. Without /api/songs (`astro dev`, or no
@@ -30,6 +43,8 @@ export function loadLibrary(): Promise<void> {
     ALBUMS = library.albums;
     SONGS = library.songs;
     SONG_LIMIT = library.limit ?? DEFAULT_LIMIT;
+    readAt = Date.now();
+    changed();
   })().catch((error) => {
     loading = null;
     throw error;
@@ -37,7 +52,7 @@ export function loadLibrary(): Promise<void> {
   return loading;
 }
 
-async function fromApi(): Promise<Library> {
+export async function fromApi(): Promise<Library> {
   const res = await fetch('/api/songs', { signal: AbortSignal.timeout(8000) });
   if (!res.ok) throw new Error(`/api/songs answered ${res.status}`);
   const library = (await res.json()) as Partial<Library>;
@@ -48,6 +63,32 @@ async function fromApi(): Promise<Library> {
 }
 
 export const libraryLoaded = () => SONGS.length > 0;
+
+/**
+ * Replaces the visit's library with `next` (refresh.ts works it out, never
+ * removing or moving a song) and tells the views.
+ */
+export function applyLibrary(next: Library) {
+  ALBUMS = next.albums;
+  SONGS = next.songs;
+  SONG_LIMIT = next.limit ?? SONG_LIMIT;
+  readAt = Date.now();
+  changed();
+}
+
+/** When the library was last read. */
+export const libraryReadAt = () => readAt;
+
+/** Marks the library as just read, with nothing new in it. */
+export const libraryChecked = () => void (readAt = Date.now());
+
+const subscribe = (listener: () => void) => {
+  listeners.add(listener);
+  return () => void listeners.delete(listener);
+};
+
+/** For a component that shows the library: it renders again when the library changes during the visit. */
+export const useLibraryVersion = () => useSyncExternalStore(subscribe, () => version, () => version);
 
 const VIDEO_ID = /^[A-Za-z0-9_-]{11}$/;
 
@@ -68,19 +109,21 @@ export async function findSong(id: string): Promise<number> {
   const meanwhile = SONGS.findIndex((s) => s.id === id);
   if (meanwhile >= 0) return meanwhile;
   SONGS = [...SONGS, song];
+  changed();
   return SONGS.length - 1;
 }
 
 /**
- * Something worked out from the library, the first time it's asked for.
- * Asking before the library has loaded is a mistake, and throws.
+ * Something worked out from the library, the first time it's asked for,
+ * and again after the library changes. Asking before the library has
+ * loaded is a mistake, and throws.
  */
 export function fromLibrary<T>(build: () => T): () => T {
-  let built: { value: T } | null = null;
+  let built: { value: T; version: number } | null = null;
   return () => {
-    if (!built) {
+    if (!built || built.version !== version) {
       if (!libraryLoaded()) throw new Error('The music library isn’t loaded yet.');
-      built = { value: build() };
+      built = { value: build(), version };
     }
     return built.value;
   };
@@ -92,9 +135,12 @@ export const albumNamed = (title: string | undefined) => ALBUMS.find((a) => a.ti
 /** The album a song belongs to, when the whole album is in the library. */
 export const albumOf = (song: Song) => albumNamed(song.album);
 
+/** Indexes of an album's songs among `songs`, in track order. */
+export const tracksIn = (songs: Song[], album: Album) =>
+  songs.flatMap((s, i) => (s.album === album.title ? [i] : [])).sort((a, b) => (songs[a].track ?? 0) - (songs[b].track ?? 0));
+
 /** Indexes of an album's songs, in track order. */
-export const tracksOf = (album: Album) =>
-  SONGS.flatMap((s, i) => (s.album === album.title ? [i] : [])).sort((a, b) => (SONGS[a].track ?? 0) - (SONGS[b].track ?? 0));
+export const tracksOf = (album: Album) => tracksIn(SONGS, album);
 
 /** Square cover art for a song; the video's thumbnail when there's none. */
 export const coverOf = (song: Song) => song.cover ?? albumOf(song)?.cover ?? `https://i.ytimg.com/vi/${song.id}/mqdefault.jpg`;

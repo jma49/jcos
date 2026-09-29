@@ -14,9 +14,15 @@ own chrome never shows.
   YouTube video id, title, artist, `album`, square `cover` art from
   Apple's catalogue, `track` for album tracks and `instrumental`. The
   site reads it through `/api/songs` (`api/songs.ts`, cached at the edge
-  for five minutes) when a music app first opens: apps that need it say
-  so in their manifests (`data`), and `media/library.ts` loads it once a
-  visit. `src/data/songs.json` is a snapshot, served when Supabase can't
+  for thirty seconds, stale for thirty more) when a music app first
+  opens: apps that need it say so in their manifests (`data`), and
+  `media/library.ts` loads it once a visit. Songs added meanwhile come in
+  while a music app is open (`useLibraryRefresh()` in `media/refresh.ts`,
+  which isn't in the first load: when the app opens and when the tab
+  comes back, at most once a minute): appended, and changed ones updated
+  in place, never removed or reordered. Views that list the library call
+  `useLibraryVersion()` so they render again; `fromLibrary()` rebuilds
+  after a change. `src/data/songs.json` is a snapshot, served when Supabase can't
   be read and used by `astro dev`; refresh it with `npm run
   songs:snapshot`. A song's place in `SONGS` is a stable handle for the
   visit; derive anything from the library with `fromLibrary()`, never at
