@@ -43,6 +43,19 @@ Conventions and a map of the code are in [AGENTS.md](AGENTS.md) and
   hand (not on every push, to save deployments): it refreshes the Photos snapshot
   (`npm run photos:update`) and recaptures the project covers and
   `public/og.png` (`npm run preview:capture`), committing what changed.
+- The "ocra review" workflow (2026-09-29) has ocra, the owner's code
+  reviewer (github.com/jma49/Open-CR-Agent), review each pull request
+  from this repository on Vertex AI: inline comments and one summary
+  comment, and on later pushes only what changed. It's a trial on the
+  owner's Google Cloud credit. It calls Open-CR-Agent's
+  `ocra-dogfood.yml` at `main`, the only ref Google Cloud issues its
+  keyless login to, so unlike the actions it isn't pinned to a SHA. One
+  review stops at $2, at most $2 of reviews start a day, and the
+  repository stops at $12 in all (the variable `OCRA_REVIEW_BUDGET_USD`,
+  counted by a ledger of workflow artifacts). Drafts, forks and
+  Dependabot are skipped, and the verdict is advice, not a required
+  check. Turn it off with
+  `gh variable set OCRA_REVIEW -R jma49/jmos --body off`.
 - The Hobby plan caps deployments a day, and a busy day of merges hit
   it (2026-09-26: "Deployment rate limited — retry in 24 hours"; the
   GitHub CI stays the gate meanwhile). Only `main` deploys now
