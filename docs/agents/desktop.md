@@ -336,7 +336,10 @@ only `kit/`. The lint enforces all three.
   is taken out when it's left.
 - `src/os/shell/Alert.tsx` (with `alert.css`, which an app's stylesheet
   imports): an app's alert as Tiger drew one, the app's icon beside the
-  message, with OK, Cancel and a third choice, Return and Escape.
+  message, with OK, Cancel and a third choice, Return and Escape. It
+  takes the keys only while its window is in front: one that comes up
+  behind (a save refused after the window was left) waits, and Return
+  typed in another window stays that window's.
 - `src/os/social/airdrop.ts` and `apps/airdrop/`: AirDrop between
   signed-in members on the desktop (signed out, it asks you to sign in).
   Only a Macintosh HD path is sent, and the receiver looks it up on its
