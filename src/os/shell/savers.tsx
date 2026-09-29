@@ -1,13 +1,18 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useInsertionEffect, useRef, useState, type CSSProperties } from 'react';
 import { AnimatePresence, m } from 'motion/react';
 import { getSocial, type Post } from '../social/social';
 import { useOSData } from '../core/context';
 import { plain } from '../core/inline';
 import { useReduceMotion } from '../core/system';
+import { adoptStyles } from '../core/appStyles';
+import { ALBUMS, loadLibrary, SONGS } from '../media/library';
+import { coversOf, initialTiles, pickTurn, shuffled, wallFor } from './artwork';
+import artworkStyles from './artwork.css?inline';
 
 // More screen savers: Flurry (after Mac OS X's), Soapbox (Jincheng's posts,
-// in the manner of "Word of the Day") and a bouncing JM. Each fills its
-// parent, so System Preferences can show it in a small preview too.
+// in the manner of "Word of the Day"), a bouncing JM and iTunes Artwork
+// (Leopard's wall of album covers). Each fills its parent, so System
+// Preferences can show it in a small preview too.
 
 /** A canvas that fills its parent at device resolution, redrawn by `frame` every animation frame. */
 function useCanvas(
@@ -227,6 +232,149 @@ export function SoapboxSaver() {
           </m.figure>
         )}
       </AnimatePresence>
+    </div>
+  );
+}
+
+/** How often a tile of iTunes Artwork turns over; the turn itself takes 1.2 s (artwork.css). */
+const TURN_EVERY_MS = 2500;
+/** How many of the tiles that turned last sit out the next turns. */
+const RESTING = 6;
+
+interface Tile {
+  /** The covers on its front and back. */
+  faces: [string, string];
+  /** Half-turns so far: an even number shows the front. */
+  turns: number;
+}
+
+/** A tile turned over to show `cover`, put on the side facing away first. */
+const turnTo = (tile: Tile, cover: string): Tile => ({
+  faces: tile.turns % 2 ? [cover, tile.faces[1]] : [tile.faces[0], cover],
+  turns: tile.turns + 1
+});
+
+/** Whether `src` downloads and decodes: false if it's broken, null if it's still coming after `ms`. */
+function preload(src: string, ms: number): Promise<boolean | null> {
+  const img = new Image();
+  img.src = src;
+  const timeout = new Promise<null>((done) => setTimeout(() => done(null), ms));
+  return Promise.race([img.decode().then(() => true, () => false), timeout]);
+}
+
+/**
+ * iTunes Artwork, as in Leopard: the library's covers on a wall, one
+ * tile at a time turning over to another. With motion reduced, a cover
+ * fades into the next where it is. Black if the library can't be read.
+ */
+export function Artwork() {
+  useInsertionEffect(() => adoptStyles('saver-artwork', artworkStyles), []);
+  const reduced = useReduceMotion();
+  const stage = useRef<HTMLDivElement>(null);
+  const [covers, setCovers] = useState<string[] | null>(null);
+  const [size, setSize] = useState({ cols: 0, count: 0 });
+  const [wall, setWall] = useState<{ deal: number; cols: number; tiles: Tile[]; turning: number } | null>(null);
+  const deals = useRef(0);
+
+  useEffect(() => {
+    let live = true;
+    loadLibrary()
+      .then(() => live && setCovers(shuffled(coversOf(ALBUMS, SONGS))))
+      .catch(() => live && setCovers([]));
+    return () => {
+      live = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    const el = stage.current;
+    if (!el) return;
+    const observer = new ResizeObserver(() => {
+      const { cols, rows } = wallFor(el.clientWidth, el.clientHeight, window.innerWidth);
+      setSize((s) => (s.cols === cols && s.count === cols * rows ? s : { cols, count: cols * rows }));
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  // Deal the wall, then turn a tile over every few seconds: never while
+  // the page is hidden, and never before the next cover has arrived.
+  const { cols, count } = size;
+  useEffect(() => {
+    if (!covers?.length || !count) return;
+    let live = true;
+    let busy = false;
+    let timer = 0;
+    let pool = covers;
+    let tiles: Tile[] = [];
+    const resting: number[] = [];
+    const deal = ++deals.current;
+
+    const schedule = () => {
+      clearTimeout(timer);
+      if (live && !busy && !document.hidden) timer = window.setTimeout(turn, TURN_EVERY_MS);
+    };
+    const turn = async () => {
+      const next = pickTurn(tiles.map((t) => t.faces[t.turns % 2]), cols, pool, resting);
+      if (!next) return;
+      busy = true;
+      const loaded = await preload(next.cover, TURN_EVERY_MS * 4);
+      busy = false;
+      if (!live) return;
+      if (loaded === false) pool = pool.filter((c) => c !== next.cover);
+      if (loaded) {
+        tiles = tiles.map((t, i) => (i === next.index ? turnTo(t, next.cover) : t));
+        resting.push(next.index);
+        if (resting.length > RESTING) resting.shift();
+        setWall({ deal, cols, tiles, turning: next.index });
+      }
+      schedule();
+    };
+
+    // The first covers arrive before the wall shows, and any that won't load are left out.
+    (async () => {
+      const first = pool.slice(0, count);
+      const loaded = await Promise.all(first.map((c) => preload(c, 3000)));
+      if (!live) return;
+      const broken = new Set(first.filter((_, i) => loaded[i] === false));
+      pool = pool.filter((c) => !broken.has(c));
+      tiles = initialTiles(pool.slice(0, count), count, cols).map((c) => ({ faces: [c, c], turns: 0 }));
+      setWall({ deal, cols, tiles, turning: -1 });
+      document.addEventListener('visibilitychange', schedule);
+      schedule();
+    })();
+
+    return () => {
+      live = false;
+      clearTimeout(timer);
+      document.removeEventListener('visibilitychange', schedule);
+    };
+  }, [covers, cols, count]);
+
+  return (
+    <div ref={stage} className="os-artwork" aria-hidden="true">
+      {/* A new wall, or motion turned on or off, starts afresh rather than turning every tile at once. */}
+      {wall && wall.tiles.length > 0 && (
+        <div
+          key={`${wall.deal}-${reduced}`}
+          className="os-artwork-wall"
+          data-still={reduced ? '' : undefined}
+          style={{ '--cols': wall.cols } as CSSProperties}
+        >
+          {wall.tiles.map((t, i) => (
+            <div
+              key={i}
+              className="os-artwork-tile"
+              style={{ '--turns': t.turns } as CSSProperties}
+              data-back={t.turns % 2 ? '' : undefined}
+              data-turning={i === wall.turning ? '' : undefined}
+            >
+              <img className="os-artwork-face" src={t.faces[0]} alt="" draggable={false} />
+              <img className="os-artwork-face os-artwork-back" src={t.faces[1]} alt="" draggable={false} />
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

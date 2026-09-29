@@ -148,9 +148,20 @@ only `kit/`. The lint enforces all three.
   [media.md](media.md).
 - `src/os/shell/Screensaver.tsx` and `savers.tsx`: Desktop Pictures (a
   slideshow of Mac OS X's scenic desktop pictures, `SCENIC` in
-  `wallpapers.ts`), Flurry, Soapbox (the latest posts in large type),
-  Starfield, Clock or Bounce, after the idle time chosen in System
-  Preferences (two minutes by default).
+  `wallpapers.ts`), Flurry, iTunes Artwork, Soapbox (the latest posts in
+  large type), Starfield, Clock or Bounce, after the idle time chosen in
+  System Preferences (two minutes by default). The views and their list
+  (`SAVER_STYLES`) are in `saverViews.tsx`, off the first load.
+  iTunes Artwork is Leopard's: the music library's covers on a wall of
+  square tiles (album covers and songs' own; a song without art has
+  none), each dealt once before any repeats and never beside itself,
+  one tile turning over every 2.5 s to a cover the wall shows least
+  (`artwork.ts`, with tests). The next cover is fetched before it
+  turns, a broken one is dropped, and nothing turns while the page is
+  hidden. The preview in System Preferences is the same wall in
+  miniature (columns follow the screen's width). With motion reduced, a
+  cover fades into the next in place. Its stylesheet, `artwork.css`,
+  arrives as text with the view, like an app's.
 - Phones are anything narrower than 768px or a short touch screen (a phone
   sideways): `isPhone()` and `PHONE_QUERY` in `src/os/core/store.ts`, and
   the same media query in the stylesheets.
