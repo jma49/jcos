@@ -222,6 +222,13 @@ ryOS (AGPL-3.0).
   the disc on the desktop, the Trash turning into Eject) cost the first
   load 0.3 KB: it's at 159.5 of 160 KB now, so ROADMAP.md item 1 (room on
   the first load) comes before anything else on the first screen.
+- **YouTube's middle button is covered, not shown** (2026-09-29).
+  YouTube's embed now shows its own play/pause button for about 4–5 s
+  after every start, seek and resume, and no setting turns it off. So the
+  iPod, Karaoke and DVD Player keep their artwork (DVD Player: the
+  chapter's frame) over the first 5 s of a video and of every seek, and
+  the rule that YouTube's chrome never shows still holds
+  (docs/agents/pitfalls.md).
 - **Considered and left out** (2026-09-26 and 27 audits): a "continue
   playing" prompt for hidden tabs, more reduced-motion fallbacks, a spec
   template for changes, `llms.txt` in robots.txt (no crawler reads it
