@@ -25,9 +25,13 @@ calls this function; it emails through [Resend](https://resend.com).
    ```
 
    Optional: `RECOVERY_FROM` (default `JM/OS <noreply@majincheng.com>`,
-   which must be on the verified domain) and `RECOVERY_SITE_URL` (default
-   `https://www.majincheng.com`, where the link points). `SUPABASE_URL`
-   and `SUPABASE_SERVICE_ROLE_KEY` are provided automatically.
+   which must be on the verified domain), `RECOVERY_SITE_URL` (default
+   `https://www.majincheng.com`, where the link points) and
+   `RECOVERY_ORIGINS`, more pages allowed to call it from a browser,
+   comma-separated (say `http://localhost:4321`, to try a local build with
+   the real keys; the site's own origins are always allowed, others get no
+   CORS headers). `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are
+   provided automatically.
 4. **Deploy.** The function checks everything itself and is called before
    anyone is signed in, so JWT verification is off:
 

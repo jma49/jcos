@@ -31,6 +31,7 @@ characters over `git ls-files`.
 | anything under `src/os/`: windows, the Dock, menus, apps, desktop pictures, the sky | [docs/agents/desktop.md](docs/agents/desktop.md) |
 | the iPod, Karaoke, songs, lyrics, anything that makes a sound | [docs/agents/media.md](docs/agents/media.md) |
 | accounts, Stickies, Chat, presence, AirDrop, Soapbox, the schema, migrations, Edge Functions | [docs/agents/supabase.md](docs/agents/supabase.md) (with its Security section) |
+| the Vercel Functions in `api/`, the Edge Functions, or what the site calls | [docs/agents/api.md](docs/agents/api.md) |
 | anything on the first load, or that runs per frame | [docs/agents/performance.md](docs/agents/performance.md) |
 | adding an app, applet, song, desktop picture or project | [docs/agents/adding.md](docs/agents/adding.md) |
 | anything at all | [docs/agents/pitfalls.md](docs/agents/pitfalls.md): mistakes already made once |
