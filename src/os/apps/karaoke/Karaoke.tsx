@@ -3,7 +3,8 @@ import { NextGlyph, PauseGlyph, PlayGlyph, PreviousGlyph } from '../../core/glyp
 import type { AppProps } from '../../core/registry';
 import { useFocusedId } from '../../core/store';
 import { lineAt, lineFill, useLyrics } from '../../media/lyrics';
-import { albumOf, ALBUMS, coverOf, fromLibrary, lyricOffset, SONGS, tracksOf, type Song } from '../../media/library';
+import { albumOf, ALBUMS, coverOf, fromLibrary, lyricOffset, SONGS, tracksOf, useLibraryVersion, type Song } from '../../media/library';
+import { useLibraryRefresh } from '../../media/refresh';
 import { currentTime, formatTime, seek, seekBy, useClock, useMusic } from '../../media/music';
 import { useKeys } from '../../core/useKeys';
 import { usePlayer } from '../../media/player';
@@ -54,6 +55,9 @@ function Listening({ song, next, note }: { song: Song; next: Song | null; note?:
 }
 
 export default function Karaoke({ win }: AppProps) {
+  // Songs added during the visit show up in the picker too (media/library.ts).
+  useLibraryVersion();
+  useLibraryRefresh();
   const { host, status, live } = usePlayer('karaoke');
   const music = useMusic();
   const { time, duration } = useClock(500);
