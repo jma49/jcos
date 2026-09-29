@@ -91,8 +91,11 @@ The code that isn't in the browser (each endpoint's parameters, answers and conv
   the video's own images on i.ytimg.com (`maxresdefault`, `hq2`…), never
   an address, and `cover_x` where the case crops it. At most
   `music_settings.disc_limit` discs (200), counted under an advisory
-  lock. Changes reach open desktops over Realtime. Visitors' own discs
-  (DVD-Rs) stay in their browser and never reach the database.
+  lock. Changes reach open desktops over Realtime (`media/discWatch.ts`,
+  loaded once the desktop has settled): the shelf stays current, and a
+  new disc brings a notice with Play DVD, except on the page that burned
+  it. Visitors' own discs (DVD-Rs) stay in their browser and never reach
+  the database.
 - **Chat** (`apps/chat/`, `social/chatState.ts`): public rooms listed
   in `public.chat_rooms` (add one in the Table editor) and private
   conversations between two members (rooms named
