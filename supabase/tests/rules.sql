@@ -36,6 +36,44 @@ select pg_temp.check(not (select raw_user_meta_data ? 'recovery_email' from auth
 select pg_temp.check(pg_temp.refused($$insert into auth.users (email, raw_user_meta_data) values ('x@evil.com', '{"username":"xyz"}')$$), 'accounts are only made through JM/OS');
 select pg_temp.check(pg_temp.refused($$insert into auth.users (email, raw_user_meta_data) values ('A!@users.majincheng.com', '{"username":"A!"}')$$), 'usernames are checked');
 
+-- The owner -------------------------------------------------------------
+
+insert into auth.users (id, email, raw_user_meta_data) values
+  ('99999999-9999-9999-9999-999999999999', 'jincheng@users.majincheng.com', '{"username":"jincheng"}');
+select pg_temp.act_as('authenticated', '99999999-9999-9999-9999-999999999999');
+select pg_temp.check(not public.is_owner(), 'no one is the owner until Jincheng''s account is added');
+reset role;
+-- What Jincheng runs once in the SQL editor.
+insert into private.owners (user_id)
+select id from auth.users where email = 'jincheng@users.majincheng.com'
+on conflict do nothing;
+
+select pg_temp.act_as('authenticated', '99999999-9999-9999-9999-999999999999');
+select pg_temp.check(public.is_owner(), 'Jincheng is the owner');
+select pg_temp.act_as('authenticated', '11111111-1111-1111-1111-111111111111');
+select pg_temp.check(not public.is_owner(), 'another member isn''t');
+select pg_temp.check(pg_temp.refused($$select 1 from private.owners$$), 'members can''t see who the owner is');
+select pg_temp.check(pg_temp.refused($$insert into private.owners (user_id) values ('11111111-1111-1111-1111-111111111111')$$), 'no one makes themselves the owner');
+select pg_temp.act_as('anon');
+select pg_temp.check(not public.is_owner(), 'a visitor isn''t');
+select pg_temp.check(pg_temp.refused($$select 1 from private.owners$$), 'visitors can''t see who the owner is');
+reset role;
+
+-- A room only the owner may enter, the way the private tables will do it.
+create table public.owner_probe (id int primary key);
+alter table public.owner_probe enable row level security;
+create policy "Only the owner" on public.owner_probe for select to anon, authenticated using ((select public.is_owner()));
+grant select on public.owner_probe to anon, authenticated;
+insert into public.owner_probe values (1);
+select pg_temp.act_as('authenticated', '99999999-9999-9999-9999-999999999999');
+select pg_temp.check((select count(*) from public.owner_probe) = 1, 'the owner reads an owner-only row');
+select pg_temp.act_as('authenticated', '11111111-1111-1111-1111-111111111111');
+select pg_temp.check((select count(*) from public.owner_probe) = 0, 'another member doesn''t');
+select pg_temp.act_as('anon');
+select pg_temp.check((select count(*) from public.owner_probe) = 0, 'nor does a visitor');
+reset role;
+drop table public.owner_probe;
+
 -- Stickies --------------------------------------------------------------
 
 select pg_temp.act_as('anon');

@@ -21,6 +21,7 @@ and two Supabase Edge Functions.
   | `chat_activity()` | everyone | the last message time of each room the caller can read, for unread counts |
   | `song_limit()` | everyone | how many songs the library may hold (read by `/api/songs`) |
   | `now_playing_position()` | everyone | where the song Jincheng is playing is now, by the database's clock |
+  | `is_owner()` | everyone | whether the caller is Jincheng, the owner; owner-only policies call it, and the site asks only to decide what to show |
   | `my_reactions()` | members | the member's own Soapbox reactions |
   | `my_recovery_email()`, `set_recovery_email(address)` | members | the member's recovery address |
   | `chat_can_read(room)`, `chat_can_write(room)` | everyone / members | used by chat's row-level security, not called by the site |

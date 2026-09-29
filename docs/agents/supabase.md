@@ -24,6 +24,7 @@ advisory lock (Security, below).
 | `music_settings` | the bot; visitors only through `song_limit()` | Jincheng, in the Table editor | |
 | `now_playing` | everyone, while the song plays | the bot, through `music_play()` and `music_stop()` | one song |
 | `private.recovery_emails`, `private.password_resets`, `private.secrets` | not reachable through the API | account functions and the database | resets: 3 per account and 3 per address an hour, 60 an hour in all; a link lasts 30 minutes |
+| `private.owners` | not reachable through the API; `is_owner()` tells the caller whether they're in it | Jincheng, once, in the SQL editor | Jincheng's account |
 | `soapbox` storage bucket | everyone | the bot | images only, 10 MB each |
 | Presence channel (Realtime) | everyone on the desktop | anyone, unchecked: receivers check what arrives | pointers stop past 12 people |
 
@@ -52,6 +53,14 @@ The code that isn't in the browser (each endpoint's parameters, answers and conv
   setup in its README); the link opens `/?open=account&reset=<token>`.
   The email (subject, text and the Aqua-window HTML) is `email.ts` there;
   `preview.mjs` renders it to a file.
+- **The owner** (`supabase/migrations/20260929100000_owner.sql`):
+  Jincheng's account id sits in `private.owners`, and `public.is_owner()`
+  says whether the caller is Jincheng. Owner-only tables check
+  `(select public.is_owner())` in their row-level security (in a
+  sub-select, so it runs once per statement), and functions that change
+  shared data on the owner's behalf check it too. `social/owner.ts` asks
+  it once per sign-in, only to decide what to show. The `astro dev`
+  stand-in treats a member named `jincheng` as the owner.
 - **Stickies**: members only, three notes in any 24 hours, signed with the
   username; members can take their own down. Hide a note by setting
   `approved` to false in the Table editor.
@@ -131,7 +140,8 @@ browser.
   only reads what its caller may read anyway is `security invoker`.
 - Policies check something real: no `with check (true)`. Run Supabase's
   Advisors › Security after each migration; the findings left on purpose
-  are listed in `supabase/migrations/20260926100511_advisor.sql`.
+  are listed in `supabase/migrations/20260926100511_advisor.sql` and
+  `20260929100000_owner.sql`.
 - A limit that counts rows before inserting ("three a day") takes a
   transaction-scoped advisory lock for whoever it limits first
   (`pg_advisory_xact_lock`), or concurrent requests all get through.

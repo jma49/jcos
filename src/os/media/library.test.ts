@@ -119,7 +119,7 @@ describe('refreshLibrary', () => {
   afterEach(() => vi.restoreAllMocks());
 
   test('asks again only once the library is a minute old', async () => {
-    const { library, refresh, asks, later } = await loaded([A, B, NEW]);
+    const { refresh, asks, later } = await loaded([A, B, NEW]);
     await refresh.refreshLibrary();
     expect(asks.count).toBe(0);
     later(refresh.REFRESH_AFTER_MS);

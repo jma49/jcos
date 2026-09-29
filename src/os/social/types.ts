@@ -228,6 +228,11 @@ export interface Social {
   recoveryEmail: () => Promise<string | null>;
   /** Sets the signed-in member's recovery address, or removes it with null. */
   setRecoveryEmail: (email: string | null) => Promise<void>;
+  /**
+   * Whether the signed-in member is Jincheng, the owner (false signed out).
+   * Only to decide what to show: the database keeps the owner's rooms shut.
+   */
+  isOwner: () => Promise<boolean>;
 
   /** The newest visible notes. */
   listNotes: () => Promise<Note[]>;
