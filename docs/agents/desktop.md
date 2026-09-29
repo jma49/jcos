@@ -62,7 +62,15 @@ only `kit/`. The lint enforces all three.
   or Applets (Finder puts the app id on the drag as `APP_MIME`), or a
   running app's slot dragged left, keeps it. The Dock menu has Keep in
   Dock and Remove from Dock; Finder stays first; System Preferences ›
-  Dock restores the default. Phones keep `mobileDockApps`. Keep the Dock and the
+  Dock restores the default. Phones keep `mobileDockApps`. The drag
+  itself is `shell/dockDrag.tsx`, fetched once the desktop has settled
+  or on the first press (it isn't in the first load); it writes
+  `shell/dockDragState.ts` and the Dock draws it. Every slot opens and
+  closes on one spring (`SLIDE` in `Dock.tsx`): a gap where a drop would
+  land, a dragged or leaving app's slot closing, an arriving one
+  opening, so a slot closing while another opens keeps the Dock still.
+  A drop lands in one step (`instant`), with the dragged icon kept over
+  its place until the slot shows. With motion reduced, slots jump. Keep the Dock and the
   desktop (`shell/DesktopIcons.tsx`: Macintosh HD, About Me, Résumé,
   Projects) short; a phone's home screen lists every app.
 - `src/os/apps/`: one folder per built-in app. Content comes from `OSData`,

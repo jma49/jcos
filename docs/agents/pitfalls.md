@@ -130,6 +130,13 @@ again.
 - Unsplash blocks Vercel's build servers. Photos come from the snapshot
   in `src/data/photos.json`, or from the API with
   `UNSPLASH_ACCESS_KEY`.
+- A motion value jumped (or set) in a layout effect declared *before*
+  the `useTransform` calls that read it goes unnoticed until the next
+  render: `useTransform` subscribes again after every render, and its
+  cleanup cancels its pending update. The Dock's dropped icon stayed
+  invisible for six frames. Put such effects after the transforms
+  (`Magnified` in `shell/Dock.tsx`), and check an animation frame by
+  frame (`requestAnimationFrame` in the page), not only its end state.
 
 ## Games
 
