@@ -58,14 +58,15 @@ export function DiscFace({ disc, size }: { disc: ShelfDisc; size: number }) {
 }
 
 /**
- * A disc as Finder's icon of `size` px: its case standing in the icon's
- * square, or at list size, a tiny cover with a black rim.
+ * A disc as Finder's icon of `size` px: its case, as tall as the icon
+ * (and as wide as a case that tall is), or at list size, a tiny cover
+ * with a black rim.
  */
 export function DiscThumb({ disc, size }: { disc: ShelfDisc; size: number }) {
   useStyles();
   if (size <= 24) return <span className="os-disc-mini" style={{ ...artOf(disc), '--h': `${size}px` } as CSSProperties} />;
   return (
-    <span className="os-disc-icon" style={{ width: size, height: size }}>
+    <span className="os-disc-icon" style={{ height: size }}>
       <DiscCase disc={disc} width={Math.round((size * 135) / 190)} />
     </span>
   );
