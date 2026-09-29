@@ -63,3 +63,20 @@ wait
 added=$(( $(psql -tA -d "$DB" -c "select count(*) from public.songs") - before ))
 [ "$added" = 3 ] || { echo "FAILED: six songs at once with room for three added $added"; exit 1; }
 echo "ok: six songs at once, room for three, three added"
+
+# Discs: with room for three more, six burned at once by the bot.
+psql -q -v ON_ERROR_STOP=1 -d "$DB" -c "update public.music_settings set value = to_jsonb((select count(*) from public.discs) + 3) where name = 'disc_limit'" >/dev/null
+before=$(psql -tA -d "$DB" -c "select count(*) from public.discs")
+for i in 1 2 3 4 5 6; do
+  psql -q -d "$DB" >/dev/null 2>&1 <<SQL &
+begin;
+set local role service_role;
+insert into public.discs (id, title) values ('race0000${i}xx', 'Race $i');
+select pg_sleep(0.3);
+commit;
+SQL
+done
+wait
+burned=$(( $(psql -tA -d "$DB" -c "select count(*) from public.discs") - before ))
+[ "$burned" = 3 ] || { echo "FAILED: six discs at once with room for three burned $burned"; exit 1; }
+echo "ok: six discs at once, room for three, three burned"
