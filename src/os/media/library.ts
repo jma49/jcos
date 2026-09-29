@@ -11,16 +11,18 @@
 // in SONGS stays a stable handle for the whole visit.
 
 import { useSyncExternalStore } from 'react';
-import { DEFAULT_LIMIT, type Album, type Library, type Song } from '../../lib/library';
+import { DEFAULT_LIMIT, type Album, type Disc, type Library, type Song } from '../../lib/library';
 import { getSocial } from '../social/social';
 
-export type { Album, Song };
+export type { Album, Disc, Song };
 
 /** Every album and song. Empty until loadLibrary() has finished. */
 export let ALBUMS: Album[] = [];
 export let SONGS: Song[] = [];
 /** How many songs the library may hold. */
 export let SONG_LIMIT = DEFAULT_LIMIT;
+/** DVD Player's shelf: the discs Jincheng has burned, oldest first (media/discs.ts adds a visitor's own). */
+export let DISCS: Disc[] = [];
 
 let loading: Promise<void> | null = null;
 /** When the library was last read, and how many times it has changed this visit. */
@@ -43,6 +45,7 @@ export function loadLibrary(): Promise<void> {
     ALBUMS = library.albums;
     SONGS = library.songs;
     SONG_LIMIT = library.limit ?? DEFAULT_LIMIT;
+    DISCS = library.discs ?? [];
     readAt = Date.now();
     changed();
   })().catch((error) => {
@@ -72,7 +75,18 @@ export function applyLibrary(next: Library) {
   ALBUMS = next.albums;
   SONGS = next.songs;
   SONG_LIMIT = next.limit ?? SONG_LIMIT;
+  DISCS = next.discs ?? DISCS;
   readAt = Date.now();
+  changed();
+}
+
+/**
+ * Replaces the shelf with `discs`, for a change heard sooner than the
+ * library is read again: one Jincheng made on this page, or one Realtime
+ * brought. Discs aren't handles the way songs are, so they may come and go.
+ */
+export function applyDiscs(discs: Disc[]) {
+  DISCS = discs;
   changed();
 }
 

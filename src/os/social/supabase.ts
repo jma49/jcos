@@ -4,7 +4,7 @@
 
 import { createClient, type PostgrestError, type User } from '@supabase/supabase-js';
 import { CURSOR_COLORS } from './social';
-import { songOf } from '../../lib/library';
+import { discOf, songOf, type Disc } from '../../lib/library';
 import {
   LOBBY,
   NOTES_PER_DAY,
@@ -33,6 +33,22 @@ const addressOf = (username: string) => `${username}@users.majincheng.com`;
 
 const accountOf = (user: User | null | undefined): Account | null =>
   user ? { id: user.id, username: String(user.user_metadata?.username ?? user.email?.split('@')[0] ?? '') } : null;
+
+/** The columns of a disc, as the shelf gives them to everyone. */
+const DISC_COLUMNS = 'id,title,artist,cover,cover_x,duration_ms,added_at';
+
+/** A disc's fields as the database names them, leaving out what isn't given. */
+const discRow = (d: Partial<Disc>) => ({
+  ...(d.id !== undefined ? { id: d.id } : {}),
+  ...(d.title !== undefined ? { title: d.title } : {}),
+  ...('artist' in d ? { artist: d.artist ?? null } : {}),
+  ...(d.cover !== undefined ? { cover: d.cover } : {}),
+  ...(d.coverX !== undefined ? { cover_x: d.coverX } : {}),
+  ...(d.duration !== undefined ? { duration_ms: d.duration } : {})
+});
+
+/** A write to the shelf from anyone but the owner, which row-level security refuses (42501). */
+const notOwner = () => new SocialError('failed', 'Only Jincheng can change the discs everyone sees.');
 
 /** Turns a database refusal into one the interface can explain. */
 function refusal(error: PostgrestError): SocialError {
@@ -388,6 +404,38 @@ export function supabaseSocial(url: string, key: string): Social {
         .maybeSingle();
       if (error) throw error;
       return data ? songOf(data) : null;
+    },
+
+    async shelf() {
+      const { data, error } = await client.from('discs').select(DISC_COLUMNS).order('added_at').order('id');
+      if (error) throw error;
+      return (data ?? []).map(discOf);
+    },
+
+    async burnDisc(disc) {
+      member();
+      const { data, error } = await client.from('discs').insert(discRow(disc)).select(DISC_COLUMNS).single();
+      if (error) {
+        if (error.code === '42501') throw notOwner();
+        if (error.code === '23505') throw new SocialError('already', 'That video is already on the shelf.');
+        throw refusal(error);
+      }
+      return discOf(data);
+    },
+
+    // Row-level security lets anyone else's change reach no row, without an
+    // error; the site offers these only to the owner, and a disc already
+    // gone is gone either way.
+    async relabelDisc(id, change) {
+      member();
+      const { error } = await client.from('discs').update(discRow(change)).eq('id', id);
+      if (error) throw error.code === '42501' ? notOwner() : refusal(error);
+    },
+
+    async removeDisc(id) {
+      member();
+      const { error } = await client.from('discs').delete().eq('id', id);
+      if (error) throw error.code === '42501' ? notOwner() : refusal(error);
     },
 
     async nowPlaying() {

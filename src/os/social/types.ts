@@ -1,4 +1,4 @@
-import type { Song } from '../../lib/library';
+import type { Disc, Song } from '../../lib/library';
 // What the social features share, whichever backend serves them: Supabase
 // in production (supabase.ts) or a stand-in during `astro dev` (local.ts).
 
@@ -286,6 +286,15 @@ export interface Social {
     onChange: (now: Pick<NowPlaying, 'songId' | 'remainingMs'> | null) => void,
     onConnected?: () => void
   ) => () => void;
+
+  /** DVD Player's shelf as the database has it now (the library's copy can be a minute old). */
+  shelf: () => Promise<Disc[]>;
+  /** Burns a disc for everyone, as the shelf keeps it. Only the owner may. */
+  burnDisc: (disc: Omit<Disc, 'added'>) => Promise<Disc>;
+  /** Changes one of the discs: its name, its case, or its length once known. Only the owner may. */
+  relabelDisc: (id: string, change: Partial<Pick<Disc, 'title' | 'artist' | 'cover' | 'coverX' | 'duration'>>) => Promise<void>;
+  /** Takes a disc off the shelf. Only the owner may. */
+  removeDisc: (id: string) => Promise<void>;
 }
 
 /** A song Jincheng is playing for everyone on the desktop (/play in Telegram). */
