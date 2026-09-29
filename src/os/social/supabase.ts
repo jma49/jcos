@@ -204,6 +204,13 @@ export function supabaseSocial(url: string, key: string): Social {
       }
     },
 
+    async isOwner() {
+      if (!current) return false;
+      const { data, error } = await client.rpc('is_owner');
+      if (error) throw refusal(error);
+      return data === true;
+    },
+
     async signOut() {
       await client.auth.signOut();
       current = null;

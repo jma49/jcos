@@ -33,6 +33,8 @@ const USERS_KEY = 'os-dev-users';
 const SESSION_KEY = 'os-dev-session';
 const CHAT_KEY = 'os-dev-chat';
 const RESETS_KEY = 'os-dev-resets';
+/** The member the stand-in treats as the owner: sign up as this to see his rooms. */
+const DEV_OWNER = 'jincheng';
 
 /** Stand-in Soapbox posts; the real ones come from the Telegram bot. */
 const SAMPLE_POSTS: Omit<Post, 'reactions'>[] = [
@@ -208,6 +210,10 @@ export function localSocial(): Social {
       const address = email?.trim() || undefined;
       if (address && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(address)) throw new SocialError('invalid', 'That doesn’t look like an email address.');
       saveJSON(USERS_KEY, users().map((u) => (u.id === me.id ? { ...u, recovery: address } : u)));
+    },
+
+    async isOwner() {
+      return current?.username === DEV_OWNER;
     },
 
     async listNotes() {
