@@ -8,7 +8,8 @@ import { chapterAt, chapterPictures, chapterStart, CHAPTERS, noteLength, picture
 import { ejectDisc, useDrive } from '../../media/drive';
 import { formatTime, useMusic } from '../../media/music';
 import { useIsOwner } from '../../social/owner';
-import { FloatingController, InlineController } from './Controller';
+import { FloatingController } from './Controller';
+import { Chapters, Hud } from './FullScreen';
 import { useDiscPlayer } from './useDiscPlayer';
 
 // DVD Player, as in Tiger: a window named after the disc in the drive,
@@ -17,9 +18,14 @@ import { useDiscPlayer } from './useDiscPlayer';
 // Controller's pad, the arrow keys and Return move through. A video is
 // four chapters of equal length, pictured by YouTube's own frames.
 //
+// Full screen (⌘F, or a double-click on the picture) is Leopard's: the
+// chapters along the top and the controls along the bottom, which come
+// when the pointer moves and go when it rests while the disc plays. A
+// phone, where DVD Player has the whole screen, always looks that way.
+//
 // Keys: Space plays or pauses, ←/→ go to the previous or next chapter
 // (in a menu they move the choice, with ↑/↓ and Return), Escape goes
-// back a menu, and ⌘E ejects.
+// back a menu (or out of full screen), ⌘F is full screen and ⌘E ejects.
 
 type Screen = 'menu' | 'scenes' | 'movie';
 
@@ -39,6 +45,9 @@ export default function DVDPlayer({ win }: AppProps) {
   /** A chapter asked for before the video's length was known. */
   const wanted = useRef<number | null>(null);
   const volume = useMusic((s) => s.volume);
+  const screenEl = useRef<HTMLDivElement>(null);
+  const [full, setFull] = useState(false);
+  const canFullScreen = typeof document !== 'undefined' && document.fullscreenEnabled === true;
 
   // The shelf is read fresh while DVD Player is open, for a disc relabelled meanwhile.
   useShelfRefresh();
@@ -99,6 +108,36 @@ export default function DVDPlayer({ win }: AppProps) {
   }, [osd]);
 
   const chapter = chapterAt(clock.time, clock.duration);
+
+  // Full screen is the browser's, on the picture (the player can't move without reloading).
+  useEffect(() => {
+    const onChange = () => setFull(!!screenEl.current && document.fullscreenElement === screenEl.current);
+    document.addEventListener('fullscreenchange', onChange);
+    return () => document.removeEventListener('fullscreenchange', onChange);
+  }, []);
+  const toggleFull = () => {
+    if (document.fullscreenElement) void document.exitFullscreen().catch(() => {});
+    else if (canFullScreen && disc) void screenEl.current?.requestFullscreen().catch(() => {});
+  };
+
+  // The chapters and controls rest out of sight while the disc plays, until the pointer moves.
+  const hud = !!disc && (full || phone);
+  const resting = hud && screen === 'movie' && player.playing;
+  const [idle, setIdle] = useState(false);
+  const [stirred, setStirred] = useState(0);
+  const lastStir = useRef(0);
+  const stir = () => {
+    const now = Date.now();
+    if (!idle && now - lastStir.current < 500) return;
+    lastStir.current = now;
+    setIdle(false);
+    setStirred((n) => n + 1);
+  };
+  useEffect(() => {
+    if (!resting) return setIdle(false);
+    const timer = setTimeout(() => setIdle(true), 2500);
+    return () => clearTimeout(timer);
+  }, [resting, stirred]);
 
   const playChapter = (n: number) => {
     setScreen('movie');
@@ -181,7 +220,14 @@ export default function DVDPlayer({ win }: AppProps) {
 
   const eject = () => {
     player.pause();
+    if (document.fullscreenElement) void document.exitFullscreen().catch(() => {});
     ejectDisc();
+  };
+
+  /** A chapter picked in the strip along the top: there, playing or not. */
+  const goToChapter = (n: number) => {
+    player.seek(chapterStart(n, clock.duration));
+    flash(`Chapter ${n + 1}`);
   };
 
   useKeys(front && !!disc, {
@@ -191,20 +237,25 @@ export default function DVDPlayer({ win }: AppProps) {
     ArrowLeft: () => pad('left'),
     ArrowRight: () => pad('right'),
     Enter: () => (screen === 'movie' ? playPause() : choose(choice)),
-    Escape: () => (screen === 'scenes' ? (setScreen('menu'), setChoice(1)) : screen === 'movie' ? toMenu() : undefined)
+    // Leaving full screen, the browser takes Escape itself.
+    Escape: () => (screen === 'scenes' ? (setScreen('menu'), setChoice(1)) : screen === 'movie' && !full ? toMenu() : undefined)
   });
 
-  // ⌘E ejects, as on a Mac (useKeys leaves ⌘ alone).
-  const ejectRef = useRef(eject);
+  // ⌘E ejects and ⌘F is full screen, as on a Mac (useKeys leaves ⌘ alone).
+  const commands = useRef({ eject, toggleFull });
   useEffect(() => {
-    ejectRef.current = eject;
+    commands.current = { eject, toggleFull };
   });
   useEffect(() => {
     if (!front || !disc) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.metaKey && e.code === 'KeyE') {
+      if (!e.metaKey) return;
+      if (e.code === 'KeyE') {
         e.preventDefault();
-        ejectRef.current();
+        commands.current.eject();
+      } else if (e.code === 'KeyF') {
+        e.preventDefault();
+        commands.current.toggleFull();
       }
     };
     window.addEventListener('keydown', onKey);
@@ -238,7 +289,8 @@ export default function DVDPlayer({ win }: AppProps) {
     onRewind: () => screen === 'movie' && player.seek(clock.time - 10),
     onForward: () => screen === 'movie' && player.seek(clock.time + 10),
     onLoop: () => setLoop((l) => !l),
-    onVolume: (v: number) => useMusic.getState().setVolume(v)
+    onVolume: (v: number) => useMusic.getState().setVolume(v),
+    onFullScreen: toggleFull
   };
 
   // The Controls menu in the menu bar while DVD Player is in front, as Tiger's had.
@@ -262,18 +314,27 @@ export default function DVDPlayer({ win }: AppProps) {
         { label: 'Disc Menu', disabled: !loaded, action: run((c) => c.onMenu()) },
         { label: loop ? 'Loop: On' : 'Loop: Off', disabled: !loaded, action: run((c) => c.onLoop()) },
         { label: '', divider: true },
+        { label: full ? 'Exit Full Screen' : 'Enter Full Screen', shortcut: '⌘F', disabled: !loaded || !canFullScreen, action: run((c) => c.onFullScreen()) },
         { label: 'Eject DVD', shortcut: '⌘E', disabled: !loaded, action: run((c) => c.onEject()) }
       ]
     });
     return () => setMenus(win.id, undefined);
-  }, [win.id, loaded, isPlaying, loop]);
+  }, [win.id, loaded, isPlaying, loop, full, canFullScreen]);
 
   const zTop = useWindows((s) => 10 + s.order.length);
   const exposeOpen = useWindows((s) => s.exposeOpen);
 
   return (
     <div className="os-app os-dvd" data-phone={phone || undefined}>
-      <div className="os-dvd-screen" onDoubleClick={() => screen === 'movie' && playPause()}>
+      <div
+        ref={screenEl}
+        className="os-dvd-screen"
+        data-full={full || undefined}
+        data-idle={(resting && idle) || undefined}
+        onPointerMove={hud ? stir : undefined}
+        onPointerDown={hud ? stir : undefined}
+        onDoubleClick={() => screen === 'movie' && !phone && toggleFull()}
+      >
         {disc ? (
           // Keyed, so a disc's player never shares its element with another's or the empty screen.
           <Fragment key={disc.id}>
@@ -290,6 +351,31 @@ export default function DVDPlayer({ win }: AppProps) {
                 {osd.text}
               </div>
             )}
+            {hud && screen === 'movie' && <Chapters disc={disc} duration={clock.duration} chapter={chapter} onChapter={goToChapter} />}
+            {hud && (screen === 'movie' || phone) && (
+              <Hud
+                disc={disc}
+                time={screen === 'movie' ? clock.time : 0}
+                duration={clock.duration}
+                chapter={chapter}
+                playing={player.playing}
+                volume={volume}
+                full={full}
+                canFullScreen={canFullScreen}
+                onChapter={goToChapter}
+                onSeek={(t) => player.seek(t)}
+                onMenu={toMenu}
+                onEject={eject}
+                onStop={stop}
+                onPrevious={() => step(-1)}
+                onRewind={controls.onRewind}
+                onPlayPause={playPause}
+                onForward={controls.onForward}
+                onNext={() => step(1)}
+                onVolume={controls.onVolume}
+                onFullScreen={toggleFull}
+              />
+            )}
           </Fragment>
         ) : (
           <div className="os-dvd-empty" key="empty">
@@ -301,12 +387,8 @@ export default function DVDPlayer({ win }: AppProps) {
           </div>
         )}
       </div>
-      {phone ? (
-        <InlineController {...controls} />
-      ) : (
-        front &&
-        !win.minimized &&
-        !exposeOpen && <FloatingController {...controls} below={{ x: win.x, y: win.y, width: win.width, height: win.height }} z={zTop} />
+      {!phone && front && !win.minimized && !exposeOpen && !full && (
+        <FloatingController {...controls} below={{ x: win.x, y: win.y, width: win.width, height: win.height }} z={zTop} />
       )}
     </div>
   );

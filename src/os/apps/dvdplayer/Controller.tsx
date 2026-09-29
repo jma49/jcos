@@ -1,9 +1,10 @@
-import { useState, type CSSProperties, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react';
+import { useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from 'react';
 import { createPortal } from 'react-dom';
 import { PauseGlyph, PlayGlyph, SpeakerLowGlyph } from '../../core/glyphs';
 import { loadSettings, updateJSON } from '../../core/storage';
 import { MENU_BAR_HEIGHT } from '../../core/store';
 import type { Rect } from '../../core/types';
+import { ChapterBackGlyph, ChapterNextGlyph, EjectGlyph, FastForwardGlyph, RewindGlyph, StopGlyph } from './glyphs';
 
 // The Controller: Tiger's DVD Player remote. On a desktop it floats by
 // itself below the picture, a panel as on a Mac: it shows while DVD
@@ -12,7 +13,7 @@ import type { Rect } from '../../core/types';
 // music's volume, and the transport: stop, previous chapter, play or
 // pause, next chapter and eject. The drawer at its end slides out rewind,
 // fast forward and loop. Dragged by its metal, it stays where it's left
-// (os-dvd). On a phone it sits under the picture.
+// (os-dvd). A phone has the full-screen controls instead (FullScreen.tsx).
 
 const SETTINGS_KEY = 'os-dvd';
 const WIDTH = 486;
@@ -42,45 +43,6 @@ export interface ControllerProps {
   onLoop: () => void;
   onVolume: (volume: number) => void;
 }
-
-function Glyph({ children }: { children: ReactNode }) {
-  return (
-    <svg className="os-glyph" viewBox="0 0 16 16" width="1em" height="1em" fill="currentColor" aria-hidden="true" focusable="false">
-      {children}
-    </svg>
-  );
-}
-
-const StopGlyph = () => (
-  <Glyph>
-    <path d="M3.2 3.2h9.6v9.6H3.2z" />
-  </Glyph>
-);
-const ChapterBackGlyph = () => (
-  <Glyph>
-    <path d="M1.6 3h1.8v10H1.6zM8.6 3v10L3.4 8zM14.4 3v10L9.2 8z" />
-  </Glyph>
-);
-const ChapterNextGlyph = () => (
-  <Glyph>
-    <path d="M1.6 3v10L6.8 8zM7.4 3v10L12.6 8zM12.6 3h1.8v10h-1.8z" />
-  </Glyph>
-);
-const EjectGlyph = () => (
-  <Glyph>
-    <path d="M8 2.2l6.2 6.6H1.8zM1.8 10.6h12.4v2.8H1.8z" />
-  </Glyph>
-);
-const RewindGlyph = () => (
-  <Glyph>
-    <path d="M8 3v10L1.5 8zM14.5 3v10L8 8z" />
-  </Glyph>
-);
-const FastForwardGlyph = () => (
-  <Glyph>
-    <path d="M1.5 3v10L8 8zM8 3v10L14.5 8z" />
-  </Glyph>
-);
 
 /** The remote's buttons and display, wherever it's drawn. */
 function Remote(p: ControllerProps & { drawer: boolean; onDrawer: () => void }) {
@@ -165,16 +127,6 @@ function Remote(p: ControllerProps & { drawer: boolean; onDrawer: () => void }) 
         </div>
       )}
     </>
-  );
-}
-
-/** The Controller under the picture, on a phone. */
-export function InlineController(props: ControllerProps) {
-  const [drawer, setDrawer] = useState(false);
-  return (
-    <div className="os-dvd-controller" data-inline="">
-      <Remote {...props} drawer={drawer} onDrawer={() => setDrawer((d) => !d)} />
-    </div>
   );
 }
 
