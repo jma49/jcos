@@ -32,7 +32,8 @@ export interface DiscPlayer {
   /** Plays, from `from` seconds or from where it is. */
   play: (from?: number) => void;
   pause: () => void;
-  seek: (seconds: number) => void;
+  /** Goes to `seconds`; `ahead: false` only within what's loaded, for a slider as it's dragged. */
+  seek: (seconds: number, ahead?: boolean) => void;
   time: () => number;
   /** The video's length in seconds; 0 until YouTube says. */
   duration: () => number;
@@ -62,6 +63,8 @@ export function useDiscPlayer(videoId: string | null, onEnded: () => void): Disc
   const player = useRef<YTPlayer | null>(null);
   const pending = useRef<Pending>(null);
   const watchdog = useRef(0);
+  /** YouTube can't be reached, or won't play this video: there's nothing to play. */
+  const failed = useRef(false);
   const ended = useRef(onEnded);
   const [status, setStatus] = useState<DiscPlayer['status']>('loading');
   const [started, setStarted] = useState(false);
@@ -130,6 +133,8 @@ export function useDiscPlayer(videoId: string | null, onEnded: () => void): Disc
             },
             onError: () => {
               if (dead) return;
+              failed.current = true;
+              pending.current = null;
               setStatus('unplayable');
               setStarted(false);
               setPlaying(false);
@@ -138,11 +143,19 @@ export function useDiscPlayer(videoId: string | null, onEnded: () => void): Disc
           }
         });
       },
-      () => !dead && setStatus('offline')
+      () => {
+        if (dead) return;
+        // A play asked for meanwhile isn't claimed: nothing will play.
+        failed.current = true;
+        pending.current = null;
+        setStatus('offline');
+        setPlaying(false);
+      }
     );
     return () => {
       dead = true;
       clearTimeout(timer.current);
+      failed.current = false;
       pending.current = null;
       player.current = null;
       made?.destroy();
@@ -181,6 +194,8 @@ export function useDiscPlayer(videoId: string | null, onEnded: () => void): Disc
   // The same functions every render, so they can be an effect's dependencies.
   const [controls] = useState(() => ({
     play: (from?: number) => {
+      // Nothing to play (the note says why): the music plays on, and nothing claims to be playing.
+      if (failed.current) return;
       // Pressing play asks for sound, and the disc takes the speakers from the music.
       soundOnToPlay();
       const music = useMusic.getState();
@@ -190,7 +205,16 @@ export function useDiscPlayer(videoId: string | null, onEnded: () => void): Disc
         // The mask goes up with the command, before YouTube's button does.
         middle.playing();
         start(player.current, from, watchdog, setPlaying);
-      } else pending.current = { from };
+      } else {
+        pending.current = { from };
+        // The player not ready in 8 s either: it isn't claimed to be playing.
+        clearTimeout(watchdog.current);
+        watchdog.current = window.setTimeout(() => {
+          if (player.current) return;
+          pending.current = null;
+          setPlaying(false);
+        }, 8000);
+      }
     },
     pause: () => {
       pending.current = null;
@@ -198,8 +222,8 @@ export function useDiscPlayer(videoId: string | null, onEnded: () => void): Disc
       setPlaying(false);
       middle.paused();
     },
-    seek: (seconds: number) => {
-      player.current?.seekTo(Math.max(0, seconds), true);
+    seek: (seconds: number, ahead = true) => {
+      player.current?.seekTo(Math.max(0, seconds), ahead);
       middle.seeked();
     },
     time: () => player.current?.getCurrentTime() ?? 0,

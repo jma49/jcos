@@ -5,8 +5,8 @@ import { PauseGlyph, PlayGlyph } from '../../core/glyphs';
 import { isPhone, useFocusedId, useWindows } from '../../core/store';
 import { useKeys } from '../../core/useKeys';
 import { artOf, DiscIcon } from '../../media/discArt';
-import { chapterAt, chapterPictures, chapterStart, CHAPTERS, noteLength, useShelfRefresh, type ShelfDisc } from '../../media/discs';
-import { ejectDisc, useDrive } from '../../media/drive';
+import { chapterAt, chapterPictures, chapterStart, CHAPTERS, noteLength, useShelf, useShelfRefresh, type ShelfDisc } from '../../media/discs';
+import { ejectDisc, sameDisc, useDrive } from '../../media/drive';
 import { formatTime, useMusic } from '../../media/music';
 import { useIsOwner } from '../../social/owner';
 import { FloatingController } from './Controller';
@@ -34,7 +34,10 @@ type Screen = 'menu' | 'scenes' | 'movie';
 const MENU = ['Play Movie', 'Scene Selection', 'Loop'] as const;
 
 export default function DVDPlayer({ win }: AppProps) {
-  const { disc, inserted } = useDrive();
+  const { disc: inDrive, inserted } = useDrive();
+  // The disc as the shelf has it now, relabelled or its length known since it went in (else as it went in).
+  const shelf = useShelf();
+  const disc = inDrive && (shelf.find((d) => sameDisc(d, inDrive)) ?? inDrive);
   const owner = useIsOwner();
   const front = useFocusedId() === win.id;
   const phone = isPhone();
@@ -50,7 +53,7 @@ export default function DVDPlayer({ win }: AppProps) {
   const [full, setFull] = useState(false);
   const canFullScreen = typeof document !== 'undefined' && document.fullscreenEnabled === true;
 
-  // The shelf is read fresh while DVD Player is open, for a disc relabelled meanwhile.
+  // The shelf is read fresh while DVD Player is open, for the disc in it relabelled meanwhile.
   useShelfRefresh();
 
   const player = useDiscPlayer(disc?.id ?? null, () => {
@@ -58,13 +61,16 @@ export default function DVDPlayer({ win }: AppProps) {
     else setScreen('menu');
   });
 
-  // Each disc put in starts at its menu.
+  // Each disc put in starts at its menu, with nothing playing (a DVD-R of the video that was playing keeps its player).
+  const { pause, seek } = player;
   useEffect(() => {
+    pause();
+    seek(0);
     setScreen('menu');
     setChoice(0);
     setOsd(null);
     wanted.current = null;
-  }, [inserted]);
+  }, [inserted, pause, seek]);
 
   // The window is named after the disc in it.
   const title = disc?.title ?? 'DVD Player';
@@ -86,18 +92,20 @@ export default function DVDPlayer({ win }: AppProps) {
   }, [disc, time, duration]);
 
   // Once the video's length is known and it plays, a chapter asked for before goes on.
-  const { seek, playing } = player;
+  const { playing } = player;
   useEffect(() => {
     if (clock.duration <= 0 || wanted.current === null || !playing) return;
     seek(chapterStart(wanted.current, clock.duration));
     wanted.current = null;
   }, [clock.duration, playing, seek]);
 
-  // The length is kept, once per disc: in this browser for a DVD-R, in the database when the owner watches one of the owner's.
+  // The length is kept, once per disc: in this browser for a DVD-R, in the database when the owner watches one of the owner's
+  // (tried again once it's known the owner is watching, which can be after the length is).
   const noted = useRef<string | null>(null);
   useEffect(() => {
-    if (!disc || clock.duration <= 0 || noted.current === disc.id) return;
-    noted.current = disc.id;
+    const once = disc && `${disc.id}${disc.burnedHere ? '-r' : ''}:${owner}`;
+    if (!disc || clock.duration <= 0 || noted.current === once) return;
+    noted.current = once;
     noteLength(disc, clock.duration, owner);
   }, [disc, clock.duration, owner]);
 
@@ -376,7 +384,7 @@ export default function DVDPlayer({ win }: AppProps) {
                 full={full}
                 canFullScreen={canFullScreen}
                 onChapter={goToChapter}
-                onSeek={(t) => player.seek(t)}
+                onSeek={(t, done) => player.seek(t, done)}
                 onMenu={toMenu}
                 onEject={eject}
                 onStop={stop}
@@ -429,7 +437,7 @@ function DiscMenu({
         {disc.artist && <p>{disc.artist}</p>}
         <ul role="menu" aria-label={`${disc.title}: menu`}>
           {MENU.map((label, i) => (
-            <li key={label} role="menuitem" aria-selected={i === choice} onPointerEnter={() => onHover(i)} onClick={() => onChoose(i)}>
+            <li key={label} role="menuitem" aria-current={i === choice || undefined} onPointerEnter={() => onHover(i)} onClick={() => onChoose(i)}>
               {label === 'Loop' ? `Loop: ${loop ? 'On' : 'Off'}` : label}
             </li>
           ))}
@@ -448,13 +456,13 @@ function Scenes({ disc, choice, onHover, onChoose }: { disc: ShelfDisc; choice: 
       <h2>Scene Selection</h2>
       <ul role="menu" aria-label="Chapters">
         {chapterPictures(disc.id).map((src, i) => (
-          <li key={src} role="menuitem" aria-selected={i === choice} onPointerEnter={() => onHover(i)} onClick={() => onChoose(i)}>
+          <li key={src} role="menuitem" aria-current={i === choice || undefined} onPointerEnter={() => onHover(i)} onClick={() => onChoose(i)}>
             <img src={src} alt="" draggable={false} />
             <span>Chapter {i + 1}</span>
           </li>
         ))}
       </ul>
-      <button type="button" className="os-dvd-back" aria-selected={choice === CHAPTERS} onPointerEnter={() => onHover(CHAPTERS)} onClick={() => onChoose(CHAPTERS)}>
+      <button type="button" className="os-dvd-back" aria-current={choice === CHAPTERS || undefined} onPointerEnter={() => onHover(CHAPTERS)} onClick={() => onChoose(CHAPTERS)}>
         Main Menu
       </button>
     </div>
