@@ -8,6 +8,9 @@ import { useInstalledApplets } from '../../core/applets';
 import { buildDisk, find, type FileNode } from '../../core/files';
 import { ALBUMS, SONGS, useLibraryVersion } from '../../media/library';
 import { useLibraryRefresh } from '../../media/refresh';
+import { useShelf, useShelfRefresh } from '../../media/discs';
+import { formatTime } from '../../media/music';
+import { useIsOwner } from '../../social/owner';
 import { AirDropIcon, DiskIcon } from '../../core/icons';
 import { Drawer } from '../../shell/drawer';
 import { ContextMenu, type ContextMenuItem } from '../../shell/ContextMenu';
@@ -17,13 +20,16 @@ import { APP_MIME } from '../../core/dock';
 import { ActionMenu, ARRANGERS, ancestry, everything, FileInfo, formatDate, parentOf, Thumb, type Arrange, type View } from './parts';
 import { ColumnView } from './ColumnView';
 import { QuickLook } from './QuickLook';
+import { BurnSheet } from './BurnSheet';
+import { discPath, moviesFolder } from './movies';
 
 // Finder over Macintosh HD (files.ts): a sidebar of places, back and
 // forward, icon, list or column views, a search field that looks through
 // the whole disk, and an action (gear) menu for arranging. Double-click
 // (or Enter) opens; the arrow keys move the selection, typing a name
 // jumps to it, Space shows Quick Look, and a right-click or a drag onto
-// AirDrop shares.
+// AirDrop shares. The Movies folder is DVD Player's shelf (movies.tsx),
+// with Burn in the toolbar to make a disc from a YouTube link.
 
 interface Prefs {
   view: View;
@@ -54,7 +60,11 @@ export default function Finder({ win }: AppProps) {
   useLibraryRefresh();
   const songs = SONGS;
   const albums = ALBUMS;
-  const disk = useMemo(() => buildDisk(data, applets, { songs, albums }), [data, applets, songs, albums]);
+  // The Movies folder follows the shelf, and lets the owner throw the owner's discs away.
+  const shelf = useShelf();
+  const owner = useIsOwner();
+  const movies = useMemo(() => moviesFolder(shelf, owner), [shelf, owner]);
+  const disk = useMemo(() => buildDisk(data, applets, { songs, albums }, movies), [data, applets, songs, albums, movies]);
   const all = useMemo(() => everything(disk), [disk]);
   const [history, setHistory] = useState<string[]>(() => [win.props?.path ?? '/']);
   const [at, setAt] = useState(0);
@@ -65,6 +75,7 @@ export default function Finder({ win }: AppProps) {
   const [looking, setLooking] = useState(false);
   const [menu, setMenu] = useState<{ x: number; y: number; node: FileNode | null } | null>(null);
   const [dropping, setDropping] = useState(false);
+  const [burning, setBurning] = useState(false);
   const main = useRef<HTMLDivElement>(null);
   const typed = useRef({ text: '', at: 0 });
 
@@ -79,6 +90,9 @@ export default function Finder({ win }: AppProps) {
   const view: View = searching && prefs.view === 'columns' ? 'list' : prefs.view;
   const selectedNode = selected ? (all.find((n) => n.path === selected) ?? null) : null;
   const title = searching ? `Searching “${query.trim()}”` : folder.name;
+  const atMovies = !searching && folder.path === '/Movies';
+  // While Movies shows, the shelf is read fresh (the library's copy can be a minute old).
+  useShelfRefresh(atMovies);
 
   // Keep the window's title on the folder it shows.
   useEffect(() => {
@@ -175,7 +189,10 @@ export default function Finder({ win }: AppProps) {
   const onKey = useRef<(e: KeyboardEvent) => void>(() => {});
   onKey.current = (e) => {
     if (e.metaKey || e.altKey) {
-      if (e.code === 'ArrowUp' && parent) {
+      if (e.metaKey && e.code === 'Backspace' && selectedNode?.trash && !typing(e)) {
+        e.preventDefault();
+        selectedNode.trash();
+      } else if (e.code === 'ArrowUp' && parent) {
         e.preventDefault();
         go(parent);
       } else if (e.code === 'ArrowDown' && selectedNode) {
@@ -253,8 +270,8 @@ export default function Finder({ win }: AppProps) {
           { label: `Quick Look “${node.name}”`, shortcut: 'Space', action: () => (choose(node), setLooking(true)) },
           { label: 'Get Info', shortcut: '⌥I', action: () => (choose(node), setInfo(true)) },
           ...(searching ? [{ label: 'Show in Enclosing Folder', action: () => go(parentOf(node.path), { select: node.path }) }] : []),
-          { label: '', divider: true },
-          { label: 'Share with AirDrop…', action: () => shareViaAirDrop(node.path) }
+          ...(node.share === false ? [] : [{ label: '', divider: true }, { label: 'Share with AirDrop…', action: () => shareViaAirDrop(node.path) }]),
+          ...(node.trash ? [{ label: '', divider: true }, { label: 'Move to Trash', shortcut: '⌘⌫', action: node.trash }] : [])
         ]
       : [
           ...viewItems,
@@ -268,7 +285,8 @@ export default function Finder({ win }: AppProps) {
     { label: 'Open', disabled: !selectedNode, action: () => selectedNode && open(selectedNode, null) },
     { label: 'Quick Look', shortcut: 'Space', disabled: !selectedNode, action: () => setLooking(true) },
     { label: info ? 'Hide Info' : 'Get Info', shortcut: '⌥I', action: () => setInfo((i) => !i) },
-    { label: 'Share with AirDrop…', disabled: !selectedNode, action: () => selectedNode && shareViaAirDrop(selectedNode.path) },
+    { label: 'Share with AirDrop…', disabled: !selectedNode || selectedNode.share === false, action: () => selectedNode && shareViaAirDrop(selectedNode.path) },
+    ...(selectedNode?.trash ? [{ label: 'Move to Trash', shortcut: '⌘⌫', action: selectedNode.trash }] : []),
     ...(searching
       ? [{ label: 'Show in Enclosing Folder', disabled: !selectedNode, action: () => selectedNode && go(parentOf(selectedNode.path), { select: selectedNode.path }) }]
       : []),
@@ -292,7 +310,7 @@ export default function Finder({ win }: AppProps) {
     'data-path': node.path,
     draggable: true,
     onDragStart: (e: React.DragEvent) => {
-      e.dataTransfer.setData(PATH_MIME, node.path);
+      if (node.share !== false) e.dataTransfer.setData(PATH_MIME, node.path);
       if (node.app) e.dataTransfer.setData(APP_MIME, node.app);
       e.dataTransfer.setData('text/plain', node.name);
       e.dataTransfer.effectAllowed = 'copy';
@@ -385,6 +403,12 @@ export default function Finder({ win }: AppProps) {
             <circle cx="9" cy="6" r="2.6" fill="currentColor" />
           </svg>
         </button>
+        {atMovies && (
+          <button type="button" className="os-button os-finder-burn" onClick={() => setBurning(true)} title="Burn a DVD from a YouTube video">
+            <BurnGlyph />
+            Burn
+          </button>
+        )}
         <label className="os-search-field">
           <svg viewBox="0 0 16 16" width="11" height="11" aria-hidden="true">
             <circle cx="6.8" cy="6.8" r="4.8" fill="none" stroke="currentColor" strokeWidth="1.8" />
@@ -469,6 +493,7 @@ export default function Finder({ win }: AppProps) {
               role="table"
               aria-label={title}
               data-searching={searching || undefined}
+              data-lengths={atMovies || undefined}
               onContextMenu={(e) => {
                 e.preventDefault();
                 setMenu({ x: e.clientX, y: e.clientY, node: null });
@@ -476,7 +501,8 @@ export default function Finder({ win }: AppProps) {
             >
               <div role="row" className="os-files-head">
                 {header('Name', 'name')}
-                {searching ? <span role="columnheader">Where</span> : header('Date Modified', 'date')}
+                {searching ? <span role="columnheader">Where</span> : header(atMovies ? 'Date Added' : 'Date Modified', 'date')}
+                {atMovies && <span role="columnheader">Length</span>}
                 {header('Kind', 'kind')}
               </div>
               {items.map((node) => (
@@ -486,6 +512,7 @@ export default function Finder({ win }: AppProps) {
                     {node.name}
                   </span>
                   <span role="cell">{searching ? find(disk, parentOf(node.path))?.name : formatDate(node.date)}</span>
+                  {atMovies && <span role="cell">{node.duration ? formatTime(node.duration / 1000) : '--'}</span>}
                   <span role="cell">{node.kind}</span>
                 </button>
               ))}
@@ -529,10 +556,35 @@ export default function Finder({ win }: AppProps) {
           )}
         </div>
       </div>
+      {/* A sheet hangs from the toolbar across the whole window, as Tiger's did. */}
+      {burning && atMovies && (
+        <BurnSheet
+          owner={owner}
+          onClose={() => setBurning(false)}
+          onBurned={(disc) => {
+            setBurning(false);
+            setSelected(discPath(disc));
+          }}
+        />
+      )}
       <Drawer open={info} label="Info" width={220}>
         <FileInfo node={selectedNode ?? folder} disk={disk} />
       </Drawer>
       {menu && <ContextMenu at={menu} items={menuFor(menu.node)} onClose={() => setMenu(null)} label={menu.node?.name ?? folder.name} />}
     </div>
+  );
+}
+
+/** Tiger's Burn button: the yellow radiation sign. */
+function BurnGlyph() {
+  return (
+    <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
+      <circle cx="8" cy="8" r="7.4" fill="#f4c000" stroke="#7a5d00" strokeWidth="0.8" />
+      <path
+        fill="#1b1b1b"
+        d="M5 2.8A6 6 0 0 1 11 2.8L9.1 6.1A2.2 2.2 0 0 0 6.9 6.1ZM14 8A6 6 0 0 1 11 13.2L9.1 9.9A2.2 2.2 0 0 0 10.2 8ZM5 13.2A6 6 0 0 1 2 8L5.8 8A2.2 2.2 0 0 0 6.9 9.9Z"
+      />
+      <circle cx="8" cy="8" r="1.3" fill="#1b1b1b" />
+    </svg>
   );
 }
