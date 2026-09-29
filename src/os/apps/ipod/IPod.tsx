@@ -4,7 +4,8 @@ import type { AppProps } from '../../core/registry';
 import { launch } from '../../core/registry';
 import { isPhone, useFocusedId } from '../../core/store';
 import { lineAt, useLyrics } from '../../media/lyrics';
-import { albumNamed, albumOf, coverOf, fromLibrary, lyricOffset, SONG_LIMIT, SONGS, tracksOf } from '../../media/library';
+import { albumNamed, albumOf, coverOf, fromLibrary, lyricOffset, SONG_LIMIT, SONGS, tracksOf, useLibraryVersion } from '../../media/library';
+import { useLibraryRefresh } from '../../media/refresh';
 import { formatTime, useClock, useMusic, type Repeat } from '../../media/music';
 import { useKeys } from '../../core/useKeys';
 import { usePlayer } from '../../media/player';
@@ -98,6 +99,9 @@ const albumTracks = (title: string) => {
 };
 
 export default function IPod({ win }: AppProps) {
+  // Songs added during the visit show up here too (media/library.ts).
+  useLibraryVersion();
+  useLibraryRefresh();
   const { artists, albums, all: ALL } = shelves();
   const { host, status, live } = usePlayer('ipod');
   const music = useMusic();

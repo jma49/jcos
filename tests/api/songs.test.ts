@@ -42,7 +42,7 @@ describe('from Supabase', () => {
   test('serves the library as the site uses it, cached at the edge', async () => {
     fakeSupabase((path) => Response.json(path.endsWith('/songs') ? [SONG] : [ALBUM]));
     const res = await GET();
-    expect(res.headers.get('cache-control')).toBe('public, s-maxage=300, stale-while-revalidate=86400');
+    expect(res.headers.get('cache-control')).toBe('public, s-maxage=30, stale-while-revalidate=30');
     expect(res.headers.get('x-library')).toBeNull();
     expect(await res.json()).toEqual({
       albums: [{ title: 'An Album', artist: 'Someone', year: 1998, cover: 'https://is1-ssl.mzstatic.com/a.jpg' }],

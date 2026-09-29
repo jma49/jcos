@@ -14,7 +14,7 @@ import {
   PhotosIcon
 } from './icons';
 import type { AppId, OSData } from './types';
-import { ALBUMS, SONGS, coverOf, tracksOf } from '../media/library';
+import { ALBUMS, SONGS, coverOf, tracksIn, type Album, type Song } from '../media/library';
 import { useMusic } from '../media/music';
 
 export interface FileNode {
@@ -50,7 +50,12 @@ const appFile = (dir: string, app: AppId, kind = 'Application'): FileNode => ({
 const byName = (a: FileNode, b: FileNode) => a.name.localeCompare(b.name);
 
 /** The whole disk, rebuilt when the content or the installed applets change. */
-export function buildDisk(data: OSData, applets: AppId[]): FileNode {
+/**
+ * The whole disk. The Music folder is built from `library`, the one this
+ * visit has now unless a view passes the one it shows (Finder, which
+ * rebuilds when songs are added during the visit).
+ */
+export function buildDisk(data: OSData, applets: AppId[], library: { songs: Song[]; albums: Album[] } = { songs: SONGS, albums: ALBUMS }): FileNode {
   // Numbered like a camera's files, oldest first.
   const oldestFirst = [...data.photos].sort((a, b) => a.taken.localeCompare(b.taken));
   const photos: FileNode[] = data.photos.map((p) => {
@@ -79,7 +84,7 @@ export function buildDisk(data: OSData, applets: AppId[]): FileNode {
   }));
 
   const song = (dir: string, index: number, queue: number[]): FileNode => {
-    const s = SONGS[index];
+    const s = library.songs[index];
     const name = s.track ? `${String(s.track).padStart(2, '0')} ${s.title}` : `${s.artist} - ${s.title}`;
     return {
       path: `${dir}/${s.id}`,
@@ -94,8 +99,8 @@ export function buildDisk(data: OSData, applets: AppId[]): FileNode {
       }
     };
   };
-  const albums: FileNode[] = ALBUMS.map((a) => {
-    const tracks = tracksOf(a);
+  const albums: FileNode[] = library.albums.map((a) => {
+    const tracks = tracksIn(library.songs, a);
     return {
       path: `/Music/${encodeURIComponent(a.title)}`,
       name: a.title,
@@ -107,7 +112,7 @@ export function buildDisk(data: OSData, applets: AppId[]): FileNode {
       children: tracks.map((i) => song(`/Music/${encodeURIComponent(a.title)}`, i, tracks))
     };
   });
-  const singles = SONGS.flatMap((s, i) => (ALBUMS.some((a) => a.title === s.album) ? [] : [i]));
+  const singles = library.songs.flatMap((s, i) => (library.albums.some((a) => a.title === s.album) ? [] : [i]));
   const music: FileNode[] = [...albums, ...singles.map((i) => song('/Music', i, singles))];
 
   const documents: FileNode[] = [

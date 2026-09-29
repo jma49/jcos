@@ -6,6 +6,8 @@ import { launch } from '../../core/registry';
 import { useFocusedId, useWindows } from '../../core/store';
 import { useInstalledApplets } from '../../core/applets';
 import { buildDisk, find, type FileNode } from '../../core/files';
+import { ALBUMS, SONGS, useLibraryVersion } from '../../media/library';
+import { useLibraryRefresh } from '../../media/refresh';
 import { AirDropIcon, DiskIcon } from '../../core/icons';
 import { Drawer } from '../../shell/drawer';
 import { ContextMenu, type ContextMenuItem } from '../../shell/ContextMenu';
@@ -47,7 +49,12 @@ const typing = (e: KeyboardEvent) => e.target instanceof HTMLElement && e.target
 export default function Finder({ win }: AppProps) {
   const data = useOSData();
   const applets = useInstalledApplets();
-  const disk = useMemo(() => buildDisk(data, applets), [data, applets]);
+  // The Music folder follows songs added during the visit (media/library.ts).
+  useLibraryVersion();
+  useLibraryRefresh();
+  const songs = SONGS;
+  const albums = ALBUMS;
+  const disk = useMemo(() => buildDisk(data, applets, { songs, albums }), [data, applets, songs, albums]);
   const all = useMemo(() => everything(disk), [disk]);
   const [history, setHistory] = useState<string[]>(() => [win.props?.path ?? '/']);
   const [at, setAt] = useState(0);
