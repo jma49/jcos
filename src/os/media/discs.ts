@@ -246,14 +246,27 @@ function changeShelf(discs: Disc[]) {
   applyDiscs(discs);
 }
 
+/**
+ * Discs burned for everyone from this page: Realtime tells this page of
+ * them too, perhaps before the burn has answered, and the one who burned
+ * it needn't be told (discWatch.ts).
+ */
+export const burnedOnThisPage = new Set<string>();
+
 /** Burns a disc for everyone (the database lets only Jincheng). */
 export async function burnForEveryone(draft: Draft): Promise<ShelfDisc> {
   const disc = burnable(draft);
   const social = await getSocial();
   if (!social) throw new Error('Discs for everyone need the database, which isn’t here.');
-  const burned = await social.burnDisc(disc);
-  changeShelf([...DISCS.filter((d) => d.id !== burned.id), burned]);
-  return burned;
+  burnedOnThisPage.add(disc.id);
+  try {
+    const burned = await social.burnDisc(disc);
+    changeShelf([...DISCS.filter((d) => d.id !== burned.id), burned]);
+    return burned;
+  } catch (error) {
+    burnedOnThisPage.delete(disc.id);
+    throw error;
+  }
 }
 
 /** Takes one of Jincheng's discs off everyone's shelf (the database lets only Jincheng). */

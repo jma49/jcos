@@ -213,15 +213,19 @@ ryOS (AGPL-3.0).
   who the owner is (docs/agents/supabase.md, "The owner").
 - **DVD Player, as Jincheng chose it** (2026-09-29): all thirteen of the
   prototypes on the design board were kept, the wooden shelf (not
-  Apple's) included. Built so far: the shelf and DVD Player with Movies,
-  Quick Look and Burn (ROADMAP.md item 2.1 has the rest). The Controller
+  Apple's) included, and all are built (#159, #161–#163, #165–#167): the
+  shelf and `/dvd`, DVD Player with Movies, Quick Look and Burn, the slot
+  and Eject, full screen, Cover Flow, the wooden shelf, and a notice with
+  Play DVD for whoever is on the desktop when Jincheng burns a disc
+  (`media/discWatch.ts`, loaded once the desktop has settled). The Controller
   is a panel the app draws above the windows while it's in front, not a
   second window, so the window manager didn't change. A disc starts at
   its menu, so Play Movie is the click that starts the sound. Visitors'
   DVD-Rs never leave their browser. Inserting and ejecting (the slot,
-  the disc on the desktop, the Trash turning into Eject) cost the first
-  load 0.3 KB: it's at 159.5 of 160 KB now, so ROADMAP.md item 1 (room on
-  the first load) comes before anything else on the first screen.
+  the disc on the desktop, the Trash turning into Eject) and starting the
+  shelf's watch cost the first load 0.4 KB: it's at 159.7 of 160 KB now
+  (2026-09-29), so ROADMAP.md item 1 (room on the first load) comes
+  before anything else on the first screen.
 - **YouTube's middle button is covered, not shown** (2026-09-29).
   YouTube's embed now shows its own play/pause button for about 4–5 s
   after every start, seek and resume, and no setting turns it off. So the

@@ -295,6 +295,11 @@ export interface Social {
   relabelDisc: (id: string, change: Partial<Pick<Disc, 'title' | 'artist' | 'cover' | 'coverX' | 'duration'>>) => Promise<void>;
   /** Takes a disc off the shelf. Only the owner may. */
   removeDisc: (id: string) => Promise<void>;
+  /**
+   * Calls back as discs are burned (`burned`), relabelled or taken off the
+   * shelf, from any page or the bot; returns a function that stops watching.
+   */
+  watchDiscs: (handlers: { onDisc: (disc: Disc, burned: boolean) => void; onRemove: (id: string) => void }) => () => void;
 }
 
 /** A song Jincheng is playing for everyone on the desktop (/play in Telegram). */
