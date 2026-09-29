@@ -43,6 +43,8 @@ export interface FileNode {
   trash?: () => void;
   /** False for what AirDrop can't send (a disc: the other desktop's Finder wouldn't have it). */
   share?: false;
+  /** A folder this visitor may not open (Jincheng's, but for Public and Sites): badged, and opening it says so. */
+  locked?: true;
 }
 
 
@@ -61,14 +63,16 @@ const byName = (a: FileNode, b: FileNode) => a.name.localeCompare(b.name);
  * The whole disk. The Music folder is built from `library`, the one this
  * visit has now unless a view passes the one it shows (Finder, which
  * rebuilds when songs are added during the visit). Finder also passes the
- * Movies folder, DVD Player's shelf, which it builds with code the desktop
- * doesn't load; without it there's no Movies folder.
+ * Movies folder, DVD Player's shelf, and the Users folder, Jincheng's
+ * home, which it builds with code the desktop doesn't load; without them
+ * there are no such folders.
  */
 export function buildDisk(
   data: OSData,
   applets: AppId[],
   library: { songs: Song[]; albums: Album[] } = { songs: SONGS, albums: ALBUMS },
-  movies?: FileNode
+  movies?: FileNode,
+  users?: FileNode
 ): FileNode {
   // Numbered like a camera's files, oldest first.
   const oldestFirst = [...data.photos].sort((a, b) => a.taken.localeCompare(b.taken));
@@ -154,7 +158,8 @@ export function buildDisk(
       ...(movies ? [movies] : []),
       folder('Music', MusicFolderIcon, music),
       folder('Pictures', PhotosIcon, photos),
-      folder('Projects', FolderIcon, projects)
+      folder('Projects', FolderIcon, projects),
+      ...(users ? [users] : [])
     ]
   };
 }

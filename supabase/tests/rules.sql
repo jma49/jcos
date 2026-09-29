@@ -422,6 +422,80 @@ update public.music_settings set value = '50' where name = 'playlist_limit';
 
 select pg_temp.check(not (select prosecdef from pg_proc where oid = 'public.rate_song(text, int)'::regprocedure)
   and not (select prosecdef from pg_proc where oid = 'public.save_playlist(text, text[])'::regprocedure), 'rating and saving run as the caller, under the policies');
+-- Jincheng's home folder ---------------------------------------------------
+
+select pg_temp.act_as('authenticated', '99999999-9999-9999-9999-999999999999');
+insert into public.documents (folder, name, body) values
+  ('documents', 'Things to remember.txt', 'Climbing tape.'),
+  ('public', 'Hello.txt', 'Welcome to the hideout.');
+insert into public.diary (day, body) values ('2026-09-28', 'Finished the Dock tonight.'), ('2026-09-27', 'Added 青花 to the library.');
+select pg_temp.check((select count(*) from public.documents) = 2 and (select count(*) from public.diary) = 2, 'Jincheng writes documents and the diary');
+reset role;
+
+-- Visitors and members read Public, as the site asks for it (src/os/social/supabase.ts), and nothing else.
+select pg_temp.act_as('anon');
+select pg_temp.check((select count(*) from (select id, folder, name, body, version, created_at, updated_at from public.documents order by folder, name) d) = 1
+  and (select name from public.documents) = 'Hello.txt', 'visitors read what''s in Public, and only that');
+select pg_temp.check(pg_temp.refused($$select 1 from public.diary$$), 'visitors can''t ask for the diary');
+select pg_temp.check(pg_temp.refused($$insert into public.documents (folder, name, body) values ('public', 'Mine.txt', 'x')$$), 'visitors can''t write documents');
+select pg_temp.check(pg_temp.refused($$delete from public.documents where name = 'Hello.txt'$$), 'visitors can''t throw documents away');
+reset role;
+select pg_temp.act_as('authenticated', '11111111-1111-1111-1111-111111111111');
+select pg_temp.check((select count(*) from public.documents) = 1, 'members read what''s in Public, and only that');
+select pg_temp.check((select count(*) from public.diary) = 0, 'members read nothing of the diary');
+select pg_temp.check(pg_temp.refused($$insert into public.documents (folder, name, body) values ('public', 'Mine.txt', 'x')$$), 'members can''t write documents');
+select pg_temp.check(pg_temp.refused($$insert into public.diary (day, body) values ('2026-09-29', 'x')$$), 'members can''t write in the diary');
+update public.documents set body = 'Defaced.' where name = 'Hello.txt';
+delete from public.documents where name = 'Hello.txt';
+update public.diary set body = 'Defaced.' where day = '2026-09-28';
+reset role;
+select pg_temp.check((select body from public.documents where name = 'Hello.txt') = 'Welcome to the hideout.'
+  and (select body from public.diary where day = '2026-09-28') = 'Finished the Dock tonight.', 'members can''t change or throw away documents, or the diary');
+
+-- Jincheng's saves: numbered by the database, and one made from an older copy changes nothing.
+select pg_temp.act_as('authenticated', '99999999-9999-9999-9999-999999999999');
+select set_config('test.doc', (select id::text from public.documents where name = 'Things to remember.txt'), false);
+update public.documents set body = 'Climbing tape. Chalk.' where id = current_setting('test.doc')::uuid and version = 1;
+update public.documents set body = 'From an older copy.' where id = current_setting('test.doc')::uuid and version = 1;
+select pg_temp.check((select body = 'Climbing tape. Chalk.' and version = 2 and updated_at >= created_at from public.documents where id = current_setting('test.doc')::uuid),
+  'a save counts, and one made from an older copy changes nothing');
+select pg_temp.check(pg_temp.refused($$update public.documents set version = 99 where name = 'Hello.txt'$$), 'no one sets a version');
+select pg_temp.check(pg_temp.refused($$update public.documents set updated_at = now() - interval '1 year' where name = 'Hello.txt'$$), 'a save''s time is the database''s');
+select pg_temp.check(pg_temp.refused($$insert into public.documents (folder, name) values ('documents', 'things TO remember.txt')$$), 'a name is used once in a folder, whatever its case');
+insert into public.documents (folder, name) values ('desktop', 'Things to remember.txt');
+select pg_temp.check((select count(*) from public.documents where lower(name) = 'things to remember.txt') = 2, 'but can be used again in another folder');
+select pg_temp.check(pg_temp.refused($$insert into public.documents (folder, name) values ('documents', 'a/b.txt')$$)
+  and pg_temp.refused($$insert into public.documents (folder, name) values ('documents', 'a:b.txt')$$)
+  and pg_temp.refused($$insert into public.documents (folder, name) values ('documents', '.hidden')$$)
+  and pg_temp.refused($$insert into public.documents (folder, name) values ('documents', E'Two\nlines.txt')$$)
+  and pg_temp.refused($$insert into public.documents (folder, name) values ('documents', '  ')$$)
+  and pg_temp.refused($$insert into public.documents (folder, name) values ('documents', repeat('x', 81))$$), 'a name is one line, with no slash or colon, not hidden, and fits');
+select pg_temp.check(pg_temp.refused($$insert into public.documents (folder, name) values ('Sites', 'x.txt')$$), 'a document is in one of the home''s folders (Sites isn''t one)');
+select pg_temp.check(pg_temp.refused($$insert into public.documents (folder, name, body) values ('documents', 'Big.txt', repeat('x', 100001))$$), 'a document holds 100,000 characters at most');
+update public.documents set folder = 'public' where id = current_setting('test.doc')::uuid;
+select pg_temp.check(pg_temp.refused($$insert into public.diary (day, body) values ('2026-09-29', '   ')$$), 'a diary entry says something');
+select pg_temp.check(pg_temp.refused($$insert into public.diary (day, body) values ('1999-12-31', 'x')$$), 'a diary entry is on a day this century');
+update public.diary set body = 'Finished the Dock tonight. Smoke!' where day = '2026-09-28';
+select pg_temp.check((select version from public.diary where day = '2026-09-28') = 2, 'Jincheng changes a diary entry');
+delete from public.diary where day = '2026-09-27';
+select pg_temp.check((select count(*) from public.diary) = 1, 'Jincheng throws a diary entry away');
+reset role;
+select pg_temp.act_as('anon');
+select pg_temp.check((select count(*) from public.documents) = 2, 'a document moved to Public is everyone''s to read');
+reset role;
+
+-- The limits: a full home refuses another document, a full diary another entry.
+update public.music_settings set value = to_jsonb((select count(*) from public.documents)) where name = 'document_limit';
+update public.music_settings set value = to_jsonb((select count(*) from public.diary)) where name = 'diary_limit';
+select pg_temp.act_as('authenticated', '99999999-9999-9999-9999-999999999999');
+select pg_temp.check(pg_temp.refused($$insert into public.documents (folder, name) values ('documents', 'One more.txt')$$), 'a full home folder refuses another document');
+select pg_temp.check(pg_temp.refused($$insert into public.diary (day, body) values ('2026-09-29', 'One more.')$$), 'a full diary refuses another entry');
+reset role;
+update public.music_settings set value = '500' where name = 'document_limit';
+update public.music_settings set value = '10000' where name = 'diary_limit';
+select pg_temp.check(not has_function_privilege('authenticated', 'public.home_saved()', 'execute')
+  and not has_function_privilege('authenticated', 'public.home_within_limit()', 'execute'), 'no one calls the home folder''s trigger functions');
+
 select pg_temp.check(not has_function_privilege('anon', 'public.song_played(text)', 'execute')
   and not has_function_privilege('anon', 'public.rate_song(text, int)', 'execute')
   and not has_function_privilege('anon', 'public.save_playlist(text, text[])', 'execute')

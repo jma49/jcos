@@ -256,6 +256,20 @@ ryOS (AGPL-3.0).
   Plays go through `song_played()`, the one `security definer` function
   of the three, so no one sets a count or a time; the Security Advisor
   lists it on purpose. The first load didn't change (159.7 KB).
+- **Jincheng's home folder, as the board had it** (2026-09-29): Users ›
+  jincheng with the folders a Mac's home has, locked to anyone else but
+  for Public and Sites, with Mac OS X's badge and Tiger's alert word for
+  word; signed in as the owner, they open. Where the board left it open:
+  documents open in a TextEdit that saves as it's typed (not Tiger's
+  Save dialog; ⌘S saves at once, and a draft stays in the browser until
+  a save lands), since the database is the only copy; a new document
+  goes into Documents as "Untitled.txt", and Save As renames it or moves
+  it, to Public for everyone to read. The diary is an entry at a time on
+  a day, shown a year to a document ("Diary 2026.rtf"), with today's line
+  at the top. Throwing a document away asks first, since there's no
+  Trash to take it back from. Sites lists the projects' live sites.
+  Sending diary entries and notes from Telegram comes next, in the bot.
+  The first load grew 0.1 KB for TextEdit's manifest (159.5 of 160 KB).
 - **YouTube's middle button is covered, not shown** (2026-09-29).
   YouTube's embed now shows its own play/pause button for about 4.3 s
   after every start, seek and resume, and no setting turns it off. The
@@ -292,6 +306,9 @@ ryOS (AGPL-3.0).
    editor. Until then the iPod shows no ratings and no playlists of
    Jincheng's (the read fails quietly), and rating or saving a playlist
    says it couldn't; On-The-Go works without it.
+2. Then `supabase/migrations/20260929160000_home.sql`. Until then the
+   home folder's folders are empty, for the owner too, and TextEdit says
+   a save couldn't be made; the locks and the alert work without it.
 
 - Every migration in `supabase/migrations/` has been run, through
   `20260929120000_discs.sql`, and Jincheng's account is the owner (the

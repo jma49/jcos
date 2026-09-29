@@ -1,0 +1,184 @@
+/* The alert TextEdit shares with other apps (a save refused, or failed). */
+@import '../../shell/alert.css';
+
+/* ---------- TextEdit ---------- */
+
+/* A document is a white page, whatever the desktop's appearance, as TextEdit's were. */
+.os-textedit {
+  position: relative;
+  height: 100%;
+  background: #fff;
+  color: #1a1a1a;
+}
+
+.os-textedit-page {
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 34px 46px 46px;
+  border: 0;
+  outline: none;
+  resize: none;
+  background: #fff;
+  color: #1a1a1a;
+  font: 15px/1.65 var(--os-ui);
+  user-select: text;
+}
+
+.os-textedit-page::placeholder {
+  color: #b3b8be;
+}
+
+/* The diary: each day under its date in grey, its entries in paragraphs. */
+.os-textedit-diary {
+  overflow-y: auto;
+}
+
+.os-textedit-diary section + section {
+  margin-top: 22px;
+}
+
+.os-textedit-diary h2 {
+  margin: 0 0 8px;
+  color: #8c9199;
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.os-textedit-entry {
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  margin: 0 0 12px;
+  padding: 0;
+  border: 0;
+  outline: none;
+  resize: none;
+  overflow: hidden;
+  background: transparent;
+  color: #1a1a1a;
+  font: inherit;
+  user-select: text;
+}
+
+.os-textedit-entry::placeholder {
+  color: #b3b8be;
+}
+
+.os-textedit-empty {
+  margin: 0;
+  color: #8c9199;
+}
+
+/* Something typed and not saved yet: quietly, in the corner. */
+.os-textedit-status {
+  position: absolute;
+  right: 14px;
+  bottom: 8px;
+  color: #9aa0a6;
+  font-size: 11px;
+  pointer-events: none;
+}
+
+/* A document that can't be opened here. */
+.os-textedit-missing {
+  display: grid;
+  place-content: center;
+  height: 100%;
+  padding: 24px;
+  color: #555;
+  font-size: 13px;
+  text-align: center;
+}
+
+.os-textedit-missing p {
+  margin: 0 0 6px;
+}
+
+.os-textedit-missing p:first-child {
+  color: #1a1a1a;
+  font-weight: 700;
+}
+
+/* The Save As sheet, hanging from the top of the window. */
+.os-textedit-sheet-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.os-textedit-sheet {
+  width: min(420px, calc(100% - 24px));
+  display: grid;
+  gap: 10px;
+  padding: 16px 18px 14px;
+  border-radius: 0 0 6px 6px;
+  background: var(--os-pinstripe), var(--os-window);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2), 0 10px 26px rgba(0, 0, 0, 0.32);
+  color: var(--os-ink);
+  font-size: 13px;
+  animation: os-textedit-sheet 0.2s ease-out;
+}
+
+@keyframes os-textedit-sheet {
+  from {
+    transform: translateY(-100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .os-textedit-sheet {
+    animation: none;
+  }
+}
+
+.os-textedit-sheet label {
+  display: grid;
+  grid-template-columns: 64px 1fr;
+  align-items: center;
+  gap: 8px;
+}
+
+.os-textedit-sheet label > span {
+  text-align: right;
+}
+
+.os-textedit-sheet input,
+.os-textedit-sheet select {
+  min-width: 0;
+  font: inherit;
+}
+
+.os-textedit-sheet-note {
+  margin: 0 0 0 72px;
+  font-size: 11px;
+  opacity: 0.75;
+}
+
+.os-textedit-sheet-note[data-problem] {
+  color: #b3261e;
+  opacity: 1;
+}
+
+.os-textedit-sheet-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.os-textedit-sheet-buttons .os-button {
+  min-width: 78px;
+}
+
+/* A phone's window is narrow: less margin round the page. */
+@media (max-width: 767px) {
+  .os-textedit-page {
+    padding: 20px 18px 36px;
+  }
+}

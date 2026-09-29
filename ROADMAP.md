@@ -32,11 +32,10 @@ each uses the same Aqua styles and the ryOS icon set (new icons from it
 go in `public/os/icons` and NOTICE). One pull request each, in this
 order:
 
-1. **Jincheng's home folder**: Users › jincheng in Finder. Visitors see
-   the real "no access" badges and Tiger's alert on every folder but
-   Public and Sites; signed in as the owner, the folders open and hold
-   the owner's diary and notes, written in a TextEdit window (or sent
-   from Telegram). Uses the owner check.
+1. **Jincheng's home folder from Telegram**: the folder, TextEdit and
+   the diary are built (2026-09-29); left is sending a diary entry and a
+   note from the bot (`/diary`, `/note`), which the owner then finds in
+   Documents.
 2. **Stickies and iCal for Jincheng**: notes on the owner's own desktop
    and iCal with the owner's days and to-dos, shown only when the owner
    is signed in. What to call them beside the visitors' Stickies is
