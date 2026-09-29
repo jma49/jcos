@@ -125,6 +125,14 @@ again.
 - YouTube's chrome must never show; see [media.md](media.md). Chrome
   delays playback in background tabs, so test playback in a visible
   tab.
+- YouTube's embed shows its own play/pause button in the middle of the
+  picture for about 4–5 s after a video starts, seeks or resumes, with
+  `controls: 0` and every other setting, whatever the user agent; it
+  hides it while paused (found 2026-09-29, when DVD Player showed it).
+  The frame's crop can't reach the middle, so a picture stays covered
+  until it has played that long (`revealAfterButton`). To check a
+  player, look inside YouTube's frame for `.player-controls-middle`:
+  its classic `.ytp-*` controls aren't the ones that show.
 - Jincheng's own photos appear only in Photos, never as the desktop
   picture or the screen saver.
 - Unsplash blocks Vercel's build servers. Photos come from the snapshot
