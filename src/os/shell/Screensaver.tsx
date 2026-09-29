@@ -1,24 +1,16 @@
 import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
-import { isPhone, useWindows, type SaverStyle } from '../core/store';
+import { isPhone, useWindows } from '../core/store';
 import { useMusic } from '../media/music';
 import { afterSettled } from '../core/warmUp';
 
 // Starts the screen saver after the idle time chosen in System
-// Preferences. What it draws lives in saverViews.tsx, loaded the first
-// time it's needed (and fetched ahead once the desktop has settled), so
-// the desktop's first load doesn't carry it.
+// Preferences. What it draws, and the list System Preferences offers,
+// live in saverViews.tsx, loaded the first time it's needed (and fetched
+// ahead once the desktop has settled), so the desktop's first load
+// doesn't carry them.
 
 const loadViews = () => import('./saverViews');
 const ScreensaverLayer = lazy(loadViews);
-
-export const SAVER_STYLES: { style: SaverStyle; name: string; blurb: string }[] = [
-  { style: 'photos', name: 'Desktop Pictures', blurb: 'A slow pan across Mac OS X’s desktop pictures.' },
-  { style: 'flurry', name: 'Flurry', blurb: 'Glowing ribbons of colour, after the Mac OS X classic.' },
-  { style: 'soapbox', name: 'Soapbox', blurb: 'Jincheng’s latest notes and rants, one at a time, like Word of the Day.' },
-  { style: 'starfield', name: 'Starfield', blurb: 'Flying through the stars.' },
-  { style: 'clock', name: 'Clock', blurb: 'The time and weather where you are, drifting so nothing burns in.' },
-  { style: 'bounce', name: 'Bounce', blurb: 'JM, bouncing off the edges. Wait for it to hit a corner.' }
-];
 
 /**
  * Starts the screensaver after `minutes` without input (never for 0). Doesn't
