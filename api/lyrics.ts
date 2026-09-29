@@ -40,16 +40,21 @@ export async function GET(request: Request) {
   const title = params.get('title')?.trim();
   const artist = params.get('artist')?.trim() ?? '';
   const duration = Number(params.get('duration')) || 0;
-  if (!title) return Response.json({ error: 'title is required' }, { status: 400 });
+  if (!title) return Response.json({ error: 'A title is required.' }, { status: 400 });
   // Song titles and artists are short; anything longer isn't a lookup this site makes.
   if (title.length > 200 || artist.length > 200 || duration < 0 || duration > 7200) {
-    return Response.json({ error: 'bad request' }, { status: 400, headers: { 'cache-control': 'public, s-maxage=86400' } });
+    return Response.json(
+      { error: 'The title, artist or duration is out of range.' },
+      { status: 400, headers: { 'cache-control': 'public, s-maxage=86400' } }
+    );
   }
 
   try {
     return await lookUp(title, artist, duration);
-  } catch {
-    return Response.json({ error: 'NetEase didn’t answer' }, { status: 502, headers: { 'cache-control': 'no-store' } });
+  } catch (error) {
+    // Say why in the function's logs: a relay that quietly fails looks like songs without lyrics.
+    console.error('/api/lyrics: NetEase failed:', error instanceof Error ? error.message : error);
+    return Response.json({ error: 'NetEase didn’t answer.' }, { status: 502, headers: { 'cache-control': 'no-store' } });
   }
 }
 
@@ -74,5 +79,5 @@ async function lookUp(title: string, artist: string, duration: number) {
       { headers: { 'cache-control': 'public, s-maxage=86400, stale-while-revalidate=604800' } }
     );
   }
-  return Response.json({ error: 'no synced lyrics' }, { status: 404, headers: { 'cache-control': 'public, s-maxage=3600' } });
+  return Response.json({ error: 'No synced lyrics were found.' }, { status: 404, headers: { 'cache-control': 'public, s-maxage=3600' } });
 }

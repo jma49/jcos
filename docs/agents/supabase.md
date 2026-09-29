@@ -27,7 +27,7 @@ advisory lock (Security, below).
 | `soapbox` storage bucket | everyone | the bot | images only, 10 MB each |
 | Presence channel (Realtime) | everyone on the desktop | anyone, unchecked: receivers check what arrives | pointers stop past 12 people |
 
-The code that isn't in the browser:
+The code that isn't in the browser (each endpoint's parameters, answers and conventions are in [api.md](api.md)):
 
 | Function | Where | What it does | Caching |
 | --- | --- | --- | --- |

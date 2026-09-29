@@ -35,14 +35,48 @@ const PASSWORD_MIN = 6;
 /** Supabase Auth (bcrypt) ignores anything past 72 bytes. */
 const PASSWORD_MAX = 72;
 
-const CORS = {
-  'access-control-allow-origin': '*',
-  'access-control-allow-methods': 'POST, OPTIONS',
-  'access-control-allow-headers': 'authorization, apikey, content-type, x-client-info'
-};
+/**
+ * The pages that may call this from a browser: the site (majincheng.com
+ * redirects to www), the site the links point to, and any origins listed
+ * in RECOVERY_ORIGINS (comma-separated), for trying a local build with the
+ * real keys (http://localhost:4321). Other pages get no CORS headers, so a
+ * browser won't let them send it; a request without an Origin (curl) isn't
+ * a browser's and is answered as usual, since CORS only binds browsers.
+ */
+const ORIGINS = new Set([
+  'https://www.majincheng.com',
+  'https://majincheng.com',
+  new URL(SITE).origin,
+  ...(Deno.env.get('RECOVERY_ORIGINS') ?? '')
+    .split(',')
+    .map((o) => o.trim())
+    .filter(Boolean)
+]);
 
-const reply = (body: unknown, status = 200) =>
-  new Response(JSON.stringify(body), { status, headers: { ...CORS, 'content-type': 'application/json' } });
+const METHODS = 'POST, OPTIONS';
+
+/** CORS headers for a request from `origin`: its own name back if it's allowed, none if not. */
+function cors(origin: string | null): Record<string, string> {
+  const vary = { vary: 'Origin' };
+  if (!origin || !ORIGINS.has(origin)) return vary;
+  return {
+    ...vary,
+    'access-control-allow-origin': origin,
+    'access-control-allow-methods': METHODS,
+    'access-control-allow-headers': 'authorization, apikey, content-type, x-client-info'
+  };
+}
+
+/**
+ * A JSON answer carrying one request's CORS headers. Made per request and
+ * passed along: requests overlap (each waits on the database), so the
+ * headers can't live in a variable they share.
+ */
+const replier =
+  (headers: Record<string, string>) =>
+  (body: unknown, status = 200, extra: Record<string, string> = {}) =>
+    new Response(JSON.stringify(body), { status, headers: { ...headers, ...extra, 'content-type': 'application/json' } });
+type Reply = ReturnType<typeof replier>;
 
 /** A service-role call to the database's API. */
 async function rpc(name: string, args: Record<string, unknown>) {
@@ -84,7 +118,7 @@ async function sendLink(to: string, username: string, token: string) {
   if (!res.ok) throw new Error(`resend: ${res.status} ${(await res.text()).slice(0, 200)}`);
 }
 
-async function request(username: unknown) {
+async function request(reply: Reply, username: unknown) {
   const name = String(username ?? '').trim().toLowerCase();
   if (!USERNAME.test(name)) return reply({ error: 'A username is 3 to 20 letters, digits or underscores.' }, 400);
   const token = newToken();
@@ -96,13 +130,13 @@ async function request(username: unknown) {
   return reply({ ok: true });
 }
 
-async function check(token: unknown) {
+async function check(reply: Reply, token: unknown) {
   if (typeof token !== 'string' || !TOKEN.test(token)) return reply({ username: null });
   const username: string | null = await rpc('recovery_check', { p_token_hash: await hashOf(token) });
   return reply({ username });
 }
 
-async function reset(token: unknown, password: unknown) {
+async function reset(reply: Reply, token: unknown, password: unknown) {
   if (typeof password !== 'string' || password.length < PASSWORD_MIN) {
     return reply({ error: `A password needs at least ${PASSWORD_MIN} characters.` }, 400);
   }
@@ -126,21 +160,23 @@ async function reset(token: unknown, password: unknown) {
 }
 
 Deno.serve(async (req) => {
-  if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: CORS });
-  if (req.method !== 'POST') return reply({ error: 'Not found' }, 404);
+  const headers = cors(req.headers.get('origin'));
+  const reply = replier(headers);
+  if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers });
+  if (req.method !== 'POST') return reply({ error: 'Only POST requests are accepted.' }, 405, { allow: METHODS });
   let body: Record<string, unknown>;
   try {
     body = await req.json();
   } catch {
-    return reply({ error: 'Bad request' }, 400);
+    return reply({ error: 'The request isn’t valid JSON.' }, 400);
   }
   try {
-    if (body.action === 'request') return await request(body.username);
-    if (body.action === 'check') return await check(body.token);
-    if (body.action === 'reset') return await reset(body.token, body.password);
-    return reply({ error: 'Bad request' }, 400);
+    if (body?.action === 'request') return await request(reply, body.username);
+    if (body?.action === 'check') return await check(reply, body.token);
+    if (body?.action === 'reset') return await reset(reply, body.token, body.password);
+    return reply({ error: 'The action must be request, check or reset.' }, 400);
   } catch (error) {
-    console.error(error);
+    console.error('account-recovery:', error instanceof Error ? error.message : error);
     return reply({ error: 'Something went wrong. Try again in a moment.' }, 500);
   }
 });
