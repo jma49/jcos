@@ -3,13 +3,22 @@
 - **Budgets** (checked by `npm run perf`; see [self-audit.md](self-audit.md)) for a first visit,
   meaning what's requested in the first seven seconds, before the
   desktop settles and fetches ahead:
-  - at most 160 KB of JavaScript, gzipped (156 today; react-dom alone
-    is 67), and 20 KB of CSS (15 today);
+  - at most 160 KB of JavaScript, gzipped (159 today; react-dom alone
+    is 67), and 20 KB of CSS (16 today);
   - at most 1.1 MB of images and 250 KB of fonts;
   - nothing downloaded twice.
 
   Dragging a window with six apps open, and five idle seconds, stay
   under the script time the script reports.
+
+  The budgets guard against going backwards; they aren't a speed
+  target. The JavaScript one started at 180 KB when `npm run perf` was
+  added (#72, 172 KB then), and came down to 160 after #85 and #86 cut
+  the first load to 154 (#87): room for small additions, not for
+  undoing that work. What a visitor feels is the time to a usable
+  desktop, measured on 2026-09-27 at 2.4 s on emulated 4G and 7 s on
+  fast 3G. Raising a budget needs a reason that holds beyond today
+  (AGENTS.md); making room (ROADMAP.md item 1) comes first.
 - **Load only what the first screen needs.**
   - Apps are lazy, code and styles (`registry.tsx`, `core/appStyles.ts`):
     `perf` fails if an applet's chunk is in the first load.
