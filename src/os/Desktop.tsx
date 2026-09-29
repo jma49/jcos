@@ -18,6 +18,7 @@ import { Presence } from './social/Presence';
 import { startAccount } from './social/account';
 import { startChatWatch } from './social/chatState';
 import { startListeningAlong } from './media/together';
+import { afterSettled } from './core/warmUp';
 import { startAirDrop } from './social/airdrop';
 import { Notices } from './shell/Notices';
 import { Contained } from './shell/Contained';
@@ -75,6 +76,17 @@ function Shell({ data }: { data: OSData }) {
   useEffect(startChatWatch, []);
   // Songs Jincheng plays for everyone from Telegram, to listen along to.
   useEffect(startListeningAlong, []);
+  // Discs Jincheng burns, kept on the shelf and told to whoever is here (loaded once the desktop has settled).
+  useEffect(() => {
+    let dead = false;
+    let stop = () => {};
+    const cancel = afterSettled(() => import('./media/discWatch').then((watch) => !dead && (stop = watch.watchDiscs())));
+    return () => {
+      dead = true;
+      cancel();
+      stop();
+    };
+  }, []);
   useEffect(() => startAirDrop(data), [data]);
   // The page's plain-text copy (index.astro) is for screen readers, which
   // still read it; with the desktop running, its links would only be

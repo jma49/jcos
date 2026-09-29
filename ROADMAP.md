@@ -26,50 +26,35 @@ kilobyte moved written in `docs/agents/performance.md`.
 ## 2. The secret base
 
 **Why.** Decided 2026-09-29: JM/OS is Jincheng's own hideout, not a job
-portfolio. He chose seven things from prototypes staged in the real site
-(HANDOFF.md section 3): each existed in Tiger or Leopard, and each uses
-the same Aqua styles and the ryOS icon set (new icons from it go in
-`public/os/icons` and NOTICE). One pull request each, in this order:
+portfolio. Jincheng chose seven things from prototypes staged in the
+real site (HANDOFF.md section 3): each existed in Tiger or Leopard, and
+each uses the same Aqua styles and the ryOS icon set (new icons from it
+go in `public/os/icons` and NOTICE). One pull request each, in this
+order:
 
-1. **DVD Player** (asked for 2026-09-29; Jincheng kept all thirteen of
-   its prototypes): YouTube videos burned onto discs whose case is the
-   video's own picture. Discs live in the Movies folder, as icons of
-   their cases, in Leopard's Cover Flow, and on a wooden shelf (the one
-   thing not Apple's, kept on purpose). Inserting one slides it into the
-   slot on the screen's right edge and opens Tiger's DVD Player: the
-   disc's window, the floating Controller, the disc's menu, chapters and
-   Leopard's full screen. Dragging it to the Trash, which turns into
-   Eject, ejects it. Jincheng burns discs for everyone from Telegram
-   (`/dvd`) or from the site when signed in; visitors burn DVD-Rs kept in
-   their browser. In pull requests, six done (2026-09-29): the shelf
-   (the database, `/api/songs` and `/dvd`); DVD Player with the Movies
-   folder, Quick Look and Burn; inserting and ejecting (the slot, the
-   disc on the desktop, the Trash turning into Eject); full screen; Cover
-   Flow; the wooden shelf. Still to come: a notice to visitors on the
-   desktop when Jincheng burns a disc (Realtime already sends the shelf's
-   changes).
-2. **iPod ratings and playlists**: rate the playing song (the Now
+1. **iPod ratings and playlists**: rate the playing song (the Now
    Playing rating screen), On-The-Go, and the smart playlists (My Top
-   Rated, Recently Played, Top 25 Most Played) plus his own. His ratings,
-   play counts and playlists are shared (owner writes only); a
-   visitor's On-The-Go stays in their browser. Uses the owner check.
-3. **His home folder**: Users › jincheng in Finder. Visitors see the
-   real "no access" badges and Tiger's alert on every folder but Public
-   and Sites; signed in as the owner, the folders open and hold his
-   diary and notes, written in a TextEdit window (or sent from
-   Telegram). Uses the owner check.
-4. **Stickies and iCal for him**: notes on his own desktop and iCal
-   with his days and to-dos, shown only when he's signed in. What to call
-   them beside the visitors' Stickies is Jincheng's to decide. Uses the
-   owner check.
-5. **Time Machine**: Leopard's starfield, a window per day going back,
-   a timeline on the right: Soapbox, the guestbook and the library as
-   they were. Public things for everyone, locked ones for him.
-6. **A stack in the Dock**: things he sends the bot (screenshots,
+   Rated, Recently Played, Top 25 Most Played) plus Jincheng's own. The
+   owner's ratings, play counts and playlists are shared (owner writes
+   only); a visitor's On-The-Go stays in their browser. Uses the owner
+   check.
+2. **Jincheng's home folder**: Users › jincheng in Finder. Visitors see
+   the real "no access" badges and Tiger's alert on every folder but
+   Public and Sites; signed in as the owner, the folders open and hold
+   the owner's diary and notes, written in a TextEdit window (or sent
+   from Telegram). Uses the owner check.
+3. **Stickies and iCal for Jincheng**: notes on the owner's own desktop
+   and iCal with the owner's days and to-dos, shown only when the owner
+   is signed in. What to call them beside the visitors' Stickies is
+   Jincheng's to decide. Uses the owner check.
+4. **Time Machine**: Leopard's starfield, a window per day going back, a
+   timeline on the right: Soapbox, the guestbook and the library as they
+   were. Public things for everyone, locked ones for the owner.
+5. **A stack in the Dock**: things Jincheng sends the bot (screenshots,
    tickets, links) kept in a Dock stack that fans out as Leopard's did,
-   private or public per item. His note: the interaction and the UI have
-   to be done well. The Dock is on the first screen, so room on the
-   first load (section 1) comes first.
+   private or public per item. Jincheng's note: the interaction and the
+   UI have to be done well. The Dock is on the first screen, so room on
+   the first load (section 1) comes first.
 
 **Done when** each is in the site, checked in a browser with motion on
 and off, and its locked parts are proved locked by `test:db`.

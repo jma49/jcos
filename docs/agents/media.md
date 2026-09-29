@@ -101,6 +101,9 @@ own chrome never shows.
   pauses the music, and music starting (or Listen along) pauses the
   disc. A disc's length is learned as it plays and kept (a DVD-R's in
   the browser, one of Jincheng's in the database when the owner watches it).
+  When Jincheng burns a disc, whoever is on the desktop gets a notice
+  with Play DVD, as for a song played for everyone (`media/discWatch.ts`,
+  over Realtime; the page that burned it isn't told).
 - The iTunes Artwork screen saver (`Artwork` in `shell/savers.tsx`, the
   arithmetic in `shell/artwork.ts`) turns the library's covers over on
   a wall. Not being an app with a manifest, it calls `loadLibrary()`
