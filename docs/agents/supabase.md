@@ -24,7 +24,7 @@ advisory lock (Security, below).
 | `music_settings` | the bot; visitors only through `song_limit()` | Jincheng, in the Table editor | |
 | `now_playing` | everyone, while the song plays | the bot, through `music_play()` and `music_stop()` | one song |
 | `private.recovery_emails`, `private.password_resets`, `private.secrets` | not reachable through the API | account functions and the database | resets: 3 per account and 3 per address an hour, 60 an hour in all; a link lasts 30 minutes |
-| `private.owners` | not reachable through the API; `is_owner()` tells the caller whether they're in it | Jincheng, once, in the SQL editor | his account |
+| `private.owners` | not reachable through the API; `is_owner()` tells the caller whether they're in it | Jincheng, once, in the SQL editor | Jincheng's account |
 | `soapbox` storage bucket | everyone | the bot | images only, 10 MB each |
 | Presence channel (Realtime) | everyone on the desktop | anyone, unchecked: receivers check what arrives | pointers stop past 12 people |
 
@@ -55,12 +55,12 @@ The code that isn't in the browser (each endpoint's parameters, answers and conv
   `preview.mjs` renders it to a file.
 - **The owner** (`supabase/migrations/20260929100000_owner.sql`):
   Jincheng's account id sits in `private.owners`, and `public.is_owner()`
-  says whether the caller is him. Owner-only tables check
+  says whether the caller is Jincheng. Owner-only tables check
   `(select public.is_owner())` in their row-level security (in a
   sub-select, so it runs once per statement), and functions that change
-  shared data on his behalf check it too. `social/owner.ts` asks it once
-  per sign-in, only to decide what to show. The `astro dev` stand-in
-  treats a member named `jincheng` as the owner.
+  shared data on the owner's behalf check it too. `social/owner.ts` asks
+  it once per sign-in, only to decide what to show. The `astro dev`
+  stand-in treats a member named `jincheng` as the owner.
 - **Stickies**: members only, three notes in any 24 hours, signed with the
   username; members can take their own down. Hide a note by setting
   `approved` to false in the Table editor.

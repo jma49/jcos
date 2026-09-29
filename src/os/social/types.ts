@@ -230,7 +230,7 @@ export interface Social {
   setRecoveryEmail: (email: string | null) => Promise<void>;
   /**
    * Whether the signed-in member is Jincheng, the owner (false signed out).
-   * Only to decide what to show: the database keeps his rooms shut.
+   * Only to decide what to show: the database keeps the owner's rooms shut.
    */
   isOwner: () => Promise<boolean>;
 
