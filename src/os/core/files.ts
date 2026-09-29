@@ -33,8 +33,16 @@ export interface FileNode {
   /** Folders list their contents; everything else opens. */
   children?: FileNode[];
   open?: (el: Element | null) => void;
-  /** What Quick Look shows besides the name and kind: a picture and a line or two. */
-  look?: { image?: string; lines?: string[] };
+  /** What Quick Look shows besides the name and kind: a picture (or a view of its own) and a line or two. */
+  look?: { image?: string; View?: ComponentType; lines?: string[] };
+  /** Quick Look's button for `open`, when "Open" isn't the word: "Play DVD". */
+  openLabel?: string;
+  /** How long it plays, in milliseconds (a disc's), for the list's Length column. */
+  duration?: number;
+  /** Moves it to the Trash, for what can be thrown away (a disc). */
+  trash?: () => void;
+  /** False for what AirDrop can't send (a disc: the other desktop's Finder wouldn't have it). */
+  share?: false;
 }
 
 
@@ -49,13 +57,19 @@ const appFile = (dir: string, app: AppId, kind = 'Application'): FileNode => ({
 
 const byName = (a: FileNode, b: FileNode) => a.name.localeCompare(b.name);
 
-/** The whole disk, rebuilt when the content or the installed applets change. */
 /**
  * The whole disk. The Music folder is built from `library`, the one this
  * visit has now unless a view passes the one it shows (Finder, which
- * rebuilds when songs are added during the visit).
+ * rebuilds when songs are added during the visit). Finder also passes the
+ * Movies folder, DVD Player's shelf, which it builds with code the desktop
+ * doesn't load; without it there's no Movies folder.
  */
-export function buildDisk(data: OSData, applets: AppId[], library: { songs: Song[]; albums: Album[] } = { songs: SONGS, albums: ALBUMS }): FileNode {
+export function buildDisk(
+  data: OSData,
+  applets: AppId[],
+  library: { songs: Song[]; albums: Album[] } = { songs: SONGS, albums: ALBUMS },
+  movies?: FileNode
+): FileNode {
   // Numbered like a camera's files, oldest first.
   const oldestFirst = [...data.photos].sort((a, b) => a.taken.localeCompare(b.taken));
   const photos: FileNode[] = data.photos.map((p) => {
@@ -137,6 +151,7 @@ export function buildDisk(data: OSData, applets: AppId[], library: { songs: Song
       folder('Applications', ApplicationsFolderIcon, applicationApps.map((a) => appFile('/Applications', a)).sort(byName)),
       folder('Applets', AppletsFolderIcon, applets.filter((a) => a in apps).map((a) => appFile('/Applets', a, 'Applet')).sort(byName)),
       folder('Documents', DocumentsFolderIcon, documents),
+      ...(movies ? [movies] : []),
       folder('Music', MusicFolderIcon, music),
       folder('Pictures', PhotosIcon, photos),
       folder('Projects', FolderIcon, projects)
