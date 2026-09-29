@@ -66,12 +66,21 @@ asks for the token (without echoing it) and your user ID, and does steps
 | `/offset <title> <ms>` | how far its lyrics run ahead of the video (negative: behind) |
 | `/play <title>` | plays it for everyone on the desktop: they get a notification and can listen along from where it is |
 | `/stop` | stops it |
+| `/dvd <YouTube link>` | burns the video onto a disc on DVD Player's shelf, in everyone's Movies folder, named as `/add` guesses a song (`/dvd <link> Title - Artist` names it; sent again with a name, it relabels the disc) |
+| `/dvd` | how many discs of the limit (200), and the latest |
+| `/dvd remove <title or link>` | takes a disc off the shelf |
 
 The music commands (`music.ts`) need the music library migration
 (`20260927030802_music_library.sql`). A song is named by words from its
 title (its YouTube id works too); when several match, the bot shows a
 button for each, and pressing one does the command to that song. Only the id is taken from a link: every address the bot
 fetches is one it builds, on YouTube, Apple or lrclib.
+
+`/dvd` (`discs.ts`) needs the discs migration (`20260929120000_discs.sql`).
+A disc's case uses the video's full-size thumbnail where YouTube has one.
+Reading links and guessing names from video titles is
+`supabase/functions/_shared/youtube.ts`, which the site's Burn uses too,
+so a link reads the same in both places.
 
 Stickers, voice messages and videos are answered with a note that they
 can't go on the Soapbox. Photos are copied into the public `soapbox`
@@ -101,7 +110,7 @@ set up. `/watch off` stops them.
 `npm test` runs `bot.test.mjs`: the bot under Node with Telegram and
 Supabase faked, through text, photos, albums, files, failures, edits,
 /delete, /at, /watch, notices and their buttons, and the music commands
-with YouTube, Apple Music and lrclib faked too. `music.test.mjs` covers
+with YouTube, Apple Music and lrclib faked too, and `/dvd`. `music.test.mjs` covers
 reading links, guessing songs from video titles and picking Apple's
 match.
 

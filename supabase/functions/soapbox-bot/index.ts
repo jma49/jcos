@@ -19,12 +19,15 @@
 //                     manage the iPod's music library (music.ts)
 //   /play <song>, /stop
 //                     play a song for whoever is on the desktop
+//   /dvd <YouTube link>, /dvd, /dvd remove <disc>
+//                     burn a video onto a disc for DVD Player (discs.ts)
 //   /help             this list
 //
 // Editing a message (or a photo's caption) in Telegram edits its post.
 // Photos go to the public "soapbox" storage bucket. Setup is in
 // supabase/functions/soapbox-bot/README.md.
 
+import { discCommands } from './discs.ts';
 import { musicCommands } from './music.ts';
 
 const env = (name: string) => {
@@ -161,6 +164,10 @@ const HELP = [
   '/remove <title>: take a song out',
   '/offset <title> <ms>: how far its lyrics run ahead',
   '/play <title>: play it for everyone on the desktop to listen along; /stop to stop',
+  '',
+  'DVD Player (the Movies folder):',
+  '/dvd <YouTube link>: burn it onto a disc for everyone; /dvd <link> Title - Artist to name it, or rename one',
+  '/dvd: how many discs, and the latest; /dvd remove <title>: take one off',
   '',
   'Edit a message to edit its post.'
 ].join('\n');
@@ -310,6 +317,7 @@ async function telegram(method: string, params: Record<string, unknown>) {
 }
 
 const music = musicCommands({ db, telegram });
+const discs = discCommands({ db, telegram });
 
 /** Makes the public bucket photos go in, as the migration describes it. */
 async function makeBucket() {
@@ -461,6 +469,7 @@ async function handle(message: Message, edited: boolean) {
   }
 
   if (await music.handle(chat, text)) return;
+  if (await discs.handle(chat, text)) return;
 
   if (text.startsWith('/') && !/^\/(rant|note)\b/i.test(text)) return reply(chat, HELP);
 
