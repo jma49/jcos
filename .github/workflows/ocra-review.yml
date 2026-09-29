@@ -1,0 +1,40 @@
+# ocra, the owner's code reviewer (github.com/jma49/Open-CR-Agent), reviews
+# this repository's pull requests on the owner's Vertex AI credit, as a trial.
+# The called workflow keeps the budget, the keyless credential and the
+# ledger, and checks the switch, forks and Dependabot again. Off unless the
+# repository variable OCRA_REVIEW is "on"; HANDOFF.md says how to stop it.
+name: ocra review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions: {}
+
+# One review per pull request at a time: a new push cancels the older run,
+# which still records what it spent.
+concurrency:
+  group: ocra-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  review:
+    # A pull request from a fork gets no OIDC token anyway: skip it outright.
+    # Dependabot's version bumps are not worth the credit.
+    if: >-
+      vars.OCRA_REVIEW == 'on' &&
+      !github.event.pull_request.draft &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.user.login != 'dependabot[bot]'
+    permissions:
+      actions: read
+      contents: read
+      id-token: write
+      pull-requests: write
+    # At main: Google Cloud issues the credential only to ocra-dogfood.yml at
+    # refs/heads/main, and the budget comes from this repository's variables.
+    uses: jma49/Open-CR-Agent/.github/workflows/ocra-dogfood.yml@main
+    secrets:
+      GCP_WIF_PROVIDER: ${{ secrets.GCP_WIF_PROVIDER }}
+      GCP_SERVICE_ACCOUNT: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+      GOOGLE_VERTEX_PROJECT: ${{ secrets.GOOGLE_VERTEX_PROJECT }}
