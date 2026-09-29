@@ -82,3 +82,15 @@ export interface WindowState {
 export interface AppProps {
   win: WindowState;
 }
+
+/** An item in one of the menu bar's menus. */
+export interface MenuItem {
+  label: string;
+  shortcut?: string;
+  action?: () => void;
+  disabled?: boolean;
+  divider?: boolean;
+}
+
+/** Menus by title, as an app adds them to the menu bar (`setMenus` in store.ts). */
+export type Menus = Record<string, MenuItem[]>;

@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { create } from 'zustand';
 import { useShallow } from 'zustand/react/shallow';
-import type { AppId, Rect, WindowState } from './types';
+import type { AppId, Menus, Rect, WindowState } from './types';
 import type { Place } from '../ambient/place';
 import type { Visitor } from '../social/social';
 import type { AccentChoice } from '../look/accent';
@@ -80,6 +80,8 @@ interface WindowStore {
   rotateWallpaper: boolean;
   /** Where the visitor is (see place.ts); null until located. */
   place: Place | null;
+  /** Menus a window's app adds to the menu bar while it's in front, as Chess's Game menu; by window id. */
+  menus: Record<string, Menus | undefined>;
 
   open: (app: AppId, options: OpenOptions) => string;
   /** Puts back windows from an earlier visit (see windowSession.ts), in their stacking order. */
@@ -112,6 +114,8 @@ interface WindowStore {
   setWallpaper: (url: string | null) => void;
   setRotateWallpaper: (on: boolean) => void;
   setPlace: (place: Place) => void;
+  /** Adds a window's own menus to the menu bar (phones show only the Apple menu), or takes them away. */
+  setMenus: (id: string, menus: Menus | undefined) => void;
 }
 
 const WALLPAPER_KEY = 'os-wallpaper';
@@ -192,6 +196,7 @@ export const useWindows = create<WindowStore>((set, get) => ({
   wallpaper: load(WALLPAPER_KEY)?.includes('images.unsplash.com') ? null : load(WALLPAPER_KEY),
   rotateWallpaper: load(ROTATE_KEY) !== '0',
   place: null,
+  menus: {},
 
   open: (app, { key = app, title, width, height, origin, props, center }) => {
     const existing = get().windows[key];
@@ -304,7 +309,8 @@ export const useWindows = create<WindowStore>((set, get) => ({
     save(ROTATE_KEY, rotateWallpaper ? '1' : '0');
     set({ rotateWallpaper });
   },
-  setPlace: (place) => set({ place })
+  setPlace: (place) => set({ place }),
+  setMenus: (id, menus) => set((s) => ({ menus: { ...s.menus, [id]: menus } }))
 }));
 
 // What another tab of this visitor's changes, this one picks up.

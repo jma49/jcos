@@ -205,7 +205,7 @@ ryOS (AGPL-3.0).
   and its invented styles were rejected. From prototypes staged in the
   real site Jincheng kept all seven (ROADMAP.md item 2); on the Dock stack:
   "the interaction and the UI have to be done well". Live so far: the
-  iTunes Artwork screen saver (2026-09-29).
+  iTunes Artwork screen saver and Chess (2026-09-29).
 - **The owner is a database fact** (decided 2026-09-29). ryOS gates its
   admin by username in code; here `private.owners` holds Jincheng's
   account id and `public.is_owner()` answers for the caller, so row-level
