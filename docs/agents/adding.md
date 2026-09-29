@@ -33,7 +33,14 @@ folders and manifests agree. Add a desktop shortcut in `Desktop.tsx` if it
 needs one.
 
 A built-in app may use the OS (`core/`, `social/`, `media/`…) but not
-another app: what two apps share belongs in the OS. An applet imports
+another app: what two apps share belongs in the OS. It can add its own
+menus to the menu bar while its window is in front
+(`useWindows.getState().setMenus(win.id, menus)` in an effect, cleared
+with `undefined` on unmount), as Chess does; phones show only the Apple
+menu, so keep a way in from the window too. Work heavy enough to freeze
+the window goes in a Web Worker, as Chess's computer does
+(`new Worker(new URL('./x.worker.ts', import.meta.url), { type: 'module' })`),
+with a fallback on the page if it can't start. An applet imports
 nothing but `src/os/kit` and its own folder; what it needs from the OS
 goes into the kit. A game runs its frames through
 `useGameLoop(tick, front)`, so it stops behind another window, and

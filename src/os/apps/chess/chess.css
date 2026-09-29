@@ -1,0 +1,197 @@
+/* Chess: a wooden board in perspective under a dark sky, the pieces
+   standing on it, and a status bar below, as Tiger's and Leopard's had. */
+
+.os-chess {
+  background: radial-gradient(ellipse at 50% 30%, #4a4f57, #16181c 75%);
+  user-select: none;
+}
+
+.os-chess-stage {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  perspective: 900px;
+  container-type: size;
+}
+
+/* Tilted away from the viewer; the frame is the board's own shadow. The
+   squares lie in the board's plane, and a browser may find the board
+   rather than the square under the pointer there, so only the squares
+   (and what stands on them) take clicks. */
+.os-chess-board {
+  --board: min(80cqw, 112cqh, 480px);
+  width: var(--board);
+  height: var(--board);
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  transform: rotateX(46deg) translateY(-3%);
+  transform-style: preserve-3d;
+  box-shadow:
+    0 0 0 calc(var(--board) * 0.03) #5b3a1e,
+    0 0 0 calc(var(--board) * 0.036) #2e1d0e,
+    0 30px 40px rgba(0, 0, 0, 0.6);
+  pointer-events: none;
+}
+
+.os-chess-square {
+  position: relative;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: linear-gradient(135deg, #eed3a6, #d9b37a);
+  transform-style: preserve-3d;
+  cursor: default;
+  pointer-events: auto;
+}
+
+.os-chess-square[data-dark] {
+  background: linear-gradient(135deg, #a3703f, #7c5129);
+}
+
+.os-chess-square:focus-visible {
+  outline: 2px solid var(--os-focus);
+  outline-offset: -2px;
+}
+
+/* Marks on the wood: the last move, the piece picked up, the king in
+   check, and where the piece can go, tinted whole (a piece standing in
+   front can hide a square's middle), with a ring where it takes. A hair
+   above the square, so they're drawn over it. */
+.os-chess-square::before,
+.os-chess-square::after {
+  content: '';
+  position: absolute;
+  transform: translateZ(0.5px);
+  pointer-events: none;
+}
+
+.os-chess-square[data-last]::before {
+  inset: 0;
+  background: rgba(255, 226, 120, 0.3);
+}
+
+.os-chess-square[data-selected]::before {
+  inset: 0;
+  background: color-mix(in srgb, var(--os-accent) 35%, transparent);
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--os-accent) 80%, white);
+}
+
+.os-chess-square[data-check]::before {
+  inset: 0;
+  background: radial-gradient(circle, rgba(230, 30, 20, 0.85), rgba(230, 30, 20, 0) 72%);
+}
+
+/* The accent may be close to the wood's own colour, so the tint is
+   ringed in its lighter self. */
+.os-chess-square[data-target]::after {
+  inset: 0;
+  background: color-mix(in srgb, var(--os-accent) 50%, transparent);
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--os-accent) 45%, white);
+}
+
+.os-chess-square[data-target='take']::after {
+  box-shadow:
+    inset 0 0 0 2px color-mix(in srgb, var(--os-accent) 45%, white),
+    inset 0 0 0 5px color-mix(in srgb, var(--os-accent) 80%, black);
+}
+
+/* A piece stands up out of the board, on its square's near half. */
+.os-chess-piece {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  transform-style: preserve-3d;
+}
+
+/* One that has just moved slides over from its old square (Chess.tsx
+   leaves this out with motion reduced). */
+.os-chess-piece[data-slide] {
+  animation: os-chess-slide 0.3s ease-out;
+}
+
+@keyframes os-chess-slide {
+  from {
+    translate: calc(var(--dx) * 100%) calc(var(--dy) * 100%);
+  }
+}
+
+.os-chess-piece b {
+  position: absolute;
+  left: 50%;
+  bottom: 18%;
+  transform: translateX(-50%) rotateX(-46deg);
+  transform-origin: 50% 100%;
+  font: 400 calc(var(--board) / 8 * 0.83) / 1 'Apple Symbols', 'Segoe UI Symbol', 'Noto Sans Symbols 2', 'Arial Unicode MS', serif;
+}
+
+.os-chess-piece[data-color='w'] b {
+  color: #f6efe2;
+  text-shadow:
+    0 0 1px #000,
+    0 1px 0 #000,
+    1px 0 0 #000,
+    -1px 0 0 #000,
+    0 -1px 0 #000,
+    0 4px 5px rgba(0, 0, 0, 0.55);
+}
+
+.os-chess-piece[data-color='b'] b {
+  color: #26211c;
+  text-shadow:
+    0 0 1px #c9b89c,
+    0 4px 5px rgba(0, 0, 0, 0.55);
+}
+
+/* Which piece a pawn becomes, over the board. */
+.os-chess-promote {
+  position: absolute;
+  z-index: 2;
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  padding: 14px 18px;
+  border-radius: 8px;
+  background: var(--os-pinstripe), var(--os-window);
+  box-shadow: var(--os-shadow);
+  color: var(--os-ink);
+  font-size: 12px;
+}
+
+.os-chess-promote p {
+  margin: 0;
+}
+
+.os-chess-promote-choices {
+  display: flex;
+  gap: 6px;
+}
+
+.os-root .os-chess-promote-choices .os-button {
+  height: 34px;
+  padding: 0 10px;
+  font: 24px / 1 'Apple Symbols', 'Segoe UI Symbol', 'Noto Sans Symbols 2', 'Arial Unicode MS', serif;
+}
+
+.os-chess-bar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 30px;
+  padding: 3px 12px 4px;
+  border-top: 1px solid #000;
+  background: linear-gradient(#2a2d33, #1b1d21);
+  color: #d6d9de;
+  font-size: 11px;
+}
+
+.os-chess-bar span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

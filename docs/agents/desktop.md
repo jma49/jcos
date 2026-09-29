@@ -113,6 +113,24 @@ only `kit/`. The lint enforces all three.
 - `src/os/apps/aboutmac/`: the Apple menu's About This Mac.
   `__JMOS_BUILD__` (defined in `astro.config.mjs` from Vercel's
   `VERCEL_GIT_COMMIT_SHA`) is the build's short commit hash.
+- `src/os/apps/chess/`: Tiger's Chess, in Applications (not kept in the
+  Dock). The visitor plays White against the computer on a wooden board
+  in perspective (CSS 3D, `chess.css`): click a piece, then one of the
+  squares it can go to (tinted, ringed where it takes; the squares
+  alone take clicks, as the board lies in their plane). Rules, check,
+  mate, stalemate, draws and promotion are chess.js's (BSD-2-Clause,
+  `rules.ts`). The computer (`engine.ts`, with tests) is a small
+  alpha-beta search, three moves deep then captures until quiet, scored
+  by material and piece-square tables; below its own move it plays
+  through chess.js's internal move list (`_moves`, `_makeMove`,
+  `_undoMove`, as chess.js's `perft` does), since the public `move()`
+  writes out notation and positions and makes a search about ten times
+  slower. It thinks in a Web Worker (`engine.worker.ts`, 1.5 s at most,
+  or two moves deep), or on the page if the worker can't start. The game
+  is kept in `os-chess` (its moves), so a reload goes on; every tab of a
+  visitor shows the same game, and when two tabs think at once the
+  first answer is played and the other tab takes it. New Game is in the
+  Game menu and in the status bar (phones have no app menus).
 
 ## Windows and the shell
 
@@ -137,6 +155,11 @@ only `kit/`. The lint enforces all three.
 - `src/os/core/notices.ts` and `shell/Notices.tsx`: Growl-style
   notifications (chat mentions, AirDrop offers). `shell/ContextMenu.tsx`
   is the right-click menu the desktop, the Dock and Finder share.
+- The menu bar's menus after File come from the front window: the iPod
+  and Karaoke's Controls, and any app's own, which it sets with
+  `setMenus(win.id, menus)` in the store while it's open (Chess's Game
+  menu). Phones show only the Apple menu, so what's in an app's menus
+  needs a way in from its window too.
 - The menu bar is see-through. Its text is white or black depending on
   how bright the top of the desktop picture is (`topBrightness()` in
   `accent.ts`, darkened by the sky's layers via `skyDimming()`), shown as
