@@ -1,0 +1,244 @@
+/* A disc's case and the disc itself (media/discArt.tsx), for Finder's
+   Movies folder and DVD Player. Adopted with them, never in the first
+   load. The picture comes in as --art (one of the video's own), cropped
+   at --pos and zoomed by --zoom past the black bars of YouTube's 4:3
+   pictures. */
+
+/* ---------- The keep case: black plastic, the cover under a clear sleeve ---------- */
+.os-disc-case {
+  --w: 120px;
+  position: relative;
+  flex: none;
+  display: block;
+  width: var(--w);
+  aspect-ratio: 135 / 190;
+  padding: calc(var(--w) * 0.028) calc(var(--w) * 0.028) calc(var(--w) * 0.028) calc(var(--w) * 0.035);
+  border-radius: calc(var(--w) * 0.035);
+  background: linear-gradient(90deg, #050505, #2a2a2a 3%, #0c0c0c 5%, #161616 60%, #0e0e0e);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.07), 0 calc(var(--w) * 0.02) calc(var(--w) * 0.06) rgba(0, 0, 0, 0.45);
+  box-sizing: border-box;
+  text-align: left;
+}
+
+.os-disc-case-art {
+  position: relative;
+  display: block;
+  height: 100%;
+  overflow: hidden;
+  border-radius: calc(var(--w) * 0.012);
+  background: var(--art) var(--pos, 50%) 50% / auto calc(100% * var(--zoom, 1)) no-repeat, #111;
+  container-type: inline-size;
+}
+
+/* Shade for the words, top and bottom, like a poster. */
+.os-disc-case-art::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(rgba(0, 0, 0, 0.5), transparent 20%, transparent 58%, rgba(0, 0, 0, 0.78));
+}
+
+.os-disc-case-artist,
+.os-disc-case-title,
+.os-disc-case-logo {
+  position: absolute;
+  left: 7%;
+  right: 7%;
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.os-disc-case-artist {
+  top: 5.5%;
+  font: 700 7.4cqi/1.2 var(--os-ui);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  opacity: 0.92;
+}
+
+.os-disc-case-title {
+  bottom: 12%;
+  font: 400 15cqi/1.05 var(--os-display);
+  white-space: normal;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+/* The DVD Video mark in the corner. */
+.os-disc-case-logo {
+  left: auto;
+  bottom: 4%;
+  font: italic 900 7cqi/1 'Arial Black', 'Helvetica Neue', sans-serif;
+  letter-spacing: -0.04em;
+  text-align: right;
+  opacity: 0.85;
+}
+
+.os-disc-case-logo small {
+  display: block;
+  font: 700 3.2cqi/1.3 var(--os-ui);
+  letter-spacing: 0.18em;
+  font-style: normal;
+}
+
+/* The hinge groove near the left edge, and the sleeve's gloss. */
+.os-disc-case::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, transparent calc(var(--w) * 0.075), rgba(0, 0, 0, 0.55) calc(var(--w) * 0.075), rgba(0, 0, 0, 0.55) calc(var(--w) * 0.085), rgba(255, 255, 255, 0.22) calc(var(--w) * 0.085), rgba(255, 255, 255, 0.22) calc(var(--w) * 0.093), transparent calc(var(--w) * 0.093)),
+    linear-gradient(118deg, rgba(255, 255, 255, 0.26), rgba(255, 255, 255, 0.07) 34%, transparent 34.5%, transparent 70%, rgba(255, 255, 255, 0.05)),
+    linear-gradient(rgba(255, 255, 255, 0.12), transparent 8%);
+}
+
+/* So small (a list row) the words can't be read: a tiny cover with a black rim. */
+.os-disc-mini {
+  flex: none;
+  display: inline-block;
+  width: calc(var(--h) * 0.75);
+  height: var(--h);
+  border-radius: 1.5px;
+  border: 1px solid #111;
+  border-left-width: 2px;
+  box-sizing: border-box;
+  background: var(--art) var(--pos, 50%) 50% / auto calc(100% * var(--zoom, 1)) no-repeat, #111;
+  vertical-align: middle;
+}
+
+/* An icon in Finder: the case, standing in the icon's square. */
+.os-disc-icon {
+  display: inline-flex;
+  align-items: flex-end;
+  justify-content: center;
+  vertical-align: middle;
+}
+
+/* ---------- The disc: its printed label, the clear hub, the hole ---------- */
+.os-disc-wrap {
+  position: relative;
+  flex: none;
+  display: block;
+  filter: drop-shadow(0 4px 9px rgba(0, 0, 0, 0.45));
+}
+
+.os-disc {
+  --d: 200px;
+  position: relative;
+  display: block;
+  width: var(--d);
+  height: var(--d);
+  border-radius: 50%;
+  background: conic-gradient(from 10deg, #d7dbe2, #f6f7f9 10%, #c7d1e2 20%, #efe2f2 29%, #d3ebe6 38%, #f6f1d6 46%, #d8dce3 55%, #f7f8fa 67%, #c9d4e6 77%, #f0e0ef 88%, #d7dbe2);
+  -webkit-mask: radial-gradient(circle closest-side, transparent 0 12.6%, rgba(0, 0, 0, 0.45) 13% 20.2%, #000 20.6% 30.6%, rgba(0, 0, 0, 0.45) 31% 36%, #000 36.4%);
+  mask: radial-gradient(circle closest-side, transparent 0 12.6%, rgba(0, 0, 0, 0.45) 13% 20.2%, #000 20.6% 30.6%, rgba(0, 0, 0, 0.45) 31% 36%, #000 36.4%);
+}
+
+/* The label, printed from the video's picture. */
+.os-disc::before {
+  content: '';
+  position: absolute;
+  inset: 1.3%;
+  border-radius: 50%;
+  background: var(--art) var(--pos, 50%) 50% / auto calc(100% * var(--zoom, 1)) no-repeat;
+  -webkit-mask: radial-gradient(circle closest-side, transparent 0 37.4%, #000 37.9%);
+  mask: radial-gradient(circle closest-side, transparent 0 37.4%, #000 37.9%);
+}
+
+/* Light across the whole disc. */
+.os-disc::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle closest-side, transparent 0 36.6%, rgba(0, 0, 0, 0.25) 36.8% 37.4%, transparent 37.8%),
+    conic-gradient(from 35deg, transparent, rgba(255, 255, 255, 0.28) 7%, transparent 15%, transparent 50%, rgba(255, 255, 255, 0.2) 57%, transparent 65%);
+}
+
+/* A DVD-R burned at home: bare silver, the name in marker. */
+.os-disc[data-burned]::before {
+  background: conic-gradient(from 200deg, #e9ebee, #fbfbfc 12%, #d9dde4 25%, #f3f4f6 40%, #dfe2e8 60%, #fafafb 75%, #e3e6ea);
+}
+
+.os-disc-hand {
+  position: absolute;
+  left: 50%;
+  top: 20%;
+  z-index: 1;
+  max-width: 64%;
+  translate: -50% 0;
+  rotate: -6deg;
+  overflow: hidden;
+  color: #1c2a73;
+  font: calc(var(--d) * 0.1) / 1.1 'Marker Felt', 'Chalkboard', cursive;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.os-disc-hand small {
+  display: block;
+  margin-top: calc(var(--d) * 0.36);
+  overflow: hidden;
+  font-size: calc(var(--d) * 0.062);
+  text-overflow: ellipsis;
+  rotate: 4deg;
+}
+
+/* ---------- Quick Look on a disc: the case, with the disc beside it ---------- */
+.os-disc-look {
+  position: relative;
+  display: block;
+  width: 440px;
+  max-width: 100%;
+  height: 330px;
+}
+
+.os-disc-look > .os-disc-case {
+  position: absolute;
+  left: 20px;
+  top: 3px;
+  z-index: 2;
+}
+
+.os-disc-look > .os-disc-wrap {
+  position: absolute;
+  left: 150px;
+  top: 40px;
+  z-index: 1;
+}
+
+.os-disc-look[data-burned] > .os-disc-wrap {
+  left: 190px;
+}
+
+@media (max-width: 767px) {
+  .os-disc-look {
+    width: 300px;
+    height: 250px;
+  }
+
+  .os-disc-look > .os-disc-case {
+    --w: 160px !important;
+  }
+
+  .os-disc-look > .os-disc-wrap {
+    left: 110px;
+    top: 34px;
+  }
+
+  .os-disc-look > .os-disc-wrap .os-disc {
+    --d: 180px !important;
+  }
+
+  .os-disc-look[data-burned] > .os-disc-wrap {
+    left: 120px;
+  }
+}

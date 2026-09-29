@@ -20,6 +20,7 @@ import finder from './apps/finder/manifest';
 import appstore from './apps/appstore/manifest';
 import ipod from './apps/ipod/manifest';
 import karaoke from './apps/karaoke/manifest';
+import dvdplayer from './apps/dvdplayer/manifest';
 import chat from './apps/chat/manifest';
 import airdrop from './apps/airdrop/manifest';
 import photobooth from './apps/photobooth/manifest';
@@ -49,6 +50,7 @@ export const catalog = [
   appstore,
   ipod,
   karaoke,
+  dvdplayer,
   chat,
   airdrop,
   photobooth,
