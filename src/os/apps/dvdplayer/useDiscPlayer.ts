@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type RefObject } from 'react';
 import { useWindows } from '../../core/store';
 import { soundOnToPlay, useMusic } from '../../media/music';
-import { BUFFERING, ENDED, loadYouTube, PAUSED, PLAYING, setLoudness, type PlayerStatus, type YTPlayer } from '../../media/player';
+import { BUFFERING, ENDED, loadYouTube, PAUSED, PLAYING, revealAfterButton, setLoudness, type PlayerStatus, type YTPlayer } from '../../media/player';
 
 // DVD Player's own YouTube player (media/player.ts has the iPod's), made
 // for the disc in the drive, with YouTube's chrome cropped off the same
@@ -16,7 +16,7 @@ export interface DiscPlayer {
   host: RefObject<HTMLDivElement | null>;
   /** 'unplayable': YouTube won't play this video here (removed, or not to be embedded). */
   status: PlayerStatus | 'unplayable';
-  /** The video is on screen and moving; anything else shows the cover. */
+  /** The video is on screen and moving, and YouTube's middle button has gone; anything else shows the cover. */
   live: boolean;
   /** Whether the disc is meant to be playing. */
   playing: boolean;
@@ -57,6 +57,8 @@ export function useDiscPlayer(videoId: string | null, onEnded: () => void): Disc
   const [status, setStatus] = useState<DiscPlayer['status']>('loading');
   const [live, setLive] = useState(false);
   const [playing, setPlaying] = useState(false);
+  // YouTube shows its own button for a few seconds after a start, a seek or a resume (player.ts).
+  const [reveal] = useState(() => revealAfterButton(setLive));
 
   useEffect(() => {
     ended.current = onEnded;
@@ -96,7 +98,8 @@ export function useDiscPlayer(videoId: string | null, onEnded: () => void): Disc
             },
             onStateChange: ({ data }) => {
               if (dead) return;
-              setLive(data === PLAYING);
+              if (data === PLAYING) reveal.playing();
+              else reveal.stopped();
               if (data === PLAYING) setPlaying(true);
               // Paused from outside, e.g. the browser's media controls.
               if (data === PAUSED) setPlaying(false);
@@ -123,11 +126,11 @@ export function useDiscPlayer(videoId: string | null, onEnded: () => void): Disc
       made?.destroy();
       // Only what this made: React may have given the host to something else by now.
       frame?.remove();
+      reveal.stopped();
       setStatus('loading');
-      setLive(false);
       setPlaying(false);
     };
-  }, [videoId]);
+  }, [videoId, reveal]);
 
   // Music starting pauses the disc; the music's volume and the one sound switch are the disc's too.
   useEffect(() => {
@@ -166,7 +169,10 @@ export function useDiscPlayer(videoId: string | null, onEnded: () => void): Disc
       player.current?.pauseVideo();
       setPlaying(false);
     },
-    seek: (seconds: number) => player.current?.seekTo(Math.max(0, seconds), true),
+    seek: (seconds: number) => {
+      player.current?.seekTo(Math.max(0, seconds), true);
+      reveal.seeked();
+    },
     time: () => player.current?.getCurrentTime() ?? 0,
     duration: () => player.current?.getDuration() ?? 0
   }));

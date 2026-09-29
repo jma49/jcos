@@ -88,6 +88,48 @@ export function loadYouTube(): Promise<YTNamespace> {
 export type PlayerStatus = 'loading' | 'ready' | 'offline';
 
 /**
+ * How long YouTube's own play/pause button stays in the middle of the
+ * picture after a video starts, seeks or resumes: its embed shows one for
+ * about 4–5 s whatever the player's settings (`controls: 0` included) and
+ * whoever the browser says it is, and hides it while paused (measured
+ * 2026-09-29). The picture counts as live only once it has played this
+ * long since, so the app's cover hides the button.
+ */
+export const YOUTUBE_BUTTON_MS = 5000;
+
+/**
+ * Whether the picture may show, for a player's `live`: `playing()` (a
+ * start, a resume) and `seeked()` start the wait again, `stopped()` (a
+ * pause, buffering, the end) covers it at once.
+ */
+export function revealAfterButton(setLive: (live: boolean) => void) {
+  let timer = 0;
+  let playing = false;
+  const wait = () => {
+    clearTimeout(timer);
+    setLive(false);
+    timer = window.setTimeout(() => setLive(true), YOUTUBE_BUTTON_MS);
+  };
+  return {
+    playing() {
+      playing = true;
+      wait();
+    },
+    seeked() {
+      if (playing) wait();
+    },
+    stopped() {
+      playing = false;
+      clearTimeout(timer);
+      setLive(false);
+    },
+    dispose() {
+      clearTimeout(timer);
+    }
+  };
+}
+
+/**
  * A YouTube player for `app`, mounted into the returned `host` element. It
  * follows the store while `app` owns playback and pauses when another app
  * takes over.
@@ -97,8 +139,9 @@ export type PlayerStatus = 'loading' | 'ready' | 'offline';
  * taller than `host` and centred on it (see .os-player-frame), so the video,
  * which letterboxes to the player's width, fills the host while the top and
  * bottom strips fall outside it and are cut off. `live` is true only while
- * the video is actually playing, so apps can cover everything else (start,
- * buffering, paused) with the song's artwork.
+ * the video is actually playing, and has been for YOUTUBE_BUTTON_MS since
+ * it started, seeked or resumed, so apps can cover everything else (start,
+ * buffering, paused, YouTube's middle button) with the song's artwork.
  */
 export function usePlayer(app: MusicApp) {
   const host = useRef<HTMLDivElement>(null);
@@ -117,6 +160,7 @@ export function usePlayer(app: MusicApp) {
     /** Between loading a video and it playing, when YouTube reports the old one pausing. */
     let switching = false;
     let watchdog = 0;
+    const reveal = revealAfterButton(setLive);
 
     const apply = (s: MusicStore) => {
       if (!player || !ready) return;
@@ -136,7 +180,10 @@ export function usePlayer(app: MusicApp) {
         else player.cueVideoById(start);
         loaded = song.id;
       } else {
-        if (jump !== null) player.seekTo(jump, true);
+        if (jump !== null) {
+          player.seekTo(jump, true);
+          reveal.seeked();
+        }
         if (s.playing) player.playVideo();
         else if (owned || jump !== null) player.pauseVideo();
       }
@@ -184,7 +231,8 @@ export function usePlayer(app: MusicApp) {
               apply(useMusic.getState());
             },
             onStateChange: ({ data }) => {
-              setLive(data === PLAYING);
+              if (data === PLAYING) reveal.playing();
+              else reveal.stopped();
               const s = useMusic.getState();
               if (s.owner !== app) return;
               if (data === PLAYING) switching = false;
@@ -222,6 +270,7 @@ export function usePlayer(app: MusicApp) {
       unsubscribe();
       unsubscribeSound();
       clearTimeout(watchdog);
+      reveal.dispose();
       clocks.delete(app);
       durations.delete(app);
       player?.destroy();
