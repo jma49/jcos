@@ -1,6 +1,6 @@
 import { useInsertionEffect, type CSSProperties } from 'react';
 import { adoptStyles } from '../core/appStyles';
-import { pngIcon } from '../core/icons';
+import { DiscIcon, pngIcon } from '../core/icons';
 import { pictureOf, zoomOf, type ShelfDisc } from './discs';
 import styles from './discArt.css?inline';
 
@@ -9,7 +9,7 @@ import styles from './discArt.css?inline';
 // with the same picture (or, for a DVD-R burned here, bare silver with
 // its name in marker). Loaded with those apps, as is its stylesheet.
 
-export const DiscIcon = pngIcon('dvd');
+export { DiscIcon };
 export const MoviesFolderIcon = pngIcon('movies');
 
 const useStyles = () => useInsertionEffect(() => adoptStyles('disc-art', styles), []);

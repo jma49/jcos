@@ -42,6 +42,34 @@
   flex: none;
 }
 
+/* The Trash while a disc is carried from the desktop: Eject, as on a Mac. */
+.os-dock-eject {
+  position: relative;
+  display: block;
+  filter: drop-shadow(0 1px 0 rgba(0, 0, 0, 0.45)) drop-shadow(0 2px 3px rgba(0, 0, 0, 0.3));
+}
+
+.os-dock-eject::before,
+.os-dock-eject::after {
+  content: '';
+  position: absolute;
+  left: 17%;
+  right: 17%;
+  background: linear-gradient(#fdfdfd, #cfcfcf 55%, #a2a2a2);
+}
+
+.os-dock-eject::before {
+  top: 18%;
+  height: 40%;
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+}
+
+.os-dock-eject::after {
+  top: 66%;
+  height: 14%;
+  border-radius: 2px;
+}
+
 /* PNG and SVG icons alike follow the magnified slot size. */
 .os-dock-icon .os-icon {
   display: block;
