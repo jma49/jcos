@@ -70,8 +70,12 @@ globalThis.EdgeRuntime = { waitUntil: (work) => background.push(work) };
 globalThis.Deno = { env: { get: (name) => env[name] }, serve: (h) => (handler = h) };
 await import('./index.ts');
 
-const call = async (body, method = 'POST') => {
-  const res = await handler(new Request('https://fn.example', { method, body: method === 'POST' ? JSON.stringify(body) : undefined }));
+const SITE = 'https://www.majincheng.com';
+
+/** A call as the site's Account window makes it, from `origin` (null: no Origin, as curl sends). */
+const call = async (body, method = 'POST', origin = SITE) => {
+  const headers = origin ? { origin } : {};
+  const res = await handler(new Request('https://fn.example', { method, headers, body: method === 'POST' ? JSON.stringify(body) : undefined }));
   await Promise.all(background.splice(0));
   return { status: res.status, body: res.status === 204 ? null : await res.json(), cors: res.headers.get('access-control-allow-origin') };
 };
@@ -82,7 +86,7 @@ const sha256 = (text) => createHash('sha256').update(text).digest('hex');
 test('a link goes to the recovery address, and only its hash is kept', async () => {
   const res = await call({ action: 'request', username: ' Alice ' });
   assert.deepEqual(res.body, { ok: true });
-  assert.equal(res.cors, '*');
+  assert.equal(res.cors, SITE);
   assert.equal(world.mail.length, 1);
   assert.deepEqual(world.mail[0].to, ['alice@example.com']);
   assert.match(world.mail[0].text, /https:\/\/www\.majincheng\.com\/\?open=account&reset=[\w-]{43}\n/);
@@ -112,7 +116,7 @@ test('every request gets the same answer, link or not', async () => {
   answers.push(await call({ action: 'request', username: 'nobody' }));
   world.mailFails = true;
   answers.push(await call({ action: 'request', username: 'alice' }));
-  for (const a of answers) assert.deepEqual(a, { status: 200, body: { ok: true }, cors: '*' });
+  for (const a of answers) assert.deepEqual(a, { status: 200, body: { ok: true }, cors: SITE });
   assert.equal(world.mail.length, 0);
   assert.match(String(errors.mock.calls[0][0]), /resend: 403/);
   errors.mockRestore();
@@ -159,9 +163,50 @@ test('made-up and malformed tokens get nowhere', async () => {
 test('the browser can ask first; anything else is turned away', async () => {
   const pre = await call(null, 'OPTIONS');
   assert.equal(pre.status, 204);
-  assert.equal(pre.cors, '*');
-  assert.equal((await call(null, 'GET')).status, 404);
-  assert.equal((await call({ action: 'delete everything' })).status, 400);
-  const res = await handler(new Request('https://fn.example', { method: 'POST', body: 'not json' }));
+  assert.equal(pre.cors, SITE);
+  const get = await handler(new Request('https://fn.example', { method: 'GET', headers: { origin: SITE } }));
+  assert.equal(get.status, 405);
+  assert.equal(get.headers.get('allow'), 'POST, OPTIONS');
+  assert.deepEqual(await get.json(), { error: 'Only POST requests are accepted.' });
+  const unknown = await call({ action: 'delete everything' });
+  assert.equal(unknown.status, 400);
+  assert.equal(unknown.body.error, 'The action must be request, check or reset.');
+  const res = await handler(new Request('https://fn.example', { method: 'POST', headers: { origin: SITE }, body: 'not json' }));
   assert.equal(res.status, 400);
+  assert.deepEqual(await res.json(), { error: 'The request isn’t valid JSON.' });
+});
+
+test('only the site’s pages get CORS headers', async () => {
+  // Both of the site's origins, each answered with its own name and a Vary.
+  for (const origin of [SITE, 'https://majincheng.com']) {
+    const pre = await handler(new Request('https://fn.example', { method: 'OPTIONS', headers: { origin } }));
+    assert.equal(pre.headers.get('access-control-allow-origin'), origin);
+    assert.equal(pre.headers.get('vary'), 'Origin');
+  }
+  // Another site's page: no CORS headers, so its browser won't send the request.
+  const other = await call(null, 'OPTIONS', 'https://evil.example');
+  assert.equal(other.status, 204);
+  assert.equal(other.cors, null);
+  assert.equal((await call({ action: 'request', username: 'alice' }, 'POST', 'https://evil.example')).cors, null);
+  // No Origin at all (not a browser): answered, without CORS headers.
+  const curl = await call({ action: 'check', token: 'nope' }, 'POST', null);
+  assert.deepEqual(curl, { status: 200, body: { username: null }, cors: null });
+});
+
+test('two requests at once each get their own CORS headers', async () => {
+  let release;
+  const gate = new Promise((resolve) => (release = resolve));
+  const realFetch = globalThis.fetch;
+  // The first request waits in the database while the second arrives from elsewhere.
+  globalThis.fetch = async (input, init) => {
+    if (String(input).endsWith('/rpc/recovery_check')) await gate;
+    return realFetch(input, init);
+  };
+  const first = call({ action: 'check', token: 'A'.repeat(43) }, 'POST', SITE);
+  const second = call({ action: 'check', token: 'B'.repeat(43) }, 'POST', 'https://evil.example');
+  release();
+  const [a, b] = await Promise.all([first, second]);
+  globalThis.fetch = realFetch;
+  assert.equal(a.cors, SITE);
+  assert.equal(b.cors, null);
 });
