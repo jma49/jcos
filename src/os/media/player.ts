@@ -91,10 +91,10 @@ export type PlayerStatus = 'loading' | 'ready' | 'offline';
 /**
  * How long YouTube's own play/pause button stays in the middle of the
  * picture after a video starts, seeks or resumes: its embed shows one for
- * about 4–5 s whatever the player's settings (`controls: 0` included) and
- * whoever the browser says it is, and hides it while paused (measured
- * 2026-09-29). The picture counts as live only once it has played this
- * long since, so the app's cover hides the button.
+ * about 4.3 s whatever the player's settings (`controls: 0` included) and
+ * whoever the browser says it is (measured 2026-09-29; `middleControls`
+ * has the rest). For the iPod and Karaoke the picture counts as live only
+ * once it has played this long since, so their artwork hides the button.
  */
 export const YOUTUBE_BUTTON_MS = 5000;
 
@@ -123,6 +123,60 @@ export function revealAfterButton(setLive: (live: boolean) => void) {
       playing = false;
       clearTimeout(timer);
       setLive(false);
+    },
+    dispose() {
+      clearTimeout(timer);
+    }
+  };
+}
+
+/**
+ * Whether YouTube's middle controls may be up, for a player whose picture
+ * stays on screen (DVD Player), which masks just the middle of it instead
+ * of covering it all. Measured 2026-09-29: a start, a resume or a seek
+ * while playing brings them up at once (a 56px circle in the middle of the
+ * player, whatever its size), and so does buffering (the spinner is in the
+ * same circle); they go YOUTUBE_BUTTON_MS later if it's still playing, and
+ * stay over a picture paused while they're up. A seek while paused brings
+ * nothing up, and neither the player's settings nor a play asked for
+ * without a click keep them away. They come with a darkening of the whole
+ * picture, strongest at the top, which no mask can take away without
+ * hiding the picture: Jincheng chose a moving picture over that
+ * (2026-09-29).
+ */
+export function middleControls(setUp: (up: boolean) => void) {
+  let timer = 0;
+  let playing = false;
+  const show = () => {
+    clearTimeout(timer);
+    setUp(true);
+    if (playing) timer = window.setTimeout(() => setUp(false), YOUTUBE_BUTTON_MS);
+  };
+  return {
+    /** Started or resumed: up, for a while. The app asks as it tells YouTube, so its mask is there first. */
+    playing() {
+      playing = true;
+      show();
+    },
+    /** A seek: up again if it's playing; nothing if it's paused. */
+    seeked() {
+      if (playing) show();
+    },
+    /** Buffering: up until it plays again. */
+    buffering() {
+      clearTimeout(timer);
+      setUp(true);
+    },
+    /** Paused: whatever is up stays up, as YouTube's do. */
+    paused() {
+      playing = false;
+      clearTimeout(timer);
+    },
+    /** Ended, or gone: nothing of YouTube's is over the cover. */
+    stopped() {
+      playing = false;
+      clearTimeout(timer);
+      setUp(false);
     },
     dispose() {
       clearTimeout(timer);

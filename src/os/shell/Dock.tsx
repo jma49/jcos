@@ -80,7 +80,6 @@ function Magnified({
   onMenu,
   children,
   dataApp,
-  trash = false,
   onPress,
   kept,
   end,
@@ -104,8 +103,6 @@ function Magnified({
   onActivate: (el: HTMLElement) => void;
   children: (size: number) => React.ReactNode;
   dataApp?: string;
-  /** The Trash, which a disc dragged from the desktop is dropped on to eject it. */
-  trash?: boolean;
   /** A press that may become a drag (moving it within, into or out of the Dock). */
   onPress?: (e: React.PointerEvent<HTMLButtonElement>) => void;
   /** For an app kept in the Dock: its id, which drops are placed around. */
@@ -177,7 +174,6 @@ function Magnified({
       aria-hidden={leaving || undefined}
       tabIndex={leaving ? -1 : undefined}
       data-dock-app={dataApp}
-      data-dock-trash={trash || undefined}
       data-mobile={mobile || undefined}
       data-collapsed={closed || undefined}
       data-leaving={leaving || undefined}
@@ -215,8 +211,6 @@ export function Dock() {
   const draggingFrom = useDockDrag((s) => s.from);
   const gapBefore = useDockDrag((s) => s.gapBefore);
   const instant = useDockDrag((s) => s.instant);
-  // A disc carried from the desktop: the Trash is Eject until it's dropped.
-  const ejecting = useWindows((s) => s.ejecting);
 
   // Open apps that aren't kept in the Dock get a slot on the right while they
   // run, as on a Mac: one per app, or one per window for project pages.
@@ -427,12 +421,11 @@ export function Dock() {
         <Magnified
           mouseX={mouseX}
           layout={layout}
-          label={ejecting ? 'Eject' : 'Trash'}
-          trash
+          label="Trash"
           onActivate={() => play('trash')}
           onMenu={openMenu([{ label: 'Empty Trash', action: () => play('trash') }])}
         >
-          {(s) => (ejecting ? <span className="os-dock-eject" style={{ width: s, height: s }} /> : <TrashIcon size={s} />)}
+          {(s) => <TrashIcon size={s} />}
         </Magnified>
       </m.div>
       {drag && <drag.DockOverlay />}

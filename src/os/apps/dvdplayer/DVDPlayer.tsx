@@ -1,6 +1,7 @@
 import { Fragment, useEffect, useRef, useState, type CSSProperties } from 'react';
 import type { AppProps } from '../../core/registry';
 import { launch } from '../../core/registry';
+import { PauseGlyph, PlayGlyph } from '../../core/glyphs';
 import { isPhone, useFocusedId, useWindows } from '../../core/store';
 import { useKeys } from '../../core/useKeys';
 import { artOf, DiscIcon } from '../../media/discArt';
@@ -339,16 +340,21 @@ export default function DVDPlayer({ win }: AppProps) {
           // Keyed, so a disc's player never shares its element with another's or the empty screen.
           <Fragment key={disc.id}>
             {/* YouTube's chrome is cropped off (.os-player-frame); until the
-                video really plays, and for the few seconds YouTube shows its
-                own button after a start or a seek, the chapter's frame hides
-                the rest. */}
+                video first plays the chapter's frame hides the rest. After
+                that the picture stays, paused or not, and for the few
+                seconds YouTube shows its own button in the middle after a
+                start, a resume or a seek, DVD Player's own covers it. */}
             <div className="os-dvd-video" ref={player.host} aria-hidden="true" />
             <img
               className="os-dvd-cover"
               src={chapterPictures(disc.id)[screen === 'movie' ? chapter : 0]}
               alt=""
-              data-show={!player.live || screen !== 'movie' || undefined}
+              data-show={!player.started || screen !== 'movie' || undefined}
             />
+            <div className="os-dvd-seam" data-show={(player.up && player.started && screen === 'movie') || undefined} aria-hidden="true" />
+            <div className="os-dvd-mask" data-show={(player.up && player.started && screen === 'movie') || undefined} aria-hidden="true">
+              {player.buffering ? <span className="os-dvd-spinner" /> : player.playing ? <PlayGlyph /> : <PauseGlyph />}
+            </div>
             {screen === 'menu' && <DiscMenu disc={disc} choice={choice} loop={loop} onHover={setChoice} onChoose={choose} />}
             {screen === 'scenes' && <Scenes disc={disc} choice={choice} onHover={setChoice} onChoose={choose} />}
             {player.status === 'offline' && <p className="os-dvd-note">YouTube can’t be reached, so the disc can’t be read.</p>}

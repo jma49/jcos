@@ -46,8 +46,13 @@ own chrome never shows.
   video with the artwork until `usePlayer`'s `live` is true. `live`
   waits `YOUTUBE_BUTTON_MS` (5 s) after every start, seek and resume,
   because YouTube's embed shows its own play/pause button in the middle
-  of the picture for about 4–5 s then, whatever the player's settings
-  (`revealAfterButton` in `player.ts`; DVD Player uses it too).
+  of the picture for about 4.3 s then, whatever the player's settings
+  (`revealAfterButton` in `player.ts`). DVD Player instead keeps its
+  picture, paused or not, and masks just the middle with a button of its
+  own while YouTube's may be up (`middleControls`), so pausing and
+  playing never stop the picture; YouTube's darkening of the picture
+  during those seconds stays, as Jincheng chose (2026-09-29; the details
+  are in pitfalls.md).
 - `src/os/media/together.ts`: listening along. When Jincheng plays a song
   from Telegram (`/play`), everyone on the desktop gets a notification
   (and so does whoever arrives before it ends); "Listen along" opens the
@@ -121,8 +126,8 @@ own chrome never shows.
   with `supabase/functions/_shared/youtube.ts`, as the bot does, and
   YouTube's oEmbed from the browser; the four pictures are asked for with
   HEAD, nothing downloaded. Opening a disc slides it into the drive and
-  opens DVD Player (desktop.md); Eject (the Controller, ⌘E, or the disc
-  dropped on the Dock's Trash) slides it out: a video is four chapters of equal
+  opens DVD Player (desktop.md); Eject (the Controller or ⌘E) slides it
+  out. Nothing goes on the desktop: no disc icon while it plays. A video is four chapters of equal
   length, pictured by YouTube's own frames. DVD Player has its own
   player, made as the disc goes in and cued so Play Movie starts inside
   the click; it follows the one sound switch and the music's volume,
