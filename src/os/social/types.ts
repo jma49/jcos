@@ -300,6 +300,47 @@ export interface Social {
    * shelf, from any page or the bot; returns a function that stops watching.
    */
   watchDiscs: (handlers: { onDisc: (disc: Disc, burned: boolean) => void; onRemove: (id: string) => void }) => () => void;
+
+  /** Jincheng's ratings, plays and playlists, as the database has them now. */
+  listening: () => Promise<Listening>;
+  /** Rates a song one to five stars, or clears its rating with 0. Only the owner may. */
+  rateSong: (id: string, rating: number) => Promise<void>;
+  /** Counts a play of a song listened to the end. Only the owner's are counted. */
+  songPlayed: (id: string) => Promise<void>;
+  /**
+   * Saves songs into the playlist called `name` (whatever its case),
+   * making it if there's none, and returns its id. Only the owner may.
+   */
+  savePlaylist: (name: string, songs: string[]) => Promise<number>;
+  /** Takes a song out of one of the playlists. Only the owner may. */
+  unlistSong: (playlist: number, song: string) => Promise<void>;
+  /** Deletes one of the playlists. Only the owner may. */
+  deletePlaylist: (playlist: number) => Promise<void>;
+}
+
+/** Jincheng's rating and plays of a song. */
+export interface SongStats {
+  /** One to five stars; missing until rated. */
+  rating?: number;
+  /** How many times Jincheng has listened to it to the end, on the site. */
+  plays: number;
+  /** When Jincheng last did (ISO 8601). */
+  played?: string;
+}
+
+/** One of Jincheng's own playlists: its songs' YouTube ids, in order. */
+export interface Playlist {
+  id: number;
+  name: string;
+  songs: string[];
+}
+
+/** What the iPod shows everyone of Jincheng's listening. */
+export interface Listening {
+  /** By song id; a song never rated or played isn't in it. */
+  stats: Record<string, SongStats>;
+  /** In the order they were made. */
+  playlists: Playlist[];
 }
 
 /** A song Jincheng is playing for everyone on the desktop (/play in Telegram). */

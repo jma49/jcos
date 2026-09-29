@@ -80,3 +80,37 @@ wait
 burned=$(( $(psql -tA -d "$DB" -c "select count(*) from public.discs") - before ))
 [ "$burned" = 3 ] || { echo "FAILED: six discs at once with room for three burned $burned"; exit 1; }
 echo "ok: six discs at once, room for three, three burned"
+
+# Jincheng's plays: eight songs ending at once (tabs, devices) count eight.
+JINCHENG=99999999-9999-9999-9999-999999999999
+as_jincheng() {
+  psql -q -d "$DB" >/dev/null 2>&1 <<SQL || true
+begin;
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '$JINCHENG', true);
+$1;
+select pg_sleep(0.3);
+commit;
+SQL
+}
+for i in $(seq 1 8); do as_jincheng "select public.song_played('QLHMhVonF-s')" & done
+wait
+plays=$(psql -tA -d "$DB" -c "select plays from public.song_stats where song_id = 'QLHMhVonF-s'")
+[ "$plays" = 8 ] || { echo "FAILED: eight plays at once counted $plays"; exit 1; }
+echo "ok: eight plays at once, eight counted"
+
+# Playlists: with room for two more, five saved at once; and one name
+# saved from four places at once is one playlist with every song.
+psql -q -v ON_ERROR_STOP=1 -d "$DB" -c "update public.music_settings set value = to_jsonb((select count(*) from public.playlists) + 2) where name = 'playlist_limit'" >/dev/null
+before=$(psql -tA -d "$DB" -c "select count(*) from public.playlists")
+for i in 1 2 3 4 5; do as_jincheng "select public.save_playlist('Race $i', array['OxtZF0WGXtE'])" & done
+wait
+made=$(( $(psql -tA -d "$DB" -c "select count(*) from public.playlists") - before ))
+[ "$made" = 2 ] || { echo "FAILED: five playlists at once with room for two made $made"; exit 1; }
+echo "ok: five playlists at once, room for two, two made"
+psql -q -v ON_ERROR_STOP=1 -d "$DB" -c "update public.music_settings set value = '50' where name = 'playlist_limit'" >/dev/null
+for id in OxtZF0WGXtE QLHMhVonF-s TkmfOyuGSdQ 0o-s_8Wt9zc; do as_jincheng "select public.save_playlist('Same Name', array['$id'])" & done
+wait
+same=$(psql -tA -d "$DB" -c "select count(distinct l.id) || ' ' || count(*) from public.playlists l join public.playlist_songs p on p.playlist_id = l.id where lower(l.name) = 'same name'")
+[ "$same" = "1 4" ] || { echo "FAILED: one name saved from four places at once gave (playlists, songs) $same, not 1 4"; exit 1; }
+echo "ok: one new playlist saved from four places at once is one playlist with all four songs"

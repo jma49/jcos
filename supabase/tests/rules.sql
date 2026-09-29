@@ -318,6 +318,115 @@ delete from public.discs where id = 'ccccccccccc';
 update public.music_settings set value = '200' where name = 'disc_limit';
 select pg_temp.check(exists (select 1 from pg_publication_tables where pubname = 'supabase_realtime' and tablename = 'discs'), 'the shelf''s changes reach open desktops over Realtime');
 
+-- The iPod's ratings and playlists ------------------------------------------
+
+-- Visitors and members read what Jincheng rated, played and saved, as
+-- the site asks for it (src/os/social/supabase.ts), and change none of it.
+select pg_temp.act_as('anon');
+select pg_temp.check((select count(*) from (select song_id, rating, plays, played_at from public.song_stats) s) = 0
+  -- Playlists with their songs embedded, as PostgREST reads them for the iPod.
+  and (select count(*) from (
+    select p.id, p.name, coalesce((select json_agg(s) from (select ps.song_id from public.playlist_songs ps where ps.playlist_id = p.id order by ps.position) s), '[]')
+    from public.playlists p order by p.id
+  ) p) = 0, 'visitors read ratings, plays and playlists as the iPod asks for them');
+select pg_temp.check(pg_temp.refused($$select public.rate_song('OxtZF0WGXtE', 5)$$), 'visitors can''t rate songs');
+select pg_temp.check(pg_temp.refused($$select public.song_played('OxtZF0WGXtE')$$), 'a visitor''s plays aren''t counted');
+select pg_temp.check(pg_temp.refused($$select public.save_playlist('Mine', array['OxtZF0WGXtE'])$$), 'visitors can''t save playlists');
+select pg_temp.check(pg_temp.refused($$insert into public.playlists (name) values ('Mine')$$), 'visitors can''t make playlists');
+reset role;
+select pg_temp.act_as('authenticated', '11111111-1111-1111-1111-111111111111');
+select pg_temp.check(pg_temp.refused($$select public.rate_song('OxtZF0WGXtE', 5)$$), 'members can''t rate songs');
+select pg_temp.check(pg_temp.refused($$insert into public.song_stats (song_id, rating) values ('OxtZF0WGXtE', 5)$$), 'members can''t write ratings directly');
+select pg_temp.check(pg_temp.refused($$select public.song_played('OxtZF0WGXtE')$$), 'a member''s plays aren''t counted');
+select pg_temp.check(pg_temp.refused($$select public.save_playlist('Mine', array['OxtZF0WGXtE'])$$), 'members can''t save playlists');
+select pg_temp.check(pg_temp.refused($$insert into public.playlists (name) values ('Mine')$$), 'members can''t make playlists directly');
+reset role;
+select pg_temp.check(not exists (select 1 from public.song_stats) and not exists (select 1 from public.playlists), 'nothing was rated, counted or saved');
+
+-- Jincheng rates, listens and saves.
+select pg_temp.act_as('authenticated', '99999999-9999-9999-9999-999999999999');
+select public.rate_song('OxtZF0WGXtE', 4);
+select public.rate_song('OxtZF0WGXtE', 5);
+select public.rate_song('QLHMhVonF-s', 3);
+select public.rate_song('QLHMhVonF-s', 0);
+select pg_temp.check((select rating from public.song_stats where song_id = 'OxtZF0WGXtE') = 5
+  and (select rating is null from public.song_stats where song_id = 'QLHMhVonF-s'), 'Jincheng rates songs, changes a rating and clears one');
+select pg_temp.check(pg_temp.refused($$select public.rate_song('OxtZF0WGXtE', 6)$$) and pg_temp.refused($$select public.rate_song('OxtZF0WGXtE', -1)$$), 'a rating is one to five stars');
+select pg_temp.check(pg_temp.refused($$select public.rate_song('aaaaaaaaaaa', 3)$$), 'only songs in the library are rated');
+select public.song_played('OxtZF0WGXtE');
+select public.song_played('OxtZF0WGXtE');
+select public.song_played('TkmfOyuGSdQ');
+select pg_temp.check((select plays = 2 and played_at > now() - interval '1 minute' and rating = 5 from public.song_stats where song_id = 'OxtZF0WGXtE')
+  and (select plays = 1 and rating is null from public.song_stats where song_id = 'TkmfOyuGSdQ'), 'Jincheng''s plays are counted, when, and leave the rating be');
+select pg_temp.check(pg_temp.refused($$update public.song_stats set plays = 100 where song_id = 'OxtZF0WGXtE'$$), 'no one sets a play count');
+select pg_temp.check(pg_temp.refused($$update public.song_stats set played_at = now() - interval '1 year' where song_id = 'OxtZF0WGXtE'$$), 'a play''s time is the database''s');
+select pg_temp.check(pg_temp.refused($$insert into public.song_stats (song_id, plays) values ('0o-s_8Wt9zc', 100)$$), 'nor does a new song start with plays');
+
+select set_config('test.playlist', public.save_playlist('  Rainy Days ', array['OxtZF0WGXtE', 'QLHMhVonF-s', 'OxtZF0WGXtE', 'aaaaaaaaaaa'])::text, false);
+select pg_temp.check((select name from public.playlists where id = current_setting('test.playlist')::bigint) = 'Rainy Days'
+  and (select array_agg(song_id order by position) from public.playlist_songs where playlist_id = current_setting('test.playlist')::bigint) = array['OxtZF0WGXtE', 'QLHMhVonF-s'],
+  'Jincheng saves a playlist: named, in order, each song once, only songs in the library');
+select set_config('test.again', public.save_playlist('rainy days', array['TkmfOyuGSdQ', 'OxtZF0WGXtE'])::text, false);
+select pg_temp.check(current_setting('test.again') = current_setting('test.playlist')
+  and (select array_agg(song_id order by position) from public.playlist_songs where playlist_id = current_setting('test.playlist')::bigint) = array['OxtZF0WGXtE', 'QLHMhVonF-s', 'TkmfOyuGSdQ']
+  and (select count(*) from public.playlists) = 1, 'songs saved into a playlist of the same name go after its own');
+select pg_temp.check(pg_temp.refused($$select public.save_playlist('On-The-Go', array['OxtZF0WGXtE'])$$)
+  and pg_temp.refused($$select public.save_playlist('top 25 most played', array['OxtZF0WGXtE'])$$), 'the iPod''s own playlists'' names are taken');
+select pg_temp.check(pg_temp.refused($$select public.save_playlist('   ', array['OxtZF0WGXtE'])$$), 'a playlist has a name');
+select pg_temp.check(pg_temp.refused($$select public.save_playlist(repeat('x', 41), array['OxtZF0WGXtE'])$$), 'a playlist''s name fits the iPod''s screen');
+select pg_temp.check(pg_temp.refused($$select public.save_playlist(E'Two\nlines', array['OxtZF0WGXtE'])$$), 'a playlist''s name is one line');
+select pg_temp.check(pg_temp.refused($$insert into public.playlist_songs (playlist_id, song_id, position) values (current_setting('test.playlist')::bigint, '0o-s_8Wt9zc', 0)$$), 'a song''s place in a playlist is the database''s');
+delete from public.playlist_songs where playlist_id = current_setting('test.playlist')::bigint and song_id = 'QLHMhVonF-s';
+select pg_temp.check((select array_agg(song_id order by position) from public.playlist_songs where playlist_id = current_setting('test.playlist')::bigint) = array['OxtZF0WGXtE', 'TkmfOyuGSdQ'], 'Jincheng takes a song out of a playlist');
+reset role;
+
+-- No one else changes them.
+select pg_temp.act_as('authenticated', '11111111-1111-1111-1111-111111111111');
+select pg_temp.check(pg_temp.refused($$select public.save_playlist('Rainy Days', array['0o-s_8Wt9zc'])$$), 'members can''t add to Jincheng''s playlists');
+delete from public.playlist_songs where playlist_id = current_setting('test.playlist')::bigint;
+delete from public.playlists where id = current_setting('test.playlist')::bigint;
+update public.song_stats set rating = 1 where song_id = 'OxtZF0WGXtE';
+select pg_temp.act_as('anon');
+select pg_temp.check(pg_temp.refused($$delete from public.playlist_songs where playlist_id = current_setting('test.playlist')::bigint$$)
+  and pg_temp.refused($$delete from public.playlists where id = current_setting('test.playlist')::bigint$$)
+  and pg_temp.refused($$update public.song_stats set rating = 1 where song_id = 'OxtZF0WGXtE'$$), 'visitors can''t take songs out, delete playlists or change ratings');
+reset role;
+select pg_temp.check((select count(*) from public.playlist_songs where playlist_id = current_setting('test.playlist')::bigint) = 2
+  and (select rating from public.song_stats where song_id = 'OxtZF0WGXtE') = 5, 'members can''t take songs out, delete playlists or change ratings');
+
+-- A song that leaves the library leaves every playlist, and its rating and plays go with it.
+select pg_temp.act_as('service_role');
+insert into public.songs (id, title, artist) values ('eeeeeeeeeee', 'Leaving', 'Someone');
+select pg_temp.act_as('authenticated', '99999999-9999-9999-9999-999999999999');
+select public.rate_song('eeeeeeeeeee', 2);
+select public.save_playlist('Rainy Days', array['eeeeeeeeeee']);
+select pg_temp.act_as('service_role');
+delete from public.songs where id = 'eeeeeeeeeee';
+reset role;
+select pg_temp.check(not exists (select 1 from public.playlist_songs where song_id = 'eeeeeeeeeee')
+  and not exists (select 1 from public.song_stats where song_id = 'eeeeeeeeeee'), 'a song removed from the library leaves its playlists, and its rating goes');
+
+-- The limit: with every playlist made, a new one is refused, and songs
+-- still go into one that's there.
+update public.music_settings set value = to_jsonb((select count(*) from public.playlists) + 1) where name = 'playlist_limit';
+select pg_temp.act_as('authenticated', '99999999-9999-9999-9999-999999999999');
+select public.save_playlist('While Coding', array['0o-s_8Wt9zc']);
+select pg_temp.check(pg_temp.refused($$select public.save_playlist('One Too Many', array['OxtZF0WGXtE'])$$), 'a full set of playlists refuses another');
+select public.save_playlist('while coding', array['bX33UI9ZPLk']);
+select pg_temp.check((select count(*) from public.playlist_songs p join public.playlists l on l.id = p.playlist_id where l.name = 'While Coding') = 2, 'songs still go into a playlist that''s there');
+delete from public.playlists where name = 'While Coding';
+select pg_temp.check(not exists (select 1 from public.playlists where name = 'While Coding')
+  and not exists (select 1 from public.playlist_songs where song_id = 'bX33UI9ZPLk'), 'Jincheng deletes a playlist, and its songs with it');
+reset role;
+update public.music_settings set value = '50' where name = 'playlist_limit';
+
+select pg_temp.check(not (select prosecdef from pg_proc where oid = 'public.rate_song(text, int)'::regprocedure)
+  and not (select prosecdef from pg_proc where oid = 'public.save_playlist(text, text[])'::regprocedure), 'rating and saving run as the caller, under the policies');
+select pg_temp.check(not has_function_privilege('anon', 'public.song_played(text)', 'execute')
+  and not has_function_privilege('anon', 'public.rate_song(text, int)', 'execute')
+  and not has_function_privilege('anon', 'public.save_playlist(text, text[])', 'execute')
+  and not has_function_privilege('authenticated', 'public.playlists_within_limit()', 'execute'), 'visitors can''t call the owner''s functions, and no one calls the trigger''s');
+
 -- Supabase's API loads pg_safeupdate, which refuses a DELETE or UPDATE
 -- without a WHERE clause, even inside a function ("DELETE requires a
 -- WHERE clause"). This Postgres doesn't have it, so every function's

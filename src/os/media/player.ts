@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useWindows } from '../core/store';
 import { SONGS } from './library';
 import { clocks, durations, useMusic, type MusicApp, type MusicStore } from './music';
+import { countPlay } from './playlists';
 
 export interface YTPlayer {
   playVideo(): void;
@@ -241,6 +242,9 @@ export function usePlayer(app: MusicApp) {
               if (data === PLAYING && !s.playing) useMusic.setState({ playing: true });
               if (data === PAUSED && s.playing) useMusic.setState({ playing: false });
               if (data === ENDED) {
+                // Listened to the end: a play, if Jincheng is the one listening.
+                const ended = SONGS[s.index]?.id;
+                if (ended) void countPlay(ended);
                 if (s.repeat === 'one') {
                   player?.seekTo(0, true);
                   player?.playVideo();
