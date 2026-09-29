@@ -19,6 +19,7 @@ import { PATH_MIME, shareViaAirDrop } from '../../social/airdrop';
 import { APP_MIME } from '../../core/dock';
 import { ActionMenu, ARRANGERS, ancestry, everything, FileInfo, formatDate, parentOf, Thumb, type Arrange, type View } from './parts';
 import { ColumnView } from './ColumnView';
+import { CoverFlowView } from './CoverFlowView';
 import { QuickLook } from './QuickLook';
 import { BurnSheet } from './BurnSheet';
 import { discPath, moviesFolder } from './movies';
@@ -40,7 +41,7 @@ interface Prefs {
 
 const PREFS_KEY = 'os-finder';
 const DEFAULT_PREFS: Prefs = { view: 'icons', arrange: 'none', size: 64 };
-const VIEWS: View[] = ['icons', 'list', 'columns'];
+const VIEWS: View[] = ['icons', 'list', 'columns', 'coverflow'];
 
 function savedPrefs(): Prefs {
   // Earlier versions kept only the view, under its own key.
@@ -168,7 +169,8 @@ export default function Finder({ win }: AppProps) {
       return;
     }
     const step = { ArrowUp: view === 'icons' ? -perRow() : -1, ArrowDown: view === 'icons' ? perRow() : 1, ArrowLeft: -1, ArrowRight: 1 }[key] ?? 0;
-    if (view !== 'icons' && (key === 'ArrowLeft' || key === 'ArrowRight')) return;
+    // Left and right move through the icons and the covers; the list goes up and down only.
+    if (view === 'list' && (key === 'ArrowLeft' || key === 'ArrowRight')) return;
     choose(list[Math.max(0, Math.min(list.length - 1, i + step))]);
   };
 
@@ -201,7 +203,7 @@ export default function Finder({ win }: AppProps) {
       } else if (e.altKey && e.code === 'KeyI') {
         e.preventDefault();
         setInfo((i) => !i);
-      } else if (e.altKey && /^Digit[123]$/.test(e.code)) {
+      } else if (e.altKey && /^Digit[1-4]$/.test(e.code)) {
         e.preventDefault();
         update({ view: VIEWS[Number(e.code.slice(-1)) - 1] });
       } else if (e.code === 'BracketLeft' && at > 0) {
@@ -254,7 +256,8 @@ export default function Finder({ win }: AppProps) {
   const viewItems: ContextMenuItem[] = [
     { label: 'as Icons', shortcut: '⌥1', checked: view === 'icons', action: () => update({ view: 'icons' }) },
     { label: 'as List', shortcut: '⌥2', checked: view === 'list', action: () => update({ view: 'list' }) },
-    { label: 'as Columns', shortcut: '⌥3', checked: view === 'columns', disabled: searching, action: () => update({ view: 'columns' }) }
+    { label: 'as Columns', shortcut: '⌥3', checked: view === 'columns', disabled: searching, action: () => update({ view: 'columns' }) },
+    { label: 'as Cover Flow', shortcut: '⌥4', checked: view === 'coverflow', action: () => update({ view: 'coverflow' }) }
   ];
   const arrangeItems: ContextMenuItem[] = (['none', 'name', 'date', 'kind'] as const).map((a) => ({
     label: a === 'none' ? 'Keep Arranged: Off' : `Arrange by ${a[0].toUpperCase()}${a.slice(1)}`,
@@ -329,6 +332,39 @@ export default function Finder({ win }: AppProps) {
     }
   });
 
+  /** The folder as a list (Name, Date Modified or Added, Length in Movies, Kind): the list view, and under Cover Flow. */
+  const listView = () => (
+    <div
+      className="os-scroll os-files-list"
+      role="table"
+      aria-label={title}
+      data-searching={searching || undefined}
+      data-lengths={atMovies || undefined}
+      onContextMenu={(e) => {
+        e.preventDefault();
+        setMenu({ x: e.clientX, y: e.clientY, node: null });
+      }}
+    >
+      <div role="row" className="os-files-head">
+        {header('Name', 'name')}
+        {searching ? <span role="columnheader">Where</span> : header(atMovies ? 'Date Added' : 'Date Modified', 'date')}
+        {atMovies && <span role="columnheader">Length</span>}
+        {header('Kind', 'kind')}
+      </div>
+      {items.map((node) => (
+        <button key={node.path} type="button" role="row" {...itemProps(node)}>
+          <span role="cell" className="os-files-name">
+            <Thumb node={node} size={16} />
+            {node.name}
+          </span>
+          <span role="cell">{searching ? find(disk, parentOf(node.path))?.name : formatDate(node.date)}</span>
+          {atMovies && <span role="cell">{node.duration ? formatTime(node.duration / 1000) : '--'}</span>}
+          <span role="cell">{node.kind}</span>
+        </button>
+      ))}
+    </div>
+  );
+
   const placeButton = (node: FileNode) => (
     <button
       key={node.path}
@@ -385,6 +421,11 @@ export default function Finder({ win }: AppProps) {
           >
             <svg viewBox="0 0 14 14" width="12" height="12" aria-hidden="true">
               <path d="M1 1h3.3v12H1zM5.35 1h3.3v12h-3.3zM9.7 1H13v12H9.7z" fill="currentColor" />
+            </svg>
+          </button>
+          <button type="button" aria-pressed={view === 'coverflow'} onClick={() => update({ view: 'coverflow' })} aria-label="Cover Flow" title="As Cover Flow (⌥4)">
+            <svg viewBox="0 0 16 14" width="14" height="12" aria-hidden="true">
+              <path d="M5 2h6v8H5zM1 3.5l3 1.2v4.6l-3 1.2zM15 3.5l-3 1.2v4.6l3 1.2zM5 11.5h6v1H5z" fill="currentColor" />
             </svg>
           </button>
         </div>
@@ -487,36 +528,11 @@ export default function Finder({ win }: AppProps) {
               ))}
             </ul>
           )}
-          {view === 'list' && (
-            <div
-              className="os-scroll os-files-list"
-              role="table"
-              aria-label={title}
-              data-searching={searching || undefined}
-              data-lengths={atMovies || undefined}
-              onContextMenu={(e) => {
-                e.preventDefault();
-                setMenu({ x: e.clientX, y: e.clientY, node: null });
-              }}
-            >
-              <div role="row" className="os-files-head">
-                {header('Name', 'name')}
-                {searching ? <span role="columnheader">Where</span> : header(atMovies ? 'Date Added' : 'Date Modified', 'date')}
-                {atMovies && <span role="columnheader">Length</span>}
-                {header('Kind', 'kind')}
-              </div>
-              {items.map((node) => (
-                <button key={node.path} type="button" role="row" {...itemProps(node)}>
-                  <span role="cell" className="os-files-name">
-                    <Thumb node={node} size={16} />
-                    {node.name}
-                  </span>
-                  <span role="cell">{searching ? find(disk, parentOf(node.path))?.name : formatDate(node.date)}</span>
-                  {atMovies && <span role="cell">{node.duration ? formatTime(node.duration / 1000) : '--'}</span>}
-                  <span role="cell">{node.kind}</span>
-                </button>
-              ))}
-            </div>
+          {view === 'list' && listView()}
+          {view === 'coverflow' && (
+            <CoverFlowView items={items} selected={selected} onSelect={(node) => setSelected(node.path)} onOpen={open}>
+              {listView()}
+            </CoverFlowView>
           )}
           {view === 'columns' && <ColumnView disk={disk} path={path} selected={selected} sort={sort} itemProps={itemProps} />}
           {searching && items.length === 0 && <p className="os-finder-empty">Nothing on Macintosh HD matches “{query.trim()}”.</p>}

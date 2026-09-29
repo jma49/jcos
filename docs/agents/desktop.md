@@ -283,9 +283,15 @@ only `kit/`. The lint enforces all three.
   a blank window, from `/api/framing`.
 - `src/os/core/files.ts` and `apps/finder/`: Macintosh HD, a read-only
   file system built from the content (Applications, Applets, Documents,
-  Movies, Music, Pictures, Projects), browsed in Finder with icon, list
-  and column views, Quick Look (Space), keyboard navigation and a
-  right-click menu. A file's `look` is what Quick Look shows (a picture,
+  Movies, Music, Pictures, Projects), browsed in Finder with icon, list,
+  column and Cover Flow views (⌥1–⌥4), Quick Look (Space), keyboard
+  navigation and a right-click menu. Cover Flow (`CoverFlowView.tsx`) is
+  Leopard's: the folder's items in a row over their reflections (a disc
+  as its case, a photo as its picture, anything else as its icon, sized
+  to the row's height) above the list, dragged, scrolled with the dark
+  scroller or the arrow keys, a cover clicked to the front; only the
+  covers near the middle are drawn. Its classes are `os-finder-cf-*`,
+  apart from the iPod's `os-cf-*`. A file's `look` is what Quick Look shows (a picture,
   or a `View` of its own), `openLabel` its button ("Play DVD"), `trash`
   what Move to Trash (⌘⌫) does and `share: false` keeps it from AirDrop.
   Movies is DVD Player's shelf: Finder builds it (`apps/finder/movies.tsx`
