@@ -438,6 +438,27 @@ export function supabaseSocial(url: string, key: string): Social {
       if (error) throw error.code === '42501' ? notOwner() : refusal(error);
     },
 
+    // Changes to the shelf, which only the owner and the bot write. Realtime
+    // sends the row itself, so a burn doesn't send every visitor to the
+    // database at once; a removal comes with the id alone.
+    watchDiscs({ onDisc, onRemove }) {
+      const channel = client
+        .channel('discs')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'discs' }, ({ eventType, new: row, old }) => {
+          if (eventType === 'DELETE') {
+            const id = (old as { id?: unknown } | null)?.id;
+            if (typeof id === 'string') onRemove(id);
+            return;
+          }
+          const r = row as Parameters<typeof discOf>[0] | null;
+          if (r && typeof r.id === 'string' && typeof r.title === 'string') onDisc(discOf(r), eventType === 'INSERT');
+        })
+        .subscribe();
+      return () => {
+        client.removeChannel(channel);
+      };
+    },
+
     async nowPlaying() {
       const { data, error } = await client.rpc('now_playing_position');
       if (error) throw error;
