@@ -119,6 +119,9 @@ issues; [ROADMAP.md](ROADMAP.md) is what comes next, in order.
   proposes dependency updates weekly. CI fails on a high or critical
   advisory in a production dependency, and the workflows pin every
   action to a commit SHA with read-only permissions by default.
+  The one exception is the ocra review of pull requests, which calls
+  the owner's review workflow in Open-CR-Agent at `main`: Google Cloud
+  issues its keyless login to that ref only (HANDOFF.md).
 
 To report a security problem, please email the address on the résumé
 rather than opening an issue.
