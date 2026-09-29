@@ -275,6 +275,49 @@ reset role;
 delete from public.songs where id = 'ccccccccccc';
 update public.music_settings set value = '200' where name = 'song_limit';
 
+-- DVD Player's discs ----------------------------------------------------
+
+select pg_temp.act_as('service_role');
+insert into public.discs (id, title, artist, cover) values ('jWQx2f-CErU', 'Whiplash', 'aespa', 'maxresdefault');
+select pg_temp.check((select cover_x = 50 and duration_ms is null from public.discs where id = 'jWQx2f-CErU'), 'the bot burns a disc, cropped in the middle');
+reset role;
+
+select pg_temp.act_as('anon');
+select pg_temp.check((select count(*) from (select id, title, artist, cover, cover_x, duration_ms, added_at from public.discs order by added_at, id) d) = 1, 'visitors read discs as /api/songs asks for them');
+select pg_temp.check(pg_temp.refused($$insert into public.discs (id, title) values ('aaaaaaaaaaa', 'x')$$), 'visitors can''t burn discs');
+select pg_temp.check(pg_temp.refused($$update public.discs set title = 'x' where id = 'jWQx2f-CErU'$$), 'visitors can''t relabel discs');
+select pg_temp.check(pg_temp.refused($$delete from public.discs where id = 'jWQx2f-CErU'$$), 'visitors can''t throw discs away');
+
+select pg_temp.act_as('authenticated', '11111111-1111-1111-1111-111111111111');
+select pg_temp.check(pg_temp.refused($$insert into public.discs (id, title) values ('aaaaaaaaaaa', 'x')$$), 'members can''t burn discs');
+update public.discs set title = 'Mine now' where id = 'jWQx2f-CErU';
+delete from public.discs where id = 'jWQx2f-CErU';
+reset role;
+select pg_temp.check((select title from public.discs where id = 'jWQx2f-CErU') = 'Whiplash', 'members can''t relabel or throw away discs');
+
+select pg_temp.act_as('authenticated', '99999999-9999-9999-9999-999999999999');
+insert into public.discs (id, title, artist, cover, cover_x) values ('kKsivrgoyDw', 'Cool with You', 'NewJeans', 'hq2', 38);
+update public.discs set title = 'Whiplash (MV)', duration_ms = 191000 where id = 'jWQx2f-CErU';
+select pg_temp.check((select count(*) from public.discs) = 2 and (select title from public.discs where id = 'jWQx2f-CErU') = 'Whiplash (MV)', 'the owner burns and relabels discs');
+delete from public.discs where id = 'kKsivrgoyDw';
+select pg_temp.check((select count(*) from public.discs) = 1, 'the owner throws a disc away');
+select pg_temp.check(pg_temp.refused($$insert into public.discs (id, title, cover) values ('bbbbbbbbbbb', 'x', 'https://evil.example/a.jpg')$$), 'a case''s picture is one of the video''s own, by name');
+select pg_temp.check(pg_temp.refused($$insert into public.discs (id, title) values ('short', 'x')$$), 'a disc is a YouTube video id');
+select pg_temp.check(pg_temp.refused($$insert into public.discs (id, title) values ('bbbbbbbbbbb', '   ')$$), 'a disc has a title');
+select pg_temp.check(pg_temp.refused($$insert into public.discs (id, title, cover_x) values ('bbbbbbbbbbb', 'x', 101)$$), 'the crop stays on the picture');
+select pg_temp.check(pg_temp.refused($$insert into public.discs (id, title, added_at) values ('bbbbbbbbbbb', 'x', now() - interval '1 year')$$), 'a disc''s burn date is the database''s');
+reset role;
+
+-- The limit: a full shelf refuses another disc.
+update public.music_settings set value = to_jsonb((select count(*) from public.discs) + 1) where name = 'disc_limit';
+select pg_temp.act_as('service_role');
+insert into public.discs (id, title) values ('ccccccccccc', 'Last');
+select pg_temp.check(pg_temp.refused($$insert into public.discs (id, title) values ('ddddddddddd', 'Too many')$$), 'a full shelf refuses another disc');
+reset role;
+delete from public.discs where id = 'ccccccccccc';
+update public.music_settings set value = '200' where name = 'disc_limit';
+select pg_temp.check(exists (select 1 from pg_publication_tables where pubname = 'supabase_realtime' and tablename = 'discs'), 'the shelf''s changes reach open desktops over Realtime');
+
 -- Supabase's API loads pg_safeupdate, which refuses a DELETE or UPDATE
 -- without a WHERE clause, even inside a function ("DELETE requires a
 -- WHERE clause"). This Postgres doesn't have it, so every function's

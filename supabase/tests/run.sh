@@ -26,7 +26,7 @@ run() {
 
 run -c "$(grep -v '^create role' supabase/tests/stubs.sql)"
 run -1 -f supabase/schema.sql
-for f in supabase/migrations/20260926071227_chat_rooms.sql supabase/migrations/20260926080833_soapbox_images.sql supabase/migrations/20260926091033_moderation.sql supabase/migrations/20260926094533_password_reset.sql supabase/migrations/20260926095149_hardening.sql supabase/migrations/20260926100511_advisor.sql supabase/migrations/20260927030802_music_library.sql supabase/migrations/20260927062226_albums_added_at.sql supabase/migrations/20260927062914_song_limit.sql supabase/migrations/20260927093000_music_stop_where.sql supabase/migrations/20260927100000_now_playing_realtime.sql supabase/migrations/20260929100000_owner.sql; do
+for f in supabase/migrations/20260926071227_chat_rooms.sql supabase/migrations/20260926080833_soapbox_images.sql supabase/migrations/20260926091033_moderation.sql supabase/migrations/20260926094533_password_reset.sql supabase/migrations/20260926095149_hardening.sql supabase/migrations/20260926100511_advisor.sql supabase/migrations/20260927030802_music_library.sql supabase/migrations/20260927062226_albums_added_at.sql supabase/migrations/20260927062914_song_limit.sql supabase/migrations/20260927093000_music_stop_where.sql supabase/migrations/20260927100000_now_playing_realtime.sql supabase/migrations/20260929100000_owner.sql supabase/migrations/20260929120000_discs.sql; do
   run -1 -f "$f"
 done
 out=$(psql -q -t -v ON_ERROR_STOP=1 -d "$DB" -f supabase/tests/rules.sql 2>&1) || { echo "$out"; exit 1; }
