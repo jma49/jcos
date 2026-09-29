@@ -23,6 +23,7 @@ advisory lock (Security, below).
 | `songs`, `albums` | everyone | the bot | `music_settings.song_limit` songs (200) |
 | `music_settings` | the bot; visitors only through `song_limit()` | Jincheng, in the Table editor | |
 | `now_playing` | everyone, while the song plays | the bot, through `music_play()` and `music_stop()` | one song |
+| `discs` (DVD Player's shelf) | everyone | Jincheng: the bot's `/dvd`, or the site signed in as the owner | `music_settings.disc_limit` discs (200) |
 | `private.recovery_emails`, `private.password_resets`, `private.secrets` | not reachable through the API | account functions and the database | resets: 3 per account and 3 per address an hour, 60 an hour in all; a link lasts 30 minutes |
 | `private.owners` | not reachable through the API; `is_owner()` tells the caller whether they're in it | Jincheng, once, in the SQL editor | Jincheng's account |
 | `soapbox` storage bucket | everyone | the bot | images only, 10 MB each |
@@ -81,6 +82,17 @@ The code that isn't in the browser (each endpoint's parameters, answers and conv
   trigger) and join at `now_playing_position()`, by the database's clock
   (`media/together.ts`). The bot's music commands are in
   `supabase/functions/soapbox-bot/music.ts`.
+- **DVD Player's discs** (`public.discs`; migration
+  `20260929120000_discs.sql`): YouTube videos Jincheng has burned onto
+  discs, on everyone's shelf. Read by everyone (through `/api/songs`,
+  with the music); written only by the owner, from Telegram (`/dvd`,
+  `supabase/functions/soapbox-bot/discs.ts`) or from the site signed in
+  (`is_owner()` in the policies). A disc's `cover` is the name of one of
+  the video's own images on i.ytimg.com (`maxresdefault`, `hq2`…), never
+  an address, and `cover_x` where the case crops it. At most
+  `music_settings.disc_limit` discs (200), counted under an advisory
+  lock. Changes reach open desktops over Realtime. Visitors' own discs
+  (DVD-Rs) stay in their browser and never reach the database.
 - **Chat** (`apps/chat/`, `social/chatState.ts`): public rooms listed
   in `public.chat_rooms` (add one in the Table editor) and private
   conversations between two members (rooms named

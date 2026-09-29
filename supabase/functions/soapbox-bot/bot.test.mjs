@@ -26,6 +26,9 @@ beforeEach(() => {
   world = { replies: [], sent: [], uploads: [], posts: [], groups: new Map(), patches: [], bucket: true, settings: {}, moderation: null, webhook: null, answered: [], edits: [], failRpc: false };
   // The music library: its songs, drafts and limit, and what YouTube, Apple Music and lrclib say.
   Object.assign(world, { songs: [], music: { song_limit: 200 }, fetched: [], youtube: {}, itunes: [], lrclib: [] });
+  // DVD Player's shelf, its limit, and the videos YouTube has a full-size thumbnail for.
+  Object.assign(world, { discs: [], maxres: new Set() });
+  world.music.disc_limit = 200;
 });
 
 const json = (value, status = 200) => new Response(JSON.stringify(value), { status, headers: { 'content-type': 'application/json' } });
@@ -62,7 +65,9 @@ globalThis.fetch = async (input, init = {}) => {
     return json({ Key: 'x' });
   }
   // What the music commands look up. Every address they fetch is recorded.
-  if (/youtube\.com\/oembed|itunes\.apple\.com|lrclib\.net/.test(url)) world.fetched.push(url);
+  if (/youtube\.com\/oembed|itunes\.apple\.com|lrclib\.net|i\.ytimg\.com/.test(url)) world.fetched.push(url);
+  const thumb = url.match(/^https:\/\/i\.ytimg\.com\/vi\/([\w-]{11})\/maxresdefault\.jpg$/);
+  if (thumb) return new Response(null, { status: world.maxres.has(thumb[1]) ? 200 : 404 });
   if (url.startsWith('https://www.youtube.com/oembed?')) {
     const id = new URL(new URL(url).searchParams.get('url')).searchParams.get('v');
     const video = world.youtube[id];
@@ -72,6 +77,22 @@ globalThis.fetch = async (input, init = {}) => {
   if (url.startsWith('https://lrclib.net/api/search?')) return json(world.lrclib);
   if (url.endsWith('/rest/v1/rpc/music_play')) return (world.playing = body.p_song), json({ song_id: body.p_song });
   if (url.endsWith('/rest/v1/rpc/music_stop')) return (world.playing = null), new Response(null, { status: 204 });
+  const shelf = url.match(/db\.example\/rest\/v1\/discs(\?.*)?$/);
+  if (shelf) {
+    const params = new URLSearchParams((shelf[1] ?? '').slice(1));
+    if (method === 'POST') {
+      if (world.discs.length >= world.music.disc_limit) return json({ code: 'P0429', message: `The shelf is full (${world.music.disc_limit} discs). Remove one first.` }, 400);
+      if (world.discs.some((d) => d.id === body.id)) return json({ code: '23505', message: 'duplicate key value violates unique constraint "discs_pkey"' }, 409);
+      world.discs.push(body);
+      return new Response(null, { status: 201 });
+    }
+    const id = params.get('id')?.replace(/^eq\./, '');
+    const title = params.get('title')?.replace(/^ilike\.\*|\*$/g, '');
+    const matching = world.discs.filter((d) => (id ? d.id === id : title ? d.title.toLowerCase().includes(title.toLowerCase()) : true));
+    if (method === 'DELETE') return (world.discs = world.discs.filter((d) => !matching.includes(d))), new Response(null, { status: 204 });
+    if (method === 'PATCH') return matching.forEach((d) => Object.assign(d, body)), new Response(null, { status: 204 });
+    return json(params.get('order') === 'added_at.desc' ? [...matching].reverse() : matching);
+  }
   const music = url.match(/db\.example\/rest\/v1\/(songs|music_settings)(\?.*)?$/);
   if (music) {
     const [, table, query = ''] = music;
@@ -470,4 +491,77 @@ test('when several songs match, each is a button, and pressing one does the comm
   // Pressed again from another copy of the question: it's gone already.
   await call({ callback_query: { id: 'cb', from: { id: OWNER }, data: 'song:remove:EEEEEEEEEEE', message: { chat: { id: OWNER }, message_id: 903, text: 'Which one?' } } });
   assert.match(world.replies.at(-1), /isn’t in the library any more/);
+});
+
+// ---------- DVD Player's shelf ----------
+
+const FERRARI = 'Dlz_XHeUUis';
+const WHIPLASH = 'jWQx2f-CErU';
+
+test('/dvd burns a video onto a disc, named as /add guesses a song, with its best picture', async () => {
+  world.youtube[FERRARI] = { title: 'Frank Ocean - White Ferrari (Official Video)', author_name: 'Frank Ocean' };
+  world.maxres.add(FERRARI);
+  await send({ message_id: 500, text: `/dvd https://youtu.be/${FERRARI}?si=share` });
+  assert.deepEqual(world.discs, [{ id: FERRARI, title: 'White Ferrari', artist: 'Frank Ocean', cover: 'maxresdefault' }]);
+  assert.match(world.replies.at(-1), /💿 Burned: White Ferrari — Frank Ocean\. It’s in the Movies folder/);
+
+  // Without a full-size thumbnail, the one every video has.
+  world.youtube[WHIPLASH] = { title: 'Whiplash', author_name: 'aespa' };
+  await send({ message_id: 501, text: `/dvd ${WHIPLASH}` });
+  assert.equal(world.discs.at(-1).cover, 'hqdefault');
+});
+
+test('/dvd with a name uses it; sent again with a name, it relabels the disc', async () => {
+  world.youtube[WHIPLASH] = { title: 'aespa Whiplash MV', author_name: 'SMTOWN' };
+  await send({ message_id: 510, text: `/dvd https://www.youtube.com/watch?v=${WHIPLASH} Whiplash - aespa` });
+  assert.deepEqual(world.discs, [{ id: WHIPLASH, title: 'Whiplash', artist: 'aespa', cover: 'hqdefault' }]);
+  await send({ message_id: 511, text: `/dvd ${WHIPLASH}` });
+  assert.match(world.replies.at(-1), /already on the shelf: Whiplash — aespa/);
+  await send({ message_id: 512, text: `/dvd ${WHIPLASH} Whiplash (Performance)` });
+  assert.deepEqual(world.discs, [{ id: WHIPLASH, title: 'Whiplash (Performance)', artist: null, cover: 'hqdefault' }]);
+  assert.match(world.replies.at(-1), /🏷 Relabelled: Whiplash \(Performance\)\./);
+});
+
+test('/dvd says why a video can’t be burned, and only fetches addresses it built', async () => {
+  world.youtube.AAAAAAAAAAA = 401;
+  await send({ message_id: 520, text: '/dvd https://youtu.be/AAAAAAAAAAA' });
+  assert.match(world.replies.at(-1), /embedding off/);
+  await send({ message_id: 521, text: '/dvd https://youtu.be/BBBBBBBBBBB' });
+  assert.match(world.replies.at(-1), /doesn’t know that video/);
+  await send({ message_id: 522, text: '/dvd https://evil.example.com/watch?v=OxtZF0WGXtE' });
+  assert.match(world.replies.at(-1), /Send a YouTube link/);
+  for (const url of world.fetched) assert.match(new URL(url).hostname, /^(www\.youtube\.com|i\.ytimg\.com)$/);
+  assert.equal(world.discs.length, 0);
+});
+
+test('a full shelf refuses another disc', async () => {
+  world.music.disc_limit = 1;
+  world.discs.push({ id: 'CCCCCCCCCCC', title: 'One', artist: null, cover: 'hqdefault' });
+  world.youtube[FERRARI] = { title: 'White Ferrari', author_name: 'Frank Ocean' };
+  await send({ message_id: 530, text: `/dvd ${FERRARI}` });
+  assert.match(world.replies.at(-1), /The shelf is full \(1 discs\)\. \/dvd remove one first\./);
+  assert.equal(world.discs.length, 1);
+});
+
+test('/dvd lists the shelf, newest first; /dvd remove takes a disc off by title or link', async () => {
+  await send({ message_id: 540, text: '/dvd' });
+  assert.match(world.replies.at(-1), /No discs yet \(room for 200\)/);
+  world.discs.push(
+    { id: FERRARI, title: 'White Ferrari', artist: 'Frank Ocean', cover: 'maxresdefault' },
+    { id: WHIPLASH, title: 'Whiplash', artist: 'aespa', cover: 'hqdefault' },
+    { id: 'CCCCCCCCCCC', title: 'White Noise', artist: null, cover: 'hqdefault' }
+  );
+  await send({ message_id: 541, text: '/dvd' });
+  assert.match(world.replies.at(-1), /💿 3\/200 discs\. The latest:\n• White Noise\n• Whiplash — aespa\n• White Ferrari — Frank Ocean/);
+
+  // Two match: it asks for the link rather than guessing.
+  await send({ message_id: 542, text: '/dvd remove white' });
+  assert.match(world.replies.at(-1), /2 discs match\. Send the link/);
+  assert.equal(world.discs.length, 3);
+  await send({ message_id: 543, text: `/dvd remove https://youtu.be/${FERRARI}` });
+  assert.match(world.replies.at(-1), /🗑 Off the shelf: White Ferrari — Frank Ocean\./);
+  await send({ message_id: 544, text: '/dvd remove whiplash' });
+  assert.deepEqual(world.discs.map((d) => d.id), ['CCCCCCCCCCC']);
+  await send({ message_id: 545, text: '/dvd remove nothing like it' });
+  assert.match(world.replies.at(-1), /No disc matches “nothing like it”/);
 });

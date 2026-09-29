@@ -242,6 +242,12 @@ ryOS (AGPL-3.0).
    then the one `insert` in its header with Jincheng's username. Until
    then nobody is the owner, so the secret base's locked rooms stay shut
    for Jincheng too.
+3. Run `supabase/migrations/20260929120000_discs.sql` (after the owner
+   migration), then deploy `soapbox-bot` from an up-to-date `main` for
+   `/dvd`. Until the migration runs, `/api/songs` serves the music
+   without a shelf (no error), so DVD Player's Movies folder holds only
+   a visitor's own DVD-Rs. The bot now imports
+   `supabase/functions/_shared/youtube.ts`, which the CLI bundles with it.
 
 - Every migration in `supabase/migrations/` has been run, through
   `20260927100000_now_playing_realtime.sql`. Both Edge Functions are
