@@ -82,6 +82,10 @@ interface WindowStore {
   place: Place | null;
   /** Menus a window's app adds to the menu bar while it's in front, as Chess's Game menu; by window id. */
   menus: Record<string, Menus | undefined>;
+  /** The disc in DVD Player's drive, on the desktop while it's in (media/drive.ts has the rest of it). */
+  disc: { title: string } | null;
+  /** The disc is being dragged on the desktop: the Dock's Trash turns into Eject. */
+  ejecting: boolean;
 
   open: (app: AppId, options: OpenOptions) => string;
   /** Puts back windows from an earlier visit (see windowSession.ts), in their stacking order. */
@@ -197,6 +201,8 @@ export const useWindows = create<WindowStore>((set, get) => ({
   rotateWallpaper: load(ROTATE_KEY) !== '0',
   place: null,
   menus: {},
+  disc: null,
+  ejecting: false,
 
   open: (app, { key = app, title, width, height, origin, props, center }) => {
     const existing = get().windows[key];
