@@ -23,6 +23,8 @@
   - Apps are lazy, code and styles (`registry.tsx`, `core/appStyles.ts`):
     `perf` fails if an applet's chunk is in the first load.
   - The Supabase client arrives by dynamic import (`social.ts`).
+  - Moving apps in and out of the Dock (`shell/dockDrag.tsx`) loads on
+    the first press, or once the desktop has settled.
   - The Dashboard and the screen saver's views load on first use, or
     once the desktop has settled (`afterSettled()` in
     `core/warmUp.ts`, eight seconds in and idle), so they're instant by
