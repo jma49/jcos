@@ -189,6 +189,11 @@ select pg_temp.check(not has_function_privilege('anon', 'public.notes_by_member(
   and not has_function_privilege('authenticated', 'public.chat_flood_guard()', 'execute')
   and not has_function_privilege('authenticated', 'public.handle_new_account()', 'execute'), 'trigger functions can''t be called over the API');
 select pg_temp.check(not exists (select from pg_proc where proname = 'notes_one_per_visitor'), 'the old one-note-per-visitor function is gone');
+select pg_temp.check(not exists (
+  select from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+  where n.nspname in ('public', 'private') and p.prosecdef
+    and not exists (select from unnest(coalesce(p.proconfig, '{}')) c where c like 'search_path=%')
+), 'every security definer function sets its search_path');
 select pg_temp.check(not has_function_privilege('anon', 'public.my_reactions()', 'execute'), 'visitors can''t ask for members'' reactions');
 select pg_temp.act_as('anon');
 select pg_temp.check(public.username_available('someone_new') and not public.username_available('alice'), 'visitors can still check a username');
@@ -306,6 +311,11 @@ select pg_temp.check(pg_temp.refused($$insert into public.discs (id, title) valu
 select pg_temp.check(pg_temp.refused($$insert into public.discs (id, title) values ('bbbbbbbbbbb', '   ')$$), 'a disc has a title');
 select pg_temp.check(pg_temp.refused($$insert into public.discs (id, title, cover_x) values ('bbbbbbbbbbb', 'x', 101)$$), 'the crop stays on the picture');
 select pg_temp.check(pg_temp.refused($$insert into public.discs (id, title, added_at) values ('bbbbbbbbbbb', 'x', now() - interval '1 year')$$), 'a disc''s burn date is the database''s');
+select pg_temp.check(pg_temp.refused($$insert into public.discs (id, title, cover) values ('bbbbbbbbbbb', 'x', 'hq9')$$), 'a case''s picture is one YouTube makes (hq1 to hq3, not hq9)');
+select pg_temp.check(pg_temp.refused($$update public.discs set duration_ms = 999 where id = 'jWQx2f-CErU'$$)
+  and pg_temp.refused($$update public.discs set duration_ms = 86400001 where id = 'jWQx2f-CErU'$$), 'a disc''s length is between a second and a day');
+select pg_temp.check(pg_temp.refused($$update public.discs set id = 'zzzzzzzzzzz' where id = 'jWQx2f-CErU'$$)
+  and pg_temp.refused($$update public.discs set added_at = now() - interval '1 year' where id = 'jWQx2f-CErU'$$), 'not even the owner changes which video a disc is, or when it was burned');
 reset role;
 
 -- The limit: a full shelf refuses another disc.
@@ -383,6 +393,7 @@ reset role;
 -- No one else changes them.
 select pg_temp.act_as('authenticated', '11111111-1111-1111-1111-111111111111');
 select pg_temp.check(pg_temp.refused($$select public.save_playlist('Rainy Days', array['0o-s_8Wt9zc'])$$), 'members can''t add to Jincheng''s playlists');
+select pg_temp.check(pg_temp.refused($$insert into public.playlist_songs (playlist_id, song_id) values (current_setting('test.playlist')::bigint, 'QLHMhVonF-s')$$), 'nor put a song straight into one');
 delete from public.playlist_songs where playlist_id = current_setting('test.playlist')::bigint;
 delete from public.playlists where id = current_setting('test.playlist')::bigint;
 update public.song_stats set rating = 1 where song_id = 'OxtZF0WGXtE';
