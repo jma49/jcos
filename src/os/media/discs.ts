@@ -239,8 +239,12 @@ export function useShelfRefresh(active = true) {
   }, [active]);
 }
 
-/** Puts a change Jincheng made on this page on the shelf now; the next read confirms it. */
-function changeShelf(discs: Disc[]) {
+/**
+ * Puts a change on the shelf now, one Jincheng made on this page or one
+ * Realtime told of (discWatch.ts): a read that started before it is
+ * dropped, so it can't put the old shelf back, and the next read confirms it.
+ */
+export function changeShelf(discs: Disc[]) {
   writes++;
   freshAt = 0;
   applyDiscs(discs);

@@ -9,9 +9,9 @@ import { DiscIcon } from '../core/icons';
 import { dismiss, notify } from '../core/notices';
 import { getSocial } from '../social/social';
 import type { Disc } from '../../lib/library';
-import { burnedOnThisPage } from './discs';
+import { burnedOnThisPage, changeShelf } from './discs';
 import { insertDisc } from './drive';
-import { applyDiscs, DISCS, libraryLoaded } from './library';
+import { DISCS, libraryLoaded } from './library';
 
 const noticeOf = (id: string) => `disc-burned-${id}`;
 
@@ -51,11 +51,11 @@ export function watchDiscs(): () => void {
     stop = social.watchDiscs({
       onDisc: (disc, burned) => {
         // Before the library is read, Movies reads the shelf fresh anyway.
-        if (libraryLoaded()) applyDiscs(withDisc(disc));
+        if (libraryLoaded()) changeShelf(withDisc(disc));
         if (burned && !burnedOnThisPage.has(disc.id)) tell(disc);
       },
       onRemove: (id) => {
-        if (libraryLoaded()) applyDiscs(DISCS.filter((d) => d.id !== id));
+        if (libraryLoaded()) changeShelf(DISCS.filter((d) => d.id !== id));
         dismiss(noticeOf(id), true);
       }
     });

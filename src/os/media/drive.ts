@@ -14,18 +14,38 @@ import { bounce, slideIn, slideOut } from './insertion';
 interface Drive {
   /** The disc in the drive, or null. */
   disc: ShelfDisc | null;
-  /** Counts insertions, so a disc put in again starts over at its menu. */
+  /** Counts insertions, so each disc put in (after another, or an eject) starts at its menu. */
   inserted: number;
 }
 
 export const useDrive = create<Drive>(() => ({ disc: null, inserted: 0 }));
 
-/** A disc on its way in: a second double-click meanwhile doesn't start another. */
-let going: Promise<void> | null = null;
+/** The same disc: Jincheng's and a visitor's DVD-R of the same video are two. */
+export const sameDisc = (a: ShelfDisc, b: ShelfDisc) => a.id === b.id && !!a.burnedHere === !!b.burnedHere;
 
-/** Puts a disc in the drive, sliding it in from `origin`, and opens DVD Player. */
-export function insertDisc(disc: ShelfDisc, origin?: Rect) {
-  going ??= slideIn(disc, origin)
+/** The disc on its way in, and the one asked for last meanwhile, which goes in after it. */
+let going: { disc: ShelfDisc; done: Promise<void> } | null = null;
+let next: { disc: ShelfDisc; origin?: Rect } | null = null;
+
+/**
+ * Puts a disc in the drive, sliding it in from `origin`, and opens DVD
+ * Player. The disc already in the drive stays as it is, playing if it
+ * was, and DVD Player comes forward, as double-clicking a Mac's disc did.
+ * While a disc slides in the drive is busy: a second double-click on it
+ * changes nothing, and a different disc asked for goes in after it (the
+ * last one asked for, if several).
+ */
+export function insertDisc(disc: ShelfDisc, origin?: Rect): Promise<void> {
+  if (going) {
+    next = sameDisc(going.disc, disc) ? null : { disc, origin };
+    return going.done;
+  }
+  const inDrive = useDrive.getState().disc;
+  if (inDrive && sameDisc(inDrive, disc)) {
+    launch('dvdplayer');
+    return Promise.resolve();
+  }
+  const done = slideIn(disc, origin)
     .then((slot) => {
       useDrive.setState((d) => ({ disc, inserted: d.inserted + 1 }));
       launch('dvdplayer', { origin: slot });
@@ -33,8 +53,12 @@ export function insertDisc(disc: ShelfDisc, origin?: Rect) {
     })
     .finally(() => {
       going = null;
+      const then = next;
+      next = null;
+      if (then) void insertDisc(then.disc, then.origin);
     });
-  return going;
+  going = { disc, done };
+  return done;
 }
 
 /** Takes the disc out: DVD Player stops and waits for another. */

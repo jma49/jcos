@@ -1,4 +1,5 @@
 import { PauseGlyph, PlayGlyph, SpeakerHighGlyph } from '../../core/glyphs';
+import { useScrub } from '../../core/useScrub';
 import { chapterPictures, chapterStart, type ShelfDisc } from '../../media/discs';
 import { formatTime } from '../../media/music';
 import {
@@ -28,7 +29,8 @@ export interface HudProps {
   full: boolean;
   canFullScreen: boolean;
   onChapter: (n: number) => void;
-  onSeek: (seconds: number) => void;
+  /** A seek from the position slider: `done` once it's let go (see useScrub). */
+  onSeek: (seconds: number, done: boolean) => void;
   onMenu: () => void;
   onEject: () => void;
   onStop: () => void;
@@ -61,19 +63,21 @@ export function Chapters({ disc, duration, chapter, onChapter }: Pick<HudProps, 
 
 /** The controls along the bottom: where it is, the buttons, the music's volume, and the way out. */
 export function Hud(p: HudProps) {
-  const left = Math.max(0, p.duration - p.time);
+  const scrub = useScrub(p.time, p.onSeek);
+  const left = Math.max(0, p.duration - scrub.value);
   return (
     <div className="os-dvd-hud" role="toolbar" aria-label="DVD controls">
       <div className="os-dvd-hud-time">
-        <span>{formatTime(p.time)}</span>
+        <span>{formatTime(scrub.value)}</span>
         <input
           type="range"
           min={0}
           max={Math.max(1, Math.round(p.duration))}
           step={1}
-          value={Math.round(p.time)}
+          value={scrub.value}
           disabled={p.duration <= 0}
-          onChange={(e) => p.onSeek(Number(e.target.value))}
+          onPointerDown={scrub.onPointerDown}
+          onChange={scrub.onChange}
           aria-label="Position"
         />
         <span>{p.duration > 0 ? `−${formatTime(left)}` : ''}</span>

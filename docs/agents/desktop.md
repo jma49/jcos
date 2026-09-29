@@ -148,7 +148,10 @@ only `kit/`. The lint enforces all three.
   screen on the picture itself, since the player can't move without
   reloading, with the chapters along the top and the controls along the
   bottom, which rest out of sight (and the pointer with them) 2.5 s after
-  the pointer stops while the disc plays. A phone, which DVD Player fills
+  the pointer stops while the disc plays. Its position slider
+  (`core/useScrub.ts`) stays where it's put: dragged, it seeks within
+  what's loaded as it goes and properly where it's let go, and the clock
+  doesn't move it back meanwhile. A phone, which DVD Player fills
   anyway, always has that look instead of the Controller. The Controls
   menu and the keys (Space, ←/→ for chapters, ↑/↓ and Return in menus,
   Escape, ⌘F, ⌘E) do what its buttons do. A disc slides into the slot in the
