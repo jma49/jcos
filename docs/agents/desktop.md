@@ -55,7 +55,14 @@ only `kit/`. The lint enforces all three.
   `src/os/core/registry.tsx` turns the manifests into what the OS uses,
   with each app's component loaded lazily, and `launch()` opens one. `dockApps` and `mobileDockApps` pick what
   the Dock keeps (other apps appear there while open, except `noDock`
-  panels); `launcherApps` is what Spotlight lists. Keep the Dock and the
+  panels); `launcherApps` is what Spotlight lists. `dockApps` is only
+  the default: on desktops the visitor rearranges the Dock
+  (`core/dock.ts`, kept in `os-dock`): dragging an icon along it moves
+  it, off it removes it (in a puff), and in from Finder's Applications
+  or Applets (Finder puts the app id on the drag as `APP_MIME`), or a
+  running app's slot dragged left, keeps it. The Dock menu has Keep in
+  Dock and Remove from Dock; Finder stays first; System Preferences ›
+  Dock restores the default. Phones keep `mobileDockApps`. Keep the Dock and the
   desktop (`shell/DesktopIcons.tsx`: Macintosh HD, About Me, Résumé,
   Projects) short; a phone's home screen lists every app.
 - `src/os/apps/`: one folder per built-in app. Content comes from `OSData`,

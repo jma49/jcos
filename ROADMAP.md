@@ -10,8 +10,8 @@ in [AGENTS.md](AGENTS.md)), and how we'll know it's done.
 
 ## 1. Room on the first load
 
-**Why.** The first visit's JavaScript is 157 KB against a budget of 160
-(`npm run perf`, 2026-09-27). Anything else on the first screen would
+**Why.** The first visit's JavaScript is 159 KB against a budget of 160
+(`npm run perf`, 2026-09-28; 157 before the Dock could be rearranged). Anything else on the first screen would
 break the budget, and raising the budget has to hold "beyond today"
 (AGENTS.md). React's client is 63 KB of it and stays.
 

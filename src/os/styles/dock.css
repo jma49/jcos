@@ -121,3 +121,76 @@
   background: rgba(255, 255, 255, 0.2);
   box-shadow: none;
 }
+
+/* ---------- Moving apps in and out of the Dock ---------- */
+
+/* Where a dragged app would land. */
+.os-dock-gap {
+  flex: none;
+  align-self: stretch;
+}
+
+/* A running app's slot while its icon is being dragged in. */
+.os-dock-item[data-dragging] .os-dock-icon,
+.os-dock-item[data-dragging] .os-dock-dot {
+  visibility: hidden;
+}
+
+/* The icon under the pointer while it's dragged. */
+.os-dock-ghost {
+  position: fixed;
+  z-index: 1150;
+  translate: -50% -50%;
+  pointer-events: none;
+  opacity: 0.9;
+  transition: opacity 0.15s, scale 0.15s;
+}
+
+.os-dock-ghost .os-icon {
+  display: block;
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.35));
+}
+
+/* Off the Dock, a kept app is about to go. */
+.os-dock-ghost[data-leaving] {
+  opacity: 0.55;
+  scale: 0.9;
+}
+
+/* The puff of smoke an app leaves the Dock in. */
+.os-dock-poof {
+  position: fixed;
+  z-index: 1150;
+  width: 64px;
+  height: 64px;
+  translate: -50% -50%;
+  pointer-events: none;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 30% 40%, rgba(255, 255, 255, 0.95) 0 16%, transparent 17%),
+    radial-gradient(circle at 62% 32%, rgba(245, 245, 245, 0.95) 0 19%, transparent 20%),
+    radial-gradient(circle at 50% 62%, rgba(235, 235, 235, 0.95) 0 22%, transparent 23%),
+    radial-gradient(circle at 74% 60%, rgba(250, 250, 250, 0.9) 0 14%, transparent 15%);
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+  animation: os-poof 0.45s steps(5) forwards;
+}
+
+@keyframes os-poof {
+  from {
+    scale: 0.4;
+    opacity: 1;
+  }
+  to {
+    scale: 1.4;
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .os-dock-poof {
+    animation-timing-function: linear;
+    animation-duration: 0.2s;
+  }
+}
