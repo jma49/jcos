@@ -234,11 +234,13 @@ ryOS (AGPL-3.0).
   is a panel the app draws above the windows while it's in front, not a
   second window, so the window manager didn't change. A disc starts at
   its menu, so Play Movie is the click that starts the sound. Visitors'
-  DVD-Rs never leave their browser. Inserting and ejecting (the slot,
-  the disc on the desktop, the Trash turning into Eject) and starting the
-  shelf's watch cost the first load 0.4 KB: it's at 159.7 of 160 KB now
-  (2026-09-29), so ROADMAP.md item 1 (room on the first load) comes
-  before anything else on the first screen.
+  DVD-Rs never leave their browser. Two of the thirteen were taken out
+  again at Jincheng's word (2026-09-29): the disc on the desktop while
+  it's in the drive, and the Trash turning into Eject as it's dragged.
+  Nothing is added to the desktop; the Controller and ⌘E eject. That
+  gave the first load back 0.3 KB: it's at 159.4 of 160 KB now, so
+  ROADMAP.md item 1 (room on the first load) still comes before anything
+  else on the first screen.
 - **The iPod's ratings and playlists, as Jincheng chose them**
   (2026-09-29): the Now Playing rating screen, On-The-Go and the smart
   playlists, from the design board. Where the board left it open:
@@ -255,12 +257,16 @@ ryOS (AGPL-3.0).
   of the three, so no one sets a count or a time; the Security Advisor
   lists it on purpose. The first load didn't change (159.7 KB).
 - **YouTube's middle button is covered, not shown** (2026-09-29).
-  YouTube's embed now shows its own play/pause button for about 4–5 s
-  after every start, seek and resume, and no setting turns it off. So the
-  iPod, Karaoke and DVD Player keep their artwork (DVD Player: the
-  chapter's frame) over the first 5 s of a video and of every seek, and
-  the rule that YouTube's chrome never shows still holds
-  (docs/agents/pitfalls.md).
+  YouTube's embed now shows its own play/pause button for about 4.3 s
+  after every start, seek and resume, and no setting turns it off. The
+  iPod and Karaoke keep their artwork over the first 5 s of a video and
+  of every seek. DVD Player covered its picture the same way, with the
+  chapter's frame, and Jincheng found the picture stopping at every
+  pause and play "not smooth". Asked to choose, Jincheng picked a picture
+  that never stops: DVD Player keeps it, paused or not, masks only the
+  button with one of its own, and lets YouTube's darkening of the picture
+  show for those seconds, the one exception to "YouTube's chrome never
+  shows" (docs/agents/pitfalls.md).
 - **Considered and left out** (2026-09-26 and 27 audits): a "continue
   playing" prompt for hidden tabs, more reduced-motion fallbacks, a spec
   template for changes, `llms.txt` in robots.txt (no crawler reads it

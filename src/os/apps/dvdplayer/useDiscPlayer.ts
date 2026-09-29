@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type RefObject } from 'react';
 import { useWindows } from '../../core/store';
 import { soundOnToPlay, useMusic } from '../../media/music';
-import { BUFFERING, ENDED, loadYouTube, PAUSED, PLAYING, revealAfterButton, setLoudness, type PlayerStatus, type YTPlayer } from '../../media/player';
+import { BUFFERING, ENDED, loadYouTube, middleControls, PAUSED, PLAYING, setLoudness, type PlayerStatus, type YTPlayer } from '../../media/player';
 
 // DVD Player's own YouTube player (media/player.ts has the iPod's), made
 // for the disc in the drive, with YouTube's chrome cropped off the same
@@ -10,14 +10,23 @@ import { BUFFERING, ENDED, loadYouTube, PAUSED, PLAYING, revealAfterButton, setL
 // the one sound switch and the music's volume, and shares the speakers
 // with the iPod and Karaoke: playing a disc pauses the music, and music
 // starting pauses the disc.
+//
+// The picture shows from the moment the video first plays until it ends,
+// paused or not: nothing of YouTube's is over a paused picture. For a few
+// seconds after a start, a resume or a seek, YouTube puts its own button
+// in the middle, which DVD Player masks with its own (`up`).
 
 export interface DiscPlayer {
   /** Where the player goes: a box the size of the picture. */
   host: RefObject<HTMLDivElement | null>;
   /** 'unplayable': YouTube won't play this video here (removed, or not to be embedded). */
   status: PlayerStatus | 'unplayable';
-  /** The video is on screen and moving, and YouTube's middle button has gone; anything else shows the cover. */
-  live: boolean;
+  /** The video has played, and hasn't ended: its picture shows (else the cover does). */
+  started: boolean;
+  /** YouTube's middle controls may be up, so the middle of the picture is masked. */
+  up: boolean;
+  /** The video is waiting for more of itself. */
+  buffering: boolean;
   /** Whether the disc is meant to be playing. */
   playing: boolean;
   /** Plays, from `from` seconds or from where it is. */
@@ -55,10 +64,12 @@ export function useDiscPlayer(videoId: string | null, onEnded: () => void): Disc
   const watchdog = useRef(0);
   const ended = useRef(onEnded);
   const [status, setStatus] = useState<DiscPlayer['status']>('loading');
-  const [live, setLive] = useState(false);
+  const [started, setStarted] = useState(false);
+  const [up, setUp] = useState(false);
+  const [buffering, setBuffering] = useState(false);
   const [playing, setPlaying] = useState(false);
   // YouTube shows its own button for a few seconds after a start, a seek or a resume (player.ts).
-  const [reveal] = useState(() => revealAfterButton(setLive));
+  const [middle] = useState(() => middleControls(setUp));
 
   useEffect(() => {
     ended.current = onEnded;
@@ -98,20 +109,31 @@ export function useDiscPlayer(videoId: string | null, onEnded: () => void): Disc
             },
             onStateChange: ({ data }) => {
               if (dead) return;
-              if (data === PLAYING) reveal.playing();
-              else reveal.stopped();
-              if (data === PLAYING) setPlaying(true);
-              // Paused from outside, e.g. the browser's media controls.
-              if (data === PAUSED) setPlaying(false);
-              if (data === ENDED) {
+              setBuffering(data === BUFFERING);
+              if (data === PLAYING) {
+                setStarted(true);
+                setPlaying(true);
+                middle.playing();
+              }
+              if (data === BUFFERING) middle.buffering();
+              // Paused from outside too, e.g. the browser's media controls.
+              if (data === PAUSED) {
                 setPlaying(false);
+                middle.paused();
+              }
+              if (data === ENDED) {
+                setStarted(false);
+                setPlaying(false);
+                middle.stopped();
                 ended.current();
               }
             },
             onError: () => {
               if (dead) return;
               setStatus('unplayable');
+              setStarted(false);
               setPlaying(false);
+              middle.stopped();
             }
           }
         });
@@ -126,11 +148,13 @@ export function useDiscPlayer(videoId: string | null, onEnded: () => void): Disc
       made?.destroy();
       // Only what this made: React may have given the host to something else by now.
       frame?.remove();
-      reveal.stopped();
+      middle.stopped();
       setStatus('loading');
+      setStarted(false);
+      setBuffering(false);
       setPlaying(false);
     };
-  }, [videoId, reveal]);
+  }, [videoId, middle]);
 
   // Music starting pauses the disc; the music's volume and the one sound switch are the disc's too.
   useEffect(() => {
@@ -140,6 +164,7 @@ export function useDiscPlayer(videoId: string | null, onEnded: () => void): Disc
         p?.pauseVideo();
         pending.current = null;
         setPlaying(false);
+        middle.paused();
       }
       if (p && s.volume !== prev.volume) setLoudness(p, s.volume);
     });
@@ -151,7 +176,7 @@ export function useDiscPlayer(videoId: string | null, onEnded: () => void): Disc
       unsubscribeMusic();
       unsubscribeSound();
     };
-  }, []);
+  }, [middle]);
 
   // The same functions every render, so they can be an effect's dependencies.
   const [controls] = useState(() => ({
@@ -161,21 +186,25 @@ export function useDiscPlayer(videoId: string | null, onEnded: () => void): Disc
       const music = useMusic.getState();
       if (music.playing) music.pause();
       setPlaying(true);
-      if (player.current) start(player.current, from, watchdog, setPlaying);
-      else pending.current = { from };
+      if (player.current) {
+        // The mask goes up with the command, before YouTube's button does.
+        middle.playing();
+        start(player.current, from, watchdog, setPlaying);
+      } else pending.current = { from };
     },
     pause: () => {
       pending.current = null;
       player.current?.pauseVideo();
       setPlaying(false);
+      middle.paused();
     },
     seek: (seconds: number) => {
       player.current?.seekTo(Math.max(0, seconds), true);
-      reveal.seeked();
+      middle.seeked();
     },
     time: () => player.current?.getCurrentTime() ?? 0,
     duration: () => player.current?.getDuration() ?? 0
   }));
 
-  return { host, status, live, playing, ...controls };
+  return { host, status, started, up, buffering, playing, ...controls };
 }
