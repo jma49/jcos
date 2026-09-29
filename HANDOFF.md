@@ -163,6 +163,19 @@ ryOS (AGPL-3.0).
 - **Desktop lyrics are opt-in** (decided 2026-09-28): two lines,
   draggable, off until the visitor turns them on, like other people's
   pointers. How lyrics get synced is ROADMAP.md item 2.
+- **No Chinese retro web, for now** (decided 2026-09-28). A proposal
+  for 1999–2011 Chinese sites (portals from the Internet Archive, a
+  hand-made 2008 QQ Zone over Soapbox, Photos and Stickies, a QQ2006
+  skin for Chat, with Tencent's own art) was drafted and set aside: it
+  doesn't fit the Mac OS X look of the rest. The Browser got ryOS IE's
+  missing basics instead, with time travel through the Internet
+  Archive but no AI-made pages (those wait on the AI assistant's
+  spending caps).
+- **The Browser asks the Internet Archive directly, with no proxy**
+  (decided 2026-09-28). ryOS's IE sends every page through its own
+  proxy, which forwards to any public address; the archive allows
+  framing, so ours doesn't need one. `/api/framing` only reads headers
+  and answers yes or no.
 - **Considered and left out** (2026-09-26 and 27 audits): a "continue
   playing" prompt for hidden tabs, more reduced-motion fallbacks, a spec
   template for changes, `llms.txt` in robots.txt (no crawler reads it
@@ -226,19 +239,15 @@ What comes next, in order, is in [ROADMAP.md](ROADMAP.md).
    one; receivers act only on well-formed ones, which carry nothing but
    names and Macintosh HD paths. Proper identity would need Realtime
    Authorization and server-checked presence.
-4. **Assay's demo shows a blank Browser window.** assay.majincheng.com
-   sends `X-Frame-Options: DENY` and `frame-ancestors 'none'`, so it
-   can't be framed. The Browser work (a page that says so, with "Open in
-   a new tab") will handle it; or Assay could allow majincheng.com.
-5. **The first load** is 157 of its 160 KB budget, mostly react-dom
+4. **The first load** is 157 of its 160 KB budget, mostly react-dom
    (ROADMAP.md, item 1).
-6. **Not ported from ryOS**, in Chat: @ryo (AI replies, on hold with the
+5. **Not ported from ryOS**, in Chat: @ryo (AI replies, on hold with the
    AI assistant), voice messages, IRC rooms and admins making rooms from
    the app.
-7. **Upkeep in the Supabase dashboard:** run Advisors › Security after
+6. **Upkeep in the Supabase dashboard:** run Advisors › Security after
    each migration, and keep Settings › API › Exposed schemas to `public`
    (plus `graphql_public` only if GraphQL is used).
-8. **What CI checks** on every pull request: `npm audit --omit=dev
+7. **What CI checks** on every pull request: `npm audit --omit=dev
    --audit-level=high`, the type check, the hooks lint, the unit tests
    (Vitest), the build, a smoke test that opens every app in a browser,
    the download budgets of `npm run perf`, and `npm run test:db` (the

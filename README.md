@@ -29,9 +29,9 @@ page at `/projects/<slug>/`.
   the same locally (npm warns about another major).
 - [Supabase](https://supabase.com): accounts, Postgres with row-level
   security, Realtime, Storage and Edge Functions (Deno).
-- [Vercel](https://vercel.com): hosting and three small functions in
-  `api/` (the visitor's location, a lyrics relay, and the music library,
-  cached at the edge).
+- [Vercel](https://vercel.com): hosting and four small functions in
+  `api/` (the visitor's location, a lyrics relay, the music library,
+  cached at the edge, and whether a page can be framed in the Browser).
 - Vitest, Playwright for preview images, and GitHub Actions.
 
 ## Running it
@@ -89,7 +89,7 @@ src/pages/         the home page, project pages, robots.txt, llms.txt
 src/content/       projects (Markdown, one file per language) and their covers
 src/i18n/          the site's copy (English; the Chinese copy is kept for later)
 src/data/          songs, desktop pictures, the photo snapshot
-api/               Vercel Functions: geo, lyrics, songs
+api/               Vercel Functions: geo, lyrics, songs, framing
 tests/api/         the Vercel Functions' unit tests (not in api/, or Vercel would deploy them)
 supabase/          schema, migrations, Edge Functions, database tests
 scripts/           preview capture, photo refresh, favicon and portrait builders, bot setup
