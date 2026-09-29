@@ -29,6 +29,7 @@
     "@supabase/supabase-js": "^2.117.1",
     "@tailwindcss/vite": "^4.3.3",
     "astro": "^7.3.5",
+    "chess.js": "^1.4.0",
     "motion": "^13.4.3",
     "opencc-js": "^1.4.2",
     "react": "^19.1.0",

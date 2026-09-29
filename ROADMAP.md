@@ -31,9 +31,7 @@ portfolio. He chose seven things from prototypes staged in the real site
 the same Aqua styles and the ryOS icon set (new icons from it go in
 `public/os/icons` and NOTICE). One pull request each, in this order:
 
-1. **Chess**: Tiger's Chess against the computer, a wooden board in
-   perspective, an app in Applications; a small open-source engine.
-2. **DVD Player** (asked for 2026-09-29; Jincheng kept all thirteen of
+1. **DVD Player** (asked for 2026-09-29; Jincheng kept all thirteen of
    its prototypes): YouTube videos burned onto discs whose case is the
    video's own picture. Discs live in the Movies folder, as icons of
    their cases, in Leopard's Cover Flow, and on a wooden shelf (the one
@@ -46,28 +44,28 @@ the same Aqua styles and the ryOS icon set (new icons from it go in
    their browser. In pull requests: the shelf (the database, `/api/songs`
    and `/dvd`); DVD Player with the Movies folder, Quick Look and Burn;
    inserting and ejecting; full screen; Cover Flow; the wooden shelf.
-3. **iPod ratings and playlists**: rate the playing song (the Now
+2. **iPod ratings and playlists**: rate the playing song (the Now
    Playing rating screen), On-The-Go, and the smart playlists (My Top
    Rated, Recently Played, Top 25 Most Played) plus his own. His ratings,
    play counts and playlists are shared (owner writes only); a
    visitor's On-The-Go stays in their browser. Uses the owner check.
-4. **His home folder**: Users › jincheng in Finder. Visitors see the
+3. **His home folder**: Users › jincheng in Finder. Visitors see the
    real "no access" badges and Tiger's alert on every folder but Public
    and Sites; signed in as the owner, the folders open and hold his
    diary and notes, written in a TextEdit window (or sent from
    Telegram). Uses the owner check.
-5. **Stickies and iCal for him**: notes on his own desktop and iCal
+4. **Stickies and iCal for him**: notes on his own desktop and iCal
    with his days and to-dos, shown only when he's signed in. What to call
    them beside the visitors' Stickies is Jincheng's to decide. Uses the
    owner check.
-6. **Time Machine**: Leopard's starfield, a window per day going back,
+5. **Time Machine**: Leopard's starfield, a window per day going back,
    a timeline on the right: Soapbox, the guestbook and the library as
    they were. Public things for everyone, locked ones for him.
-7. **A stack in the Dock**: things he sends the bot (screenshots,
+6. **A stack in the Dock**: things he sends the bot (screenshots,
    tickets, links) kept in a Dock stack that fans out as Leopard's did,
    private or public per item. His note: the interaction and the UI have
-   to be done well. The Dock is on the first screen, so item 1 comes
-   first.
+   to be done well. The Dock is on the first screen, so room on the
+   first load (section 1) comes first.
 
 **Done when** each is in the site, checked in a browser with motion on
 and off, and its locked parts are proved locked by `test:db`.
