@@ -1,18 +1,19 @@
 -- Jincheng's account is the owner.
 --
--- The secret base has rooms only he can enter, and a few shared things
--- only he may change (his ratings and playlists, a song's lyrics timing).
--- private.owners holds his account's id; public.is_owner() says whether
--- the caller is in it. Private tables use it in their row-level security
--- as `(select public.is_owner())`, so it's asked once per statement, not
--- once per row; functions that change shared data check it. The browser
--- asks it only to decide what to show: the database keeps the doors shut.
+-- The secret base has rooms only Jincheng can enter, and a few shared
+-- things only Jincheng may change (the owner's ratings and playlists, a
+-- song's lyrics timing). private.owners holds Jincheng's account id;
+-- public.is_owner() says whether the caller is in it. Private tables use
+-- it in their row-level security as `(select public.is_owner())`, so it's
+-- asked once per statement, not once per row; functions that change
+-- shared data check it. The browser asks it only to decide what to show:
+-- the database keeps the doors shut.
 --
 -- Run this once in the Supabase SQL editor (schema.sql already includes
--- it), then add his account, once, with his username:
+-- it), then add Jincheng's account, once, with its username:
 --
 --   insert into private.owners (user_id)
---   select id from auth.users where email = '<his username>@users.majincheng.com'
+--   select id from auth.users where email = '<username>@users.majincheng.com'
 --   on conflict do nothing;
 --
 -- The Security Advisor lists is_owner() as a SECURITY DEFINER function

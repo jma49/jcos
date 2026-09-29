@@ -33,7 +33,7 @@ const USERS_KEY = 'os-dev-users';
 const SESSION_KEY = 'os-dev-session';
 const CHAT_KEY = 'os-dev-chat';
 const RESETS_KEY = 'os-dev-resets';
-/** The member the stand-in treats as the owner: sign up as this to see his rooms. */
+/** The member the stand-in treats as the owner: sign up as this to see the owner's rooms. */
 const DEV_OWNER = 'jincheng';
 
 /** Stand-in Soapbox posts; the real ones come from the Telegram bot. */

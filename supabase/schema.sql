@@ -1343,9 +1343,9 @@ revoke execute on function public.songs_within_limit() from public, anon, authen
 -- Jincheng's account is the owner (the same as
 -- supabase/migrations/20260929100000_owner.sql, whose header explains it).
 -- Private tables check `(select public.is_owner())` in their policies.
--- After a new project is set up, he adds himself once:
+-- After a new project is set up, Jincheng's account is added once:
 --   insert into private.owners (user_id)
---   select id from auth.users where email = '<his username>@users.majincheng.com'
+--   select id from auth.users where email = '<username>@users.majincheng.com'
 --   on conflict do nothing;
 
 create table if not exists private.owners (

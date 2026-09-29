@@ -41,9 +41,9 @@ select pg_temp.check(pg_temp.refused($$insert into auth.users (email, raw_user_m
 insert into auth.users (id, email, raw_user_meta_data) values
   ('99999999-9999-9999-9999-999999999999', 'jincheng@users.majincheng.com', '{"username":"jincheng"}');
 select pg_temp.act_as('authenticated', '99999999-9999-9999-9999-999999999999');
-select pg_temp.check(not public.is_owner(), 'no one is the owner until he adds himself');
+select pg_temp.check(not public.is_owner(), 'no one is the owner until Jincheng''s account is added');
 reset role;
--- What he runs once in the SQL editor.
+-- What Jincheng runs once in the SQL editor.
 insert into private.owners (user_id)
 select id from auth.users where email = 'jincheng@users.majincheng.com'
 on conflict do nothing;
@@ -59,7 +59,7 @@ select pg_temp.check(not public.is_owner(), 'a visitor isn''t');
 select pg_temp.check(pg_temp.refused($$select 1 from private.owners$$), 'visitors can''t see who the owner is');
 reset role;
 
--- A room only he may enter, the way the private tables will do it.
+-- A room only the owner may enter, the way the private tables will do it.
 create table public.owner_probe (id int primary key);
 alter table public.owner_probe enable row level security;
 create policy "Only the owner" on public.owner_probe for select to anon, authenticated using ((select public.is_owner()));

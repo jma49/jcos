@@ -47,8 +47,8 @@ the same Aqua styles and the ryOS icon set (new icons from it go in
    Telegram). Uses the owner check.
 5. **Stickies and iCal for him**: notes on his own desktop and iCal
    with his days and to-dos, shown only when he's signed in. What to call
-   them beside the visitors' Stickies is his to decide. Uses the owner
-   check.
+   them beside the visitors' Stickies is Jincheng's to decide. Uses the
+   owner check.
 6. **Time Machine**: Leopard's starfield, a window per day going back,
    a timeline on the right: Soapbox, the guestbook and the library as
    they were. Public things for everyone, locked ones for him.
