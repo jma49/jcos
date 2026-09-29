@@ -21,6 +21,10 @@
 // video id is taken from a link: every address this fetches is built
 // here, never one that was sent.
 
+import { clip, guessFromVideo, VIDEO_ID, videoIdOf } from '../_shared/youtube.ts';
+
+export { guessFromVideo, videoIdOf };
+
 export interface Deps {
   /** PostgREST with the service role (index.ts's db). */
   db: (path: string, init?: RequestInit) => Promise<any>;
@@ -43,60 +47,9 @@ export interface Draft {
   duration_ms: number | null;
 }
 
-const VIDEO_ID = /^[A-Za-z0-9_-]{11}$/;
 /** What the database accepts as a cover (the music_cover domain). */
 const COVER = /^https:\/\/(is[1-5]-ssl\.mzstatic\.com|i\.ytimg\.com)\/[A-Za-z0-9._~/%+=,:@-]+$/;
 const TIMEOUT = 5000;
-const MAX_TEXT = 200;
-
-/** The video id in a YouTube link (watch, youtu.be, Shorts, embed, YouTube Music) or on its own; null if there's none. */
-export function videoIdOf(text: string): string | null {
-  const word = text.trim().split(/\s+/)[0] ?? '';
-  if (VIDEO_ID.test(word)) return word;
-  let url: URL;
-  try {
-    url = new URL(word);
-  } catch {
-    return null;
-  }
-  const host = url.hostname.replace(/^(www|m|music)\./, '');
-  let id: string | null = null;
-  if (host === 'youtu.be') id = url.pathname.slice(1);
-  else if (host === 'youtube.com' || host === 'youtube-nocookie.com') {
-    id = url.searchParams.get('v') ?? url.pathname.match(/^\/(?:shorts|embed|live)\/([^/]+)/)?.[1] ?? null;
-  }
-  return id && VIDEO_ID.test(id) ? id : null;
-}
-
-const clip = (s: string) => s.trim().replace(/\s+/g, ' ').slice(0, MAX_TEXT);
-
-/** Words in brackets that only describe the upload: "(Official Video)", "【MV】", "[HD]". */
-const NOISE = /\s*[(（\[【][^)）\]】]*(official|video|mv|m\/v|lyrics?|audio|hd|4k|remaster|官方|完整版|高清|歌詞|字幕)[^)）\]】]*[)）\]】]/gi;
-
-/**
- * Words at the end of a title that only say it's a video: "高清MV",
- * "官方MV", "Official Music Video". Only when they end in a video word, so
- * a song's own words stay.
- */
-const TAIL = /\s*(?:[-–—|｜]\s*)?(?:(?:高清|官方|完整版|正式版|official)\s*)?(?:mv|m\/v|music\s+video|lyric\s+video|video)\s*$/i;
-const tidy = (s: string) => s.replace(NOISE, '').replace(TAIL, '').trim();
-
-/** A first guess at a video's song and artist from its title and channel. */
-export function guessFromVideo(title: string, channel: string): { title: string; artist: string } {
-  const topic = channel.match(/^(.*) - Topic$/);
-  if (topic) return { title: clip(tidy(title)), artist: clip(topic[1]) };
-  // "Artist《Song》…" or "Artist【Song】…", common for Chinese music videos,
-  // or the song first: "《Song》Artist".
-  const marked = title.match(/^([^《【]*)[《【]([^》】]+)[》】](.*)$/);
-  if (marked && !/official|mv/i.test(marked[2])) {
-    const artist = tidy(marked[1]) || tidy(marked[3]).replace(/^[-–—|｜\s]+/, '') || channel;
-    return { title: clip(marked[2]), artist: clip(artist) };
-  }
-  const clean = tidy(title);
-  const dash = clean.match(/^(.+?)\s+[-–—]\s+(.+)$/);
-  if (dash) return { title: clip(dash[2]), artist: clip(dash[1]) };
-  return { title: clip(clean), artist: clip(channel) };
-}
 
 interface ITunesTrack {
   trackName?: string;
@@ -123,8 +76,12 @@ export function coverOf(track: ITunesTrack): string | null {
 
 const hasChinese = (s: string) => /\p{Script=Han}/u.test(s);
 
-/** Everything /add needs to know about a video, or why it can't be added. */
-export async function lookUp(id: string, hint?: { title: string; artist: string }): Promise<Draft | { error: string }> {
+/**
+ * What YouTube says about a video (its oEmbed): its title and channel, or
+ * why it can't be used here. oEmbed answers 401 or 403 for a video whose
+ * owner doesn't let other sites play it.
+ */
+export async function videoInfo(id: string): Promise<{ title: string; channel: string } | { error: string }> {
   const watch = `https://www.youtube.com/watch?v=${id}`;
   const oembed = await fetch(`https://www.youtube.com/oembed?format=json&url=${encodeURIComponent(watch)}`, {
     signal: AbortSignal.timeout(TIMEOUT)
@@ -132,7 +89,14 @@ export async function lookUp(id: string, hint?: { title: string; artist: string 
   if (oembed.status === 401 || oembed.status === 403) return { error: 'That video can’t be played on other sites (its owner turned embedding off).' };
   if (!oembed.ok) return { error: 'YouTube doesn’t know that video (private, removed, or a typo?).' };
   const video = (await oembed.json()) as { title?: string; author_name?: string };
-  const guess = hint ?? guessFromVideo(video.title ?? '', video.author_name ?? '');
+  return { title: video.title ?? '', channel: video.author_name ?? '' };
+}
+
+/** Everything /add needs to know about a video, or why it can't be added. */
+export async function lookUp(id: string, hint?: { title: string; artist: string }): Promise<Draft | { error: string }> {
+  const video = await videoInfo(id);
+  if ('error' in video) return video;
+  const guess = hint ?? guessFromVideo(video.title, video.channel);
   if (!guess.title) return { error: 'Couldn’t tell the song’s title. Add it after the link: /add <link> Title - Artist' };
 
   const term = `${guess.artist} ${guess.title}`.trim();
@@ -215,7 +179,7 @@ export function parseAdd(rest: string): { id: string | null; hint?: { title: str
 }
 
 /** Words for PostgREST's ilike, with anything that has meaning there taken out. */
-const searchable = (words: string) => words.replace(/[*%_,()"\\:.]/g, ' ').trim().slice(0, 100);
+export const searchable = (words: string) => words.replace(/[*%_,()"\\:.]/g, ' ').trim().slice(0, 100);
 
 export function musicCommands({ db, telegram }: Deps) {
   const say = (chat: number, text: string, extra: Record<string, unknown> = {}) =>
