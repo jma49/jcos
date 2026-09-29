@@ -38,6 +38,9 @@ const RESETS_KEY = 'os-dev-resets';
 const DISCS_KEY = 'os-dev-discs';
 /** The member the stand-in treats as the owner: sign up as this to see the owner's rooms. */
 const DEV_OWNER = 'jincheng';
+/** The stand-in's shelf changes, told to this browser's other tabs as Realtime tells other visitors. */
+const discChannel = typeof BroadcastChannel === 'undefined' ? null : new BroadcastChannel('os-dev-discs');
+type DiscChange = { type: 'disc'; disc: Disc; burned: boolean } | { type: 'remove'; id: string };
 
 /** Stand-in Soapbox posts; the real ones come from the Telegram bot. */
 const SAMPLE_POSTS: Omit<Post, 'reactions'>[] = [
@@ -340,15 +343,26 @@ export function localSocial(): Social {
       if (shelf.some((d) => d.id === disc.id)) throw new SocialError('already', 'That video is already on the shelf.');
       const burned: Disc = { ...disc, added: new Date().toISOString() };
       saveJSON(DISCS_KEY, [...shelf, burned]);
+      discChannel?.postMessage({ type: 'disc', disc: burned, burned: true } satisfies DiscChange);
       return burned;
     },
     async relabelDisc(id, change) {
       if (member().username !== DEV_OWNER) throw new SocialError('failed', 'Only Jincheng can change the discs everyone sees.');
-      saveJSON(DISCS_KEY, loadJSON<Disc[]>(DISCS_KEY, []).map((d) => (d.id === id ? { ...d, ...change } : d)));
+      const shelf = loadJSON<Disc[]>(DISCS_KEY, []).map((d) => (d.id === id ? { ...d, ...change } : d));
+      saveJSON(DISCS_KEY, shelf);
+      const disc = shelf.find((d) => d.id === id);
+      if (disc) discChannel?.postMessage({ type: 'disc', disc, burned: false } satisfies DiscChange);
     },
     async removeDisc(id) {
       if (member().username !== DEV_OWNER) throw new SocialError('failed', 'Only Jincheng can change the discs everyone sees.');
       saveJSON(DISCS_KEY, loadJSON<Disc[]>(DISCS_KEY, []).filter((d) => d.id !== id));
+      discChannel?.postMessage({ type: 'remove', id } satisfies DiscChange);
+    },
+    watchDiscs({ onDisc, onRemove }) {
+      if (!discChannel) return () => {};
+      const listener = ({ data }: MessageEvent<DiscChange>) => (data.type === 'disc' ? onDisc(data.disc, data.burned) : onRemove(data.id));
+      discChannel.addEventListener('message', listener);
+      return () => discChannel.removeEventListener('message', listener);
     },
 
     joinPresence(info, { onVisitors, onCursor, onLeave, onSignal }) {
