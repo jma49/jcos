@@ -694,3 +694,126 @@
   }
 }
 
+
+/* ---------- Cover Flow (Leopard's Finder): a row of covers over the list ---------- */
+
+.os-finder-cf-view {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.os-finder-cf {
+  position: relative;
+  flex: none;
+  height: min(330px, 58%);
+  min-height: 230px;
+  overflow: hidden;
+  background: linear-gradient(#000 0%, #0c0c0c 55%, #232323 100%);
+  touch-action: pan-y;
+  user-select: none;
+}
+
+/* The covers turned away stand behind the stage's own plane, so the
+   stage takes no pointer: a click reaches the cover under it. */
+.os-finder-cf-stage {
+  position: absolute;
+  inset: 0;
+  perspective: 560px;
+  perspective-origin: 50% 36%;
+  transform-style: preserve-3d;
+  pointer-events: none;
+}
+
+.os-root .os-finder-cf-item {
+  pointer-events: auto;
+  position: absolute;
+  left: 50%;
+  top: 20px;
+  display: grid;
+  place-items: end center;
+  padding: 0;
+  -webkit-box-reflect: below 3px linear-gradient(transparent 68%, rgba(255, 255, 255, 0.3));
+}
+
+.os-finder-cf-caption {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 30px;
+  overflow: hidden;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.35;
+  text-align: center;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  pointer-events: none;
+}
+
+.os-finder-cf-caption span {
+  display: block;
+  overflow: hidden;
+  color: #9a9a9a;
+  font-size: 11px;
+  font-weight: 400;
+  text-overflow: ellipsis;
+}
+
+/* iTunes 7's dark scroller, over the desktop's own sliders (windows.css). */
+.os-root input.os-finder-cf-scroller {
+  position: absolute;
+  left: 22%;
+  bottom: 10px;
+  width: 56%;
+  height: 13px;
+  margin: 0;
+  border-radius: 7px;
+  background: linear-gradient(#1b1b1b, #2e2e2e);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.16), inset 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+
+.os-root input.os-finder-cf-scroller::-webkit-slider-runnable-track {
+  height: 13px;
+  background: transparent;
+  box-shadow: none;
+}
+
+.os-root input.os-finder-cf-scroller::-moz-range-track {
+  height: 13px;
+  background: transparent;
+  box-shadow: none;
+}
+
+.os-root input.os-finder-cf-scroller::-webkit-slider-thumb {
+  width: 64px;
+  height: 11px;
+  margin-top: 1px;
+  border-radius: 6px;
+  background: linear-gradient(#8d8d8d, #5a5a5a 50%, #4a4a4a 51%, #707070);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+.os-root input.os-finder-cf-scroller::-moz-range-thumb {
+  width: 64px;
+  height: 11px;
+  border: 0;
+  border-radius: 6px;
+  background: linear-gradient(#8d8d8d, #5a5a5a 50%, #4a4a4a 51%, #707070);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+.os-finder-cf-split {
+  flex: none;
+  height: 6px;
+  background: linear-gradient(#dcdcdc, #bdbdbd);
+  border-top: 1px solid #8e8e8e;
+  border-bottom: 1px solid #8e8e8e;
+}
+
+.os-finder-cf-view .os-files-list {
+  flex: 1;
+  min-height: 0;
+}
