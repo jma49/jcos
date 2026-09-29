@@ -5,7 +5,7 @@ import type { ContextMenuItem } from '../../shell/ContextMenu';
 // Pieces Finder's views share: thumbnails, the gear menu, Get Info and the
 // helpers for paths, sorting and search.
 
-export type View = 'icons' | 'list' | 'columns' | 'coverflow';
+export type View = 'icons' | 'list' | 'columns' | 'coverflow' | 'shelf';
 export type Arrange = 'none' | 'name' | 'date' | 'kind';
 
 export const formatDate = (iso?: string) =>
