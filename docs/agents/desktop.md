@@ -291,7 +291,11 @@ only `kit/`. The lint enforces all three.
   to the row's height) above the list, dragged, scrolled with the dark
   scroller or the arrow keys, a cover clicked to the front; only the
   covers near the middle are drawn. Its classes are `os-finder-cf-*`,
-  apart from the iPod's `os-cf-*`. A file's `look` is what Quick Look shows (a picture,
+  apart from the iPod's `os-cf-*`. The Movies folder has a fifth view,
+  the wooden shelf (`ShelfView.tsx`, ⌥5): the cases standing face out on
+  wooden boards, as Delicious Library kept a collection. It's the one
+  thing on the desktop that isn't Apple's look, kept on purpose; its
+  button shows only in Movies, and anywhere else the choice shows icons. A file's `look` is what Quick Look shows (a picture,
   or a `View` of its own), `openLabel` its button ("Play DVD"), `trash`
   what Move to Trash (⌘⌫) does and `share: false` keeps it from AirDrop.
   Movies is DVD Player's shelf: Finder builds it (`apps/finder/movies.tsx`
