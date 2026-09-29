@@ -10,7 +10,9 @@
 // are cached at the edge for a day.
 //
 // { embeddable: boolean, url: string } (url after redirects); 400 for an
-// address it won't ask, 502 when the site doesn't answer in five seconds.
+// address it won't ask (or a redirect to one), 502 when the site doesn't
+// answer in five seconds or redirects more than five times. Errors are
+// { error } and are logged.
 
 import { lookup } from 'node:dns/promises';
 import { isIP } from 'node:net';
@@ -99,7 +101,7 @@ const json = (body: unknown, status: number, cache: string) =>
 export async function GET(request: Request, resolve: Lookup = dnsLookup) {
   const asked = new URL(request.url).searchParams.get('url')?.trim() ?? '';
   let url = asked.length <= 2000 ? await publicUrl(asked, resolve) : null;
-  if (!url) return json({ error: 'Not a public web address.' }, 400, 'public, s-maxage=86400');
+  if (!url) return json({ error: 'That isn’t a public web address.' }, 400, 'public, s-maxage=86400');
   try {
     for (let hop = 0; ; hop++) {
       const res = await fetch(url, {
@@ -113,11 +115,15 @@ export async function GET(request: Request, resolve: Lookup = dnsLookup) {
       if (!next) {
         return json({ embeddable: framingAllowed(res.headers), url: url.href }, 200, 'public, s-maxage=86400, stale-while-revalidate=604800');
       }
-      if (hop >= MAX_REDIRECTS) return json({ error: 'Too many redirects.' }, 502, 'public, s-maxage=3600');
+      if (hop >= MAX_REDIRECTS) {
+        console.error('/api/framing: too many redirects:', url.hostname);
+        return json({ error: 'The site redirects too many times.' }, 502, 'public, s-maxage=3600');
+      }
       url = await publicUrl(new URL(next, url).href, resolve);
-      if (!url) return json({ error: 'Redirects to an address it won’t ask.' }, 400, 'public, s-maxage=3600');
+      if (!url) return json({ error: 'The site redirects to an address that isn’t public.' }, 400, 'public, s-maxage=3600');
     }
-  } catch {
+  } catch (error) {
+    console.error('/api/framing: the site didn’t answer:', url?.hostname, error instanceof Error ? error.message : error);
     return json({ error: 'The site didn’t answer.' }, 502, 'public, s-maxage=300');
   }
 }

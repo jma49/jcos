@@ -86,10 +86,14 @@ describe('what it returns', () => {
     expect(lrc.split('\n')).toEqual(['[00:12.00] 讓我們紅塵作伴', '[00:16.00] 活得瀟瀟灑灑']);
   });
 
-  test('NetEase not answering is a 502 that is not cached', async () => {
+  test('NetEase not answering is a 502 that is not cached, and is logged', async () => {
     vi.stubGlobal('fetch', vi.fn(async () => Promise.reject(new DOMException('timed out', 'TimeoutError'))));
+    const log = vi.spyOn(console, 'error').mockImplementation(() => {});
     const res = await ask({ title: '寧夏' });
     expect(res.status).toBe(502);
     expect(res.headers.get('cache-control')).toBe('no-store');
+    expect(await res.json()).toEqual({ error: 'NetEase didn’t answer.' });
+    expect(log).toHaveBeenCalledWith('/api/lyrics: NetEase failed:', 'timed out');
+    log.mockRestore();
   });
 });

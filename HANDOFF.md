@@ -14,8 +14,13 @@ Conventions and a map of the code are in [AGENTS.md](AGENTS.md) and
   `api/` functions on http://localhost:4321, like Vercel minus Supabase
   (the social features hide without it). Check changes there when
   deployments are scarce.
-- Hosted on Vercel project `jincheng-protafolio`; merging to `main`
+- Hosted on Vercel project `jmos` (team "Jonson's projects", Hobby
+  plan; the CLI logged in as `jma49` reaches it); merging to `main`
   deploys. DNS is at GoDaddy. The repository is `jma49/jmos`.
+- One Vercel Firewall rule, "Rate limit the relays" (2026-09-29): at
+  most 60 requests a minute per IP to `/api/lyrics` and `/api/framing`
+  together, answered with a plain 429. Hobby allows one rate-limit rule;
+  see docs/agents/api.md.
 - Supabase project `hszogpoyyqgwjuznbegd` backs accounts, Stickies,
   Chat, presence and Soapbox. Vercel holds its URL and publishable key
   as `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
@@ -176,6 +181,16 @@ ryOS (AGPL-3.0).
   missing basics instead, with time travel through the Internet
   Archive but no AI-made pages (those wait on the AI assistant's
   spending caps).
+- **API conventions** (decided 2026-09-29, after comparing with ryOS's
+  API design guide): `{ error }` bodies in one sentence, the status codes,
+  no CORS on the Vercel Functions, `publicUrl` for any URL fetched, a log
+  line on failures, tests for every function, and a firewall rate limit
+  on the functions that call other sites (docs/agents/api.md). Not taken
+  from ryOS: a shared handler, Zod, an origin allowlist on the Vercel
+  Functions or auth headers. Its dozens of endpoints exist because its
+  Redis store has no permissions; here Supabase's REST API and the
+  database's rules do that work, and only four small GET functions and
+  two Edge Functions are ours.
 - **The Browser asks the Internet Archive directly, with no proxy**
   (decided 2026-09-28). ryOS's IE sends every page through its own
   proxy, which forwards to any public address; the archive allows
@@ -201,7 +216,12 @@ ryOS (AGPL-3.0).
 
 ## 4. Current state
 
-**Nothing is waiting on Jincheng** (2026-09-28).
+**Waiting on Jincheng** (2026-09-29): deploy `account-recovery` from an
+up-to-date `main` (`supabase functions deploy account-recovery`). Until
+then the old version runs, which lets any site's page call it (CORS `*`)
+and answers other methods with 404; the new one answers CORS for the
+site's own origins only and other methods with 405 (docs/agents/api.md).
+Nothing else is waiting.
 
 - Every migration in `supabase/migrations/` has been run, through
   `20260927100000_now_playing_realtime.sql`. Both Edge Functions are
