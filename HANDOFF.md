@@ -211,6 +211,14 @@ ryOS (AGPL-3.0).
   account id and `public.is_owner()` answers for the caller, so row-level
   security locks the owner's rooms and nothing in the browser decides
   who the owner is (docs/agents/supabase.md, "The owner").
+- **DVD Player, as Jincheng chose it** (2026-09-29): all thirteen of the
+  prototypes on the design board were kept, the wooden shelf (not
+  Apple's) included. Built so far: the shelf and DVD Player with Movies,
+  Quick Look and Burn (ROADMAP.md item 2.1 has the rest). The Controller
+  is a panel the app draws above the windows while it's in front, not a
+  second window, so the window manager didn't change. A disc starts at
+  its menu, so Play Movie is the click that starts the sound. Visitors'
+  DVD-Rs never leave their browser.
 - **Considered and left out** (2026-09-26 and 27 audits): a "continue
   playing" prompt for hidden tabs, more reduced-motion fallbacks, a spec
   template for changes, `llms.txt` in robots.txt (no crawler reads it
@@ -247,7 +255,9 @@ ryOS (AGPL-3.0).
    `/dvd`. Until the migration runs, `/api/songs` serves the music
    without a shelf (no error), so DVD Player's Movies folder holds only
    a visitor's own DVD-Rs. The bot now imports
-   `supabase/functions/_shared/youtube.ts`, which the CLI bundles with it.
+   `supabase/functions/_shared/youtube.ts`, which the CLI bundles with it;
+   the deploy also brings `/add` and `/dvd` the better guess for music
+   videos named "Artist 'Song'" (2026-09-29).
 
 - Every migration in `supabase/migrations/` has been run, through
   `20260927100000_now_playing_realtime.sql`. Both Edge Functions are

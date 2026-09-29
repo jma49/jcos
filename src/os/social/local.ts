@@ -1,10 +1,12 @@
 // A stand-in for the Supabase backend during `astro dev`, so accounts,
-// Stickies, reactions, chat and presence can be tried without a project.
+// Stickies, reactions, chat, presence and DVD Player's shelf can be tried
+// without a project.
 // Everything lives in this browser's localStorage, and chat and presence go
 // between its tabs over BroadcastChannels. It keeps the same rules as the
 // database (three notes a day, one reaction per visitor unless signed in),
 // but it's not secure in any way: passwords are stored as typed.
 
+import type { Disc } from '../../lib/library';
 import { loadJSON, saveJSON } from '../core/storage';
 import {
   CHAT_MAX,
@@ -33,6 +35,7 @@ const USERS_KEY = 'os-dev-users';
 const SESSION_KEY = 'os-dev-session';
 const CHAT_KEY = 'os-dev-chat';
 const RESETS_KEY = 'os-dev-resets';
+const DISCS_KEY = 'os-dev-discs';
 /** The member the stand-in treats as the owner: sign up as this to see the owner's rooms. */
 const DEV_OWNER = 'jincheng';
 
@@ -325,6 +328,27 @@ export function localSocial(): Social {
     },
     watchNowPlaying() {
       return () => {};
+    },
+
+    // The shelf, in this browser; the member named DEV_OWNER is the owner.
+    async shelf() {
+      return loadJSON<Disc[]>(DISCS_KEY, []);
+    },
+    async burnDisc(disc) {
+      if (member().username !== DEV_OWNER) throw new SocialError('failed', 'Only Jincheng can change the discs everyone sees.');
+      const shelf = loadJSON<Disc[]>(DISCS_KEY, []);
+      if (shelf.some((d) => d.id === disc.id)) throw new SocialError('already', 'That video is already on the shelf.');
+      const burned: Disc = { ...disc, added: new Date().toISOString() };
+      saveJSON(DISCS_KEY, [...shelf, burned]);
+      return burned;
+    },
+    async relabelDisc(id, change) {
+      if (member().username !== DEV_OWNER) throw new SocialError('failed', 'Only Jincheng can change the discs everyone sees.');
+      saveJSON(DISCS_KEY, loadJSON<Disc[]>(DISCS_KEY, []).map((d) => (d.id === id ? { ...d, ...change } : d)));
+    },
+    async removeDisc(id) {
+      if (member().username !== DEV_OWNER) throw new SocialError('failed', 'Only Jincheng can change the discs everyone sees.');
+      saveJSON(DISCS_KEY, loadJSON<Disc[]>(DISCS_KEY, []).filter((d) => d.id !== id));
     },
 
     joinPresence(info, { onVisitors, onCursor, onLeave, onSignal }) {

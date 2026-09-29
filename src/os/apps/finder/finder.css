@@ -178,6 +178,12 @@
   text-align: center;
 }
 
+/* The Movies folder's list: Date Added, Length and Kind. */
+.os-files-list[data-lengths] .os-files-head,
+.os-files-list[data-lengths] button {
+  grid-template-columns: minmax(0, 1fr) 120px 60px 90px;
+}
+
 @media (max-width: 767px), (max-height: 500px) and (pointer: coarse) {
   .os-finder-app .os-sidebar {
     display: none;
@@ -186,6 +192,11 @@
   .os-files-head,
   .os-files-list button {
     grid-template-columns: minmax(0, 1fr) 110px;
+  }
+
+  .os-files-list[data-lengths] .os-files-head,
+  .os-files-list[data-lengths] button {
+    grid-template-columns: minmax(0, 1fr) 50px 60px;
   }
 
   .os-files-head span:nth-child(2),
@@ -406,11 +417,27 @@
 }
 
 .os-quicklook-view {
+  position: relative;
   flex: 1;
   min-height: 0;
   display: grid;
   place-items: center;
   padding: 14px;
+}
+
+/* A view of its own (a disc), sized by the panel rather than by what's in
+   it, and centred even while taller than the panel (Fit scales it down). */
+.os-quicklook-fit {
+  position: absolute;
+  inset: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.os-quicklook-fit > div {
+  flex: none;
 }
 
 .os-quicklook-view img {
@@ -455,3 +482,215 @@
     animation: none;
   }
 }
+
+/* ---------- Burn (the Movies folder): Tiger's sheet from under the toolbar ---------- */
+
+.os-root .os-finder-burn {
+  gap: 5px;
+  padding: 0 11px 0 7px;
+}
+
+.os-finder-app {
+  position: relative;
+}
+
+/* Keeps the window behind the sheet from being used, as a sheet does. */
+.os-burn-layer {
+  position: absolute;
+  inset: 35px 0 0;
+  z-index: 8;
+  overflow: hidden;
+}
+
+.os-burn-sheet {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: min(520px, calc(100% - 24px));
+  box-sizing: border-box;
+  translate: -50% 0;
+  display: grid;
+  grid-template-columns: 124px minmax(0, 1fr);
+  gap: 14px 18px;
+  padding: 18px 20px 16px;
+  border-radius: 0 0 6px 6px;
+  background: var(--os-pinstripe), var(--os-window);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35), 0 12px 30px rgba(0, 0, 0, 0.5), inset 0 9px 8px -8px rgba(0, 0, 0, 0.35);
+  font-size: 12px;
+  animation: os-burn-down 0.26s ease-out;
+}
+
+@keyframes os-burn-down {
+  from {
+    transform: translateY(-100%);
+  }
+}
+
+.os-burn-sheet h3 {
+  margin: 0 0 4px;
+  font-size: 13px;
+}
+
+.os-burn-sheet p {
+  margin: 0 0 12px;
+  color: var(--os-dim);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.os-burn-preview {
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 6px;
+  color: var(--os-dim);
+  font-size: 10.5px;
+}
+
+.os-burn-case {
+  display: block;
+  border-radius: 5px;
+  touch-action: none;
+}
+
+.os-burn-case[tabindex='0'] {
+  cursor: ew-resize;
+}
+
+.os-burn-case:focus-visible {
+  outline: 3px solid var(--os-focus);
+}
+
+/* No video yet: an empty case. */
+.os-burn-blank {
+  display: block;
+  width: 124px;
+  aspect-ratio: 135 / 190;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #050505, #2a2a2a 3%, #0c0c0c 5%, #161616 60%, #0e0e0e);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.07), 0 3px 7px rgba(0, 0, 0, 0.4);
+}
+
+.os-burn-pick {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.os-burn-pick button {
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border-radius: 50%;
+  background: linear-gradient(#fff, #dcdcdc);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.35);
+  color: #333;
+  font-size: 11px;
+  line-height: 1;
+}
+
+.os-burn-pick button:disabled {
+  opacity: 0.4;
+}
+
+.os-burn-field {
+  display: grid;
+  grid-template-columns: 76px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.os-burn-field > span {
+  text-align: right;
+}
+
+.os-burn-field input {
+  height: 22px;
+  min-width: 0;
+  padding: 0 6px;
+  border: 1px solid rgba(0, 0, 0, 0.3);
+  border-radius: 1px;
+  background: var(--os-content);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
+  color: var(--os-ink);
+  font: 12px var(--os-ui);
+}
+
+.os-burn-field input:focus {
+  outline: 3px solid var(--os-focus);
+  outline-offset: 0;
+}
+
+.os-burn-sheet .os-burn-note {
+  min-height: 1.45em;
+  margin: 4px 0 0;
+}
+
+.os-burn-buttons {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* Burning: the disc, its name, and an Aqua progress bar filling up. */
+.os-burn-progress {
+  grid-template-columns: 64px minmax(0, 1fr);
+  align-items: center;
+  width: min(420px, calc(100% - 24px));
+}
+
+.os-burn-progress p {
+  margin: 6px 0 0;
+}
+
+.os-burn-bar {
+  height: 13px;
+  border-radius: 7px;
+  overflow: hidden;
+  background: linear-gradient(#c9c9c9, #f2f2f2 60%, #fafafa);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.35), inset 0 1px 2px rgba(0, 0, 0, 0.18);
+}
+
+.os-burn-bar i {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 7px;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0.1) 50%, transparent 51%),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.16) 0 14px, transparent 14px 28px),
+    var(--os-gel);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--os-accent-rim) 70%, transparent);
+  animation: os-burn-fill linear both;
+}
+
+@keyframes os-burn-fill {
+  from {
+    width: 0;
+  }
+}
+
+@media (max-width: 767px) {
+  .os-burn-sheet {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .os-burn-preview {
+    grid-auto-flow: column;
+    align-items: center;
+    justify-content: start;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .os-burn-sheet,
+  .os-burn-bar i {
+    animation: none;
+  }
+}
+

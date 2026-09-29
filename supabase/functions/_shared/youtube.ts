@@ -54,6 +54,14 @@ export function guessFromVideo(title: string, channel: string): { title: string;
   }
   const clean = tidy(title);
   const dash = clean.match(/^(.+?)\s+[-–—]\s+(.+)$/);
-  if (dash) return { title: clip(dash[2]), artist: clip(dash[1]) };
+  if (dash) return { title: clip(unquote(dash[2])), artist: clip(dash[1]) };
+  // "Artist 'Song'", as Korean and Japanese music videos name themselves
+  // ("… 'Song' MV" once the video words are gone): only a name in quotes
+  // at the very end, so an apostrophe in a title doesn't split it.
+  const quoted = clean.match(/^(.+?)\s+['‘"“]([^'’"”]+)['’"”]$/);
+  if (quoted) return { title: clip(quoted[2]), artist: clip(quoted[1]) };
   return { title: clip(clean), artist: clip(channel) };
 }
+
+/** A song's name without the quotes around it: "'Song'" is Song. */
+const unquote = (s: string) => s.replace(/^['‘"“](.+)['’"”]$/, '$1');

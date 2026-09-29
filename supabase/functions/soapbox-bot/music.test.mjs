@@ -57,6 +57,20 @@ describe('guessFromVideo', () => {
     expect(guessFromVideo('Madonna - Video Games', 'Madonna').title).toBe('Video Games');
   });
 
+  test('"Artist \'Song\' MV", as Korean music videos name themselves', () => {
+    expect(guessFromVideo("NewJeans 'Cool With You' Official MV", 'HYBE LABELS')).toEqual({ title: 'Cool With You', artist: 'NewJeans' });
+    expect(guessFromVideo('XG “IYKYK” (Official Music Video)', 'XG')).toEqual({ title: 'IYKYK', artist: 'XG' });
+  });
+
+  test('a quoted song after a dash loses its quotes', () => {
+    expect(guessFromVideo('Frank Ocean - "Pink + White"', 'Frank Ocean')).toEqual({ title: 'Pink + White', artist: 'Frank Ocean' });
+  });
+
+  test('an apostrophe in a title doesn’t split it', () => {
+    expect(guessFromVideo("Don't Stop Me Now", 'Queen')).toEqual({ title: "Don't Stop Me Now", artist: 'Queen' });
+    expect(guessFromVideo("Rock 'n' Roll Star", 'Oasis')).toEqual({ title: "Rock 'n' Roll Star", artist: 'Oasis' });
+  });
+
   test('otherwise the title, by the channel', () => {
     expect(guessFromVideo('energy flow [HD]', 'Ryuichi Sakamoto')).toEqual({ title: 'energy flow', artist: 'Ryuichi Sakamoto' });
   });

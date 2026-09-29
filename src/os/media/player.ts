@@ -1,12 +1,13 @@
 // A YouTube player per music app, through YouTube's IFrame API, following
-// the shared "now playing" in music.ts.
+// the shared "now playing" in music.ts. DVD Player makes its own from the
+// same pieces (loadYouTube, setLoudness).
 
 import { useEffect, useRef, useState } from 'react';
 import { useWindows } from '../core/store';
 import { SONGS } from './library';
 import { clocks, durations, useMusic, type MusicApp, type MusicStore } from './music';
 
-interface YTPlayer {
+export interface YTPlayer {
   playVideo(): void;
   pauseVideo(): void;
   seekTo(seconds: number, allowSeekAhead: boolean): void;
@@ -21,7 +22,7 @@ interface YTPlayer {
   destroy(): void;
 }
 
-interface YTNamespace {
+export interface YTNamespace {
   Player: new (
     el: HTMLElement,
     options: {
@@ -45,10 +46,10 @@ declare global {
   }
 }
 
-const ENDED = 0;
-const PLAYING = 1;
-const PAUSED = 2;
-const BUFFERING = 3;
+export const ENDED = 0;
+export const PLAYING = 1;
+export const PAUSED = 2;
+export const BUFFERING = 3;
 
 let api: Promise<YTNamespace> | null = null;
 
@@ -57,7 +58,7 @@ let api: Promise<YTNamespace> | null = null;
  * and silent while the desktop's sounds are off. All sound on JM/OS goes
  * through that one switch.
  */
-function setLoudness(player: YTPlayer, musicVolume: number) {
+export function setLoudness(player: YTPlayer, musicVolume: number) {
   const { soundOn, volume } = useWindows.getState();
   if (!soundOn) return player.mute();
   player.unMute();
@@ -65,7 +66,7 @@ function setLoudness(player: YTPlayer, musicVolume: number) {
 }
 
 /** Loads YouTube's player script once. */
-function loadYouTube(): Promise<YTNamespace> {
+export function loadYouTube(): Promise<YTNamespace> {
   api ??= new Promise((resolve, reject) => {
     if (window.YT?.Player) return resolve(window.YT);
     const previous = window.onYouTubeIframeAPIReady;
