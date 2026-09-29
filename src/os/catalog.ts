@@ -23,6 +23,7 @@ import karaoke from './apps/karaoke/manifest';
 import chat from './apps/chat/manifest';
 import airdrop from './apps/airdrop/manifest';
 import photobooth from './apps/photobooth/manifest';
+import chess from './apps/chess/manifest';
 import aboutmac from './apps/aboutmac/manifest';
 import account from './apps/account/manifest';
 import welcome from './apps/welcome/manifest';
@@ -51,6 +52,7 @@ export const catalog = [
   chat,
   airdrop,
   photobooth,
+  chess,
   aboutmac,
   account,
   welcome,

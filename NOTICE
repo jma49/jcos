@@ -21,6 +21,13 @@ The JM/OS source code (src/os) is original work; its architecture takes
 ideas from ryOS but copies none of its code. The code is licensed under
 the GNU Affero General Public License v3.0 or later; see LICENSE.
 
+Chess (src/os/apps/chess) plays by the rules of chess.js
+(https://github.com/jhlywa/chess.js), Copyright (c) 2025, Jeff Hlywa,
+distributed under the BSD 2-Clause License; its license text ships with
+the package (node_modules/chess.js/LICENSE). The piece-square tables in
+src/os/apps/chess/engine.ts are Tomasz Michniewski's "Simplified
+Evaluation Function", as published on the Chess Programming Wiki.
+
 Personal content is not covered by that license, and all rights are
 reserved (c) Jincheng Ma: the bio, experience and other copy
 (src/i18n/content.ts), the project write-ups (src/content/projects/),

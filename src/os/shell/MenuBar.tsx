@@ -12,14 +12,7 @@ import { useMusic } from '../media/music';
 import { useAccount } from '../social/account';
 import { getSocial } from '../social/social';
 import { useSystem } from '../core/system';
-
-interface MenuItem {
-  label: string;
-  shortcut?: string;
-  action?: () => void;
-  disabled?: boolean;
-  divider?: boolean;
-}
+import type { MenuItem } from '../core/types';
 
 function useClock() {
   const [now, setNow] = useState(() => new Date());
@@ -93,6 +86,8 @@ export function MenuBar({ sky }: { sky: SkyState }) {
           : { label: 'Open iPod', action: () => launch('ipod') }
       ]
     : null;
+  // Any app may add its own while it's in front (setMenus in store.ts).
+  const own = useWindows((s) => (focusedId ? s.menus[focusedId] : undefined));
 
   const menus: Record<string, MenuItem[]> = {
     '◐': [
@@ -119,6 +114,7 @@ export function MenuBar({ sky }: { sky: SkyState }) {
       { label: 'Close Window', shortcut: '⌥W', disabled: !focused, action: () => focused && close(focused.id) }
     ],
     ...(controls ? { Controls: controls } : {}),
+    ...own,
     View: [
       { label: 'Exposé', shortcut: 'F9', disabled: !focused, action: () => useWindows.getState().setExpose(true) },
       { label: 'Show Dashboard', action: () => useWindows.getState().setDashboard(true) },
