@@ -20,6 +20,7 @@ import { APP_MIME } from '../../core/dock';
 import { ActionMenu, ARRANGERS, ancestry, everything, FileInfo, formatDate, parentOf, Thumb, type Arrange, type View } from './parts';
 import { ColumnView } from './ColumnView';
 import { CoverFlowView } from './CoverFlowView';
+import { ShelfView } from './ShelfView';
 import { QuickLook } from './QuickLook';
 import { BurnSheet } from './BurnSheet';
 import { discPath, moviesFolder } from './movies';
@@ -41,7 +42,8 @@ interface Prefs {
 
 const PREFS_KEY = 'os-finder';
 const DEFAULT_PREFS: Prefs = { view: 'icons', arrange: 'none', size: 64 };
-const VIEWS: View[] = ['icons', 'list', 'columns', 'coverflow'];
+/** Finder's views, ⌥1 to ⌥5; the shelf is the Movies folder's alone. */
+const VIEWS: View[] = ['icons', 'list', 'columns', 'coverflow', 'shelf'];
 
 function savedPrefs(): Prefs {
   // Earlier versions kept only the view, under its own key.
@@ -88,10 +90,11 @@ export default function Finder({ win }: AppProps) {
   const sorter = ARRANGERS[prefs.arrange];
   const sort = (nodes: FileNode[]) => (sorter ? [...nodes].sort(sorter) : nodes);
   const items = sort(found ?? folder.children ?? []);
-  const view: View = searching && prefs.view === 'columns' ? 'list' : prefs.view;
   const selectedNode = selected ? (all.find((n) => n.path === selected) ?? null) : null;
   const title = searching ? `Searching “${query.trim()}”` : folder.name;
   const atMovies = !searching && folder.path === '/Movies';
+  // Columns don't search; the shelf is Movies' alone.
+  const view: View = searching && prefs.view === 'columns' ? 'list' : prefs.view === 'shelf' && !atMovies ? 'icons' : prefs.view;
   // While Movies shows, the shelf is read fresh (the library's copy can be a minute old).
   useShelfRefresh(atMovies);
 
@@ -149,6 +152,8 @@ export default function Finder({ win }: AppProps) {
 
   /** How many icons fit on a row of the icon grid. */
   const perRow = () => {
+    const shelf = main.current?.querySelector<HTMLElement>('.os-shelf');
+    if (shelf) return Number(shelf.dataset.perRow) || 1;
     const grid = main.current?.querySelector('.os-files-grid');
     return grid ? getComputedStyle(grid).gridTemplateColumns.split(' ').length : 1;
   };
@@ -168,7 +173,8 @@ export default function Finder({ win }: AppProps) {
       if (first) go(selectedNode!.path, { replace: true, select: first.path });
       return;
     }
-    const step = { ArrowUp: view === 'icons' ? -perRow() : -1, ArrowDown: view === 'icons' ? perRow() : 1, ArrowLeft: -1, ArrowRight: 1 }[key] ?? 0;
+    const rows = view === 'icons' || view === 'shelf';
+    const step = { ArrowUp: rows ? -perRow() : -1, ArrowDown: rows ? perRow() : 1, ArrowLeft: -1, ArrowRight: 1 }[key] ?? 0;
     // Left and right move through the icons and the covers; the list goes up and down only.
     if (view === 'list' && (key === 'ArrowLeft' || key === 'ArrowRight')) return;
     choose(list[Math.max(0, Math.min(list.length - 1, i + step))]);
@@ -203,7 +209,7 @@ export default function Finder({ win }: AppProps) {
       } else if (e.altKey && e.code === 'KeyI') {
         e.preventDefault();
         setInfo((i) => !i);
-      } else if (e.altKey && /^Digit[1-4]$/.test(e.code)) {
+      } else if (e.altKey && /^Digit[1-5]$/.test(e.code)) {
         e.preventDefault();
         update({ view: VIEWS[Number(e.code.slice(-1)) - 1] });
       } else if (e.code === 'BracketLeft' && at > 0) {
@@ -257,7 +263,8 @@ export default function Finder({ win }: AppProps) {
     { label: 'as Icons', shortcut: '⌥1', checked: view === 'icons', action: () => update({ view: 'icons' }) },
     { label: 'as List', shortcut: '⌥2', checked: view === 'list', action: () => update({ view: 'list' }) },
     { label: 'as Columns', shortcut: '⌥3', checked: view === 'columns', disabled: searching, action: () => update({ view: 'columns' }) },
-    { label: 'as Cover Flow', shortcut: '⌥4', checked: view === 'coverflow', action: () => update({ view: 'coverflow' }) }
+    { label: 'as Cover Flow', shortcut: '⌥4', checked: view === 'coverflow', action: () => update({ view: 'coverflow' }) },
+    ...(atMovies ? [{ label: 'as Shelf', shortcut: '⌥5', checked: view === 'shelf', action: () => update({ view: 'shelf' }) }] : [])
   ];
   const arrangeItems: ContextMenuItem[] = (['none', 'name', 'date', 'kind'] as const).map((a) => ({
     label: a === 'none' ? 'Keep Arranged: Off' : `Arrange by ${a[0].toUpperCase()}${a.slice(1)}`,
@@ -428,6 +435,13 @@ export default function Finder({ win }: AppProps) {
               <path d="M5 2h6v8H5zM1 3.5l3 1.2v4.6l-3 1.2zM15 3.5l-3 1.2v4.6l3 1.2zM5 11.5h6v1H5z" fill="currentColor" />
             </svg>
           </button>
+          {atMovies && (
+            <button type="button" aria-pressed={view === 'shelf'} onClick={() => update({ view: 'shelf' })} aria-label="Shelf" title="As Shelf (⌥5)">
+              <svg viewBox="0 0 16 14" width="14" height="12" aria-hidden="true">
+                <path d="M2 1h2.4v4.6H2zM5 1h2.4v4.6H5zM8 1.6h2.4v4H8zM1 6.2h14v1.2H1zM3 8h2.4v4.4H3zM6 8.4h2.4v4H6zM9.4 8h2.4v4.4H9.4zM1 12.6h14v1.2H1z" fill="currentColor" />
+              </svg>
+            </button>
+          )}
         </div>
         <ActionMenu items={actions} />
         <button
@@ -534,6 +548,7 @@ export default function Finder({ win }: AppProps) {
               {listView()}
             </CoverFlowView>
           )}
+          {view === 'shelf' && <ShelfView items={items} itemProps={itemProps} />}
           {view === 'columns' && <ColumnView disk={disk} path={path} selected={selected} sort={sort} itemProps={itemProps} />}
           {searching && items.length === 0 && <p className="os-finder-empty">Nothing on Macintosh HD matches “{query.trim()}”.</p>}
 
