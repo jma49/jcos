@@ -11,6 +11,7 @@ import { Drawer } from '../../shell/drawer';
 import { ContextMenu, type ContextMenuItem } from '../../shell/ContextMenu';
 import { load, loadSettings, updateJSON } from '../../core/storage';
 import { PATH_MIME, shareViaAirDrop } from '../../social/airdrop';
+import { APP_MIME } from '../../core/dock';
 import { ActionMenu, ARRANGERS, ancestry, everything, FileInfo, formatDate, parentOf, Thumb, type Arrange, type View } from './parts';
 import { ColumnView } from './ColumnView';
 import { QuickLook } from './QuickLook';
@@ -285,6 +286,7 @@ export default function Finder({ win }: AppProps) {
     draggable: true,
     onDragStart: (e: React.DragEvent) => {
       e.dataTransfer.setData(PATH_MIME, node.path);
+      if (node.app) e.dataTransfer.setData(APP_MIME, node.app);
       e.dataTransfer.setData('text/plain', node.name);
       e.dataTransfer.effectAllowed = 'copy';
     },
