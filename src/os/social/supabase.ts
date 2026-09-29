@@ -5,6 +5,7 @@
 import { createClient, type PostgrestError, type User } from '@supabase/supabase-js';
 import { CURSOR_COLORS } from './social';
 import { discOf, songOf, type Disc } from '../../lib/library';
+import { playlistNameProblem } from './playlistNames';
 import {
   LOBBY,
   NOTES_PER_DAY,
@@ -17,6 +18,7 @@ import {
   type ChatHandlers,
   type ChatMessage,
   type ChatRoom,
+  type Listening,
   type Note,
   type Post,
   type PostImage,
@@ -47,8 +49,34 @@ const discRow = (d: Partial<Disc>) => ({
   ...(d.duration !== undefined ? { duration_ms: d.duration } : {})
 });
 
-/** A write to the shelf from anyone but the owner, which row-level security refuses (42501). */
-const notOwner = () => new SocialError('failed', 'Only Jincheng can change the discs everyone sees.');
+/** A write only the owner may make, from anyone else: row-level security refuses it (42501). */
+const notOwner = (what = 'the discs everyone sees') => new SocialError('failed', `Only Jincheng can change ${what}.`);
+
+interface StatsRow {
+  song_id: string;
+  rating: number | null;
+  plays: number;
+  played_at: string | null;
+}
+
+interface PlaylistRow {
+  id: number;
+  name: string;
+  playlist_songs: { song_id: string }[] | null;
+}
+
+/** Jincheng's ratings, plays and playlists as the iPod uses them, leaving out what isn't set. */
+export function listeningOf(stats: StatsRow[], playlists: PlaylistRow[]): Listening {
+  return {
+    stats: Object.fromEntries(
+      stats.map((row) => [
+        row.song_id,
+        { ...(row.rating ? { rating: row.rating } : {}), plays: row.plays, ...(row.played_at ? { played: row.played_at } : {}) }
+      ])
+    ),
+    playlists: playlists.map((row) => ({ id: Number(row.id), name: row.name, songs: (row.playlist_songs ?? []).map((s) => s.song_id) }))
+  };
+}
 
 /** Turns a database refusal into one the interface can explain. */
 function refusal(error: PostgrestError): SocialError {
@@ -457,6 +485,57 @@ export function supabaseSocial(url: string, key: string): Social {
       return () => {
         client.removeChannel(channel);
       };
+    },
+
+    // Jincheng's ratings, plays and playlists: everyone reads them, and the
+    // database lets only the owner change them. Playlists come with their
+    // songs in one request (PostgREST embeds them by the foreign key).
+    async listening() {
+      const [stats, playlists] = await Promise.all([
+        client.from('song_stats').select('song_id,rating,plays,played_at'),
+        client.from('playlists').select('id,name,playlist_songs(song_id)').order('id').order('position', { referencedTable: 'playlist_songs' })
+      ]);
+      if (stats.error) throw stats.error;
+      if (playlists.error) throw playlists.error;
+      return listeningOf(stats.data ?? [], playlists.data ?? []);
+    },
+
+    async rateSong(id, rating) {
+      member();
+      const { error } = await client.rpc('rate_song', { p_song: id, p_rating: rating });
+      if (error) throw error.code === '42501' ? notOwner('the ratings everyone sees') : refusal(error);
+    },
+
+    async songPlayed(id) {
+      member();
+      const { error } = await client.rpc('song_played', { p_song: id });
+      if (error) throw error.code === '42501' ? notOwner('the play counts everyone sees') : refusal(error);
+    },
+
+    async savePlaylist(name, songs) {
+      member();
+      const { data, error } = await client.rpc('save_playlist', { p_name: name, p_songs: songs });
+      if (error) {
+        if (error.code === '42501') throw notOwner('the playlists everyone sees');
+        // A name the table's check refuses.
+        if (error.code === '23514') throw new SocialError('invalid', playlistNameProblem(name) ?? 'That name won’t do.');
+        throw refusal(error);
+      }
+      return Number(data);
+    },
+
+    // Row-level security lets anyone else's delete reach no row, without an
+    // error; the site offers these only to the owner.
+    async unlistSong(playlist, song) {
+      member();
+      const { error } = await client.from('playlist_songs').delete().eq('playlist_id', playlist).eq('song_id', song);
+      if (error) throw error.code === '42501' ? notOwner('the playlists everyone sees') : refusal(error);
+    },
+
+    async deletePlaylist(playlist) {
+      member();
+      const { error } = await client.from('playlists').delete().eq('id', playlist);
+      if (error) throw error.code === '42501' ? notOwner('the playlists everyone sees') : refusal(error);
     },
 
     async nowPlaying() {
