@@ -41,11 +41,11 @@ the same Aqua styles and the ryOS icon set (new icons from it go in
    Leopard's full screen. Dragging it to the Trash, which turns into
    Eject, ejects it. Jincheng burns discs for everyone from Telegram
    (`/dvd`) or from the site when signed in; visitors burn DVD-Rs kept in
-   their browser. In pull requests, five done (2026-09-29): the shelf
+   their browser. In pull requests, six done (2026-09-29): the shelf
    (the database, `/api/songs` and `/dvd`); DVD Player with the Movies
    folder, Quick Look and Burn; inserting and ejecting (the slot, the
    disc on the desktop, the Trash turning into Eject); full screen; Cover
-   Flow. Still to come: the wooden shelf; and a notice to visitors on the
+   Flow; the wooden shelf. Still to come: a notice to visitors on the
    desktop when Jincheng burns a disc (Realtime already sends the shelf's
    changes).
 2. **iPod ratings and playlists**: rate the playing song (the Now
