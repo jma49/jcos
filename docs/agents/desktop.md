@@ -141,9 +141,15 @@ only `kit/`. The lint enforces all three.
   Mac: drawn by the app into `.os-root` just above the windows, shown
   only while DVD Player is the window in front (not in Exposé or
   minimized), dragged by its metal and left where it was put
-  (`os-dvd`). On a phone it sits under the picture. The Controls menu
-  and the keys (Space, ←/→ for chapters, ↑/↓ and Return in menus,
-  Escape, ⌘E) do what its buttons do. A disc slides into the slot in the
+  (`os-dvd`). Full screen (⌘F, a double-click on the picture, the
+  Controls menu) is Leopard's (`FullScreen.tsx`): the browser's full
+  screen on the picture itself, since the player can't move without
+  reloading, with the chapters along the top and the controls along the
+  bottom, which rest out of sight (and the pointer with them) 2.5 s after
+  the pointer stops while the disc plays. A phone, which DVD Player fills
+  anyway, always has that look instead of the Controller. The Controls
+  menu and the keys (Space, ←/→ for chapters, ↑/↓ and Return in menus,
+  Escape, ⌘F, ⌘E) do what its buttons do. A disc slides into the slot in the
   screen's right edge on its way in and out (`media/insertion.ts`, Web
   Animations, skipped with motion reduced), DVD Player's icon bounces in
   the Dock as it opens, and while the disc is in it's on the desktop
