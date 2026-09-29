@@ -218,7 +218,10 @@ ryOS (AGPL-3.0).
   is a panel the app draws above the windows while it's in front, not a
   second window, so the window manager didn't change. A disc starts at
   its menu, so Play Movie is the click that starts the sound. Visitors'
-  DVD-Rs never leave their browser.
+  DVD-Rs never leave their browser. Inserting and ejecting (the slot,
+  the disc on the desktop, the Trash turning into Eject) cost the first
+  load 0.3 KB: it's at 159.5 of 160 KB now, so ROADMAP.md item 1 (room on
+  the first load) comes before anything else on the first screen.
 - **Considered and left out** (2026-09-26 and 27 audits): a "continue
   playing" prompt for hidden tabs, more reduced-motion fallbacks, a spec
   template for changes, `llms.txt` in robots.txt (no crawler reads it
