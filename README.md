@@ -7,9 +7,11 @@ Projects, the résumé, photos and posts open as windows on the desktop.
 Around them sits a small working system:
 
 - **Shell:** menu bar, Dock, Exposé, Dashboard, Spotlight, a screen saver,
-  and Finder over a read-only Macintosh HD.
-- **Apps and applets:** Terminal, iPod (with Jincheng's ratings and
-  playlists, and On-The-Go) and Karaoke with synced lyrics, DVD Player
+  and Finder over Macintosh HD, with Jincheng's home folder: locked, as
+  another user's was, but for Public and Sites.
+- **Apps and applets:** Terminal, TextEdit, iPod (with Jincheng's
+  ratings and playlists, and On-The-Go) and Karaoke with synced lyrics,
+  DVD Player
   (YouTube videos burned onto discs, kept in Finder's Movies folder),
   Chess, Photo Booth, and applets from the Applet Store (Minesweeper,
   Spider Solitaire, Pinball, Synth and more).
@@ -129,7 +131,7 @@ rather than opening an issue.
 
 ## Performance
 
-A first visit downloads about 155 KB of JavaScript (gzipped), one
+A first visit downloads about 159 KB of JavaScript (gzipped), one
 desktop picture and two subset fonts. Everything else loads when it's
 first used, or once the desktop has settled: each app, the Supabase
 client, the Dashboard and the screen savers.

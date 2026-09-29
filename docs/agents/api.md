@@ -32,9 +32,10 @@ and two Supabase Edge Functions.
 - **Realtime** (`src/os/social/supabase.ts`): `desktop` (presence,
   pointers and short signals such as nudges and AirDrop offers, which
   anyone with the public key can send, so receivers check them),
-  `chat-room` (new and removed chat messages, `postgres_changes`) and
+  `chat-room` (new and removed chat messages, `postgres_changes`),
   `now-playing` (what Jincheng plays, `postgres_changes` on a table only
-  the bot writes).
+  the bot writes) and `discs` (DVD Player's shelf, `postgres_changes` on
+  a table only the owner and the bot write).
 
 ## Vercel Functions (`api/`)
 
