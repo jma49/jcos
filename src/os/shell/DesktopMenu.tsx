@@ -1,13 +1,18 @@
 import { launch } from '../core/registry';
 import { useWindows } from '../core/store';
+import { useAccount } from '../social/account';
 import { ContextMenu, type ContextMenuItem } from './ContextMenu';
+import { newStickyAt } from './DesktopStickiesLayer';
 
 /** The menu a right-click on the empty desktop opens. */
 export function DesktopMenu({ at, onClose }: { at: { x: number; y: number }; onClose: () => void }) {
   const custom = useWindows((s) => s.wallpaper);
   const arranged = useWindows((s) => s.iconPositions !== null);
+  const signedIn = useAccount((a) => !!a.account);
   const s = useWindows.getState();
   const items: ContextMenuItem[] = [
+    // Only a member has stickies of their own.
+    ...(signedIn ? [{ label: 'New Sticky Note', action: () => newStickyAt(at) }, { divider: true, label: '' }] : []),
     { label: 'Change Desktop Background…', action: () => launch('preferences', { props: { pane: 'desktop' } }) },
     { label: 'Use Default Desktop Picture', disabled: !custom, action: () => s.setWallpaper(null) },
     { label: 'Clean Up Icons', disabled: !arranged, action: () => s.setIconPositions(null) },

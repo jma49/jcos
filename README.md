@@ -16,8 +16,8 @@ Around them sits a small working system:
   Chess, Photo Booth, and applets from the Applet Store (Minesweeper,
   Spider Solitaire, Pinball, Synth and more).
 - **Social:** member accounts, Chat with rooms and private conversations,
-  a Stickies guestbook, AirDrop between visitors, and Soapbox posts sent
-  from a Telegram bot.
+  a Stickies guestbook and stickies of one's own on one's own desktop,
+  AirDrop between visitors, and Soapbox posts sent from a Telegram bot.
 - **Ambient:** the desktop follows the light and weather where the visitor
   is.
 

@@ -183,6 +183,61 @@ select pg_temp.act_as('service_role');
 select pg_temp.check(public.recovery_request('carol', repeat('5', 64)) is null, 'three links an hour to any one address, whoever asks');
 reset role;
 
+-- Stickies of one's own --------------------------------------------------
+
+select pg_temp.act_as('authenticated', '11111111-1111-1111-1111-111111111111');
+insert into public.stickies (body, color, x, y) values ('Call mum', 'pink', 120, 90);
+insert into public.stickies (body) values ('');
+select pg_temp.check((select count(*) from public.stickies) = 2
+  and (select color from public.stickies where body = 'Call mum') = 'pink', 'a member puts up stickies of their own');
+select pg_temp.check(pg_temp.refused($$select user_id from public.stickies$$), 'whose a note is isn''t asked for; it''s always the caller''s');
+select set_config('test.sticky', (select id::text from public.stickies where body = 'Call mum'), false);
+update public.stickies set x = 400, y = 300, width = 260, collapsed = true where id = current_setting('test.sticky')::uuid;
+select pg_temp.check((select version = 1 and x = 400 and collapsed from public.stickies where id = current_setting('test.sticky')::uuid),
+  'moving, sizing and collapsing a note isn''t a save of its text');
+update public.stickies set body = 'Call mum on Sunday' where id = current_setting('test.sticky')::uuid and version = 1;
+update public.stickies set body = 'From an older copy' where id = current_setting('test.sticky')::uuid and version = 1;
+select pg_temp.check((select body = 'Call mum on Sunday' and version = 2 from public.stickies where id = current_setting('test.sticky')::uuid),
+  'a save of the text counts, and one from an older copy changes nothing');
+select pg_temp.check(pg_temp.refused($$update public.stickies set version = 9 where body like 'Call mum%'$$), 'no one sets a version');
+select pg_temp.check(pg_temp.refused($$insert into public.stickies (body, color) values ('x', 'orange')$$)
+  and pg_temp.refused($$insert into public.stickies (body) values (repeat('x', 4001))$$)
+  and pg_temp.refused($$insert into public.stickies (body, width) values ('x', 40)$$), 'a note is one of Tiger''s colours, 4,000 characters at most, and of a size');
+reset role;
+
+-- No one else reads or changes them, not even the owner.
+select pg_temp.act_as('authenticated', '22222222-2222-2222-2222-222222222222');
+select pg_temp.check((select count(*) from public.stickies) = 0, 'another member sees none of them');
+update public.stickies set body = 'Hijacked';
+delete from public.stickies;
+insert into public.stickies (body) values ('Bob''s own');
+reset role;
+select pg_temp.check((select count(*) from public.stickies where user_id = '11111111-1111-1111-1111-111111111111') = 2
+  and not exists (select 1 from public.stickies where body = 'Hijacked')
+  and (select user_id from public.stickies where body = 'Bob''s own') = '22222222-2222-2222-2222-222222222222', 'another member can''t change or take them down, and theirs are their own');
+select pg_temp.act_as('authenticated', '99999999-9999-9999-9999-999999999999');
+select pg_temp.check((select count(*) from public.stickies) = 0, 'not even Jincheng reads a member''s stickies');
+reset role;
+select pg_temp.act_as('anon');
+select pg_temp.check(pg_temp.refused($$select 1 from public.stickies$$), 'visitors can''t ask for stickies');
+select pg_temp.check(pg_temp.refused($$insert into public.stickies (body) values ('x')$$), 'visitors can''t put one up');
+reset role;
+select pg_temp.act_as('authenticated', '11111111-1111-1111-1111-111111111111');
+delete from public.stickies where body = '';
+select pg_temp.check((select count(*) from public.stickies) = 1, 'a member takes their own down');
+reset role;
+
+-- The limit: a member with a full desktop can't put up another.
+update public.music_settings set value = '1' where name = 'sticky_limit';
+select pg_temp.act_as('authenticated', '11111111-1111-1111-1111-111111111111');
+select pg_temp.check(pg_temp.refused($$insert into public.stickies (body) values ('One more')$$), 'a member with sticky_limit notes can''t put up another');
+reset role;
+select pg_temp.act_as('authenticated', '33333333-3333-3333-3333-333333333333');
+insert into public.stickies (body) values ('Carol''s first');
+select pg_temp.check((select count(*) from public.stickies) = 1, 'the limit is each member''s own');
+reset role;
+update public.music_settings set value = '50' where name = 'sticky_limit';
+
 -- Security Advisor ------------------------------------------------------------
 
 select pg_temp.check(not has_function_privilege('anon', 'public.notes_by_member()', 'execute')

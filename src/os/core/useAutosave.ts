@@ -4,11 +4,12 @@ import { useEffect, useRef, useState } from 'react';
 export const SAVE_AFTER_MS = 1000;
 
 /**
- * Saving as Jincheng types: once the typing rests, at once when asked
- * (⌘S), and on the way out (the window closing). Saves run one after
- * another, each with what's typed by the time it runs, so a later one
- * can't overtake an earlier one. What's typed is also kept as a draft in
- * the browser until it's saved (home.ts), so closing the tab loses nothing.
+ * Saving as someone types (TextEdit, a sticky of one's own): once the
+ * typing rests, at once when asked (⌘S), and on the way out (the window
+ * or the note closing). Saves run one after another, each with what's
+ * typed by the time it runs, so a later one can't overtake an earlier
+ * one. Callers keep what's typed as a draft in the browser until it's
+ * saved (home/home.ts, stickies/mine.ts), so closing the tab loses nothing.
  */
 export function useAutosave(save: () => Promise<void>) {
   const latest = useRef(save);

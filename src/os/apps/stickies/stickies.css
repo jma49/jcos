@@ -184,3 +184,35 @@
     opacity: 0.5;
   }
 }
+
+/* The wall's loading and offline states, under the toolbar. */
+.os-stickies-status {
+  flex: 1;
+}
+
+/* Yours: the member's own stickies as cards in the same rows as the wall's. */
+.os-stickies-yours .os-own-sticky {
+  min-height: 170px;
+}
+
+.os-stickies-yours .os-own-sticky[data-collapsed] {
+  min-height: 0;
+  align-self: start;
+}
+
+.os-stickies-yours-empty {
+  flex: 1;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 12px;
+  padding: 24px;
+  color: var(--os-dim);
+  font-size: 13px;
+  text-align: center;
+}
+
+.os-stickies-yours-empty p {
+  margin: 0;
+}
+
