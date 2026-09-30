@@ -1,24 +1,27 @@
 import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
-import type { FileNode } from '../../core/files';
+import type { FileNode } from '../core/files';
 import { Thumb } from './parts';
 
 /**
  * Quick Look, as Leopard's dark HUD panel over the Finder window: the
  * picture (or a large icon, or a view of its own, as a disc's case),
  * what it is, and buttons to open it and to AirDrop it (or to throw it
- * away, for a disc). Space or Escape closes it; the arrow keys keep moving
- * the selection underneath, and the panel follows.
+ * away, for a disc), or the `actions` a view gives it instead (Time
+ * Machine's Restore). Space or Escape closes it; the arrow keys keep
+ * moving the selection underneath, and the panel follows.
  */
 export function QuickLook({
   node,
   onOpen,
   onShare,
-  onClose
+  onClose,
+  actions
 }: {
   node: FileNode;
-  onOpen: () => void;
-  onShare: () => void;
+  onOpen?: () => void;
+  onShare?: () => void;
   onClose: () => void;
+  actions?: ReactNode;
 }) {
   const lines = node.look?.lines?.filter(Boolean) ?? [];
   const count = node.children?.length;
@@ -52,20 +55,24 @@ export function QuickLook({
         ))}
       </div>
       <div className="os-quicklook-actions">
-        {node.trash ? (
-          <button type="button" className="os-button" onClick={node.trash}>
-            Move to Trash
-          </button>
-        ) : (
-          node.share !== false && (
-            <button type="button" className="os-button" onClick={onShare} title="Share with AirDrop">
-              AirDrop…
+        {actions ?? (
+          <>
+            {node.trash ? (
+              <button type="button" className="os-button" onClick={node.trash}>
+                Move to Trash
+              </button>
+            ) : (
+              node.share !== false && (
+                <button type="button" className="os-button" onClick={onShare} title="Share with AirDrop">
+                  AirDrop…
+                </button>
+              )
+            )}
+            <button type="button" className="os-button os-button-primary" onClick={onOpen}>
+              {node.openLabel ?? (node.children ? 'Open Folder' : 'Open')}
             </button>
-          )
+          </>
         )}
-        <button type="button" className="os-button os-button-primary" onClick={onOpen}>
-          {node.openLabel ?? (node.children ? 'Open Folder' : 'Open')}
-        </button>
       </div>
     </div>
   );

@@ -70,6 +70,13 @@ interface WindowStore {
   /** Exposé: every open window laid out side by side. */
   exposeOpen: boolean;
   screensaverOn: boolean;
+  /**
+   * An app that takes the whole screen (a manifest's `fullScreen`: Time
+   * Machine), and what it was opened with; null when none is. It isn't a
+   * window, so the windows, the menu bar and the Dock wait under it, and
+   * nothing of it is kept for the next visit.
+   */
+  fullScreen: { app: AppId; props?: Record<string, string> } | null;
   /** People on the desktop right now, this visitor included; null until known. */
   visitors: Visitor[] | null;
   /** Too many people here for pointers (see CROWD in social/online.tsx). */
@@ -109,6 +116,9 @@ interface WindowStore {
   setDashboard: (open: boolean) => void;
   setExpose: (open: boolean) => void;
   setScreensaver: (on: boolean) => void;
+  /** Opens a full-screen app over everything, closing Spotlight, Exposé and the Dashboard. */
+  openFullScreen: (app: AppId, props?: Record<string, string>) => void;
+  closeFullScreen: () => void;
   setVisitors: (visitors: Visitor[] | null) => void;
   setCrowded: (crowded: boolean) => void;
   setWallpaper: (url: string | null) => void;
@@ -188,6 +198,7 @@ export const useWindows = create<WindowStore>((set, get) => ({
   glass: load(GLASS_KEY) === '1',
   spotlightOpen: false,
   dashboardOpen: false,
+  fullScreen: null,
   exposeOpen: false,
   screensaverOn: false,
   visitors: null,
@@ -297,6 +308,8 @@ export const useWindows = create<WindowStore>((set, get) => ({
   },
   setSpotlight: (spotlightOpen) => set({ spotlightOpen }),
   setDashboard: (dashboardOpen) => set({ dashboardOpen }),
+  openFullScreen: (app, props) => set({ fullScreen: { app, props }, spotlightOpen: false, exposeOpen: false, dashboardOpen: false }),
+  closeFullScreen: () => set({ fullScreen: null }),
   setExpose: (exposeOpen) => set({ exposeOpen }),
   setScreensaver: (screensaverOn) => set({ screensaverOn }),
   setVisitors: (visitors) => set({ visitors }),
@@ -350,6 +363,8 @@ export function useWindowList(): WindowSummary[] {
 
 export function useFocusedId() {
   return useWindows((s) => {
+    // A full-screen app covers every window: none has the keys meanwhile.
+    if (s.fullScreen) return null;
     for (let i = s.order.length - 1; i >= 0; i--) {
       const id = s.order[i];
       if (!s.windows[id]?.minimized) return id;

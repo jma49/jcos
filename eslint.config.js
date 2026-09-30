@@ -58,7 +58,7 @@ export default [
   },
   // The OS knows apps only by their manifests, through src/os/catalog.ts.
   {
-    files: ['src/os/{core,shell,social,media,look,ambient,kit}/**/*.{ts,tsx}', 'src/os/Desktop.tsx'],
+    files: ['src/os/{core,shell,social,media,look,ambient,kit,files,home,stickies}/**/*.{ts,tsx}', 'src/os/Desktop.tsx'],
     rules: {
       'no-restricted-imports': [
         'error',

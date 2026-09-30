@@ -73,7 +73,9 @@ NetEase gives up after five seconds.
 
 The media library (`{ albums, songs, limit, discs }`) from Supabase: the
 music, and DVD Player's shelf, which is left out while it can't be read
-(before its migration has run), without costing the music. Fresh at
+(before its migration has run), without costing the music. Each song,
+album and disc says when it came (`added`), which Time Machine goes by;
+the snapshot's songs and albums don't, and count as always there. Fresh at
 the edge for 30 seconds and stale for 30 more (`public, s-maxage=30,
 stale-while-revalidate=30`). When Supabase can't be read in five seconds,
 or has no songs, the snapshot in `src/data/songs.json` is served with

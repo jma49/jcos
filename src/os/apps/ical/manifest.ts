@@ -4,6 +4,7 @@ import { defineApp, pngIcon } from '../../kit/manifest';
 export default defineApp({
   id: 'ical',
   name: 'iCal',
+  added: '2026-09-29',
   Icon: pngIcon('ical'),
   window: { width: 900, height: 600, minWidth: 360, minHeight: 360 },
   material: 'metal',

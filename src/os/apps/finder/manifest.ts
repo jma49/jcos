@@ -4,6 +4,7 @@ import { FinderIcon } from '../../core/icons';
 export default defineApp({
   id: 'finder',
   name: 'Finder',
+  added: '2026-09-25',
   Icon: FinderIcon,
   window: { width: 760, height: 480, minWidth: 440, minHeight: 300 },
   material: 'metal',

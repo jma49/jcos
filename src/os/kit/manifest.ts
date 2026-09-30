@@ -32,6 +32,11 @@ export interface AppShortcut {
 export interface AppManifest<Id extends string = string> {
   id: Id;
   name: string;
+  /**
+   * When it came to JM/OS (YYYY-MM-DD): Time Machine shows it from that
+   * day on. Every app has one; an applet's is its listing's `added`.
+   */
+  added?: string;
   Icon: ComponentType<{ size?: number }>;
   /** The window's default and smallest size. */
   window: { width: number; height: number; minWidth: number; minHeight: number };
@@ -55,6 +60,12 @@ export interface AppManifest<Id extends string = string> {
   internal?: boolean;
   /** A panel rather than an app (About This Mac, the welcome): no Dock icon while open. */
   noDock?: boolean;
+  /**
+   * Takes the whole screen while it's open, over the windows, the menu bar
+   * and the Dock, rather than a window, as Time Machine did. Its component
+   * is given a window that fills the screen, and leaves by closeFullScreen().
+   */
+  fullScreen?: true;
   /** Opened from a menu (System Preferences, from the Apple menu), so not listed as an app. */
   menuOnly?: boolean;
   /** Places inside the app that Spotlight lists under the app's name. */

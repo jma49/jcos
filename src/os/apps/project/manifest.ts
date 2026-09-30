@@ -4,6 +4,7 @@ import { ProjectIcon } from '../../core/icons';
 export default defineApp({
   id: 'project',
   name: 'Project',
+  added: '2026-09-24',
   Icon: ProjectIcon,
   window: { width: 640, height: 640, minWidth: 380, minHeight: 300 },
   internal: true,

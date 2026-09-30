@@ -31,7 +31,8 @@ export function AppSwitcher() {
 
   useEffect(() => {
     const onDown = (e: KeyboardEvent) => {
-      if (isPhone()) return;
+      // Nothing to switch to under a full-screen app (Time Machine).
+      if (isPhone() || useWindows.getState().fullScreen) return;
       if (e.altKey && e.code === 'Tab') {
         e.preventDefault();
         const list = current.current;

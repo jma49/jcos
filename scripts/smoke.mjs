@@ -70,7 +70,8 @@ async function check(target) {
     await page.goto(`${base}/?open=${target}`, { waitUntil: 'load' });
     await page.waitForTimeout(SETTLE);
     if (await page.locator('.os-crash').count()) problems.push('showed the crash panel');
-    const opened = ['dashboard', 'screensaver'].includes(target) || (await page.locator('.os-window').count()) > 0;
+    // A window, or the whole screen for a full-screen app (Time Machine).
+    const opened = ['dashboard', 'screensaver'].includes(target) || (await page.locator('.os-window, .os-fullscreen').count()) > 0;
     if (!opened) problems.push('opened no window');
   } catch (e) {
     problems.push(`failed to load: ${e.message}`);
