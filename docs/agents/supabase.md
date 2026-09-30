@@ -191,6 +191,10 @@ browser.
   functions get `execute` revoked from all three (triggers still fire:
   the right is only checked when a trigger is created). A function that
   only reads what its caller may read anyway is `security invoker`.
+- A policy asks who the caller is with `(select auth.uid())` (and
+  `(select public.is_owner())`), worked out once per statement; a bare
+  `auth.uid()` is asked again for every row (the performance advisor's
+  auth_rls_initplan). `rules.sql` checks every policy.
 - Policies check something real: no `with check (true)`. Run the
   Security Advisor after each migration (`supabase db advisors --linked
   --type security`); the findings left on purpose
