@@ -2,10 +2,11 @@
 // jincheng in Finder and TextEdit's windows (the tables are in
 // supabase/migrations/20260929160000_home.sql). Read when either opens, at
 // most every 30 s and again when the tab comes back, and changed here as
-// Jincheng saves, so Finder and every TextEdit window show a save at once.
-// Anyone but the owner gets only what's in Public, and what was the
-// owner's goes the moment the owner signs out. Loaded with Finder and
-// TextEdit, not with the desktop.
+// Jincheng saves, so Finder and every TextEdit window show a save at once;
+// the owner's other tabs are told of it and read again (an `os-home`
+// BroadcastChannel, as stickies' and iCal's). Anyone but the owner gets
+// only what's in Public, and what was the owner's goes the moment the
+// owner signs out. Loaded with Finder and TextEdit, not with the desktop.
 
 import { useEffect, useSyncExternalStore } from 'react';
 import { loadJSON, updateJSON } from '../core/storage';
@@ -77,15 +78,26 @@ export function readHome(owner: boolean, { now = false } = {}): Promise<void> {
   return done;
 }
 
-/** For Finder and TextEdit: while open, the home folder is read fresh, and again when the tab comes back. */
+/**
+ * Reads the home folder while something shows it: now, again when the tab
+ * comes back, and at once when another tab changes it. Returns what stops
+ * it, for when it's no longer shown.
+ */
+export function watchHome(owner: boolean): () => void {
+  void readHome(owner);
+  const onVisible = () => document.visibilityState === 'visible' && void readHome(owner);
+  const onOther = () => void readHome(owner, { now: true });
+  document.addEventListener('visibilitychange', onVisible);
+  otherTabs.add(onOther);
+  return () => {
+    document.removeEventListener('visibilitychange', onVisible);
+    otherTabs.delete(onOther);
+  };
+}
+
+/** For Finder and TextEdit: while open, the home folder is read fresh, and again when the tab comes back or another tab changes it. */
 export function useHomeRefresh(active: boolean, owner: boolean) {
-  useEffect(() => {
-    if (!active) return;
-    void readHome(owner);
-    const onVisible = () => document.visibilityState === 'visible' && void readHome(owner);
-    document.addEventListener('visibilitychange', onVisible);
-    return () => document.removeEventListener('visibilitychange', onVisible);
-  }, [active, owner]);
+  useEffect(() => (active ? watchHome(owner) : undefined), [active, owner]);
 }
 
 // ---------- Saving ----------
@@ -96,7 +108,22 @@ async function database() {
   return social;
 }
 
-/** Runs a save, counting it as a write both ways, so no read from before it lands after. */
+/**
+ * The owner's other tabs in this browser: told of each change, a tab
+ * showing the home folder reads it again at once (the database has it), so
+ * two windows side by side agree, and one that isn't reads it next time
+ * something shows it. Reading tells no one, so nothing loops.
+ */
+const otherTabs = new Set<() => void>();
+const tabs = typeof BroadcastChannel === 'undefined' ? null : new BroadcastChannel('os-home');
+if (tabs) {
+  tabs.onmessage = () => {
+    freshAt = 0;
+    otherTabs.forEach((read) => read());
+  };
+}
+
+/** Runs a save, counting it as a write both ways, so no read from before it lands after, and tells the other tabs. */
 async function writing<T>(write: () => Promise<T>): Promise<T> {
   writes++;
   try {
@@ -104,6 +131,7 @@ async function writing<T>(write: () => Promise<T>): Promise<T> {
   } finally {
     writes++;
     freshAt = 0;
+    tabs?.postMessage('changed');
   }
 }
 

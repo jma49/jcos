@@ -394,9 +394,13 @@ only `kit/`. The lint enforces all three.
   read; Sites, the projects' live sites as Internet locations that open
   in the Browser. The documents come from the database (`home/home.ts`,
   [supabase.md](supabase.md)), which gives anyone else only Public's,
-  read when a folder under Users shows (at most every 30 s). Move to
-  Trash on one of the owner's documents asks first ("will be deleted
-  immediately"), since there's no Trash to take it back from.
+  read when a folder under Users shows (at most every 30 s, again when
+  the tab comes back, and at once when another tab of the owner's saves
+  or deletes something: `useHomeRefresh`, told over the `os-home`
+  BroadcastChannel, as stickies and iCal are; a tab showing nothing of
+  the home reads again the next time it does). Move to Trash on one of
+  the owner's documents asks first ("will be deleted immediately"),
+  since there's no Trash to take it back from.
 - `src/os/apps/textedit/`: TextEdit, in Applications. A white page for
   one of Jincheng's documents (`DocumentPage.tsx`), or a year of the
   diary (`DiaryPage.tsx`): the days newest first under their dates in
@@ -413,9 +417,12 @@ only `kit/`. The lint enforces all three.
   keeps ⌘N) starts a document that goes into Documents as "Untitled.txt"
   once something is typed; Save As (⇧⌘S, `SaveAsSheet.tsx`) renames it
   or moves it to another folder, Public included. An emptied diary entry
-  is taken out when it's left. Entries and documents also come from
-  Telegram (the bot's `/diary` and `/doc`); they show on the next read of
-  the home folder (at most 30 s, or when the tab comes back).
+  is taken out when it's left. A save or a delete in one of the owner's
+  tabs reaches the pages open in the others at once (`os-home`, above);
+  a page with unsaved typing keeps it, and its next save meets the
+  conflict alert. Entries and documents also come from Telegram (the
+  bot's `/diary` and `/doc`); they show on the next read of the home
+  folder (at most 30 s, or when the tab comes back).
 - `src/os/shell/Alert.tsx` (with `alert.css`, which an app's stylesheet
   imports): an app's alert as Tiger drew one, the app's icon beside the
   message, with OK, Cancel and a third choice, Return and Escape. It
