@@ -202,9 +202,13 @@ only `kit/`. The lint enforces all three.
   theme and appearance, Spotlight, Dashboard, Exposé, the screensaver
   and its settings, the visitor's place and the chosen desktop picture.
 - Open windows survive a reload (`src/os/core/windowSession.ts`, saved in
-  `os-windows`); `?open=` wins. A first visit gets the Welcome window
-  alone, centred (`os-welcomed`); otherwise the desktop starts clear.
-  Nothing opens About by itself.
+  `os-windows`); `openSession()` puts them back and then opens what a
+  `?open=` link names on top of them, once: `open` leaves the address as
+  it's handled (`history.replaceState` in `core/deepLink.ts`), so a reload
+  brings the session back, the link's target among it, rather than the
+  target alone (#189). With neither a session nor a link, a first visit
+  gets the Welcome window alone, centred (`os-welcomed`); otherwise the
+  desktop starts clear. Nothing opens About by itself.
 - `src/os/shell/Expose.tsx`: the Exposé grid (F9, the bottom-left hot
   corner or View → Exposé). Windows animate to their slot in place, so
   iframes don't reload. While it's open it has the keys, before any
@@ -508,7 +512,10 @@ only `kit/`. The lint enforces all three.
 ## Links, the tab title and the Chinese site
 
 - Deep links: `/?open=<app|project-slug|dashboard|screensaver>` opens that
-  window.
+  window over the saved session, once; the address loses `open` (and a
+  reset link's token) as it's handled, so a reload doesn't open it again
+  (`core/deepLink.ts`). An applet not installed opens its store page, and
+  Time Machine takes the screen, as from anywhere else (`launch()`).
 - The home page's browser tab says "Jincheng" (`tabTitle` in
   `Layout.astro`); link previews keep the full title.
 - The Chinese site is offline for now: `/zh/*` redirects to the English

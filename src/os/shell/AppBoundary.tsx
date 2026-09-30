@@ -8,24 +8,14 @@ import { Component, type ReactNode } from 'react';
 // loaded removed the old chunk, or because the connection dropped; it
 // can't tell which. Either way only a reload helps: the browser remembers
 // a failed module import for the page's life and won't ask again. The
-// reload brings the open windows back.
+// reload brings the open windows back (core/windowSession.ts), the one
+// that asked for it among them; a link's ?open= left the address as it
+// was handled (core/deepLink.ts), so it doesn't come into it.
 
 /** An app's code failed to download (the wording differs by browser). */
 export function isChunkError(error: unknown) {
   const message = error instanceof Error ? error.message : String(error);
   return /dynamically imported module|Importing a module script failed|Loading chunk|preload CSS/i.test(message);
-}
-
-/**
- * Reloads into the new version with the open windows put back. A link's
- * ?open= would otherwise win over them (deepLink.ts), and the app that
- * asked for the reload wouldn't come back.
- */
-function reloadWithWindows() {
-  const url = new URL(location.href);
-  url.searchParams.delete('open');
-  if (url.href === location.href) location.reload();
-  else location.replace(url);
 }
 
 interface Props {
@@ -68,7 +58,7 @@ export class AppBoundary extends Component<Props, { error: unknown }> {
             Close
           </button>
           {download ? (
-            <button type="button" className="os-button os-button-primary" onClick={reloadWithWindows}>
+            <button type="button" className="os-button os-button-primary" onClick={() => location.reload()}>
               Reload
             </button>
           ) : (
