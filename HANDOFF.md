@@ -44,9 +44,12 @@ Conventions and a map of the code are in [AGENTS.md](AGENTS.md) and
   migration repair`). The repository's old link file isn't read by CLI
   2.118, hence `--project-ref`.
 - The agent deploys the Edge Functions too, from an up-to-date `main`:
-  `supabase functions deploy <name> --project-ref hszogpoyyqgwjuznbegd`
-  uploads the working copy, so deploying from an old branch puts old
-  code live. The owner's Claude Code allows `supabase migration repair`,
+  `supabase functions deploy <name> --no-verify-jwt --project-ref
+  hszogpoyyqgwjuznbegd`. Both need `--no-verify-jwt`: Telegram's webhook
+  and the password reset page call them without a Supabase login, and
+  without the flag the gateway turns them away (each checks its own
+  secret instead). It uploads the working copy, so deploying from an old
+  branch puts old code live. The owner's Claude Code allows `supabase migration repair`,
   `supabase db push` and `supabase functions deploy`; anything else on
   the production project (its data, its settings) is still asked first.
 - Free Supabase projects pause after a week without activity; the social
