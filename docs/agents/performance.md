@@ -78,8 +78,12 @@
   split off costs its own imports and exports. `look/pictureSets.ts`
   reaches `core/storage` (through `wallpapers.ts` and `accent.ts`)
   without `core/store`, which took storage out of the store's chunk:
-  0.2 KB, less than the contortions that would avoid it. Weigh each
-  one; don't bend a module's imports out of shape for the chunker.
+  0.2 KB, less than the contortions that would avoid it. An app does it
+  too: Job Hunt imported `pngIcon` from `core/icons` for its alert, and
+  with nothing else of the registry's that split `core/icons` into a
+  chunk of its own (0.8 KB), until it took its icon from `apps` in the
+  registry, as the rest do. Weigh each one; don't bend a module's
+  imports out of shape for the chunker.
 - **Subscribe to the narrowest slice of the store.** Dragging or
   resizing a window updates `windows` every frame, and every component
   that selects `s.windows` renders with it.

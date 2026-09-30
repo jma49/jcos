@@ -1,6 +1,6 @@
 # Handoff: majincheng.com (JM/OS)
 
-State of the project as of 2026-09-29, for picking the work up in a new
+State of the project as of 2026-09-30, for picking the work up in a new
 session: where it runs, how we work, what was decided, and what's open.
 Conventions and a map of the code are in [AGENTS.md](AGENTS.md) and
 [docs/agents/](docs/agents/); what was built when is in the git history.
@@ -350,6 +350,29 @@ ryOS (AGPL-3.0).
   commit that had it (TextEdit's is the home folder's, 2026-09-29, not
   the older icon of the same name). It's in the default Dock after
   Chat; a Dock a visitor rearranged keeps what they chose.
+- **Job Hunt, as Jincheng chose it** (2026-09-29), on a design review
+  page: every company Jincheng has applied to, on a board in iCal's
+  brushed metal, with a list beside it; Bento's icon from ryOS; five
+  stages, Applied, Assessment, Interviewing, Offer and Closed (with why:
+  rejected, withdrew, no reply or declined). Claude brings in what Gmail
+  says when Jincheng asks, through the claude.ai Gmail connector, and
+  only reads there (nothing labelled, drafted, sent or deleted); the site
+  and Supabase hold no Gmail credentials and read no mail. It's written
+  only by `scripts/job-hunt-import.mjs`, which Jincheng allows in Claude
+  Code's permissions (`Bash(node scripts/job-hunt-import.mjs:*)`), and
+  the first sync goes back three months. Jincheng wanted others to see
+  it too; asked how much, chose the numbers only: how many at each
+  stage, how far they got and when it last changed, never a company or a
+  role. A sync: search Gmail for applications and what came of them
+  (confirmations, assessments, interview invitations, offers,
+  rejections), from a little before the newest message Job Hunt has (the
+  first time, three months back; reading a message again changes
+  nothing, so searches can overlap); write what was found in the format
+  at the top of the script to a file in the scratchpad, never the
+  repository; show Jincheng the companies, roles and stages, and only on
+  Jincheng's word run the script with `--dry-run`, then without; delete
+  the file. Jincheng's own moves stand: a sync moves an application on,
+  never back, and reopens nothing closed.
 - **Considered and left out** (2026-09-26 and 27 audits): a "continue
   playing" prompt for hidden tabs, more reduced-motion fallbacks, a spec
   template for changes, `llms.txt` in robots.txt (no crawler reads it
@@ -372,10 +395,10 @@ ryOS (AGPL-3.0).
 
 **Waiting on Jincheng**: trying `/diary` and `/doc` in the bot (the
 code is tested with a fake Telegram and database, not yet with the real
-ones).
+ones); Job Hunt's permission rule (§3), before its first sync.
 
 - Every migration in `supabase/migrations/` has run, through
-  `20260929202730_ical_of_their_own.sql`, and the project's
+  `20260930062024_job_hunt.sql`, and the project's
   migration history says so (`supabase migration list --project-ref
   hszogpoyyqgwjuznbegd`). On 2026-09-29 production's structure was
   compared with `schema.sql` (columns, policies, functions, triggers,
@@ -403,8 +426,10 @@ ones).
   `my_reactions()` and the other member-only helpers callable by
   members, and leaked password protection (an Auth setting on the Pro
   plan). `is_owner()` joins them (callable by everyone, it says only
-  whether the caller is the owner), and `song_played()` (callable by
-  members, it counts nothing but the owner's plays). `chat_can_write()`,
+  whether the caller is the owner), `song_played()` (callable by
+  members, it counts nothing but the owner's plays) and
+  `job_hunt_totals()` (callable by everyone, it gives Job Hunt's counts
+  and names no company). `chat_can_write()`,
   `my_recovery_email()` and `set_recovery_email()` are there for members
   too, as `advisor.sql` says; `rules.sql` checks the exact list for
   visitors and for members. At the info level
@@ -453,7 +478,7 @@ What comes next, in order, is in [ROADMAP.md](ROADMAP.md).
    names and Macintosh HD paths. Proper identity would need Realtime
    Authorization and server-checked presence.
 4. **The first load** is 150 of its 160 KB budget (149.6, 2026-09-29,
-   after room was made on it and Time Machine came), 67 of it
+   after room was made on it and Time Machine and Job Hunt came), 67 of it
    react-dom. What else could move:
    Exposé's overlay (1.1 KB), the context menu (0.8) and the ⌥Tab
    switcher's panel (0.6), each making its first use in the first
