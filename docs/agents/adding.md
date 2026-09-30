@@ -33,8 +33,10 @@ Store. In it:
 Then add one line for it to `src/os/catalog.ts`. `AppId`, the Dock,
 Finder, Spotlight, the Terminal, `?open=`, the Applet Store and the
 smoke test all follow from the catalog; `catalog.test.ts` checks the
-folders and manifests agree. Add a desktop shortcut in `Desktop.tsx` if it
-needs one.
+folders and manifests agree. The desktop's shortcuts
+(`shell/DesktopIcons.tsx`: Macintosh HD, About Me, Résumé, Projects) stay
+as they are: nothing is added to the desktop (Jincheng's rule,
+2026-09-29; [desktop.md](desktop.md)).
 
 A built-in app may use the OS (`core/`, `social/`, `media/`…) but not
 another app: what two apps share belongs in the OS. It can add its own

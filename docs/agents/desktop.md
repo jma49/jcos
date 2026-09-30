@@ -18,12 +18,17 @@ flowchart TD
   desktop --> look["look/ and ambient/<br/>desktop picture, accent, sky"]
   desktop --> social["social/ and media/<br/>accounts, presence, AirDrop, music"]
   shell --> core["core/<br/>store, storage, sound, files"]
+  shell -. "loaded once someone signs in" .-> stickies["stickies/<br/>a member's own notes, on the desktop"]
   shell -- "launch()" --> registry["core/registry.tsx"]
   registry --> catalog["catalog.ts<br/>every manifest"]
   catalog -. "loaded on first open" .-> apps["apps/id/"]
   catalog -. "loaded when got in the store" .-> applets["applets/id/"]
+  apps --> files["files/<br/>Macintosh HD's views, shared by Finder and Time Machine"]
+  files --> home["home/<br/>Jincheng's home folder: documents, diary"]
   applets --> kit["kit/<br/>the only OS they see"]
   social --> supabase[("Supabase")]
+  stickies --> supabase
+  home --> supabase
   social --> api["/api/songs, /api/lyrics"]
   look --> geo["/api/geo, Open-Meteo"]
 ```
@@ -46,6 +51,8 @@ guarded from its first file; `tests/eslint.test.ts` probes each rule.
 | `media/` | music, lyrics, listening along | see [media.md](media.md) |
 | `social/` | Supabase: accounts, presence, chat, AirDrop | see [supabase.md](supabase.md) |
 | `files/` | Macintosh HD's views and folders that Finder and Time Machine share | `parts.tsx`, `home.tsx`, `movies.tsx` |
+| `home/` | Jincheng's home folder: the documents and the diary, from the database | `home.ts` |
+| `stickies/` | a member's own stickies, on their desktop and in Stickies › Yours | `mine.ts`, `DesktopStickies.tsx` |
 | `apps/` | the built-in apps, one folder each | `<id>/manifest.ts` |
 | `applets/` | the Applet Store's games and tools | `<id>/manifest.ts` |
 | `kit/` | everything applets may use | `index.ts` |
