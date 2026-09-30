@@ -151,7 +151,12 @@ only `kit/`. The lint enforces all three.
   the pointer stops while the disc plays. Its position slider
   (`core/useScrub.ts`) stays where it's put: dragged, it seeks within
   what's loaded as it goes and properly where it's let go, and the clock
-  doesn't move it back meanwhile. A phone, which DVD Player fills
+  doesn't move it back meanwhile. What DVD Player says for a moment
+  ("Chapter 2", "▶ Play") shows in the corner once the chapters have
+  gone, not under them. A slider used with the pointer (volume,
+  position) gives the keys back when it's let go
+  (`releaseAfterPointer` in `core/useKeys.ts`), so Space and the arrows
+  stay DVD Player's; tabbed to, it keeps them. A phone, which DVD Player fills
   anyway, always has that look instead of the Controller. The Controls
   menu and the keys (Space, ←/→ for chapters, ↑/↓ and Return in menus,
   Escape, ⌘F, ⌘E) do what its buttons do. A disc slides into the slot in the
@@ -172,7 +177,9 @@ only `kit/`. The lint enforces all three.
   Nothing opens About by itself.
 - `src/os/shell/Expose.tsx`: the Exposé grid (F9, the bottom-left hot
   corner or View → Exposé). Windows animate to their slot in place, so
-  iframes don't reload.
+  iframes don't reload. While it's open it has the keys, before any
+  window (Escape leaves it and does nothing else; F9 and ⌘ keys are the
+  desktop's).
 - `src/os/shell/AppSwitcher.tsx`: ⌥Tab steps through open windows, most
   recent first; releasing ⌥ focuses the chosen one.
 - `src/os/shell/drawer.tsx`: Tiger-style drawers. Each window has a slot
@@ -304,7 +311,12 @@ only `kit/`. The lint enforces all three.
   from `media/discs.ts`) and hands it to `buildDisk`, so the desktop's
   own copy of the disk (AirDrop's, in the first load) has no Movies and
   none of its code. In Movies the toolbar has Burn (`BurnSheet.tsx`) and
-  the list shows Date Added, Length and Kind.
+  the list shows Date Added, Length and Kind. The Burn sheet and Finder's
+  alerts are modal: while one is up, Finder's own keys are off, and the
+  sheet takes Escape (stop, or close) and Return (Burn) wherever the
+  focus is. On a phone the toolbar's buttons keep their size and what
+  doesn't fit goes to a second row, where the search field takes the
+  rest of the width.
 - Users › jincheng is Jincheng's home folder (`apps/finder/home.tsx`,
   handed to `buildDisk` as Movies is, and first in the sidebar with the
   house FileVault puts on a locked home): Desktop, Documents, Downloads,

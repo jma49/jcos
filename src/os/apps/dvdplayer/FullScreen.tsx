@@ -1,4 +1,5 @@
 import { PauseGlyph, PlayGlyph, SpeakerHighGlyph } from '../../core/glyphs';
+import { releaseAfterPointer } from '../../core/useKeys';
 import { useScrub } from '../../core/useScrub';
 import { chapterPictures, chapterStart, type ShelfDisc } from '../../media/discs';
 import { formatTime } from '../../media/music';
@@ -76,7 +77,10 @@ export function Hud(p: HudProps) {
           step={1}
           value={scrub.value}
           disabled={p.duration <= 0}
-          onPointerDown={scrub.onPointerDown}
+          onPointerDown={(e) => {
+            scrub.onPointerDown();
+            releaseAfterPointer(e);
+          }}
           onChange={scrub.onChange}
           aria-label="Position"
         />
@@ -118,7 +122,15 @@ export function Hud(p: HudProps) {
           <span className="os-dvd-hud-vol" aria-hidden="true">
             <SpeakerHighGlyph />
           </span>
-          <input type="range" min={0} max={100} value={p.volume} onChange={(e) => p.onVolume(Number(e.target.value))} aria-label="Volume" />
+          <input
+            type="range"
+            min={0}
+            max={100}
+            value={p.volume}
+            onPointerDown={releaseAfterPointer}
+            onChange={(e) => p.onVolume(Number(e.target.value))}
+            aria-label="Volume"
+          />
           {p.canFullScreen && (
             <button
               type="button"

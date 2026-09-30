@@ -45,7 +45,6 @@ export default function DVDPlayer({ win }: AppProps) {
   const [choice, setChoice] = useState(0);
   const [loop, setLoop] = useState(false);
   const [osd, setOsd] = useState<{ text: string; at: number } | null>(null);
-  const [clock, setClock] = useState({ time: 0, duration: 0 });
   /** A chapter asked for before the video's length was known. */
   const wanted = useRef<number | null>(null);
   const volume = useMusic((s) => s.volume);
@@ -78,18 +77,23 @@ export default function DVDPlayer({ win }: AppProps) {
     useWindows.getState().setTitle(win.id, title);
   }, [win.id, title]);
 
-  // Where the video is, a few times a second, for the display and the chapters.
+  // Where the video is, a few times a second, for the display and the chapters. The clock is
+  // the disc's that was put in: for the moment another goes in, the time and length of the one
+  // before count for nothing (they'd be taken for the new disc's).
   const { time, duration } = player;
+  const [ticked, setTicked] = useState({ insertion: -1, time: 0, duration: 0 });
+  const hasDisc = !!disc;
   useEffect(() => {
-    if (!disc) return;
+    if (!hasDisc) return;
     const tick = () => {
-      const next = { time: time(), duration: duration() };
-      setClock((c) => (Math.abs(c.time - next.time) < 0.2 && c.duration === next.duration ? c : next));
+      const next = { insertion: inserted, time: time(), duration: duration() };
+      setTicked((c) => (c.insertion === inserted && Math.abs(c.time - next.time) < 0.2 && c.duration === next.duration ? c : next));
     };
     tick();
     const timer = setInterval(tick, 250);
     return () => clearInterval(timer);
-  }, [disc, time, duration]);
+  }, [hasDisc, inserted, time, duration]);
+  const clock = hasDisc && ticked.insertion === inserted ? ticked : { time: 0, duration: 0 };
 
   // Once the video's length is known and it plays, a chapter asked for before goes on.
   const { playing } = player;
@@ -99,8 +103,8 @@ export default function DVDPlayer({ win }: AppProps) {
     wanted.current = null;
   }, [clock.duration, playing, seek]);
 
-  // The length is kept, once per disc: in this browser for a DVD-R, in the database when the owner watches one of the owner's
-  // (tried again once it's known the owner is watching, which can be after the length is).
+  // The length is kept, and put right if it's off: in this browser for a DVD-R, in the database when the owner watches one
+  // of the owner's (tried again once it's known the owner is watching, which can be after the length is).
   const noted = useRef<string | null>(null);
   useEffect(() => {
     const once = disc && `${disc.id}${disc.burnedHere ? '-r' : ''}:${owner}`;
@@ -367,7 +371,8 @@ export default function DVDPlayer({ win }: AppProps) {
             {screen === 'scenes' && <Scenes disc={disc} choice={choice} onHover={setChoice} onChoose={choose} />}
             {player.status === 'offline' && <p className="os-dvd-note">YouTube can’t be reached, so the disc can’t be read.</p>}
             {player.status === 'unplayable' && <p className="os-dvd-note">This disc can’t be read: YouTube won’t play the video here any more.</p>}
-            {osd && screen === 'movie' && (
+            {/* Not while the chapters are along the top, over its corner: they and the controls say it then. */}
+            {osd && screen === 'movie' && !(hud && !(resting && idle)) && (
               <div className="os-dvd-osd" key={osd.at} aria-hidden="true">
                 {osd.text}
               </div>

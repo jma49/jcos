@@ -156,21 +156,26 @@ export function Expose({ layout }: { layout: Record<string, Rect> | null }) {
     else setPicked(null);
   }, [open]);
 
+  // Exposé has the keys while it's open, before the windows under it do
+  // (Escape leaving it mustn't also send an app back a step). F9, which
+  // closes it, and ⌘ and Ctrl keys are the desktop's.
   useEffect(() => {
     if (!layout) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Enter' && picked) {
-        e.preventDefault();
-        const s = useWindows.getState();
+      if (e.key === 'F9' || e.metaKey || e.ctrlKey) return;
+      e.preventDefault();
+      e.stopPropagation();
+      const s = useWindows.getState();
+      if (e.key === 'Escape') s.setExpose(false);
+      else if (e.key === 'Enter' && picked) {
         s.setExpose(false);
         s.focus(picked);
       } else if (picked && ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) {
-        e.preventDefault();
         setPicked(nearest(layout, picked, e.key as Direction) ?? picked);
       }
     };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    window.addEventListener('keydown', onKey, true);
+    return () => window.removeEventListener('keydown', onKey, true);
   }, [layout, picked]);
 
   // The mouse moves the highlight too.

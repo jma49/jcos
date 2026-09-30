@@ -91,6 +91,30 @@ export function BurnSheet({ owner, onBurned, onClose }: { owner: boolean; onBurn
     setBurning(false);
   };
 
+  // The sheet has its window's keys, wherever in the window the focus is
+  // (Finder's own are off meanwhile): Escape stops a burn or closes it, and
+  // Return burns, as its default button. Inside the sheet, its fields and
+  // buttons answer them themselves.
+  const layer = useRef<HTMLDivElement>(null);
+  const keys = useRef({ burning, burn, stop, onClose });
+  useEffect(() => {
+    keys.current = { burning, burn, stop, onClose };
+  });
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape' && e.key !== 'Enter') return;
+      const el = layer.current;
+      if (!el || el.contains(e.target as Node) || el.closest('.os-window')?.getAttribute('data-focused') !== 'true') return;
+      e.preventDefault();
+      const now = keys.current;
+      if (e.key === 'Enter') now.burn();
+      else if (now.burning) now.stop();
+      else now.onClose();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
+
   // Dragging the case slides the picture sideways in it.
   const drag = (e: ReactPointerEvent<HTMLElement>) => {
     if (!draft || e.button !== 0) return;
@@ -126,6 +150,7 @@ export function BurnSheet({ owner, onBurned, onClose }: { owner: boolean; onBurn
 
   return (
     <div
+      ref={layer}
       className="os-burn-layer"
       onKeyDown={(e) => {
         if (e.key === 'Escape') {
