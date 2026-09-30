@@ -19,7 +19,53 @@ export const MOBILE_BREAKPOINT = 768;
  */
 export const PHONE_QUERY = `(max-width: ${MOBILE_BREAKPOINT - 1}px), (max-height: 500px) and (pointer: coarse)`;
 
-export const isPhone = () => typeof window !== 'undefined' && window.matchMedia(PHONE_QUERY).matches;
+// matchMedia is missing where there's no page (the tests' stand-in window).
+export const isPhone = () => typeof window !== 'undefined' && !!window.matchMedia?.(PHONE_QUERY).matches;
+
+/** The browser's inner size, in CSS pixels. */
+export interface Viewport {
+  width: number;
+  height: number;
+}
+
+const viewportNow = (): Viewport =>
+  typeof window === 'undefined' ? { width: 1280, height: 800 } : { width: window.innerWidth, height: window.innerHeight };
+
+/** Where a zoomed window sits: the desktop between the menu bar and the Dock, with a small margin. */
+export const zoomedFrame = ({ width, height }: Viewport): Rect => ({
+  x: 8,
+  y: MENU_BAR_HEIGHT + 8,
+  width: width - 16,
+  height: height - MENU_BAR_HEIGHT - DOCK_CLEARANCE
+});
+
+/** A phone's app fills the screen under the menu bar. */
+export const phoneFrame = ({ width, height }: Viewport): Rect => ({ x: 0, y: MENU_BAR_HEIGHT, width, height: height - MENU_BAR_HEIGHT });
+
+/**
+ * Brings a window back on screen when the browser is smaller than it was
+ * (a reload, a resize, a rotation): its size where it still fits, its
+ * title bar within reach; on a phone, the full-screen place. A window
+ * that fits is returned as it is, so nothing that shows it renders again.
+ */
+export function fitWindow(win: WindowState, viewport: Viewport, phone = isPhone()): WindowState {
+  const { width: vw, height: vh } = viewport;
+  let next: Rect;
+  if (phone) {
+    next = phoneFrame(viewport);
+  } else {
+    const width = Math.min(win.width, vw - 32);
+    const height = Math.min(win.height, vh - MENU_BAR_HEIGHT - DOCK_CLEARANCE);
+    next = {
+      width,
+      height,
+      x: Math.max(0, Math.min(win.x, vw - width)),
+      y: Math.max(MENU_BAR_HEIGHT, Math.min(win.y, vh - DOCK_CLEARANCE - 40))
+    };
+  }
+  const same = next.x === win.x && next.y === win.y && next.width === win.width && next.height === win.height;
+  return same ? win : { ...win, ...next };
+}
 
 interface OpenOptions {
   /** Windows with the same key are reused instead of duplicated. Defaults to the app id. */
@@ -89,10 +135,24 @@ interface WindowStore {
   place: Place | null;
   /** Menus a window's app adds to the menu bar while it's in front, as Chess's Game menu; by window id. */
   menus: Record<string, Menus | undefined>;
+  /**
+   * The browser's inner size, which zoomed windows, a phone's apps and
+   * Exposé follow; kept current by watchViewport(). Select it only where
+   * the frame depends on it, so a resize renders only those.
+   */
+  viewport: Viewport;
+  /** Whether the desktop is a phone's (isPhone()), as of the last change of the viewport. */
+  phone: boolean;
 
   open: (app: AppId, options: OpenOptions) => string;
   /** Puts back windows from an earlier visit (see windowSession.ts), in their stacking order. */
   restore: (windows: WindowState[], order: string[]) => void;
+  /**
+   * The browser's size changed (a resize, a rotation, the restore of a
+   * session): every window is fitted to it (fitWindow) and the viewport
+   * noted, in one change. Windows that fit keep their objects.
+   */
+  fitToViewport: () => void;
   close: (id: string) => void;
   focus: (id: string) => void;
   minimize: (id: string) => void;
@@ -168,9 +228,7 @@ function savedSound(): { soundOn: boolean; volume: number } {
 export function placement(width: number, height: number, openCount: number, center = false) {
   const vw = window.innerWidth;
   const vh = window.innerHeight;
-  if (isPhone()) {
-    return { x: 0, y: MENU_BAR_HEIGHT, width: vw, height: vh - MENU_BAR_HEIGHT };
-  }
+  if (isPhone()) return phoneFrame({ width: vw, height: vh });
   // Keep the whole window between the menu bar and the Dock.
   const top = MENU_BAR_HEIGHT + 12;
   const bottom = vh - DOCK_CLEARANCE;
@@ -208,6 +266,8 @@ export const useWindows = create<WindowStore>((set, get) => ({
   rotateWallpaper: load(ROTATE_KEY) !== '0',
   place: null,
   menus: {},
+  viewport: viewportNow(),
+  phone: isPhone(),
 
   open: (app, { key = app, title, width, height, origin, props, center }) => {
     const existing = get().windows[key];
@@ -231,6 +291,15 @@ export const useWindows = create<WindowStore>((set, get) => ({
 
   restore: (windows, order) =>
     set({ windows: Object.fromEntries(windows.map((w) => [w.id, w])), order: order.filter((id) => windows.some((w) => w.id === id)) }),
+
+  fitToViewport: () =>
+    set((s) => {
+      const viewport = viewportNow();
+      const phone = isPhone();
+      const fitted = Object.values(s.windows).map((w) => fitWindow(w, viewport, phone));
+      const moved = fitted.some((w) => w !== s.windows[w.id]);
+      return { viewport, phone, windows: moved ? Object.fromEntries(fitted.map((w) => [w.id, w])) : s.windows };
+    }),
 
   close: (id) =>
     set((s) => {
@@ -325,6 +394,30 @@ export const useWindows = create<WindowStore>((set, get) => ({
   setPlace: (place) => set({ place }),
   setMenus: (id, menus) => set((s) => ({ menus: { ...s.menus, [id]: menus } }))
 }));
+
+/**
+ * Follows the browser's size: on a resize or a rotation, the windows are
+ * fitted to it (fitToViewport) once per animation frame, however many
+ * events arrive in it; between resizes nothing runs. Call once, from an
+ * effect; returns a function that stops.
+ */
+export function watchViewport() {
+  let frame = 0;
+  const onResize = () => {
+    if (frame) return;
+    frame = requestAnimationFrame(() => {
+      frame = 0;
+      useWindows.getState().fitToViewport();
+    });
+  };
+  window.addEventListener('resize', onResize);
+  window.addEventListener('orientationchange', onResize);
+  return () => {
+    window.removeEventListener('resize', onResize);
+    window.removeEventListener('orientationchange', onResize);
+    cancelAnimationFrame(frame);
+  };
+}
 
 // What another tab of this visitor's changes, this one picks up.
 onStored(APPLETS_KEY, () => useWindows.setState({ applets: savedApplets() }));

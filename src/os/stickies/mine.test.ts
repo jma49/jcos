@@ -146,6 +146,16 @@ describe('changing', () => {
     expect(m.myStickiesNow()).toEqual([]);
     await expect(m.addSticky()).rejects.toThrow(/database/);
   });
+
+  test('on screen, a sticky keeps its strip within reach, under the menu bar', async () => {
+    const m = await load();
+    const screen = { width: 900, height: 600 };
+    expect(m.onScreen(100, 100, 220, screen)).toEqual({ x: 100, y: 100 });
+    expect(m.onScreen(1150, 700, 220, screen)).toEqual({ x: 820, y: 560 });
+    expect(m.onScreen(-30, 0, 220, screen)).toEqual({ x: 0, y: 24 });
+    // A narrow one may go right up to the edge; a wide one keeps 80px of its strip on the screen.
+    expect(m.onScreen(2000, 100, 60, screen).x).toBe(840);
+  });
 });
 
 describe('drafts', () => {
