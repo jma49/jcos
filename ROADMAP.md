@@ -32,18 +32,14 @@ each uses the same Aqua styles and the ryOS icon set (new icons from it
 go in `public/os/icons` and NOTICE). One pull request each, in this
 order:
 
-1. **Jincheng's home folder from Telegram**: the folder, TextEdit and
-   the diary are built (2026-09-29); left is sending a diary entry and a
-   note from the bot (`/diary`, `/note`), which the owner then finds in
-   Documents.
-2. **Stickies and iCal for Jincheng**: notes on the owner's own desktop
+1. **Stickies and iCal for Jincheng**: notes on the owner's own desktop
    and iCal with the owner's days and to-dos, shown only when the owner
    is signed in. What to call them beside the visitors' Stickies is
    Jincheng's to decide. Uses the owner check.
-3. **Time Machine**: Leopard's starfield, a window per day going back, a
+2. **Time Machine**: Leopard's starfield, a window per day going back, a
    timeline on the right: Soapbox, the guestbook and the library as they
    were. Public things for everyone, locked ones for the owner.
-4. **A stack in the Dock**: things Jincheng sends the bot (screenshots,
+3. **A stack in the Dock**: things Jincheng sends the bot (screenshots,
    tickets, links) kept in a Dock stack that fans out as Leopard's did,
    private or public per item. Jincheng's note: the interaction and the
    UI have to be done well. The Dock is on the first screen, so room on

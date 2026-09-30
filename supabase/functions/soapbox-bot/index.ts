@@ -21,6 +21,9 @@
 //                     play a song for whoever is on the desktop
 //   /dvd <YouTube link>, /dvd, /dvd remove <disc>
 //                     burn a video onto a disc for DVD Player (discs.ts)
+//   /diary <text>, /diary, /doc <text>
+//                     an entry in Jincheng's diary, or a document in
+//                     Documents, for Jincheng alone (home.ts)
 //   /help             this list
 //
 // Editing a message (or a photo's caption) in Telegram edits its post.
@@ -28,6 +31,7 @@
 // supabase/functions/soapbox-bot/README.md.
 
 import { discCommands } from './discs.ts';
+import { homeCommands } from './home.ts';
 import { musicCommands } from './music.ts';
 
 const env = (name: string) => {
@@ -169,7 +173,12 @@ const HELP = [
   '/dvd <YouTube link>: burn it onto a disc for everyone; /dvd <link> Title - Artist to name it, or rename one',
   '/dvd: how many discs, and the latest; /dvd remove <title>: take one off',
   '',
-  'Edit a message to edit its post.'
+  'Your home folder (yours alone, in Documents):',
+  '/diary <text>: an entry in your diary, for today where you are (/at)',
+  '/diary: today’s entries',
+  '/doc <text>: a document, named after its first line',
+  '',
+  'Edit a message to edit its post, entry or document.'
 ].join('\n');
 
 // ---------- Moderation ----------
@@ -285,6 +294,8 @@ interface Message {
   message_id: number;
   from?: { id: number };
   chat: { id: number };
+  /** When it was sent (Unix seconds). */
+  date?: number;
   text?: string;
   caption?: string;
   /** The same photo at several sizes, smallest first. */
@@ -318,6 +329,7 @@ async function telegram(method: string, params: Record<string, unknown>) {
 
 const music = musicCommands({ db, telegram });
 const discs = discCommands({ db, telegram });
+const home = homeCommands({ db, telegram, timeZone: async () => (await currentPlace()).timeZone });
 
 /** Makes the public bucket photos go in, as the migration describes it. */
 async function makeBucket() {
@@ -412,13 +424,18 @@ async function handle(message: Message, edited: boolean) {
   const text = (message.text ?? message.caption ?? '').trim();
   const hasPicture = Boolean(message.photo?.length || message.document);
 
-  if (hasPicture && !edited) return postPicture(message, text);
+  if (hasPicture && !edited) {
+    // The diary and Documents are private: a photo meant for them isn't posted on the Soapbox instead.
+    if (/^\/(diary|doc)\b/i.test(text)) return reply(chat, 'The diary and Documents take text alone for now, so the photo went nowhere. Send the words by themselves.', message.message_id);
+    return postPicture(message, text);
+  }
   if (!text) {
     if (edited) return;
     return reply(chat, 'Send text or a photo. (Stickers, voice and video can’t go on the Soapbox yet.)', message.message_id);
   }
 
   if (edited) {
+    if (!hasPicture && (await home.edit(message, text))) return;
     const { body } = parse(text);
     if (!body) return;
     await db(`soapbox_posts?telegram_message_id=eq.${message.message_id}`, {
@@ -470,6 +487,7 @@ async function handle(message: Message, edited: boolean) {
 
   if (await music.handle(chat, text)) return;
   if (await discs.handle(chat, text)) return;
+  if (await home.handle(message, text)) return;
 
   if (text.startsWith('/') && !/^\/(rant|note)\b/i.test(text)) return reply(chat, HELP);
 
