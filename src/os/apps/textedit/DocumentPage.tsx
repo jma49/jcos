@@ -19,7 +19,7 @@ import {
 import { Alert } from '../../shell/Alert';
 import { SocialError } from '../../social/types';
 import { SaveAsSheet } from './SaveAsSheet';
-import { useAutosave } from './useAutosave';
+import { useAutosave } from '../../core/useAutosave';
 import { useFileMenu } from './useFileMenu';
 
 // One of Jincheng's documents in TextEdit: the page, which the owner

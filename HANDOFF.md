@@ -284,6 +284,18 @@ ryOS (AGPL-3.0).
   at the top. Throwing a document away asks first, since there's no
   Trash to take it back from. Sites lists the projects' live sites.
   The first load grew 0.1 KB for TextEdit's manifest (159.5 of 160 KB).
+- **Stickies of one's own, for every account** (2026-09-29). The
+  board had notes on Jincheng's desktop, for Jincheng alone, and left
+  their name beside the visitors' Stickies to Jincheng. Jincheng decided
+  there's nothing to tell apart: every account keeps its own, which only
+  it sees (row-level security; not even the owner reads another's). So
+  Stickies has two views: Everyone's, the guestbook wall as it was, and
+  Yours; a member's own notes sit on their own desktop, above its icons
+  and below every window, and are made from the desktop's right-click
+  menu or Stickies' File › New Sticky. A phone, with no desktop for
+  them, has them in Yours. iCal follows the same rule, next. The first
+  load grew 0.3 KB for the layer that loads them after sign-in (159.8 of
+  160 KB).
 - **The home folder from Telegram** (2026-09-29): the bot's `/diary
   <text>` writes a diary entry, on the day it was sent where Jincheng is
   (the place `/at` set), and `/doc <text>` a document in Documents named
@@ -331,7 +343,7 @@ code is tested with a fake Telegram and database, not yet with the real
 ones).
 
 - Every migration in `supabase/migrations/` has run, through
-  `20260929192005_home_from_telegram.sql`, and the project's
+  `20260929194437_stickies_of_their_own.sql`, and the project's
   migration history says so (`supabase migration list --project-ref
   hszogpoyyqgwjuznbegd`). On 2026-09-29 production's structure was
   compared with `schema.sql` (columns, policies, functions, triggers,

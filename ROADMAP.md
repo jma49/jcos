@@ -32,10 +32,11 @@ each uses the same Aqua styles and the ryOS icon set (new icons from it
 go in `public/os/icons` and NOTICE). One pull request each, in this
 order:
 
-1. **Stickies and iCal for Jincheng**: notes on the owner's own desktop
-   and iCal with the owner's days and to-dos, shown only when the owner
-   is signed in. What to call them beside the visitors' Stickies is
-   Jincheng's to decide. Uses the owner check.
+1. **iCal of one's own**: iCal with a member's own days and to-dos
+   (Tiger's brushed metal: calendars on the left, the month in the
+   middle, To Do on the right), which only they see, as the stickies of
+   one's own are (built 2026-09-29): Jincheng decided that each account
+   keeps its own rather than the owner alone.
 2. **Time Machine**: Leopard's starfield, a window per day going back, a
    timeline on the right: Soapbox, the guestbook and the library as they
    were. Public things for everyone, locked ones for the owner.

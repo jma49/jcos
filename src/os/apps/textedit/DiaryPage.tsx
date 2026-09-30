@@ -18,7 +18,7 @@ import {
 } from '../../home/home';
 import { Alert } from '../../shell/Alert';
 import { SocialError } from '../../social/types';
-import { useAutosave } from './useAutosave';
+import { useAutosave } from '../../core/useAutosave';
 import { useFileMenu } from './useFileMenu';
 
 // A year of Jincheng's diary in TextEdit, as "Diary 2026.rtf": the days

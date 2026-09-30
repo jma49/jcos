@@ -366,6 +366,23 @@ only `kit/`. The lint enforces all three.
 
 ## Social
 
+- `src/os/stickies/`: a member's own stickies (`mine.ts`, the table in
+  [supabase.md](supabase.md)). Signed in, a member's notes sit on their
+  own desktop (`DesktopStickies.tsx`, drawn by `shell/DesktopStickiesLayer.tsx`,
+  whose code comes only once someone signs in, so none of it is in the
+  first load), above its icons and below every window, each where it
+  was left: held by its strip to move it, by the corner to size it,
+  rolled up with a double-click on the strip (Tiger's window shade), a
+  right-click for its colour, and the close box to take it down (asked
+  first if there's anything on it). What's typed saves once the typing
+  rests (`core/useAutosave.ts`, shared with TextEdit) and is kept as a
+  draft until it has; a save from an older copy asks Use That or Keep
+  This. The member's other tabs read them again on every change
+  (`BroadcastChannel`), and another account never sees them, even for a
+  moment. New Sticky Note on the desktop's right-click menu puts one
+  where it was clicked; Stickies › Yours lists them as cards, with File ›
+  New Sticky (⌥N), and is where they live on a phone, which has no
+  desktop for them. Font: Marker Felt, where the device has it.
 - `src/os/social/social.ts`: Stickies (a guestbook) and presence (who's
   online and from which city, and, for a visitor who turns them on in
   System Preferences › Sharing, other visitors' pointers labelled with

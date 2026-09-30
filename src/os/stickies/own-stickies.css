@@ -1,0 +1,189 @@
+/* A member's own stickies (StickyNote.tsx), as Tiger drew them: paper in
+   one of six colours, a strip along the top to hold it by, with the close
+   box on the left and the window shade on the right, and a grip in the
+   corner. On the desktop they sit above its icons and below every window.
+   The same paper as the Stickies wall's, under names of their own. */
+
+.os-own-stickies {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+}
+
+.os-own-sticky {
+  --paper: #fff59d;
+  --edge: #f0dc5a;
+  --strip: #e8d44c;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: linear-gradient(var(--paper), var(--edge));
+  color: #3a3527;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.16), 0 6px 16px -4px rgba(0, 0, 0, 0.38);
+  font-family: 'Marker Felt', 'Chalkboard SE', 'Bradley Hand', 'Comic Sans MS', cursive;
+  font-size: 15px;
+  line-height: 1.35;
+}
+
+.os-own-sticky[data-color='blue'] { --paper: #c9e8ff; --edge: #a3d2f5; --strip: #8fc4ee; }
+.os-own-sticky[data-color='green'] { --paper: #d4f5c0; --edge: #b0e08f; --strip: #9dd477; }
+.os-own-sticky[data-color='pink'] { --paper: #ffd6e5; --edge: #f7b3cc; --strip: #f19fbe; }
+.os-own-sticky[data-color='purple'] { --paper: #e6d8ff; --edge: #cdb8f5; --strip: #bba1f0; }
+.os-own-sticky[data-color='gray'] { --paper: #f1f1ef; --edge: #d9d9d4; --strip: #c9c9c3; }
+
+/* On the desktop, each where it was left. */
+.os-own-stickies .os-own-sticky {
+  position: absolute;
+  pointer-events: auto;
+}
+
+/* The one in front, or being typed into, lifts a little. Its text is the
+   paper itself: no ring round it, as Tiger drew none (the caret is there). */
+.os-own-sticky[data-front],
+.os-own-sticky:focus-within {
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.26), 0 10px 24px -6px rgba(0, 0, 0, 0.55);
+}
+
+.os-root .os-own-sticky textarea:focus-visible {
+  outline: none;
+}
+
+.os-own-sticky-strip {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 15px;
+  padding: 0 3px;
+  background: linear-gradient(var(--edge), var(--strip));
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  user-select: none;
+  touch-action: none;
+}
+
+.os-own-stickies .os-own-sticky-strip {
+  cursor: grab;
+}
+
+.os-own-sticky-strip[data-dragging] {
+  cursor: grabbing;
+}
+
+/* The close box and the window shade: small squares, as Tiger's were. */
+.os-root .os-own-sticky-strip button {
+  flex: none;
+  width: 9px;
+  height: 9px;
+  padding: 0;
+  border: 1px solid rgba(0, 0, 0, 0.4);
+  background: rgba(255, 255, 255, 0.4);
+  cursor: default;
+}
+
+.os-root .os-own-sticky-strip button:hover,
+.os-root .os-own-sticky-strip button:focus-visible {
+  background: rgba(255, 255, 255, 0.85);
+}
+
+.os-own-sticky-strip .os-own-sticky-shade {
+  margin-left: auto;
+}
+
+/* Rolled up: the strip alone, with the first line of the note. */
+.os-own-sticky-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  font-size: 11px;
+  line-height: 15px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.os-own-sticky[data-collapsed] {
+  height: auto !important;
+}
+
+.os-own-sticky[data-collapsed] .os-own-sticky-strip {
+  height: 17px;
+  border-bottom: 0;
+}
+
+.os-own-sticky textarea {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 6px 9px 12px;
+  border: 0;
+  outline: none;
+  resize: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  user-select: text;
+}
+
+.os-own-sticky textarea::placeholder {
+  color: rgba(58, 53, 39, 0.45);
+}
+
+.os-own-sticky-grip {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 12px;
+  height: 12px;
+  background: linear-gradient(135deg, transparent 50%, rgba(0, 0, 0, 0.18) 50%, rgba(0, 0, 0, 0.18) 58%, transparent 58%, transparent 70%, rgba(0, 0, 0, 0.18) 70%, rgba(0, 0, 0, 0.18) 78%, transparent 78%);
+  cursor: nwse-resize;
+  touch-action: none;
+}
+
+/* A question the note asks itself: before it's taken down, or when its text was saved elsewhere. */
+.os-own-sticky-ask {
+  position: absolute;
+  inset: 15px 0 0;
+  display: grid;
+  place-content: center;
+  gap: 8px;
+  padding: 10px;
+  background: color-mix(in srgb, var(--paper) 90%, transparent);
+  font: 12px/1.35 var(--os-ui);
+  text-align: center;
+}
+
+.os-own-sticky-ask p {
+  margin: 0;
+}
+
+.os-own-sticky-ask div {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+}
+
+.os-own-sticky-status {
+  position: absolute;
+  right: 14px;
+  bottom: 2px;
+  color: rgba(58, 53, 39, 0.55);
+  font: 10px var(--os-ui);
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .os-own-stickies .os-own-sticky {
+    animation: os-own-sticky-in 0.18s ease-out;
+  }
+}
+
+@keyframes os-own-sticky-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
