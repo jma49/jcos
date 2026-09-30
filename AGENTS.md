@@ -125,6 +125,29 @@ SHA with the version in a comment; Dependabot updates both.
 - Check `git status` and `git diff --cached` before committing.
 - When a file, script or asset is no longer used, delete it in the same
   change, and update the README and these docs.
+- Remove agent worktrees (`git worktree remove`) and their local
+  branches when the work is done.
+
+## What stays out of git
+
+Every version of every committed file stays in history for good, so a
+later delete does not undo a commit.
+
+- No secrets or env files: only `.env.example`, with empty values. Real
+  values live in `.env` locally and in Vercel and Supabase.
+- No build output or caches: `dist/`, `.astro/`, `node_modules/`,
+  `*.tsbuildinfo`, test and Playwright reports, logs.
+- No personal tool files: `.claude/settings.local.json`,
+  `.claude/worktrees/`, `CLAUDE.local.md`, `.cursor/`, editor settings.
+- Images are most of the repository's weight. Add one at the format
+  and size [docs/agents/adding.md](docs/agents/adding.md) gives, don't
+  commit a second copy of a picture already in the repo, and don't
+  commit recaptured covers or `public/og.png` unless the page they show
+  actually changed.
+- When a new tool or script writes files into the repo, add its output
+  to `.gitignore` in the same change.
+- If something secret was committed, stop and tell the owner: it needs
+  the key rotated and the history rewritten.
 
 ## README
 

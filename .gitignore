@@ -15,21 +15,18 @@ pnpm-debug.log*
 
 # environment variables
 .env
-.env.production
+.env.*
+!.env.example
 
 # macOS-specific files
 .DS_Store
 
-# Supabase CLI state
+# Supabase CLI state (per machine)
 supabase/.temp/
-.env.local
-.env.*.local
+supabase/.branches/
 
 # Vercel CLI
 .vercel/
-
-# Supabase CLI state (per machine)
-supabase/.branches/
 
 # test and editor leftovers
 reset-email-preview.html
@@ -39,3 +36,10 @@ coverage/
 .idea/
 .vscode/
 *.log
+*.tsbuildinfo
+
+# personal agent tooling
+.claude/settings.local.json
+.claude/worktrees/
+CLAUDE.local.md
+.cursor/
