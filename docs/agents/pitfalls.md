@@ -179,6 +179,16 @@ again.
   invisible for six frames. Put such effects after the transforms
   (`Magnified` in `shell/Dock.tsx`), and check an animation frame by
   frame (`requestAnimationFrame` in the page), not only its end state.
+- `window.innerWidth` read while rendering is a snapshot: nothing
+  renders again when the browser is resized or a phone rotates. Zoomed
+  windows, a phone's apps, Exposé's grid and a member's stickies stayed
+  laid out for the size at their last render, and a window dragged to
+  the corner was out of reach after a shrink, until #192 (2026-09-30).
+  A component whose frame depends on the browser's size selects the
+  store's `viewport`, which `watchViewport()` keeps current; the
+  arithmetic lives in plain functions with tests (`fitWindow`,
+  `zoomedFrame`, `phoneFrame`, `exposeLayout`, `onScreen`). Event-time
+  reads (a drag's limits) are fine.
 
 ## Games
 

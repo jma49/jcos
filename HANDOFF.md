@@ -399,6 +399,14 @@ ryOS (AGPL-3.0).
   back; TextEdit saves a draft it finds as a page opens; the owner's
   tabs follow each other's saves and deletes in the home folder over
   `os-home`, as stickies and iCal do (docs/agents/desktop.md).
+- **Windows follow the browser** (2026-09-30, #192): a resize or a
+  rotation fits every window as a reload does, once per animation frame;
+  zoomed windows and a phone's apps take their frame from the store's
+  `viewport`, Exposé lays out again, and a member's stickies are shown
+  within reach without being moved in the database. Decided with it: a
+  window shrunk to fit stays that size when the browser grows again (as
+  after a reload), and the frames follow the browser's inner size, not
+  `visualViewport`, so a phone's keyboard leaves them alone.
 - No link back to a classic site; Chinese is on hold.
 - Don't change ocra for now; it will be redesigned.
 - The "Ask me" AI assistant is on hold.
@@ -509,12 +517,13 @@ architecture (#210, #217).
    one; receivers act only on well-formed ones, which carry nothing but
    names and Macintosh HD paths. Proper identity would need Realtime
    Authorization and server-checked presence.
-4. **The first load** is 150 of its 160 KB budget (150.1, 2026-09-30:
+4. **The first load** is 150 of its 160 KB budget (150.5, 2026-09-30:
    149.6 after room was made on it and Time Machine and Job Hunt came,
    plus `core/useKeys.ts`, 0.5 KB, now shared with the desktop's
    shortcuts, less 0.1 when the desktop's start-up moved into
-   `core/windowSession.ts` for #189), 67 of it react-dom. What else
-   could move:
+   `core/windowSession.ts` for #189, plus 0.3 for the viewport in the
+   store and the fit of windows to it, #192), 67 of it react-dom. What
+   else could move:
    Exposé's overlay (1.1 KB), the context menu (0.8) and the ⌥Tab
    switcher's panel (0.6), each making its first use in the first
    seconds wait for its code, and chat's watch, split from the Dock's

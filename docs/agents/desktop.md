@@ -219,11 +219,28 @@ guarded from its first file; `tests/eslint.test.ts` probes each rule.
   target alone (#189). With neither a session nor a link, a first visit
   gets the Welcome window alone, centred (`os-welcomed`); otherwise the
   desktop starts clear. Nothing opens About by itself.
-- `src/os/shell/Expose.tsx`: the Exposé grid (F9, the bottom-left hot
-  corner or View → Exposé). Windows animate to their slot in place, so
-  iframes don't reload. While it's open it has the keys, before any
-  window (Escape leaves it and does nothing else; F9 and ⌘ keys are the
-  desktop's).
+- The browser's size is the store's `viewport` (`watchViewport()` in
+  `core/store.ts`, started by `Desktop.tsx`). A resize or a rotation
+  fits every window to it once per animation frame, however many events
+  arrive in one (`fitToViewport`, which `restoreWindows` uses too, so a
+  reload and a resize agree): a window keeps its size where it still
+  fits, shrinks where it doesn't, and is pulled back so its title bar is
+  in reach (`fitWindow`); one that fits keeps its object, so it doesn't
+  render again. Zoomed windows and a phone's apps take their frame from
+  `viewport` (`zoomedFrame`, `phoneFrame`) and are the only windows that
+  select it; unzooming returns to the saved size, fitted. Exposé lays
+  out again while it's open, and a member's stickies are kept within
+  reach (below). It's the browser's inner size (`innerWidth` ×
+  `innerHeight`), never `visualViewport`: a phone's keyboard or a pinch
+  zoom changes only the visual viewport and leaves the apps alone
+  (#192).
+- `src/os/shell/Expose.tsx`: the Exposé overlay (F9, the bottom-left hot
+  corner or View → Exposé); the grid itself is `exposeLayout.ts`, a
+  plain module with a test, laid out for the browser's size and again
+  when it changes (`WindowLayer` in `Desktop.tsx`). Windows animate to
+  their slot in place, so iframes don't reload. While it's open it has
+  the keys, before any window (Escape leaves it and does nothing else;
+  F9 and ⌘ keys are the desktop's).
 - `src/os/shell/AppSwitcher.tsx`: ⌥Tab steps through open windows, most
   recent first; releasing ⌥ focuses the chosen one.
 - `src/os/core/useKeys.ts`: whose a key is. A handler on `window`
@@ -286,7 +303,9 @@ guarded from its first file; `tests/eslint.test.ts` probes each rule.
   arrives as text with the view, like an app's.
 - Phones are anything narrower than 768px or a short touch screen (a phone
   sideways): `isPhone()` and `PHONE_QUERY` in `src/os/core/store.ts`, and
-  the same media query in the stylesheets.
+  the same media query in the stylesheets. The store's `phone` says the
+  same as of the last change of the viewport, for what renders by it
+  (`Window`), so a window follows a browser that crosses the line.
 
 ## System Preferences, sound and settings
 
@@ -493,7 +512,10 @@ guarded from its first file; `tests/eslint.test.ts` probes each rule.
   own desktop (`DesktopStickies.tsx`, drawn by `shell/DesktopStickiesLayer.tsx`,
   whose code comes only once someone signs in, so none of it is in the
   first load), above its icons and below every window, each where it
-  was left: held by its strip to move it, by the corner to size it,
+  was left (shown within reach of a smaller browser, `onScreen` in
+  `mine.ts`, without moving it: nothing is written on a resize, and the
+  place it was left stands for the screen it was left on): held by its
+  strip to move it, by the corner to size it,
   rolled up with a double-click on the strip (Tiger's window shade), a
   right-click for its colour, and the close box to take it down (asked
   first if there's anything on it). What's typed saves once the typing
