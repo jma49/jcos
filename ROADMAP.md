@@ -7,23 +7,7 @@ to HANDOFF.md and take it out of here.
 Each item says why it's worth doing, what it has to respect (the rules
 in [AGENTS.md](AGENTS.md)), and how we'll know it's done.
 
-## 1. Room on the first load
-
-**Why.** The first visit's JavaScript is 159 KB against a budget of 160
-(`npm run perf`, 2026-09-28; 157 before the Dock could be rearranged). Anything else on the first screen would
-break the budget, and raising the budget has to hold "beyond today"
-(AGENTS.md). React's client is 63 KB of it and stays.
-
-**Shape.** Measure first: what each first-load chunk holds
-(`registry`, `wallpapers`, `animate`, `Desktop`), and what the desktop
-needs before its first paint versus in the second after. Move the rest
-behind the same "after the desktop settles" loading as the Dashboard
-(#86).
-
-**Done when** the first load is 150 KB or less, with the reason for each
-kilobyte moved written in `docs/agents/performance.md`.
-
-## 2. The secret base
+## 1. The secret base
 
 **Why.** Decided 2026-09-29: JM/OS is Jincheng's own hideout, not a job
 portfolio. Jincheng chose seven things from prototypes staged in the
@@ -38,13 +22,14 @@ order:
 2. **A stack in the Dock**: things Jincheng sends the bot (screenshots,
    tickets, links) kept in a Dock stack that fans out as Leopard's did,
    private or public per item. Jincheng's note: the interaction and the
-   UI have to be done well. The Dock is on the first screen, so room on
-   the first load (section 1) comes first.
+   UI have to be done well. The Dock is on the first screen: the first
+   load is 149 of its 160 KB (room was made for this on 2026-09-29), so
+   what the stack adds to it is measured as it's built.
 
 **Done when** each is in the site, checked in a browser with motion on
 and off, and its locked parts are proved locked by `test:db`.
 
-## 3. Lyrics that line up
+## 2. Lyrics that line up
 
 Paused by Jincheng (2026-09-28): later, after the secret base. It uses the owner check (`public.is_owner()`) to save a sync for everyone.
 
@@ -74,7 +59,7 @@ all gated to its admin by username):
 **Done when** every song in the library has been synced by ear once,
 and a sync made in Karaoke reaches another browser.
 
-## 4. Visitors ask for songs
+## 3. Visitors ask for songs
 
 **Why.** Decided as "may come later" with the music library: visitors
 request, Jincheng approves from Telegram.

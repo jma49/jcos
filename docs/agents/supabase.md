@@ -171,8 +171,9 @@ The code that isn't in the browser (each endpoint's parameters, answers and conv
   Typing, nudges, @mentions and unread counts live in the browser; a
   signed-in member gets a notification and a Dock badge for private
   messages and mentions while Chat is closed.
-- **Presence and signals** (`social/Presence.tsx`, `social/signals.ts`):
-  one Realtime channel carries who's on the desktop (city, username,
+- **Presence and signals** (`social/Presence.tsx`, `social/signals.ts`,
+  joined once the desktop has settled; the menu bar's count is
+  `social/online.tsx`): one Realtime channel carries who's on the desktop (city, username,
   open chat room, whether AirDrop can reach them), their cursors, and
   signals: short-lived messages such as typing, nudges and AirDrop
   offers. Anyone can send anything there, so receivers check what

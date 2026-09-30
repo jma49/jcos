@@ -207,7 +207,7 @@ only `kit/`. The lint enforces all three.
   [media.md](media.md).
 - `src/os/shell/Screensaver.tsx` and `savers.tsx`: Desktop Pictures (a
   slideshow of Mac OS X's scenic desktop pictures, `SCENIC` in
-  `wallpapers.ts`), Flurry, iTunes Artwork, Soapbox (the latest posts in
+  `look/pictureSets.ts`), Flurry, iTunes Artwork, Soapbox (the latest posts in
   large type), Starfield, Clock or Bounce, after the idle time chosen in
   System Preferences (two minutes by default). The views and their list
   (`SAVER_STYLES`) are in `saverViews.tsx`, off the first load.
@@ -252,15 +252,20 @@ only `kit/`. The lint enforces all three.
 ## Desktop picture, accent and sky
 
 - `src/os/look/wallpapers.ts`: desktop pictures besides photos: ryOS's
-  photo collections and tiles (`public/os/wallpapers/`, listed in
-  `src/data/wallpapers.json`; photos are WebP, at most 2560px wide), solid
-  colours, SVG/CSS patterns and a dynamic sky that follows the sun and
-  weather at the visitor's place. The store keeps a photo URL or
-  `color:<id>`, `pattern:<id>`, `dynamic:sky`; `backgroundFor()` turns
-  it into CSS.
+  tiles (`public/os/wallpapers/tiles`, listed in
+  `src/data/wallpaper-tiles.json`), solid colours, SVG/CSS patterns and a
+  dynamic sky that follows the sun and weather at the visitor's place.
+  The store keeps a photo URL or `color:<id>`, `pattern:<id>`,
+  `dynamic:sky`; `backgroundFor()` turns it into CSS.
+- `src/os/look/pictureSets.ts`: ryOS's photo collections
+  (`public/os/wallpapers/photos`, listed in `src/data/wallpapers.json`;
+  WebP, at most 2560px wide), stored as a photo's URL. Only choosing a
+  picture needs the list, so it's off the first load: Preferences, the
+  screen saver and the change below load it.
 - The desktop picture changes to another from the same collection each
   time the visitor leaves the tab and comes back (`useDesktopPicture.ts`,
-  `nextPicture()` in `wallpapers.ts`); the default moves on to `SCENIC`.
+  `nextPicture()` in `pictureSets.ts`, loaded as the tab is left); the
+  default moves on to `SCENIC`.
   A checkbox in System Preferences turns it off. Jincheng's own photos
   are only shown in Photos, never as the desktop or the screen saver.
 - `src/os/look/accent.ts`: the accent colour. By default it's sampled from

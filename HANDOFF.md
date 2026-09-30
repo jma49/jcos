@@ -200,7 +200,7 @@ ryOS (AGPL-3.0).
   same 90 on 4G). Loading it up front would add 4 KB to every first load.
 - **Desktop lyrics are opt-in** (decided 2026-09-28): two lines,
   draggable, off until the visitor turns them on, like other people's
-  pointers. How lyrics get synced is ROADMAP.md item 3.
+  pointers. How lyrics get synced is ROADMAP.md item 2.
 - **No Chinese retro web, for now** (decided 2026-09-28). A proposal
   for 1999–2011 Chinese sites (portals from the Internet Archive, a
   hand-made 2008 QQ Zone over Soapbox, Photos and Stickies, a QQ2006
@@ -231,7 +231,7 @@ ryOS (AGPL-3.0).
   New things are only what existed in Tiger or Leopard, drawn with the
   same styles and the ryOS icon set: an idea board framed for job hunting
   and its invented styles were rejected. From prototypes staged in the
-  real site Jincheng kept all seven (ROADMAP.md item 2); on the Dock stack:
+  real site Jincheng kept all seven (ROADMAP.md item 1); on the Dock stack:
   "the interaction and the UI have to be done well". Live so far: the
   iTunes Artwork screen saver and Chess (2026-09-29).
 - **The owner is a database fact** (decided 2026-09-29). ryOS gates its
@@ -253,9 +253,8 @@ ryOS (AGPL-3.0).
   again at Jincheng's word (2026-09-29): the disc on the desktop while
   it's in the drive, and the Trash turning into Eject as it's dragged.
   Nothing is added to the desktop; the Controller and ⌘E eject. That
-  gave the first load back 0.3 KB: it's at 159.4 of 160 KB now, so
-  ROADMAP.md item 1 (room on the first load) still comes before anything
-  else on the first screen.
+  gave the first load back 0.3 KB (159.4 of 160 KB then; 149 since room
+  was made on it, below).
 - **The iPod's ratings and playlists, as Jincheng chose them**
   (2026-09-29): the Now Playing rating screen, On-The-Go and the smart
   playlists, from the design board. Where the board left it open:
@@ -302,8 +301,7 @@ ryOS (AGPL-3.0).
   and Work, as Tiger's iCal began; no repeating or multi-day events yet,
   and times are where the member is, as on a paper calendar. Deleting an
   event asks first, since there's no Undo. The first load grew 0.1 KB
-  for its manifest (159.9 of 160 KB): room on the first load (ROADMAP
-  §1) is now what's next before anything else goes on the first screen.
+  for its manifest (159.9 of 160 KB, before room was made on it, below).
 - **The home folder from Telegram** (2026-09-29): the bot's `/diary
   <text>` writes a diary entry, on the day it was sent where Jincheng is
   (the place `/at` set), and `/doc <text>` a document in Documents named
@@ -326,6 +324,16 @@ ryOS (AGPL-3.0).
   button with one of its own, and lets YouTube's darkening of the picture
   show for those seconds, the one exception to "YouTube's chrome never
   shows" (docs/agents/pitfalls.md).
+- **Room on the first load** (2026-09-29, the roadmap's first item,
+  done): a first visit's JavaScript went from 159.9 KB to 149.1. The
+  budget stays 160, so the room is for what the first screen gets next,
+  the Dock stack first; what moved, and why each kilobyte could, is in
+  docs/agents/performance.md. Accepted with it: the menu bar's count of
+  who's here, other people's pointers, AirDrop and chat's alerts for
+  private messages and mentions start once the desktop has settled
+  (eight seconds in and idle), not with it, and Spotlight opened in
+  those first seconds waits for its code (1 KB). The genie looks as it
+  did: its warp was measured frame by frame against the old one.
 - **Considered and left out** (2026-09-26 and 27 audits): a "continue
   playing" prompt for hidden tabs, more reduced-motion fallbacks, a spec
   template for changes, `llms.txt` in robots.txt (no crawler reads it
@@ -428,9 +436,12 @@ What comes next, in order, is in [ROADMAP.md](ROADMAP.md).
    one; receivers act only on well-formed ones, which carry nothing but
    names and Macintosh HD paths. Proper identity would need Realtime
    Authorization and server-checked presence.
-4. **The first load** is 159 of its 160 KB budget (157 before the Dock
-   could be rearranged, 2026-09-28), mostly react-dom. ROADMAP.md item 1
-   comes before anything else that adds to it.
+4. **The first load** is 149 of its 160 KB budget (2026-09-29, after
+   room was made on it), 67 of it react-dom. What else could move:
+   Exposé's overlay (1.1 KB), the context menu (0.8) and the ⌥Tab
+   switcher's panel (0.6), each making its first use in the first
+   seconds wait for its code, and chat's watch, split from the Dock's
+   badge (0.5).
 5. **Not ported from ryOS**, in Chat: @ryo (AI replies, on hold with the
    AI assistant), voice messages, IRC rooms and admins making rooms from
    the app.

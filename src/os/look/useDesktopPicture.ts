@@ -5,7 +5,7 @@ import type { OSData } from '../core/types';
 import { coverOf, SONGS } from '../media/library';
 import { useMusic } from '../media/music';
 import { ACCENTS, accentFromPicture, cachedAccent, cachedTopBrightness, DEFAULT_ACCENT, topBrightness } from './accent';
-import { accentForGenerated, backgroundFor, COVER, isPicture, isPixelTile, nextPicture, SKY, topBrightnessOfGenerated } from './wallpapers';
+import { accentForGenerated, backgroundFor, COVER, isPicture, isPixelTile, SKY, topBrightnessOfGenerated } from './wallpapers';
 
 /**
  * Everything the desktop picture decides: what's shown (and how, for a
@@ -75,27 +75,35 @@ export function useDesktopPicture(data: OSData, sky: SkyState, root: RefObject<H
 
   // Leave the tab and come back to a new desktop picture. The next one is
   // chosen and loaded (and its accent sampled) while the tab is hidden, so
-  // it's ready to fade in on return.
+  // it's ready to fade in on return. The collections it's chosen from are
+  // fetched then, the first time, rather than with the desktop.
   const rotate = useWindows((s) => s.rotateWallpaper);
   useEffect(() => {
     if (!rotate) return;
     let next: string | null = null;
+    let live = true;
     const onVisibility = () => {
-      const { wallpaper: current, setWallpaper } = useWindows.getState();
-      if (document.hidden) {
-        next = nextPicture(current);
+      if (!document.hidden) {
+        if (next) useWindows.getState().setWallpaper(next);
+        next = null;
+        return;
+      }
+      void import('./pictureSets').then(({ nextPicture }) => {
+        // Back already, or no longer changing: the picture stays.
+        if (!live || !document.hidden) return;
+        next = nextPicture(useWindows.getState().wallpaper);
         if (next && isPicture(next)) {
           new Image().src = next;
           accentFromPicture(next).catch(() => {});
           topBrightness(next).catch(() => {});
         }
-      } else if (next) {
-        setWallpaper(next);
-        next = null;
-      }
+      }, () => {});
     };
     document.addEventListener('visibilitychange', onVisibility);
-    return () => document.removeEventListener('visibilitychange', onVisibility);
+    return () => {
+      live = false;
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
   }, [rotate, data]);
 
   return {
