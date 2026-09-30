@@ -88,8 +88,16 @@ export function Browser({
 
   const onKey = useRef<(e: KeyboardEvent) => void>(() => {});
   onKey.current = (e) => {
+    if (locked) return;
+    // Quick Look closes first wherever focus is, the timeline included:
+    // Time Machine's own Escape (Cancel) waits for it.
+    if (e.key === 'Escape' && place.looking && !e.metaKey && !e.ctrlKey && !e.altKey) {
+      e.preventDefault();
+      onChange({ looking: false });
+      return;
+    }
     // A control outside the window (the timeline, the arrows) keeps its keys (core/useKeys.ts).
-    if (locked || !ownsKey(e)) return;
+    if (!ownsKey(e)) return;
     if (e.metaKey || e.altKey) {
       const parent = folder.path === '/' ? null : parentOf(folder.path);
       if (e.code === 'ArrowUp' && parent) {
@@ -126,10 +134,6 @@ export function Browser({
     } else if (e.key === ' ' && (selected || place.looking)) {
       e.preventDefault();
       onChange({ looking: !place.looking });
-    } else if (e.key === 'Escape' && place.looking) {
-      // Time Machine's own Escape (Cancel) waits for Quick Look to close.
-      e.preventDefault();
-      onChange({ looking: false });
     } else if (e.key.length === 1 && /\S/.test(e.key)) {
       const now = Date.now();
       typed.current = { text: now - typed.current.at < 1000 ? typed.current.text + e.key : e.key, at: now };
