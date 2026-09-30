@@ -30,7 +30,10 @@ flowchart TD
 
 The dotted lines are the only way into apps and applets: the OS reaches
 them through the catalog, apps don't import each other, and applets see
-only `kit/`. The lint enforces all three.
+only `kit/`. The lint enforces all three, on `import()` as well as import
+declarations (a local rule in `eslint.config.js`), and over every folder
+of `src/os/` but `apps/`, `applets/` and the catalog, so a new folder is
+guarded from its first file; `tests/eslint.test.ts` probes each rule.
 
 ## Where things are
 

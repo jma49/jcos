@@ -288,6 +288,15 @@ again.
   matching the same file sets the same rule; it doesn't merge them. A
   block for manifests silently lifted the applet rule from applets'
   manifests. Use a different rule, or keep the file sets apart.
+- ESLint's `no-restricted-imports` looks only at import and export
+  declarations, and `import()` is how the desktop loads almost
+  everything: a dynamic import across a boundary passed the lint until
+  #208. `eslint.config.js` holds `import()` to the same patterns with a
+  local rule (`local/no-restricted-dynamic-imports`). The OS block also
+  listed its folders by name, and `home/` and `stickies/` went unguarded
+  through three merged pull requests; it covers `src/os/**` now and names
+  what it leaves out. `tests/eslint.test.ts` probes each rule with a
+  snippet that fails without it: a new rule gets one.
 - There's no Prettier config. Don't reformat whole files; it buries the
   change in the diff.
 - Wrapping a big JSX tree reindents all of it. Wrap through a small
