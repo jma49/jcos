@@ -73,3 +73,35 @@ export function onStored(key: string, callback: () => void): () => void {
   window.addEventListener('storage', listener);
   return () => window.removeEventListener('storage', listener);
 }
+
+/**
+ * The storage itself, for Backup & Restore, which reads every key and puts
+ * them back (apps/preferences/backup.ts). Throws where storage is blocked,
+ * which the pane tells the visitor. Everything else goes through the
+ * functions above.
+ */
+export function wholeStorage(): Storage {
+  return window.localStorage;
+}
+
+// What's remembered for this tab alone (sessionStorage): a reload keeps it,
+// and the visitor's other tabs don't see it. Only the boot screen uses it,
+// to run once a tab (Desktop.tsx); anything a visitor chooses goes through
+// load and save, which every tab shares.
+const tabStore = () => (typeof window === 'undefined' ? null : window.sessionStorage);
+
+/** A string remembered for this tab, or null when there's none or storage can't be read. */
+export function loadForTab(key: string): string | null {
+  try {
+    return tabStore()?.getItem(key) ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/** Remembers a string for this tab. */
+export function saveForTab(key: string, value: string) {
+  try {
+    tabStore()?.setItem(key, value);
+  } catch {}
+}

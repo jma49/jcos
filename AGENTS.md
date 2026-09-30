@@ -68,7 +68,8 @@ it, and when one is done, record it in HANDOFF.md and take it out.
 - Apps and anything not on screen at first paint load lazily; store
   subscriptions select the narrowest slice.
 - Anything remembered in the browser goes through
-  `src/os/core/storage.ts`.
+  `src/os/core/storage.ts` (the lint refuses `localStorage` and
+  `sessionStorage` anywhere else under `src/os/`).
 - Before deciding, check that it's the best practice, and that fixing
   the problem in front of you doesn't bring in more. Find the cause
   before changing anything: when it isn't known, first make it
@@ -87,7 +88,7 @@ it, and when one is done, record it in HANDOFF.md and take it out.
 
 | Changed | Run |
 | --- | --- |
-| any code | `npm run check` (types), `npm run lint` (hooks), `npm test` |
+| any code | `npm run check` (types), `npm run lint` (hooks, the app boundaries, storage), `npm test` |
 | an app, the shell or anything a visitor sees | `npm run build`, then `npm run test:smoke`; open it in a browser too (`npm run serve`) |
 | the first load, a dependency, or anything per frame | `npm run build`, then `npm run perf`: every line within budget |
 | the schema, a migration, a policy or a limit | `npm run test:db`, with a check (and a race for a limit) for the new rule; once merged, `supabase db push` and `supabase db advisors` (HANDOFF.md §1) |

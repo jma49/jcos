@@ -49,7 +49,8 @@ nothing but `src/os/kit` and its own folder; what it needs from the OS
 goes into the kit. A game runs its frames through
 `useGameLoop(tick, front)`, so it stops behind another window, and
 keeps scores with `saved(id, 'best')`. Anything else remembered in the
-browser goes through `src/os/core/storage.ts`.
+browser goes through `src/os/core/storage.ts` (the lint enforces it, as
+it does the boundaries above).
 
 ## A song or an album
 

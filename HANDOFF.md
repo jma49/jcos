@@ -523,7 +523,8 @@ architecture (#210, #217).
    each migration; in the dashboard, keep Settings › API › Exposed
    schemas to `public` (plus `graphql_public` only if GraphQL is used).
 7. **What CI checks** on every pull request: `npm audit --omit=dev
-   --audit-level=high`, the type check, the hooks lint, the unit tests
+   --audit-level=high`, the type check, the lint (hooks, the app
+   boundaries, storage), the unit tests
    (Vitest), the build, a smoke test that opens every app in a browser,
    the download budgets of `npm run perf`, and `npm run test:db` (the
    database rules and races against the per-member limits, on Postgres
