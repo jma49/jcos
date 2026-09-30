@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import { adoptStyles } from '../core/appStyles';
-import { MENU_BAR_HEIGHT } from '../core/store';
+import { useWindows } from '../core/store';
 import { useAutosave } from '../core/useAutosave';
 import { ContextMenu, type ContextMenuItem } from '../shell/ContextMenu';
 import { NOTE_COLORS, SocialError, STICKY_MAX, type NoteColor } from '../social/types';
-import { draftOf, dropDraft, keepDraft, latest, myStickiesNow, placeSticky, removeSticky, writeSticky, type Sticky } from './mine';
+import { draftOf, dropDraft, keepDraft, latest, myStickiesNow, onScreen, placeSticky, removeSticky, writeSticky, type Sticky } from './mine';
 import styles from './own-stickies.css?inline';
 
 // One of a member's own stickies (mine.ts), as Tiger's Stickies drew a
@@ -24,16 +24,6 @@ const clampSize = (width: number, height: number) => ({
   width: Math.round(Math.min(900, Math.max(120, width))),
   height: Math.round(Math.min(900, Math.max(60, height)))
 });
-
-/** Somewhere on the screen, under the menu bar, with at least its strip in reach. */
-function onScreen(x: number, y: number, width: number) {
-  const vw = typeof window === 'undefined' ? 1280 : window.innerWidth;
-  const vh = typeof window === 'undefined' ? 800 : window.innerHeight;
-  return {
-    x: Math.round(Math.min(Math.max(0, x), Math.max(0, vw - Math.min(width, 80)))),
-    y: Math.round(Math.min(Math.max(MENU_BAR_HEIGHT + 2, y), Math.max(MENU_BAR_HEIGHT + 2, vh - 40)))
-  };
-}
 
 type Ask = { kind: 'remove' } | { kind: 'conflict' } | { kind: 'failed'; message: string };
 
@@ -124,7 +114,11 @@ export function StickyNote({
     void removeSticky(sticky.id).catch(() => {});
   };
 
-  const shown = { ...onScreen(live?.x ?? sticky.x, live?.y ?? sticky.y, live?.width ?? sticky.width), width: live?.width ?? sticky.width, height: live?.height ?? sticky.height };
+  // On the desktop it's kept within reach as the browser's size changes (a card in Stickies › Yours isn't placed at all).
+  const viewport = useWindows((s) => (placed ? s.viewport : null));
+  const size = { width: live?.width ?? sticky.width, height: live?.height ?? sticky.height };
+  const at = viewport ? onScreen(live?.x ?? sticky.x, live?.y ?? sticky.y, size.width, viewport) : { x: sticky.x, y: sticky.y };
+  const shown = { ...at, ...size };
 
   /** Follows the pointer from `e` until it lets go, then saves where it ended up. */
   const follow = (e: ReactPointerEvent<HTMLElement>, step: (dx: number, dy: number) => Partial<Sticky>) => {
@@ -156,7 +150,7 @@ export function StickyNote({
   const moveBy = (e: ReactPointerEvent<HTMLElement>) => {
     if (!placed || (e.target as HTMLElement).closest('button')) return;
     const from = { x: shown.x, y: shown.y };
-    follow(e, (dx, dy) => onScreen(from.x + dx, from.y + dy, shown.width));
+    follow(e, (dx, dy) => onScreen(from.x + dx, from.y + dy, shown.width, useWindows.getState().viewport));
   };
 
   const sizeBy = (e: ReactPointerEvent<HTMLElement>) => {
