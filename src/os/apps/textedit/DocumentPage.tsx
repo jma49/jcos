@@ -43,9 +43,10 @@ export function DocumentPage({ win, owner }: { win: WindowState; owner: boolean 
   const [id, setId] = useState<string | undefined>(win.props?.doc);
   const doc = id ? home.documents.find((d) => d.id === id) : undefined;
   const draftKey = `doc:${id ?? `new:${win.id}`}`;
-  // What's on the page; null until the document is here.
+  // What's on the page; null until the document is here. A new document's
+  // draft (typed, and the tab closed before it was saved) is on it from the start.
   const [text, setText] = useState<string | null>(() => (id ? null : (draftOf(`doc:new:${win.id}`)?.body ?? '')));
-  const [dirty, setDirty] = useState(false);
+  const [dirty, setDirty] = useState(!id && !!text);
   // The home folder has been read for this window: a document not in it now can't be opened.
   const [checked, setChecked] = useState(false);
   const [problem, setProblem] = useState<Problem | null>(null);
@@ -68,7 +69,7 @@ export function DocumentPage({ win, owner }: { win: WindowState; owner: boolean 
     };
   }, [owner]);
 
-  // The document, once it's here. Something typed and not saved (a draft) wins, and is saved again.
+  // The document, once it's here. Something typed and not saved (a draft) wins, and is saved again (below).
   useEffect(() => {
     if (!doc || text !== null) return;
     const draft = draftOf(`doc:${doc.id}`);
@@ -132,6 +133,16 @@ export function DocumentPage({ win, owner }: { win: WindowState; owner: boolean 
       }
     }
   });
+
+  // A draft from before (a closed tab, a dropped connection) is saved again,
+  // once, as the page opens: from the version it was typed over, so one from
+  // an older copy meets the conflict alert rather than the newer save.
+  const opened = useRef(false);
+  useEffect(() => {
+    if (opened.current || text === null) return;
+    opened.current = true;
+    if (dirty) saver.soon();
+  }, [text, dirty, saver]);
 
   const type = (value: string) => {
     typed.current = value;

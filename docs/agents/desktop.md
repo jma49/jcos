@@ -405,9 +405,11 @@ only `kit/`. The lint enforces all three.
   writes; anyone else can only read a document in Public. What's typed
   is saved once the typing rests for a second, at once with ⌘S, and when
   the window closes (`useAutosave.ts`), and kept as a draft in the
-  browser until it is, so a closed tab loses nothing. A save names the
-  version it was typed over, so one from an older copy is refused and
-  the alert offers Revert or Save Anyway. File › New (⌥N; the browser
+  browser until it is, so a closed tab loses nothing: a draft found as a
+  page opens (a document's, a new document's, a diary entry's) is saved
+  again then, as a sticky's is (#190). A save names the version it was
+  typed over, so one from an older copy, a restored draft's included, is
+  refused and the alert offers Revert or Save Anyway. File › New (⌥N; the browser
   keeps ⌘N) starts a document that goes into Documents as "Untitled.txt"
   once something is typed; Save As (⇧⌘S, `SaveAsSheet.tsx`) renames it
   or moves it to another folder, Public included. An emptied diary entry
