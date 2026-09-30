@@ -320,6 +320,12 @@ again.
   its merge undeployed. Branches don't deploy any more
   (`git.deploymentEnabled`: only `main`); a `*` pattern wouldn't have
   matched `fix/…` names, since it stops at `/`, hence `**`.
+- `vercel-ignore.sh` left out all of `supabase/` as backend-only, while
+  the site bundles `supabase/functions/_shared/youtube.ts` (DVD Player's
+  Burn sheet): a fix there (8daa72f) reached the bot and skipped the
+  site's build, silently (#209). What's left out is named path by path
+  now, so a new path builds until it's listed, and a file the site
+  bundles says so in its header.
 - A guess made to get a check green went wrong: CI's perf counted the
   Dashboard (161 KB against 160) and the pointer was moved away before
   loading, which CI's Chromium ignored. Listing when each file was asked
