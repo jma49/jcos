@@ -9,6 +9,7 @@ import { DesktopStickiesLayer } from './shell/DesktopStickiesLayer';
 import { Window } from './shell/Window';
 import { Expose, exposeLayout } from './shell/Expose';
 import { Screensaver } from './shell/Screensaver';
+import { FullScreenLayer } from './shell/FullScreenLayer';
 import { AppSwitcher } from './shell/AppSwitcher';
 import { DesktopIcons } from './shell/DesktopIcons';
 import { DesktopMenu } from './shell/DesktopMenu';
@@ -192,6 +193,9 @@ function Shell({ data }: { data: OSData }) {
         )}
         <Contained name="Notifications">
           <Notices />
+        </Contained>
+        <Contained name="A full-screen app">
+          <FullScreenLayer />
         </Contained>
         {menuAt && <DesktopMenu at={menuAt} onClose={closeMenu} />}
 

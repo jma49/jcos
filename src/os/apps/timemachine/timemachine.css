@@ -1,0 +1,327 @@
+/* The alert for a locked folder, and Macintosh HD's views, as Finder has them. */
+@import '../../shell/alert.css';
+@import '../../files/files.css';
+
+/* ---------- Time Machine (Leopard) ---------- */
+
+/* Space: the stars (a canvas), a nebula, and a glow along the floor. */
+.os-tm {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse at 50% 18%, rgba(120, 150, 255, 0.35), transparent 45%),
+    radial-gradient(ellipse at 30% 60%, rgba(160, 90, 200, 0.22), transparent 50%),
+    linear-gradient(#060a1c, #0b1333 55%, #1a2350 80%, #2a3a74);
+  color: #fff;
+  user-select: none;
+}
+
+.os-tm-stars {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.os-tm-floor {
+  position: absolute;
+  left: -10%;
+  right: -10%;
+  bottom: 0;
+  height: 34%;
+  background: linear-gradient(transparent, rgba(80, 110, 220, 0.25));
+  transform: perspective(1200px) rotateX(70deg);
+  transform-origin: 50% 100%;
+}
+
+/* A window for each day, going back into space towards the top of the
+   screen, as the prototype set them: 300px apart, seen from above. */
+.os-tm-space {
+  position: absolute;
+  inset: 0;
+  perspective: 1200px;
+  perspective-origin: 50% 6%;
+  animation: os-tm-arrive 0.7s cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+
+@keyframes os-tm-arrive {
+  from {
+    opacity: 0;
+    translate: 0 60px;
+    scale: 1.08;
+  }
+}
+
+.os-tm-window,
+.os-tm-pick {
+  position: absolute;
+  left: 50%;
+  bottom: 118px;
+  width: min(720px, calc(100vw - 300px));
+  height: min(470px, calc(100vh - 250px));
+  transition:
+    transform 0.6s cubic-bezier(0.2, 0.7, 0.3, 1),
+    opacity 0.6s ease;
+}
+
+/* A window as the desktop draws one, in the desktop's own ink rather than
+   the white of the space around it. */
+.os-root .os-tm-window {
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+  color: var(--os-ink);
+  user-select: none;
+}
+
+/* A window behind the front one is a way to its day. */
+.os-root .os-tm-pick {
+  padding: 0;
+  border-radius: 6px;
+  background: none;
+  cursor: pointer;
+}
+
+.os-tm-window > .os-body {
+  flex: 1;
+  min-height: 0;
+}
+
+/* The window's own buttons don't work in the past. */
+.os-tm-window .os-controls {
+  pointer-events: none;
+}
+
+/* Finder, in the front window: the places beside the folder. */
+.os-tm-finder > .os-finder {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+}
+
+.os-tm-finder .os-sidebar .os-sidebar-place {
+  padding-block: 2px;
+  font-size: 12.5px;
+}
+
+.os-tm-finder .os-sidebar-heading {
+  margin: 8px 12px 2px;
+  font-size: 10px;
+}
+
+.os-tm-finder .os-sidebar-heading:first-child {
+  margin-top: 0;
+}
+
+.os-root .os-tm-look {
+  padding: 0 8px;
+}
+
+.os-tm-path {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* The day in front, under its window. */
+.os-tm-date {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 70px;
+  margin: 0;
+  font-size: 13px;
+  text-align: center;
+  text-shadow: 0 1px 2px #000;
+  pointer-events: none;
+}
+
+/* The timeline: the oldest day at the top, today at the bottom. A day
+   named only on the way there shows its name as the pointer passes. */
+.os-tm-timeline {
+  position: absolute;
+  right: 18px;
+  top: 56px;
+  bottom: 96px;
+  width: 140px;
+}
+
+.os-tm-timeline ol {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-end;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.os-root .os-tm-timeline button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 1px 0;
+  color: #c8d3f0;
+  font-size: 10px;
+  text-shadow: 0 1px 2px #000;
+}
+
+.os-tm-timeline button span {
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.os-tm-timeline button::after {
+  content: '';
+  flex: none;
+  width: 14px;
+  height: 3px;
+  border-radius: 2px;
+  background: rgba(200, 215, 255, 0.6);
+  transition: width 0.15s, background 0.15s;
+}
+
+.os-tm-timeline button[data-named] span,
+.os-tm-timeline button:hover span,
+.os-tm-timeline button:focus-visible span {
+  opacity: 1;
+}
+
+.os-tm-timeline button:hover::after {
+  width: 20px;
+  background: #fff;
+}
+
+.os-root .os-tm-timeline button[aria-current='date'] {
+  color: #fff;
+  font-weight: 700;
+}
+
+.os-tm-timeline button[aria-current='date']::after {
+  width: 26px;
+  background: #fff;
+}
+
+/* Leopard's arrows, back and forward in time. */
+.os-tm-arrows {
+  position: absolute;
+  right: 176px;
+  bottom: 130px;
+  display: grid;
+  gap: 10px;
+}
+
+.os-root .os-tm-arrow {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  color: #fff;
+  background: radial-gradient(circle at 50% 30%, #8b9bc6, #2b3557 72%);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.6),
+    0 0 14px rgba(120, 150, 255, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.os-root .os-tm-arrow:active:not(:disabled) {
+  background: radial-gradient(circle at 50% 30%, #6c7ba4, #1f2742 72%);
+}
+
+.os-root .os-tm-arrow:disabled {
+  opacity: 0.35;
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+/* Cancel and Restore, along the bottom. */
+.os-tm-bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 22px;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 60px;
+  pointer-events: none;
+}
+
+.os-root .os-tm-button {
+  pointer-events: auto;
+  min-width: 108px;
+  padding: 4px 26px;
+  border-radius: 13px;
+  color: #fff;
+  font-size: 12px;
+  background: linear-gradient(#6d7486, #3a3f4c 50%, #2b2f39 51%, #4a5060);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+.os-root .os-tm-button:active:not(:disabled) {
+  background: linear-gradient(#4a5060, #2b2f39 50%, #20232b 51%, #3a3f4c);
+}
+
+.os-root .os-tm-button:disabled {
+  opacity: 0.45;
+}
+
+/* Motion reduced: the days change in place. */
+.os-tm[data-reduced] .os-tm-space {
+  animation: none;
+}
+
+.os-tm[data-reduced] .os-tm-window,
+.os-tm[data-reduced] .os-tm-pick {
+  transition: none;
+}
+
+/* A phone: the window takes the width, the timeline is its ticks, and the
+   arrows stand either side of the day's name. */
+@media (max-width: 767px) {
+  /* Clear of the timeline on either side. */
+  .os-tm-window,
+  .os-tm-pick {
+    width: calc(100vw - 72px);
+    height: calc(100vh - 290px);
+    bottom: 150px;
+  }
+
+  .os-tm-finder .os-sidebar {
+    display: none;
+  }
+
+  .os-tm-timeline {
+    right: 4px;
+    top: 44px;
+    bottom: 150px;
+    width: 24px;
+  }
+
+  .os-tm-timeline button span {
+    display: none;
+  }
+
+  .os-tm-arrows {
+    left: 16px;
+    right: 16px;
+    bottom: 60px;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .os-tm-date {
+    bottom: 72px;
+  }
+
+  .os-tm-bar {
+    padding: 0 16px;
+  }
+}

@@ -16,6 +16,7 @@ const doc = (id: string, folder: HomeDocument['folder'], name: string, body = ''
   name,
   body,
   version: 1,
+  created: '2026-09-27T10:00:00.000Z',
   updated: '2026-09-28T10:00:00.000Z'
 });
 const entry = (id: string, day: string, created: string, body = 'x'): DiaryEntry => ({ id, day, body, version: 1, created, updated: created });

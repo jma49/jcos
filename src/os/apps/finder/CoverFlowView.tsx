@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type 
 import { animate, m, useMotionValue, useMotionValueEvent, useTransform, type MotionValue } from 'motion/react';
 import type { FileNode } from '../../core/files';
 import { useReduceMotion } from '../../core/system';
-import { Thumb } from './parts';
+import { Thumb } from '../../files/parts';
 
 // Leopard's Cover Flow in Finder: the folder's items stand in a row over
 // their reflections, on black, the selected one facing you and the rest

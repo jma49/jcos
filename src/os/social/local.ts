@@ -503,7 +503,9 @@ export function localSocial(): Social {
     async home(asOwner) {
       const h = home();
       const mine = asOwner && current?.username === DEV_OWNER;
-      return { documents: h.documents.filter((d) => mine || d.folder === 'public'), diary: mine ? h.diary : [] };
+      // Documents kept before they had a date of their own count from their last save.
+      const documents = h.documents.map((d) => ({ ...d, created: d.created ?? d.updated }));
+      return { documents: documents.filter((d) => mine || d.folder === 'public'), diary: mine ? h.diary : [] };
     },
     async saveDocument({ id, version, folder, name, body }) {
       owner('Jincheng’s documents');
@@ -517,7 +519,7 @@ export function localSocial(): Social {
         }
         const updated = new Date().toISOString();
         if (!id) {
-          const made: HomeDocument = { id: crypto.randomUUID(), folder, name, body, version: 1, updated };
+          const made: HomeDocument = { id: crypto.randomUUID(), folder, name, body, version: 1, created: updated, updated };
           h.documents.push(made);
           return made;
         }

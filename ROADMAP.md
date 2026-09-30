@@ -13,17 +13,14 @@ in [AGENTS.md](AGENTS.md)), and how we'll know it's done.
 portfolio. Jincheng chose seven things from prototypes staged in the
 real site (HANDOFF.md section 3): each existed in Tiger or Leopard, and
 each uses the same Aqua styles and the ryOS icon set (new icons from it
-go in `public/os/icons` and NOTICE). One pull request each, in this
-order:
+go in `public/os/icons` and NOTICE). One pull request each; all but
+one are in (HANDOFF.md section 3), and what's left is:
 
-1. **Time Machine**: Leopard's starfield, a window per day going back, a
-   timeline on the right: Soapbox, the guestbook and the library as they
-   were. Public things for everyone, locked ones for the owner.
-2. **A stack in the Dock**: things Jincheng sends the bot (screenshots,
+1. **A stack in the Dock**: things Jincheng sends the bot (screenshots,
    tickets, links) kept in a Dock stack that fans out as Leopard's did,
    private or public per item. Jincheng's note: the interaction and the
    UI have to be done well. The Dock is on the first screen: the first
-   load is 149 of its 160 KB (room was made for this on 2026-09-29), so
+   load is 150 of its 160 KB (room was made for this on 2026-09-29), so
    what the stack adds to it is measured as it's built.
 
 **Done when** each is in the site, checked in a browser with motion on

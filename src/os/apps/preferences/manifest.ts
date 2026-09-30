@@ -5,6 +5,7 @@ import { PANES } from './panes';
 export default defineApp({
   id: 'preferences',
   name: 'System Preferences',
+  added: '2026-09-25',
   Icon: PreferencesIcon,
   window: { width: 668, height: 540, minWidth: 480, minHeight: 380 },
   noDock: true,

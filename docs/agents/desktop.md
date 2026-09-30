@@ -42,6 +42,7 @@ only `kit/`. The lint enforces all three.
 | `ambient/` | the visitor's place, weather and sky | `place.ts`, `Sky.tsx` |
 | `media/` | music, lyrics, listening along | see [media.md](media.md) |
 | `social/` | Supabase: accounts, presence, chat, AirDrop | see [supabase.md](supabase.md) |
+| `files/` | Macintosh HD's views and folders that Finder and Time Machine share | `parts.tsx`, `home.tsx`, `movies.tsx` |
 | `apps/` | the built-in apps, one folder each | `<id>/manifest.ts` |
 | `applets/` | the Applet Store's games and tools | `<id>/manifest.ts` |
 | `kit/` | everything applets may use | `index.ts` |
@@ -50,8 +51,8 @@ only `kit/`. The lint enforces all three.
 ## Apps and applets
 
 - `src/os/catalog.ts` lists every app's manifest (`apps/<id>/manifest.ts`
-  or `applets/<id>/manifest.ts`: name, icon, window size, where it
-  appears, and how to load it); `AppId` is derived from it.
+  or `applets/<id>/manifest.ts`: name, the day it came, icon, window
+  size, where it appears, and how to load it); `AppId` is derived from it.
   `src/os/core/registry.tsx` turns the manifests into what the OS uses,
   with each app's component loaded lazily, and `launch()` opens one. `dockApps` and `mobileDockApps` pick what
   the Dock keeps (other apps appear there while open, except `noDock`
@@ -132,6 +133,33 @@ only `kit/`. The lint enforces all three.
   visitor shows the same game, and when two tabs think at once the
   first answer is played and the other tab takes it. New Game is in the
   Game menu and in the status bar (phones have no app menus).
+- `src/os/apps/timemachine/`: Leopard's Time Machine, in the Dock and
+  Applications. It's a full-screen app (the manifest's `fullScreen`,
+  drawn by `shell/FullScreenLayer.tsx`): no window; it covers the
+  windows, the menu bar and the Dock, which are `inert` under it, and
+  the desktop's shortcuts, the ⌥Tab switcher and Exposé's corner stay
+  quiet (`useFocusedId()` is null meanwhile, so no window has the keys).
+  Space is a canvas of seeded stars over a CSS nebula, with a Finder
+  window for each day going back into it (300px apart, seen from 50%
+  6%, as the prototype had them); the timeline down the right, the
+  arrows (Page Up and Down) and a click on a window behind go through
+  the days, and Cancel or Escape leaves. What a day held is `past.ts`:
+  each thing from the day it came, an app from its manifest's `added`
+  (an applet from its listing's), a song or an album from its Date
+  Added, a disc from when it was burned, Jincheng's documents and diary
+  entries from when they were first written, and the Applets, Movies and
+  Users folders from the days the Applet Store, DVD Player and TextEdit
+  came. Nothing keeps how a thing was changed or what was thrown away,
+  so a past day shows what's here now, as far back as each thing goes;
+  Pictures and Projects have no dates and aren't shown. Days are where
+  this device is. The front window is a read-only Finder
+  (`Browser.tsx`): the places, back and forward, icons or a list, and
+  Quick Look; the folder, the selection and the view stay as the days
+  change, and a day without the folder shows the nearest one it had.
+  Restore brings what's chosen (or the folder shown) back to now: an
+  app opens, a song plays, a disc goes into the drive, a document opens
+  in TextEdit, a folder opens in Finder. The home folder is read as
+  Finder reads it, so anyone else sees only Public and Sites.
 - `src/os/apps/dvdplayer/`: Tiger's DVD Player, in Applications (not
   kept in the Dock), for the discs on Finder's Movies shelf (see
   [media.md](media.md)). A window named after the disc in the drive
@@ -295,7 +323,7 @@ only `kit/`. The lint enforces all three.
   redirects to its nearest copy; no server of ours in between). A page
   that forbids framing gets a notice with "Open in a New Tab" instead of
   a blank window, from `/api/framing`.
-- `src/os/core/files.ts` and `apps/finder/`: Macintosh HD, a read-only
+- `src/os/core/files.ts`, `files/` and `apps/finder/`: Macintosh HD, a read-only
   file system built from the content (Applications, Applets, Documents,
   Movies, Music, Pictures, Projects), browsed in Finder with icon, list,
   column and Cover Flow views (⌥1–⌥4), Quick Look (Space), keyboard
@@ -312,7 +340,7 @@ only `kit/`. The lint enforces all three.
   button shows only in Movies, and anywhere else the choice shows icons. A file's `look` is what Quick Look shows (a picture,
   or a `View` of its own), `openLabel` its button ("Play DVD"), `trash`
   what Move to Trash (⌘⌫) does and `share: false` keeps it from AirDrop.
-  Movies is DVD Player's shelf: Finder builds it (`apps/finder/movies.tsx`
+  Movies is DVD Player's shelf: Finder builds it (`files/movies.tsx`
   from `media/discs.ts`) and hands it to `buildDisk`, so the desktop's
   own copy of the disk (AirDrop's, in the first load) has no Movies and
   none of its code. In Movies the toolbar has Burn (`BurnSheet.tsx`) and
@@ -322,7 +350,11 @@ only `kit/`. The lint enforces all three.
   focus is. On a phone the toolbar's buttons keep their size and what
   doesn't fit goes to a second row, where the search field takes the
   rest of the width.
-- Users › jincheng is Jincheng's home folder (`apps/finder/home.tsx`,
+- What Time Machine shows as well lives in `files/`: a file's picture
+  with the locked badge, the date and path helpers (`parts.tsx`), Quick
+  Look, the Movies and Users folders, and their styles (`files.css`,
+  which `finder.css` and `timemachine.css` import).
+- Users › jincheng is Jincheng's home folder (`files/home.tsx`,
   handed to `buildDisk` as Movies is, and first in the sidebar with the
   house FileVault puts on a locked home): Desktop, Documents, Downloads,
   Library, Movies, Music, Pictures, Public and Sites. To anyone but the

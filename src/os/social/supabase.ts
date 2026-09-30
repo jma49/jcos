@@ -4,7 +4,7 @@
 
 import { createClient, type PostgrestError, type User } from '@supabase/supabase-js';
 import { CURSOR_COLORS } from './social';
-import { discOf, songOf, type Disc } from '../../lib/library';
+import { discOf, SONG_COLUMNS, songOf, type Disc } from '../../lib/library';
 import { playlistNameProblem } from './playlistNames';
 import {
   LOBBY,
@@ -73,7 +73,7 @@ interface PlaylistRow {
 }
 
 /** The columns of a document and of a diary entry, as the owner (or, in Public, anyone) reads them. */
-const DOCUMENT_COLUMNS = 'id,folder,name,body,version,updated_at';
+const DOCUMENT_COLUMNS = 'id,folder,name,body,version,created_at,updated_at';
 const ENTRY_COLUMNS = 'id,day,body,version,created_at,updated_at';
 
 interface DocumentRow {
@@ -82,6 +82,7 @@ interface DocumentRow {
   name: string;
   body: string;
   version: number;
+  created_at: string;
   updated_at: string;
 }
 
@@ -100,6 +101,7 @@ const documentOf = (row: DocumentRow): HomeDocument => ({
   name: row.name,
   body: row.body,
   version: row.version,
+  created: row.created_at,
   updated: row.updated_at
 });
 
@@ -543,7 +545,7 @@ export function supabaseSocial(url: string, key: string): Social {
     async song(id) {
       const { data, error } = await client
         .from('songs')
-        .select('id,title,artist,album,cover,track,instrumental,lyrics_offset,lyrics_id')
+        .select(SONG_COLUMNS)
         .eq('id', id)
         .maybeSingle();
       if (error) throw error;

@@ -1,9 +1,9 @@
-import type { FileNode } from '../../core/files';
-import { DocumentIcon, DocumentsFolderIcon, FolderIcon, MusicFolderIcon, PhotosIcon, pngIcon, type IconComponent } from '../../core/icons';
-import { launch, rectOf } from '../../core/registry';
-import type { OSProject } from '../../core/types';
-import { MoviesFolderIcon } from '../../media/discArt';
-import { diaryYears, HOME_FOLDERS, type DiaryEntry, type HomeDocument } from '../../home/home';
+import type { FileNode } from '../core/files';
+import { DocumentIcon, DocumentsFolderIcon, FolderIcon, MusicFolderIcon, PhotosIcon, pngIcon, type IconComponent } from '../core/icons';
+import { launch, rectOf } from '../core/registry';
+import type { OSProject } from '../core/types';
+import { MoviesFolderIcon } from '../media/discArt';
+import { diaryYears, HOME_FOLDERS, type DiaryEntry, type HomeDocument } from '../home/home';
 
 // Users › jincheng: Jincheng's home folder, with the folders a Mac's home
 // has. To anyone else every folder but Public and Sites is locked, with
@@ -12,7 +12,8 @@ import { diaryYears, HOME_FOLDERS, type DiaryEntry, type HomeDocument } from '..
 // documents, which open in TextEdit, and in Documents the diary, a year
 // to a document. Public holds what Jincheng lets everyone read; Sites,
 // Jincheng's sites, as Internet locations. What's in the folders comes
-// from the database (home/home.ts), so this loads with Finder.
+// from the database (home/home.ts), so this loads with Finder (and Time
+// Machine, which shows it as it was), not with the desktop.
 
 export const HOME = '/Users/jincheng';
 

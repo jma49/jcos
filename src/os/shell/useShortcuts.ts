@@ -7,6 +7,8 @@ export function useShortcuts() {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const s = useWindows.getState();
+      // A full-screen app (Time Machine) has the keyboard to itself.
+      if (s.fullScreen) return;
       const top = [...s.order].reverse().find((id) => !s.windows[id]?.minimized);
       // Escape and the rest of Exposé's keys are Exposé's own (Expose.tsx).
       if (e.key === 'F9' && !isPhone()) {

@@ -6,15 +6,19 @@ An app is a folder named by its id: `src/os/apps/<id>/` for one built
 into the desktop, `src/os/applets/<id>/` for an applet from the Applet
 Store. In it:
 
-- `manifest.ts`: `defineApp({ id, name, Icon, window, load, … })` from
-  `src/os/kit/manifest.ts`. `load` is `() => import('./TheApp')`, so the
-  code arrives on first open. The fields say where it appears: `dock`
-  (its position), `phoneDock`, `inApplications`, `menuOnly`, `internal`,
-  `noDock`; `applet` is its page in the Applet Store (category, tagline,
-  description, date added); `shortcuts` are places inside it that
-  Spotlight finds, as Preferences' panes. The manifest is part of the
-  first load: it imports only `kit/manifest`, `core/icons` and its own
-  folder (the lint enforces it).
+- `manifest.ts`: `defineApp({ id, name, added, Icon, window, load, … })`
+  from `src/os/kit/manifest.ts`. `load` is `() => import('./TheApp')`, so
+  the code arrives on first open. `added` is the day it came to JM/OS
+  (YYYY-MM-DD), which Time Machine shows it from; every built-in app has
+  one (a test checks), and an applet's is its listing's. The fields say
+  where it appears: `dock` (its position), `phoneDock`, `inApplications`,
+  `menuOnly`, `internal`, `noDock`; `applet` is its page in the Applet
+  Store (category, tagline, description, date added); `shortcuts` are
+  places inside it that Spotlight finds, as Preferences' panes;
+  `fullScreen` makes it take the whole screen rather than a window, as
+  Time Machine does (it leaves by `closeFullScreen()`). The manifest is
+  part of the first load: it imports only `kit/manifest`, `core/icons`
+  and its own folder (the lint enforces it).
 - The component (the default export `load` fetches), and its rules or
   physics in a plain module with tests.
 - Its stylesheet, declared in the manifest as

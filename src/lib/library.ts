@@ -27,6 +27,8 @@ export interface Song {
   track?: number;
   /** No words to sing: Karaoke shows the album instead of looking for lyrics. */
   instrumental?: boolean;
+  /** When it came to the library (ISO 8601), iTunes' Date Added. Missing in the repository's snapshot. */
+  added?: string;
 }
 
 /** A whole album in the library, shown with its cover and track list. */
@@ -37,6 +39,8 @@ export interface Album {
   cover: string;
   /** A sentence or two about it. */
   note?: string;
+  /** When it came to the library (ISO 8601). Missing in the repository's snapshot. */
+  added?: string;
 }
 
 /**
@@ -80,6 +84,7 @@ interface SongRow {
   instrumental: boolean;
   lyrics_offset: number;
   lyrics_id: number | null;
+  added_at?: string;
 }
 
 interface DiscRow {
@@ -98,6 +103,7 @@ interface AlbumRow {
   year: number;
   cover: string;
   note: string | null;
+  added_at?: string;
 }
 
 /** A song row as the site uses it, leaving out what isn't set. */
@@ -111,12 +117,20 @@ export function songOf(row: SongRow): Song {
     ...(row.track ? { track: row.track } : {}),
     ...(row.instrumental ? { instrumental: true } : {}),
     ...(row.lyrics_offset ? { offset: row.lyrics_offset } : {}),
-    ...(row.lyrics_id ? { lyrics: row.lyrics_id } : {})
+    ...(row.lyrics_id ? { lyrics: row.lyrics_id } : {}),
+    ...(row.added_at ? { added: row.added_at } : {})
   };
 }
 
 export function albumOf(row: AlbumRow): Album {
-  return { title: row.title, artist: row.artist, year: row.year, cover: row.cover, ...(row.note ? { note: row.note } : {}) };
+  return {
+    title: row.title,
+    artist: row.artist,
+    year: row.year,
+    cover: row.cover,
+    ...(row.note ? { note: row.note } : {}),
+    ...(row.added_at ? { added: row.added_at } : {})
+  };
 }
 
 /** A disc row as the site uses it, leaving out what isn't set. */
@@ -135,8 +149,8 @@ export function discOf(row: DiscRow): Disc {
 // Visitors may read exactly these columns and order by added_at: the grants
 // are in the music migrations, and supabase/tests/rules.sql runs these
 // queries as a visitor. Change both together.
-const SONG_COLUMNS = 'id,title,artist,album,cover,track,instrumental,lyrics_offset,lyrics_id';
-const ALBUM_COLUMNS = 'title,artist,year,cover,note';
+export const SONG_COLUMNS = 'id,title,artist,album,cover,track,instrumental,lyrics_offset,lyrics_id,added_at';
+const ALBUM_COLUMNS = 'title,artist,year,cover,note,added_at';
 const DISC_COLUMNS = 'id,title,artist,cover,cover_x,duration_ms,added_at';
 
 /**

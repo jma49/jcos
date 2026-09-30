@@ -232,8 +232,10 @@ ryOS (AGPL-3.0).
   same styles and the ryOS icon set: an idea board framed for job hunting
   and its invented styles were rejected. From prototypes staged in the
   real site Jincheng kept all seven (ROADMAP.md item 1); on the Dock stack:
-  "the interaction and the UI have to be done well". Live so far: the
-  iTunes Artwork screen saver and Chess (2026-09-29).
+  "the interaction and the UI have to be done well". Live: the iTunes
+  Artwork screen saver, Chess, the iPod's ratings and playlists, the
+  home folder, stickies and iCal of one's own, and Time Machine (all
+  2026-09-29); the Dock stack is what's left (ROADMAP.md).
 - **The owner is a database fact** (decided 2026-09-29). ryOS gates its
   admin by username in code; here `private.owners` holds Jincheng's
   account id and `public.is_owner()` answers for the caller, so row-level
@@ -334,6 +336,20 @@ ryOS (AGPL-3.0).
   (eight seconds in and idle), not with it, and Spotlight opened in
   those first seconds waits for its code (1 KB). The genie looks as it
   did: its warp was measured frame by frame against the old one.
+- **Time Machine, as Jincheng chose it** (2026-09-29): Leopard's space,
+  a Finder window per day going back, the timeline, Cancel and Restore,
+  from the prototype on the design board. Asked what it goes back
+  through, Jincheng chose the apps the desktop had each day and the
+  music library and DVD shelf, not the Soapbox or the guestbook; the
+  home folder is there for Jincheng alone, as in Finder. Asked what
+  Restore does, "bring it back to now": what's chosen opens in the
+  present (an app, a song, a disc, a document, a folder in Finder). The
+  database keeps no old versions, so nothing changed or thrown away
+  comes back, and a document shows today's text on every day it
+  existed. Each app's day is its manifest's `added`, from the first
+  commit that had it (TextEdit's is the home folder's, 2026-09-29, not
+  the older icon of the same name). It's in the default Dock after
+  Chat; a Dock a visitor rearranged keeps what they chose.
 - **Considered and left out** (2026-09-26 and 27 audits): a "continue
   playing" prompt for hidden tabs, more reduced-motion fallbacks, a spec
   template for changes, `llms.txt` in robots.txt (no crawler reads it
@@ -436,8 +452,9 @@ What comes next, in order, is in [ROADMAP.md](ROADMAP.md).
    one; receivers act only on well-formed ones, which carry nothing but
    names and Macintosh HD paths. Proper identity would need Realtime
    Authorization and server-checked presence.
-4. **The first load** is 149 of its 160 KB budget (2026-09-29, after
-   room was made on it), 67 of it react-dom. What else could move:
+4. **The first load** is 150 of its 160 KB budget (149.6, 2026-09-29,
+   after room was made on it and Time Machine came), 67 of it
+   react-dom. What else could move:
    Exposé's overlay (1.1 KB), the context menu (0.8) and the ⌥Tab
    switcher's panel (0.6), each making its first use in the first
    seconds wait for its code, and chat's watch, split from the Dock's
