@@ -125,11 +125,17 @@ interface LaunchOptions {
 /**
  * Opens (or focuses) an app window with its registered defaults. An applet
  * that isn't installed opens its page in the Applet Store instead, however
- * it was asked for (a link, the Terminal, a shortcut).
+ * it was asked for (a link, the Terminal, a shortcut), and a full-screen
+ * app (Time Machine) takes the screen rather than a window; the id returned
+ * is then the app's.
  */
 export function launch(app: AppId, { key, title, origin, props, center }: LaunchOptions = {}): string {
   const def = apps[app];
   if (def.applet && !useWindows.getState().applets.includes(app)) return launch('appstore', { origin, props: { applet: app } });
+  if (def.fullScreen) {
+    useWindows.getState().openFullScreen(app, props);
+    return app;
+  }
   return useWindows.getState().open(app, {
     key,
     title: title ?? def.name,

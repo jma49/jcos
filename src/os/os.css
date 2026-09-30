@@ -27,6 +27,7 @@
 @import './styles/desktop-menu.css';
 @import './styles/expose.css';
 @import './styles/screensaver.css';
+@import './styles/fullscreen.css';
 @import './styles/presence.css';
 @import './styles/notices.css';
 @import './styles/player-frame.css';

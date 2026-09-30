@@ -4,6 +4,7 @@ import { AirDropIcon } from '../../core/icons';
 export default defineApp({
   id: 'airdrop',
   name: 'AirDrop',
+  added: '2026-09-26',
   Icon: AirDropIcon,
   window: { width: 520, height: 500, minWidth: 380, minHeight: 400 },
   inApplications: true,

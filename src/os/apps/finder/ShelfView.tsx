@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 import type { FileNode } from '../../core/files';
-import { Thumb } from './parts';
+import { Thumb } from '../../files/parts';
 
 // The wooden shelf, for the Movies folder: the discs' cases standing face
 // out on wooden boards, as Delicious Library (2005) kept a collection. Not

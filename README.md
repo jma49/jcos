@@ -8,7 +8,9 @@ Around them sits a small working system:
 
 - **Shell:** menu bar, Dock, Exposé, Dashboard, Spotlight, a screen saver,
   and Finder over Macintosh HD, with Jincheng's home folder: locked, as
-  another user's was, but for Public and Sites.
+  another user's was, but for Public and Sites. Time Machine goes back
+  through the days in space, to the apps, music and discs the desktop
+  had then.
 - **Apps and applets:** Terminal, TextEdit, iPod (with Jincheng's
   ratings and playlists, and On-The-Go) and Karaoke with synced lyrics,
   DVD Player

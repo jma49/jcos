@@ -100,7 +100,8 @@ function useHotCorner() {
         armed = false;
         timer = 0;
         const s = useWindows.getState();
-        s.setExpose(!s.exposeOpen);
+        // A full-screen app (Time Machine) covers the windows Exposé would show.
+        if (!s.fullScreen) s.setExpose(!s.exposeOpen);
       }, CORNER_DELAY);
     };
     window.addEventListener('pointermove', onMove);
