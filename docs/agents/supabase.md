@@ -131,7 +131,12 @@ The code that isn't in the browser (each endpoint's parameters, answers and conv
   (`race.sh`: four saves from one copy at once, one lands). At most
   `music_settings.document_limit` documents (500) and `diary_limit`
   entries (10,000), counted under advisory locks. Finder and TextEdit use
-  it through `home/home.ts` ([desktop.md](desktop.md)).
+  it through `home/home.ts` ([desktop.md](desktop.md)). The bot writes
+  entries and documents too (`/diary`, `/doc`, with the service role;
+  `20260929192005_home_from_telegram.sql`), each with the Telegram
+  message it came from in `telegram_message_id` (unique, and not granted
+  to the site), so an edited message edits it and a redelivered one is
+  saved once.
 - **Chat** (`apps/chat/`, `social/chatState.ts`): public rooms listed
   in `public.chat_rooms` (add one in the Table editor) and private
   conversations between two members (rooms named

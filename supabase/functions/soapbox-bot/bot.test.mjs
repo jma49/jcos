@@ -29,6 +29,8 @@ beforeEach(() => {
   // DVD Player's shelf, its limit, and the videos YouTube has a full-size thumbnail for.
   Object.assign(world, { discs: [], maxres: new Set() });
   world.music.disc_limit = 200;
+  // Jincheng's diary and documents, and a name another save takes first (a race).
+  Object.assign(world, { diary: [], documents: [], takenMeanwhile: null });
 });
 
 const json = (value, status = 200) => new Response(JSON.stringify(value), { status, headers: { 'content-type': 'application/json' } });
@@ -92,6 +94,36 @@ globalThis.fetch = async (input, init = {}) => {
     if (method === 'DELETE') return (world.discs = world.discs.filter((d) => !matching.includes(d))), new Response(null, { status: 204 });
     if (method === 'PATCH') return matching.forEach((d) => Object.assign(d, body)), new Response(null, { status: 204 });
     return json(params.get('order') === 'added_at.desc' ? [...matching].reverse() : matching);
+  }
+  const home = url.match(/db\.example\/rest\/v1\/(diary|documents)(\?.*)?$/);
+  if (home) {
+    const [, table, query = ''] = home;
+    const params = new URLSearchParams(query.slice(1));
+    const eq = (key) => params.get(key)?.replace(/^eq\./, '');
+    const rows = world[table];
+    if (method === 'POST') {
+      // As the unique indexes do: a message once, a name once in a folder whatever its case.
+      if (rows.some((r) => r.telegram_message_id === body.telegram_message_id)) {
+        return json({ code: '23505', message: `duplicate key value violates unique constraint "${table}_telegram_message"` }, 409);
+      }
+      if (table === 'documents' && world.takenMeanwhile === body.name) {
+        world.takenMeanwhile = null;
+        rows.push({ folder: body.folder, name: body.name, body: 'saved by someone else first' });
+      }
+      if (table === 'documents' && rows.some((r) => r.folder === body.folder && r.name.toLowerCase() === body.name.toLowerCase())) {
+        return json({ code: '23505', message: 'duplicate key value violates unique constraint "documents_name"' }, 409);
+      }
+      rows.push({ ...body, created_at: new Date(Date.UTC(2026, 8, 29, 20, rows.length)).toISOString() });
+      return new Response(null, { status: 201 });
+    }
+    const matching = rows.filter(
+      (r) =>
+        (!eq('telegram_message_id') || String(r.telegram_message_id) === eq('telegram_message_id')) &&
+        (!eq('day') || r.day === eq('day')) &&
+        (!eq('folder') || r.folder === eq('folder'))
+    );
+    if (method === 'PATCH') return matching.forEach((r) => Object.assign(r, body)), new Response(null, { status: 204 });
+    return json(params.get('order') === 'created_at.desc' ? [...matching].reverse() : matching);
   }
   const music = url.match(/db\.example\/rest\/v1\/(songs|music_settings)(\?.*)?$/);
   if (music) {
@@ -564,4 +596,102 @@ test('/dvd lists the shelf, newest first; /dvd remove takes a disc off by title 
   assert.deepEqual(world.discs.map((d) => d.id), ['CCCCCCCCCCC']);
   await send({ message_id: 545, text: '/dvd remove nothing like it' });
   assert.match(world.replies.at(-1), /No disc matches “nothing like it”/);
+});
+
+// ---------- Jincheng's home folder: /diary and /doc ----------
+
+/** A message sent at `iso` (Telegram gives Unix seconds). */
+const at = (iso) => Math.floor(Date.parse(iso) / 1000);
+
+test('/diary writes an entry for the day it was sent where Jincheng is, for Jincheng alone', async () => {
+  // 23:30 in San Jose (the place to start with) is already the next day in UTC.
+  await send({ message_id: 300, date: at('2026-09-30T06:30:00Z'), text: '/diary Climbed after work.\nThe blue V7.' });
+  assert.deepEqual(world.diary.map(({ day, body, telegram_message_id }) => ({ day, body, telegram_message_id })), [
+    { day: '2026-09-29', body: 'Climbed after work.\nThe blue V7.', telegram_message_id: 300 }
+  ]);
+  assert.match(world.replies.at(-1), /In your diary for Tuesday, September 29/);
+  // Somewhere else, that place's day.
+  await send({ message_id: 301, text: '/at Tokyo' });
+  await send({ message_id: 302, date: at('2026-09-30T06:30:00Z'), text: '/diary Ramen at midnight.' });
+  assert.equal(world.diary.at(-1).day, '2026-09-30');
+  assert.equal(world.posts.length, 0, 'nothing went on the Soapbox');
+});
+
+test('/diary alone says how today looks', async () => {
+  await send({ message_id: 310, date: at('2026-09-29T18:00:00Z'), text: '/diary' });
+  assert.match(world.replies.at(-1), /Nothing in your diary for Tuesday, September 29 yet/);
+  await send({ message_id: 311, date: at('2026-09-29T18:00:00Z'), text: '/diary First.' });
+  await send({ message_id: 312, date: at('2026-09-29T19:00:00Z'), text: '/diary Second.' });
+  await send({ message_id: 313, date: at('2026-09-29T19:30:00Z'), text: '/diary' });
+  assert.match(world.replies.at(-1), /Tuesday, September 29: 2 entries\. The latest:\n\nSecond\./);
+});
+
+test('/doc makes a document in Documents named after its first line, free whatever the case', async () => {
+  world.documents.push({ folder: 'documents', name: 'packing list.txt', body: '' }, { folder: 'public', name: 'Packing list 2.txt', body: '' });
+  await send({ message_id: 320, text: '/doc Packing list\n- tent\n- stove' });
+  assert.deepEqual(world.documents.at(-1), {
+    folder: 'documents',
+    name: 'Packing list 2.txt',
+    body: 'Packing list\n- tent\n- stove',
+    telegram_message_id: 320,
+    created_at: world.documents.at(-1).created_at
+  });
+  assert.match(world.replies.at(-1), /In Documents as “Packing list 2\.txt”/);
+  await send({ message_id: 321, text: '/doc' });
+  assert.match(world.replies.at(-1), /Its first line names it/);
+  assert.equal(world.posts.length, 0);
+});
+
+test('a document named the same meanwhile gets the next name', async () => {
+  world.takenMeanwhile = 'Notes.txt';
+  await send({ message_id: 330, text: '/doc Notes\nfrom the train' });
+  assert.deepEqual(world.documents.map((d) => d.name), ['Notes.txt', 'Notes 2.txt']);
+  assert.equal(world.documents.at(-1).telegram_message_id, 330);
+  assert.match(world.replies.at(-1), /“Notes 2\.txt”/);
+});
+
+test('a message Telegram delivers twice is saved once, and answered once', async () => {
+  const twice = { message_id: 340, date: at('2026-09-29T18:00:00Z'), text: '/diary Only once.' };
+  await send(twice);
+  await send(twice);
+  assert.equal(world.diary.length, 1);
+  assert.equal(world.replies.filter((r) => /In your diary/.test(r)).length, 1);
+  await send({ message_id: 341, text: '/doc Once' });
+  await send({ message_id: 341, text: '/doc Once' });
+  assert.equal(world.documents.length, 1);
+});
+
+test('editing the message edits the entry or the document, and not the Soapbox', async () => {
+  await send({ message_id: 350, date: at('2026-09-29T18:00:00Z'), text: '/diary Tierd.' });
+  await send({ message_id: 351, text: '/doc Groceries\nmilk' });
+  await call({ edited_message: { ...me, message_id: 350, text: '/diary Tired.' } });
+  await call({ edited_message: { ...me, message_id: 351, text: '/doc Groceries\nmilk, eggs' } });
+  assert.equal(world.diary[0].body, 'Tired.');
+  assert.deepEqual([world.documents[0].name, world.documents[0].body], ['Groceries.txt', 'Groceries\nmilk, eggs']);
+  assert.deepEqual(world.patches, [], 'no Soapbox post was touched');
+});
+
+test('a full diary says so, and a photo meant for the diary goes nowhere', async () => {
+  const failing = globalThis.fetch;
+  globalThis.fetch = async (input, init = {}) =>
+    String(input).endsWith('/rest/v1/diary') && init.method === 'POST'
+      ? json({ code: 'P0429', message: 'The diary is full (10000 entries).' }, 400)
+      : failing(input, init);
+  try {
+    await send({ message_id: 360, date: at('2026-09-29T18:00:00Z'), text: '/diary One more.' });
+  } finally {
+    globalThis.fetch = failing;
+  }
+  assert.match(world.replies.at(-1), /Couldn’t save it; nothing changed\.\n\nThe diary is full \(10000 entries\)\./);
+  await send({ message_id: 361, photo: photo('d'), caption: '/diary the view from the top' });
+  assert.equal(world.posts.length, 0);
+  assert.equal(world.uploads.length, 0);
+  assert.match(world.replies.at(-1), /the photo went nowhere/);
+});
+
+test('the Soapbox’s own /note still posts a note, and /help lists the home folder', async () => {
+  await send({ message_id: 370, text: '/note hello there' });
+  assert.deepEqual(world.posts.map((p) => [p.body, p.kind]), [['hello there', 'note']]);
+  await send({ message_id: 371, text: '/help' });
+  assert.match(world.replies.at(-1), /\/diary <text>[\s\S]*\/doc <text>/);
 });

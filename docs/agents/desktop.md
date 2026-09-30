@@ -348,7 +348,9 @@ only `kit/`. The lint enforces all three.
   keeps ⌘N) starts a document that goes into Documents as "Untitled.txt"
   once something is typed; Save As (⇧⌘S, `SaveAsSheet.tsx`) renames it
   or moves it to another folder, Public included. An emptied diary entry
-  is taken out when it's left.
+  is taken out when it's left. Entries and documents also come from
+  Telegram (the bot's `/diary` and `/doc`); they show on the next read of
+  the home folder (at most 30 s, or when the tab comes back).
 - `src/os/shell/Alert.tsx` (with `alert.css`, which an app's stylesheet
   imports): an app's alert as Tiger drew one, the app's icon beside the
   message, with OK, Cancel and a third choice, Return and Escape. It
