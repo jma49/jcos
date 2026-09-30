@@ -215,6 +215,8 @@ export default function Finder({ win }: AppProps) {
   // e.key on a Mac.
   const onKey = useRef<(e: KeyboardEvent) => void>(() => {});
   onKey.current = (e) => {
+    // A sheet or an alert is up: the window's keys are its, not Finder's under it.
+    if (burning || locked || trashing) return;
     if (e.metaKey || e.altKey) {
       if (e.metaKey && e.code === 'Backspace' && selectedNode?.trash && !typing(e)) {
         e.preventDefault();
