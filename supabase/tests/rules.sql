@@ -312,12 +312,12 @@ select pg_temp.check((
   select coalesce(string_agg(p.oid::regprocedure::text, ' ' order by p.oid::regprocedure::text), '')
   from pg_proc p join pg_namespace n on n.oid = p.pronamespace
   where n.nspname = 'public' and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')
-) = 'is_owner() song_limit()', 'visitors may call only the security definer functions kept on purpose');
+) = 'is_owner() job_hunt_totals() song_limit()', 'visitors may call only the security definer functions kept on purpose');
 select pg_temp.check((
   select coalesce(string_agg(p.oid::regprocedure::text, ' ' order by p.oid::regprocedure::text), '')
   from pg_proc p join pg_namespace n on n.oid = p.pronamespace
   where n.nspname = 'public' and p.prosecdef and has_function_privilege('authenticated', p.oid, 'execute')
-) = 'chat_can_write(text) is_owner() my_reactions() my_recovery_email() set_recovery_email(text) song_limit() song_played(text)', 'members may call only the security definer functions kept on purpose');
+) = 'chat_can_write(text) is_owner() job_hunt_totals() my_reactions() my_recovery_email() set_recovery_email(text) song_limit() song_played(text)', 'members may call only the security definer functions kept on purpose');
 select pg_temp.check(not has_function_privilege('anon', 'public.my_reactions()', 'execute'), 'visitors can''t ask for members'' reactions');
 select pg_temp.act_as('anon');
 select pg_temp.check(public.username_available('someone_new') and not public.username_available('alice'), 'visitors can still check a username');
@@ -652,6 +652,77 @@ select pg_temp.check(not has_function_privilege('anon', 'public.song_played(text
   and not has_function_privilege('anon', 'public.rate_song(text, int)', 'execute')
   and not has_function_privilege('anon', 'public.save_playlist(text, text[])', 'execute')
   and not has_function_privilege('authenticated', 'public.playlists_within_limit()', 'execute'), 'visitors can''t call the owner''s functions, and no one calls the trigger''s');
+
+-- Job Hunt ------------------------------------------------------------------
+
+-- Jincheng adds one, moves it along and closes it; how far it got, and a save's version, are the database's.
+select pg_temp.act_as('authenticated', '99999999-9999-9999-9999-999999999999');
+insert into public.job_applications (company, role, applied_on, source) values
+  ('Kestrel Data', 'Software Engineer, Developer Tools', '2026-09-27', 'Greenhouse'),
+  ('Harborview AI', 'Software Engineer, Evals', '2026-09-10', 'Greenhouse');
+update public.job_applications set stage = 'interviewing' where company = 'Harborview AI';
+update public.job_applications set stage = 'closed', outcome = 'rejected' where company = 'Harborview AI';
+select pg_temp.check((select reached = 'interviewing' and stage = 'closed' and outcome = 'rejected' and version = 3 from public.job_applications where company = 'Harborview AI'),
+  'an application gets as far as its stage, and closing it doesn''t undo that');
+update public.job_applications set stage = 'applied' where company = 'Harborview AI';
+select pg_temp.check((select outcome is null and reached = 'interviewing' from public.job_applications where company = 'Harborview AI'), 'reopened, it has no outcome and has still been as far');
+select pg_temp.check(pg_temp.refused($$update public.job_applications set reached = 'offer' where company = 'Kestrel Data'$$)
+  and pg_temp.refused($$update public.job_applications set version = 9 where company = 'Kestrel Data'$$), 'no one sets how far one got, or a version');
+select pg_temp.check(pg_temp.refused($$insert into public.job_applications (company, role) values ('kestrel data', 'SOFTWARE ENGINEER, DEVELOPER TOOLS')$$), 'a company and a role are one application, whatever their case');
+select pg_temp.check(pg_temp.refused($$insert into public.job_applications (company) values ('  ')$$)
+  and pg_temp.refused($$insert into public.job_applications (company) values (E'two\nlines')$$)
+  and pg_temp.refused($$insert into public.job_applications (company, posting) values ('X', 'javascript:alert(1)')$$)
+  and pg_temp.refused($$insert into public.job_applications (company, stage, outcome) values ('Y', 'closed', 'ghosted')$$), 'names, links and outcomes are checked');
+update public.job_applications set outcome = 'rejected' where company = 'Kestrel Data';
+select pg_temp.check((select outcome is null from public.job_applications where company = 'Kestrel Data'), 'only a closed application has an outcome');
+select pg_temp.check(pg_temp.refused($$insert into public.job_events (application_id, kind, happened_at) select id, 'offer', now() from public.job_applications limit 1$$), 'what Mail said is the import''s to write');
+reset role;
+
+-- Visitors and members see only the numbers.
+select pg_temp.act_as('anon');
+select pg_temp.check(pg_temp.refused($$select 1 from public.job_applications$$) and pg_temp.refused($$select 1 from public.job_events$$), 'visitors can''t ask for applications or what Mail said');
+select pg_temp.check((public.job_hunt_totals() -> 'stages' ->> 'applied') = '2' and (public.job_hunt_totals() -> 'reached' ->> 'interviewing') = '1',
+  'visitors read how many are at each stage and how far they got');
+select pg_temp.check(public.job_hunt_totals()::text !~ 'Kestrel|Harborview|Greenhouse', 'the totals name no company');
+select pg_temp.check(pg_temp.refused($$select private.import_job_hunt('{"applications": []}')$$), 'visitors can''t import');
+reset role;
+select pg_temp.act_as('authenticated', '11111111-1111-1111-1111-111111111111');
+select pg_temp.check((select count(*) from public.job_applications) = 0 and (select count(*) from public.job_events) = 0, 'members see none of it');
+select pg_temp.check(pg_temp.refused($$insert into public.job_applications (company) values ('Mine')$$), 'members can''t add one');
+update public.job_applications set notes = 'Defaced.' where true;
+delete from public.job_applications where true;
+select pg_temp.check(pg_temp.refused($$select private.import_job_hunt('{"applications": []}')$$), 'members can''t import');
+reset role;
+select pg_temp.check((select count(*) from public.job_applications where notes = '') = 2, 'members can''t change or delete them');
+
+-- The import: what's new is added, Mail moves one on but never back and
+-- reopens nothing closed, blanks are filled, a message read twice is kept once.
+select set_config('test.found', $json${"applications": [
+  {"company": "Kestrel Data", "role": "Software Engineer, Developer Tools", "stage": "assessment", "reached": "assessment", "applied_on": "2026-09-26", "location": "Remote, US",
+   "events": [{"kind": "applied", "at": "2026-09-26T18:00:00Z", "subject": "Thank you for applying", "thread": "18c2f0a1b2c3d4e5", "message": "18c2f0a1b2c3d4e5"},
+              {"kind": "assessment", "at": "2026-09-28T18:00:00Z", "subject": "Your CodeSignal assessment", "thread": "18c2f0a1b2c3d4e6", "message": "18c2f0a1b2c3d4e6"}]},
+  {"company": "Harborview AI", "role": "Software Engineer, Evals", "stage": "applied", "applied_on": "2026-09-10"},
+  {"company": "Lumenfold", "role": "SDET II", "stage": "closed", "outcome": "rejected", "applied_on": "2026-09-01", "source": "Lever",
+   "events": [{"kind": "rejection", "at": "2026-09-20T18:00:00Z", "subject": "An update on your application", "thread": "18c2f0a1b2c3d4e7", "message": "18c2f0a1b2c3d4e7"}]}
+]}$json$, false);
+select pg_temp.check(private.import_job_hunt(current_setting('test.found')::jsonb) = '{"added": 1, "moved": 1, "messages": 3}'::jsonb, 'the import adds what''s new and moves what Mail moved');
+select pg_temp.check((select stage = 'assessment' and reached = 'assessment' and applied_on = '2026-09-26' and location = 'Remote, US' and source = 'Greenhouse' from public.job_applications where company = 'Kestrel Data'),
+  'Mail moves one on, keeps the earliest day, and fills in only what''s blank');
+select pg_temp.check(private.import_job_hunt(current_setting('test.found')::jsonb) = '{"added": 0, "moved": 0, "messages": 0}'::jsonb and (select count(*) from public.job_events) = 3,
+  'the same messages read again change nothing');
+select pg_temp.check(private.import_job_hunt($json${"applications": [{"company": "kestrel data", "role": "software engineer, developer tools", "stage": "applied"}, {"company": "Lumenfold", "role": "SDET II", "stage": "interviewing"}]}$json$::jsonb) = '{"added": 0, "moved": 0, "messages": 0}'::jsonb
+  and (select stage from public.job_applications where company = 'Kestrel Data') = 'assessment'
+  and (select stage from public.job_applications where company = 'Lumenfold') = 'closed', 'Mail never moves one back, or reopens one that''s closed');
+select pg_temp.check(pg_temp.refused($$select private.import_job_hunt('{"applications": [{"company": "Bad", "events": [{"kind": "gossip", "at": "2026-09-01T00:00:00Z"}]}]}')$$)
+  and not exists (select 1 from public.job_applications where company = 'Bad'), 'a malformed batch writes nothing');
+select pg_temp.act_as('authenticated', '99999999-9999-9999-9999-999999999999');
+select pg_temp.check((select count(*) from public.job_events) = 3, 'Jincheng reads what Mail said');
+delete from public.job_applications where company = 'Lumenfold';
+reset role;
+select pg_temp.check(not exists (select 1 from public.job_applications where company = 'Lumenfold') and (select count(*) from public.job_events) = 2,
+  'Jincheng deletes one, and what Mail said about it goes with it');
+select pg_temp.check(not has_function_privilege('anon', 'public.job_saved()', 'execute')
+  and not has_function_privilege('authenticated', 'public.job_within_limit()', 'execute'), 'no one calls Job Hunt''s trigger functions');
 
 -- Supabase's API loads pg_safeupdate, which refuses a DELETE or UPDATE
 -- without a WHERE clause, even inside a function ("DELETE requires a

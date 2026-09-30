@@ -6,6 +6,7 @@ import { createClient, type PostgrestError, type User } from '@supabase/supabase
 import { CURSOR_COLORS } from './social';
 import { discOf, SONG_COLUMNS, songOf, type Disc } from '../../lib/library';
 import { playlistNameProblem } from './playlistNames';
+import { supabaseJobs } from './jobs';
 import {
   LOBBY,
   NOTES_PER_DAY,
@@ -293,6 +294,8 @@ export function supabaseSocial(url: string, key: string): Social {
   });
 
   return {
+    ...supabaseJobs(client, member, refusal),
+
     account: () => current,
 
     onAccount(callback) {

@@ -132,6 +132,16 @@ made=$(( $(psql -tA -d "$DB" -c "select count(*) from public.documents") - befor
 echo "ok: five documents at once, room for two, two made"
 psql -q -v ON_ERROR_STOP=1 -d "$DB" -c "update public.music_settings set value = '500' where name = 'document_limit'" >/dev/null
 
+# Job Hunt: with room for two, five applications added at once, two are made.
+psql -q -v ON_ERROR_STOP=1 -d "$DB" -c "update public.music_settings set value = to_jsonb((select count(*) from public.job_applications) + 2) where name = 'job_limit'" >/dev/null
+before=$(psql -tA -d "$DB" -c "select count(*) from public.job_applications")
+for i in 1 2 3 4 5; do as_jincheng "insert into public.job_applications (company) values ('Race $i')" & done
+wait
+made=$(( $(psql -tA -d "$DB" -c "select count(*) from public.job_applications") - before ))
+[ "$made" = 2 ] || { echo "FAILED: five applications at once with room for two made $made"; exit 1; }
+echo "ok: five applications at once, room for two, two made"
+psql -q -v ON_ERROR_STOP=1 -d "$DB" -c "update public.music_settings set value = '2000' where name = 'job_limit'" >/dev/null
+
 # A member's own stickies: with room for two, five put up at once, two are made.
 psql -q -v ON_ERROR_STOP=1 -d "$DB" -c "update public.music_settings set value = to_jsonb((select count(*) from public.stickies where user_id = '$DAVE') + 2) where name = 'sticky_limit'" >/dev/null
 for i in 1 2 3 4 5; do as_dave "insert into public.stickies (body) values ('race $i')" & done

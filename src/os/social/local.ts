@@ -9,6 +9,7 @@
 import type { Disc } from '../../lib/library';
 import { loadJSON, saveJSON } from '../core/storage';
 import { playlistNameProblem } from './playlistNames';
+import { localJobs } from './jobs';
 import {
   CHAT_MAX,
   LOBBY,
@@ -235,6 +236,8 @@ export function localSocial(): Social {
   };
 
   return {
+    ...localJobs(owner),
+
     account: () => current,
 
     onAccount(callback) {
