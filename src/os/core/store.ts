@@ -72,7 +72,7 @@ interface WindowStore {
   screensaverOn: boolean;
   /** People on the desktop right now, this visitor included; null until known. */
   visitors: Visitor[] | null;
-  /** Too many people here for pointers (see CROWD in Presence.tsx). */
+  /** Too many people here for pointers (see CROWD in social/online.tsx). */
   crowded: boolean;
   /** A photo URL chosen as the desktop picture, or null for the default. */
   wallpaper: string | null;
