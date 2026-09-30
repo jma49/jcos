@@ -223,6 +223,14 @@ function EntryEditor({
     }
   });
 
+  // A draft from before (a closed tab, a dropped connection) is saved again, once, as the page opens.
+  const opened = useRef(false);
+  useEffect(() => {
+    if (opened.current) return;
+    opened.current = true;
+    if (dirty) saver.soon();
+  }, [dirty, saver]);
+
   return (
     <textarea
       ref={box}
