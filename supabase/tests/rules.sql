@@ -199,6 +199,18 @@ select pg_temp.check(not exists (
   where schemaname in ('public', 'private')
     and replace(coalesce(qual, '') || ' ' || coalesce(with_check, ''), 'SELECT auth.uid()', '') ~ 'auth\.uid\(\)'
 ), 'every policy asks who the caller is once, with (select auth.uid()), not for each row');
+-- The security definer functions the API roles may call are the ones kept on
+-- purpose (supabase/migrations/20260926100511_advisor.sql and those after it).
+select pg_temp.check((
+  select coalesce(string_agg(p.oid::regprocedure::text, ' ' order by p.oid::regprocedure::text), '')
+  from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+  where n.nspname = 'public' and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')
+) = 'is_owner() song_limit()', 'visitors may call only the security definer functions kept on purpose');
+select pg_temp.check((
+  select coalesce(string_agg(p.oid::regprocedure::text, ' ' order by p.oid::regprocedure::text), '')
+  from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+  where n.nspname = 'public' and p.prosecdef and has_function_privilege('authenticated', p.oid, 'execute')
+) = 'chat_can_write(text) is_owner() my_reactions() my_recovery_email() set_recovery_email(text) song_limit() song_played(text)', 'members may call only the security definer functions kept on purpose');
 select pg_temp.check(not has_function_privilege('anon', 'public.my_reactions()', 'execute'), 'visitors can''t ask for members'' reactions');
 select pg_temp.act_as('anon');
 select pg_temp.check(public.username_available('someone_new') and not public.username_available('alice'), 'visitors can still check a username');
