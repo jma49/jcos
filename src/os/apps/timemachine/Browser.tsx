@@ -3,6 +3,7 @@ import { BackGlyph, ForwardGlyph } from '../../core/glyphs';
 import { find, type FileNode } from '../../core/files';
 import { DiskIcon, FinderIcon } from '../../core/icons';
 import { ancestry, formatDate, parentOf, Thumb } from '../../files/parts';
+import { ownsKey } from '../../core/useKeys';
 import { QuickLook } from '../../files/QuickLook';
 import { Alert } from '../../shell/Alert';
 
@@ -32,9 +33,6 @@ export function folderOn(disk: FileNode, path: string): FileNode {
       .find((node): node is FileNode => !!node?.children) ?? disk
   );
 }
-
-/** Whether a key press belongs to a text field. */
-const typing = (e: KeyboardEvent) => e.target instanceof HTMLElement && e.target.matches('input, textarea, select, [contenteditable]');
 
 export function Browser({
   disk,
@@ -90,7 +88,8 @@ export function Browser({
 
   const onKey = useRef<(e: KeyboardEvent) => void>(() => {});
   onKey.current = (e) => {
-    if (locked || typing(e)) return;
+    // A control outside the window (the timeline, the arrows) keeps its keys (core/useKeys.ts).
+    if (locked || !ownsKey(e)) return;
     if (e.metaKey || e.altKey) {
       const parent = folder.path === '/' ? null : parentOf(folder.path);
       if (e.code === 'ArrowUp' && parent) {

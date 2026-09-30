@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { launch } from '../../core/registry';
 import { useFocusedId, useWindows } from '../../core/store';
+import { ownsKey } from '../../core/useKeys';
 import type { WindowState } from '../../core/types';
 
 /** A new document, in its own window; it goes into the home's Documents once something is typed. */
@@ -42,8 +43,10 @@ export function useFileMenu(win: WindowState, owner: boolean, actions: { save?: 
 
   useEffect(() => {
     if (!front || !owner) return;
-    // e.code: ⌥ changes e.key on a Mac.
+    // e.code: ⌥ changes e.key on a Mac. In the page ⌥N types (ñ), while ⌘S
+    // saves from there too (core/useKeys.ts).
     const onKey = (e: KeyboardEvent) => {
+      if (!ownsKey(e)) return;
       if (e.altKey && !e.metaKey && e.code === 'KeyN') {
         e.preventDefault();
         newDocument();

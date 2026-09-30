@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { apps, type AppProps } from '../../core/registry';
 import { loadJSON, saveJSON } from '../../core/storage';
 import { isPhone, useFocusedId, useWindows } from '../../core/store';
+import { ownsKey } from '../../core/useKeys';
 import { Alert } from '../../shell/Alert';
 import { Drawer } from '../../shell/drawer';
 import { JOB_STAGES, type JobStage } from '../../social/jobs';
@@ -187,7 +188,8 @@ function Mine({ win, current, onPick }: { win: AppProps['win']; current: JobStag
   useEffect(() => {
     if (!front) return;
     const onKey = (e: KeyboardEvent) => {
-      if (useWindows.getState().exposeOpen) return;
+      // Not from the drawer's fields (⌥ with a key types there), nor from a control outside the window (core/useKeys.ts).
+      if (useWindows.getState().exposeOpen || !ownsKey(e)) return;
       const c = commands.current;
       // e.code: ⌥ changes e.key on a Mac.
       if (e.altKey && !e.metaKey && !e.ctrlKey) {
@@ -198,7 +200,7 @@ function Mine({ win, current, onPick }: { win: AppProps['win']; current: JobStag
         }
         return;
       }
-      if (e.metaKey || e.ctrlKey || (e.target as HTMLElement).closest('input, textarea, select, [contenteditable]')) return;
+      if (e.metaKey || e.ctrlKey) return;
       if (e.key === 'Escape' && c.info) setInfo(false);
       else if ((e.key === 'Delete' || e.key === 'Backspace') && c.picked) {
         e.preventDefault();
