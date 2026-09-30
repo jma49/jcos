@@ -107,9 +107,11 @@ SHA with the version in a comment; Dependabot updates both.
   under `api/`; each Edge Function has its `*.test.mjs`. Keep logic worth
   testing in plain modules without React (as `applets/spider/rules.ts`
   and `applets/pinball/table.ts` are).
-- `npm run test:db` checks the database's rules
-  (`supabase/tests/rules.sql`) against a local Postgres, then races the
-  per-member limits with overlapping sessions (`supabase/tests/race.sh`).
+- `npm run test:db` loads the schema into a local Postgres, reruns every
+  migration from `20260926071227` on over it (so a new migration is
+  rerun-tested without being listed anywhere), checks the database's
+  rules (`supabase/tests/rules.sql`), then races the per-member limits
+  with overlapping sessions (`supabase/tests/race.sh`).
 - `npm run test:smoke` opens every app in the registry in a production
   build and fails on an uncaught error, a console error or a crashed
   window. A new app is covered once it's registered.

@@ -50,7 +50,10 @@ again.
   - `drop … if exists` before `create policy` and `create trigger`;
   - `on conflict` for seed rows.
 
-  `run.sh` reruns the latest migrations over the schema to prove it.
+  `run.sh` reruns every migration from `20260926071227` on over the
+  schema to prove it: it loops over the folder, so a new file is covered
+  without being listed (it used to name them by hand, and seven of forty
+  commits edited the list).
 - Counting rows before an insert is not a limit under concurrency. Six
   notes sent at once all got through a "three a day" check. Take
   `pg_advisory_xact_lock` first (see [supabase.md](supabase.md#security)).

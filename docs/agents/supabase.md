@@ -224,7 +224,11 @@ an older schema needs the files in `supabase/migrations/`, run in the
 order of their timestamped names: `supabase db push` runs the ones the
 project's migration history hasn't recorded (HANDOFF.md §1 has the
 commands for this project). Test a migration against the live project inside `begin; …
-rollback;` first (`supabase db query --linked -f`).
+rollback;` first (`supabase db query --linked -f`). A migration must run
+twice without harm ([pitfalls.md](pitfalls.md)): `npm run test:db` reruns
+every one from `20260926071227` on over the full schema
+(`supabase/tests/run.sh` loops over the folder, so a new file is covered
+without being listed).
 
 Without those variables, production hides these features, and `astro dev`
 falls back to `src/os/social/local.ts`, which keeps accounts, notes and
