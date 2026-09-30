@@ -229,7 +229,8 @@ only `kit/`. The lint enforces all three.
   `shell/useShortcuts.ts` check as well). Applets get `ownsKey` from the
   kit (Pinball). Exposé, the ⌥Tab switcher and a full-screen app's own
   keys (Time Machine's Escape and Page Up/Down) hold theirs wherever
-  focus is.
+  focus is, and an Escape closes Quick Look before it leaves Time
+  Machine.
 - `src/os/shell/drawer.tsx`: Tiger-style drawers. Each window has a slot
   along its edge (right, left if there's no room, or over the content
   when neither side fits); an app renders `<Drawer open>` anywhere and it
