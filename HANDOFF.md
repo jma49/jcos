@@ -327,6 +327,11 @@ ryOS (AGPL-3.0).
   (callable by everyone, it says only whether the caller is the owner),
   and once the playlists migration runs, `song_played()` (callable by
   members, it counts nothing but the owner's plays).
+- DVD Player's disc lengths: until 2026-09-29 (#174) a disc put in
+  after another could be given the other's length, which went to
+  `public.discs` when the owner did it. A wrong length is put right the
+  next time the disc goes in with the owner watching (a DVD-R's in its
+  visitor's browser), so nothing needs clearing by hand.
 - Merges to `main` deploy, except those the ignored build step skips
   (only docs, tests, CI, Supabase or tooling). Still unconfirmed: that
   Vercel builds on Node 24; only a deployment's build log shows it (its
