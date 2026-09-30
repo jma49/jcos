@@ -7,6 +7,7 @@ import { clockTimeZone, usePlace } from '../../ambient/place';
 import type { AppProps } from '../../core/registry';
 import { play } from '../../core/sound';
 import { useFocusedId } from '../../core/store';
+import { useKeys } from '../../core/useKeys';
 
 // Soapbox: Jincheng's own notes and rants, sent from Telegram (see
 // supabase/functions/soapbox-bot). Visitors read and react: members (signed
@@ -79,18 +80,15 @@ function Lightbox({
   onStep: (i: number) => void;
   onClose: () => void;
 }) {
-  useEffect(() => {
-    if (!front) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-      else if (e.key === 'ArrowRight' && images.length > 1) onStep((index + 1) % images.length);
-      else if (e.key === 'ArrowLeft' && images.length > 1) onStep((index - 1 + images.length) % images.length);
-      else return;
-      e.preventDefault();
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [front, images.length, index, onStep, onClose]);
+  useKeys(front, {
+    Escape: onClose,
+    ArrowRight: () => {
+      if (images.length > 1) onStep((index + 1) % images.length);
+    },
+    ArrowLeft: () => {
+      if (images.length > 1) onStep((index - 1 + images.length) % images.length);
+    }
+  });
 
   return (
     <div className="os-soapbox-lightbox" role="dialog" aria-label="Photo" onClick={onClose}>

@@ -3,6 +3,7 @@ import { pngIcon } from '../../core/icons';
 import type { AppProps } from '../../core/registry';
 import { launch } from '../../core/registry';
 import { useFocusedId, useWindows } from '../../core/store';
+import { ownsKey } from '../../core/useKeys';
 import { Alert } from '../../shell/Alert';
 import { Drawer } from '../../shell/drawer';
 import { useAccount } from '../../social/account';
@@ -190,7 +191,8 @@ function Calendar({ win, account }: AppProps & { account: string }) {
   useEffect(() => {
     if (!front) return;
     const onKey = (e: KeyboardEvent) => {
-      if (useWindows.getState().exposeOpen) return;
+      // Not from the drawer's fields (⌥ with a key types there), nor from a control outside the window (core/useKeys.ts).
+      if (useWindows.getState().exposeOpen || !ownsKey(e)) return;
       const c = commands.current;
       // e.code: ⌥ changes e.key on a Mac.
       if (e.altKey && !e.metaKey && (e.code === 'KeyN' || e.code === 'KeyK')) {
@@ -198,7 +200,7 @@ function Calendar({ win, account }: AppProps & { account: string }) {
         void (e.code === 'KeyN' ? c.newEvent() : c.newTodo());
         return;
       }
-      if (e.metaKey || e.ctrlKey || e.altKey || (e.target as HTMLElement).closest('input, textarea, select, [contenteditable]')) return;
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
       const step = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -7, ArrowDown: 7 }[e.key];
       if (step) {
         e.preventDefault();

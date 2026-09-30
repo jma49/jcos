@@ -182,11 +182,13 @@ export function FloatingController({ below, z, ...props }: ControllerProps & { b
     el.addEventListener('pointercancel', up);
   };
 
+  // data-panel: a panel of DVD Player's own, so keys pressed on it stay the app's (core/useKeys.ts).
   return createPortal(
     <div
       className="os-dvd-controller"
       role="toolbar"
       aria-label="DVD Controller"
+      data-panel=""
       data-drawer={drawer || undefined}
       style={{ left: at.x, top: at.y, zIndex: z } as CSSProperties}
       onPointerDown={drag}
