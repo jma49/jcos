@@ -1,8 +1,9 @@
 import { beforeAll, beforeEach, describe, expect, test } from 'vitest';
-import type { WindowState } from './types';
+import type { OSData, WindowState } from './types';
 
 // Windows coming back after a reload: what's put back, what's dropped, and
-// where a window goes when the browser is smaller than when it was saved.
+// where a window goes when the browser is smaller than when it was saved;
+// and what the desktop opens as it comes up, with and without a link.
 // A 1280 × 800 desktop, not a phone.
 
 type Session = typeof import('./windowSession');
@@ -10,6 +11,7 @@ type Store = typeof import('./store');
 let session: Session;
 let store: Store;
 const saved = new Map<string, string>();
+const SITE = 'https://majincheng.com';
 
 beforeAll(async () => {
   Object.assign(globalThis, {
@@ -21,6 +23,18 @@ beforeAll(async () => {
         getItem: (k: string) => saved.get(k) ?? null,
         setItem: (k: string, v: string) => saved.set(k, v),
         removeItem: (k: string) => saved.delete(k)
+      },
+      location: {
+        href: `${SITE}/`,
+        get search() {
+          return new URL(this.href).search;
+        }
+      },
+      history: {
+        state: null,
+        replaceState(_state: unknown, _title: string, url: URL) {
+          window.location.href = String(url);
+        }
       }
     }
   });
@@ -30,6 +44,7 @@ beforeAll(async () => {
 
 beforeEach(() => {
   saved.clear();
+  window.location.href = `${SITE}/`;
   store.useWindows.setState({ windows: {}, order: [] });
 });
 
@@ -100,5 +115,48 @@ describe('what isn’t put back', () => {
     put([win('a', 'constructor'), win('b', 'toString'), win('c', 'about')], ['a', 'b', 'c']);
     session.restoreWindows();
     expect(ids()).toEqual(['c']);
+  });
+});
+
+describe('openSession', () => {
+  const data = { projects: [] } as unknown as OSData;
+  const order = () => store.useWindows.getState().order;
+  const arrive = (path: string) => {
+    window.location.href = `${SITE}${path}`;
+  };
+
+  test('puts the session back, then opens the link’s target on top of it, and the link leaves the address', () => {
+    put([win('a', 'about'), win('p', 'project', { props: { slug: 'ocra' } })], ['p', 'a']);
+    arrive('/?open=finder');
+    session.openSession(data);
+    expect(order()).toEqual(['p', 'a', 'finder']);
+    expect(window.location.href).toBe(`${SITE}/`);
+  });
+
+  test('a target already in the session comes to the front, not twice', () => {
+    put([win('finder', 'finder'), win('a', 'about')], ['finder', 'a']);
+    arrive('/?open=finder');
+    session.openSession(data);
+    expect(order()).toEqual(['a', 'finder']);
+  });
+
+  test('with neither, the first visit gets the welcome alone; later visits start clear', () => {
+    session.openSession(data);
+    expect(order()).toEqual(['welcome']);
+    expect(saved.get('os-welcomed')).toBe('1');
+    store.useWindows.setState({ windows: {}, order: [] });
+    session.openSession(data);
+    expect(order()).toEqual([]);
+  });
+
+  test('a session or a link on a first visit comes without the welcome', () => {
+    put([win('a', 'about')], ['a']);
+    session.openSession(data);
+    expect(order()).toEqual(['a']);
+    store.useWindows.setState({ windows: {}, order: [] });
+    saved.clear();
+    arrive('/?open=finder');
+    session.openSession(data);
+    expect(order()).toEqual(['finder']);
   });
 });
