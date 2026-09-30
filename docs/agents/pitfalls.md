@@ -28,10 +28,11 @@ again.
   time they're written as `YYYYMMDDHHMMSS`, the way `supabase migration
   new` names them. They used to be named by date, and the date was
   bumped for each new file: nine migrations written over two days ran
-  up to "20261003". They were renamed to their real commit times. The
-  project applies migrations by hand in the SQL editor, so a rename
-  changes nothing there. Before switching to `supabase db push`,
-  mark the ones already run with `supabase migration repair`.
+  up to "20261003". They were renamed to their real commit times. Since
+  2026-09-29 the project applies them with `supabase db push`, which
+  records each version it ran (the ones run by hand before were marked
+  with `supabase migration repair`): never rename a migration once it
+  has run, or the CLI takes it for a new one and runs it again.
 - Every migration must run twice without harm:
   - `if not exists` for tables and indexes;
   - `create or replace` for functions;
