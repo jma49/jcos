@@ -1,4 +1,5 @@
 import type { Disc, Song } from '../../lib/library';
+import type { JobsSocial } from './jobs';
 // What the social features share, whichever backend serves them: Supabase
 // in production (supabase.ts) or a stand-in during `astro dev` (local.ts).
 
@@ -205,7 +206,8 @@ export class SocialError extends Error {
 
 // ---------- The backend ----------
 
-export interface Social {
+/** Everything the site asks of the backend. Job Hunt's part is its own (jobs.ts). */
+export interface Social extends JobsSocial {
   /** The signed-in member, or null. Known once the session has been read. */
   account: () => Account | null;
   /** Calls back with the member whenever someone signs in or out (and once, now). */
