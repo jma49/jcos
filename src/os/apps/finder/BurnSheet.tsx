@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } f
 import { DiscCase, DiscIcon } from '../../media/discArt';
 import { burnForEveryone, burnHere, coverChoices, lookUpVideo, PICTURES, type Looked, type ShelfDisc } from '../../media/discs';
 import { useReduceMotion } from '../../core/system';
+import { ownsKey } from '../../core/useKeys';
 
 // Burn, in the Movies folder: a sheet that slides down from under the
 // toolbar, as Tiger's Finder asked before burning a disc. Paste a YouTube
@@ -94,7 +95,8 @@ export function BurnSheet({ owner, onBurned, onClose }: { owner: boolean; onBurn
   // The sheet has its window's keys, wherever in the window the focus is
   // (Finder's own are off meanwhile): Escape stops a burn or closes it, and
   // Return burns, as its default button. Inside the sheet, its fields and
-  // buttons answer them themselves.
+  // buttons answer them themselves, and a control outside the window (a
+  // Dock icon) keeps its own (ownsKey).
   const layer = useRef<HTMLDivElement>(null);
   const keys = useRef({ burning, burn, stop, onClose });
   useEffect(() => {
@@ -104,7 +106,7 @@ export function BurnSheet({ owner, onBurned, onClose }: { owner: boolean; onBurn
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== 'Escape' && e.key !== 'Enter') return;
       const el = layer.current;
-      if (!el || el.contains(e.target as Node) || el.closest('.os-window')?.getAttribute('data-focused') !== 'true') return;
+      if (!el || el.contains(e.target as Node) || el.closest('.os-window')?.getAttribute('data-focused') !== 'true' || !ownsKey(e)) return;
       e.preventDefault();
       const now = keys.current;
       if (e.key === 'Enter') now.burn();

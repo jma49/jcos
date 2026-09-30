@@ -1,5 +1,5 @@
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
-import { play, saved, useGameLoop, useIsFront, type AppProps } from '../../kit';
+import { ownsKey, play, saved, useGameLoop, useIsFront, type AppProps } from '../../kit';
 import { BALL, flip, H, newGame, plunge, pull, RANKS, SEGMENTS, step, TARGETS, tipOf, W, type Sound, type State } from './table';
 
 // Pinball: the table (table.ts) drawn on a canvas, tilted back for depth,
@@ -262,6 +262,9 @@ export default function Pinball({ win }: AppProps) {
     const PLUNGE = new Set(['Space', 'ArrowDown', 'Enter']);
     const handle = (down: boolean) => (e: KeyboardEvent) => {
       if (e.metaKey || e.ctrlKey || e.altKey) return;
+      // A press on a control outside the window (a Dock icon) is that
+      // control's; a release still lets a flipper go.
+      if (down && !ownsKey(e)) return;
       const s = game.current;
       if (LEFT.has(e.code)) flip(s, 0, down, sound);
       else if (RIGHT.has(e.code)) flip(s, 1, down, sound);

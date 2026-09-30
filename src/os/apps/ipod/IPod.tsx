@@ -7,7 +7,7 @@ import { lineAt, useLyrics } from '../../media/lyrics';
 import { albumNamed, albumOf, coverOf, fromLibrary, lyricOffset, SONG_LIMIT, SONGS, tracksOf, useLibraryVersion } from '../../media/library';
 import { useLibraryRefresh } from '../../media/refresh';
 import { formatTime, useClock, useMusic, type Repeat } from '../../media/music';
-import { useKeys } from '../../core/useKeys';
+import { ownsKey, useKeys } from '../../core/useKeys';
 import { usePlayer } from '../../media/player';
 import { play as playSound } from '../../core/sound';
 import { CoverFlow } from './CoverFlow';
@@ -870,7 +870,8 @@ function Wheel({
 /**
  * Return as the centre button, while the iPod is in front: a press chooses
  * when it's let go, and one held for HOLD_MS holds instead. Typing in a
- * field (the playlist's name) is left alone.
+ * field (the playlist's name) is left alone, and so is a control outside
+ * the window, such as the Dock's icons (ownsKey).
  */
 function useCentreKey(active: boolean, onChoose: () => void, onHold: () => void) {
   const latest = useRef({ onChoose, onHold });
@@ -886,7 +887,7 @@ function useCentreKey(active: boolean, onChoose: () => void, onHold: () => void)
     };
     const onDown = (e: KeyboardEvent) => {
       if (e.key !== 'Enter' || e.metaKey || e.ctrlKey || e.altKey || useWindows.getState().exposeOpen) return;
-      if ((e.target as HTMLElement).closest?.('input, textarea, select, [contenteditable]')) return;
+      if (!ownsKey(e)) return;
       // Not the focused button's own click as well.
       e.preventDefault();
       // The key repeating while it's held.
