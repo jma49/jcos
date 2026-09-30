@@ -31,12 +31,24 @@ Conventions and a map of the code are in [AGENTS.md](AGENTS.md) and
   data.
 - `supabase/schema.sql` describes the full current state for a new
   project; changes to an existing one go in a new file under
-  `supabase/migrations/`, written so it can be rerun, and the owner runs
-  it by hand in the SQL editor. The editor warns about "destructive
-  operations" for `drop policy` / `drop trigger` lines; that's expected.
-- Deploy the Edge Functions from an up-to-date `main`: `supabase
-  functions deploy` uploads the working copy, so deploying from an old
-  branch puts old code live.
+  `supabase/migrations/`, written so it can be rerun. The agent applies
+  it once the pull request has merged, from an up-to-date `main`, with
+  the Supabase CLI (logged in on the owner's Mac; no database password
+  needed, it makes a temporary login role): `supabase db push --dry-run
+  --project-ref hszogpoyyqgwjuznbegd`, then without `--dry-run` (with
+  `--yes`), then `supabase db advisors --linked --project-ref
+  hszogpoyyqgwjuznbegd --type security`. The CLI records each one in the
+  project's migration history, so it never runs one twice. The owner
+  handed this over on 2026-09-29 (before, migrations were pasted into the
+  SQL editor by hand, and the history was then filled in with `supabase
+  migration repair`). The repository's old link file isn't read by CLI
+  2.118, hence `--project-ref`.
+- The agent deploys the Edge Functions too, from an up-to-date `main`:
+  `supabase functions deploy <name> --project-ref hszogpoyyqgwjuznbegd`
+  uploads the working copy, so deploying from an old branch puts old
+  code live. The owner's Claude Code allows `supabase migration repair`,
+  `supabase db push` and `supabase functions deploy`; anything else on
+  the production project (its data, its settings) is still asked first.
 - Free Supabase projects pause after a week without activity; the social
   features then hide themselves until it's resumed.
 - The "Update project previews" workflow runs on macOS once a day and by
@@ -301,32 +313,37 @@ ryOS (AGPL-3.0).
 
 ## 4. Current state
 
-**Waiting on Jincheng** (2026-09-29):
-1. Run `supabase/migrations/20260929140000_playlists.sql` in the SQL
-   editor. Until then the iPod shows no ratings and no playlists of
-   Jincheng's (the read fails quietly), and rating or saving a playlist
-   says it couldn't; On-The-Go works without it.
-2. Then `supabase/migrations/20260929160000_home.sql`. Until then the
-   home folder's folders are empty, for the owner too, and TextEdit says
-   a save couldn't be made; the locks and the alert work without it.
+**Waiting on Jincheng**: nothing.
 
-- Every migration in `supabase/migrations/` has been run, through
-  `20260929120000_discs.sql`, and Jincheng's account is the owner (the
-  `insert` in the owner migration's header), as Jincheng reported on
-  2026-09-29; `/api/songs` serving `discs` confirmed the shelf. Both Edge
+- Every migration in `supabase/migrations/` has run, through
+  `20260929160000_home.sql`, and the project's migration history says
+  so (`supabase migration list --project-ref hszogpoyyqgwjuznbegd`):
+  playlists and the home folder were pushed with the CLI on 2026-09-29,
+  the rest had been run by hand and were recorded with `supabase
+  migration repair`. Jincheng's account is the owner (the `insert` in
+  the owner migration's header), as Jincheng reported on 2026-09-29;
+  `/api/songs` serving `discs` confirmed the shelf. Both Edge
   Functions were deployed from `main` that day: `account-recovery`
   answers CORS for the site's own origins only and other methods with
   405 (checked), and `soapbox-bot` has `/dvd`. Password reset sends
   mail, and the whole music loop (`/add`, `/play`, "Listen along",
   `/stop`) was checked live on 2026-09-27.
-- The Security Advisor shows only the findings kept on purpose, listed
-  in `supabase/migrations/20260926100511_advisor.sql`: `song_limit()`
-  callable by visitors (it returns only the limit), `my_reactions()` and
-  the other member-only helpers callable by members, and leaked password
-  protection (an Auth setting on the Pro plan). `is_owner()` joins them
-  (callable by everyone, it says only whether the caller is the owner),
-  and once the playlists migration runs, `song_played()` (callable by
-  members, it counts nothing but the owner's plays).
+- The Security Advisor (checked with `supabase db advisors` on
+  2026-09-29, after the home folder) shows only the findings kept on
+  purpose, listed in `supabase/migrations/20260926100511_advisor.sql`:
+  `song_limit()` callable by visitors (it returns only the limit),
+  `my_reactions()` and the other member-only helpers callable by
+  members, and leaked password protection (an Auth setting on the Pro
+  plan). `is_owner()` joins them (callable by everyone, it says only
+  whether the caller is the owner), and `song_played()` (callable by
+  members, it counts nothing but the owner's plays). At the info level
+  it lists the tables no role may reach through the API
+  (`private.owners`, `private.password_resets`,
+  `private.recovery_emails`, `private.secrets`, `music_settings`,
+  `soapbox_settings`): row-level security with no policy, on purpose.
+  The performance advisor warns that seven older policies (Stickies,
+  Soapbox reactions, chat) call `auth.uid()` for every row instead of
+  once (`(select auth.uid())`).
 - DVD Player's disc lengths: until 2026-09-29 (#174) a disc put in
   after another could be given the other's length, which went to
   `public.discs` when the owner did it. A wrong length is put right the
@@ -369,9 +386,9 @@ What comes next, in order, is in [ROADMAP.md](ROADMAP.md).
 5. **Not ported from ryOS**, in Chat: @ryo (AI replies, on hold with the
    AI assistant), voice messages, IRC rooms and admins making rooms from
    the app.
-6. **Upkeep in the Supabase dashboard:** run Advisors › Security after
-   each migration, and keep Settings › API › Exposed schemas to `public`
-   (plus `graphql_public` only if GraphQL is used).
+6. **Upkeep on Supabase:** the agent runs `supabase db advisors` after
+   each migration; in the dashboard, keep Settings › API › Exposed
+   schemas to `public` (plus `graphql_public` only if GraphQL is used).
 7. **What CI checks** on every pull request: `npm audit --omit=dev
    --audit-level=high`, the type check, the hooks lint, the unit tests
    (Vitest), the build, a smoke test that opens every app in a browser,
