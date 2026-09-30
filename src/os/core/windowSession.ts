@@ -6,7 +6,7 @@
 import { openFromUrl } from './deepLink';
 import { apps, launch } from './registry';
 import { load, loadJSON, save, saveJSON } from './storage';
-import { DOCK_CLEARANCE, MENU_BAR_HEIGHT, isPhone, placement, useWindows } from './store';
+import { useWindows } from './store';
 import type { OSData, WindowState } from './types';
 
 const KEY = 'os-windows';
@@ -18,35 +18,21 @@ interface Saved {
   order: string[];
 }
 
-/** Brings a saved window back on screen if the browser is smaller now; phones get the usual full-screen place. */
-function fit(win: WindowState, index: number): WindowState {
-  const { origin: _drop, ...rest } = win;
-  const vw = window.innerWidth;
-  const vh = window.innerHeight;
-  if (isPhone()) return { ...rest, ...placement(win.width, win.height, index) };
-  const width = Math.min(win.width, vw - 32);
-  const height = Math.min(win.height, vh - MENU_BAR_HEIGHT - DOCK_CLEARANCE);
-  return {
-    ...rest,
-    width,
-    height,
-    x: Math.min(Math.max(0, win.x), vw - width),
-    y: Math.min(Math.max(MENU_BAR_HEIGHT, win.y), vh - DOCK_CLEARANCE - 40)
-  };
-}
-
 /** Puts back the windows of the last visit. Returns whether there were any. */
 export function restoreWindows(): boolean {
   const saved = loadJSON<Saved | null>(KEY, null);
   // Only windows of apps that still exist (own keys: not "constructor"),
   // applets that are still installed, and nothing half-formed.
-  const { applets } = useWindows.getState();
+  const { applets, restore, fitToViewport } = useWindows.getState();
   const windows = (saved?.windows ?? []).filter(
     (w) =>
       w && typeof w.id === 'string' && Object.hasOwn(apps, w.app) && (!apps[w.app].applet || applets.includes(w.app))
   );
   if (!windows.length || !saved) return false;
-  useWindows.getState().restore(windows.map(fit), saved.order);
+  // Where they were, but not where they opened from; then brought back on
+  // screen if the browser is smaller now (phones get the full-screen place).
+  restore(windows.map(({ origin: _drop, ...w }) => w), saved.order);
+  fitToViewport();
   return true;
 }
 

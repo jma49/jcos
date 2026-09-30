@@ -91,6 +91,12 @@
   - Booleans are selected as booleans.
   - The windows render in their own `WindowLayer`.
   - `Window` is memoized; keep its props stable.
+  - The browser's size is `viewport` in the store, set once per animation
+    frame while it's being resized (`watchViewport`), never at rest. Only
+    a zoomed window, a phone's app, Exposé while it's open and a placed
+    sticky select it, so a resize renders those and the windows it had
+    to move, not every window. Don't read `window.innerWidth` while
+    rendering: it's a snapshot nothing refreshes (pitfalls.md).
 - **Assets:**
   - Desktop pictures are WebP, at most 2560px, quality about 75.
   - Icons are at most 160px.

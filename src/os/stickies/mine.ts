@@ -9,6 +9,7 @@
 
 import { useEffect, useSyncExternalStore } from 'react';
 import { loadJSON, saveJSON } from '../core/storage';
+import { MENU_BAR_HEIGHT, type Viewport } from '../core/store';
 import { getSocial } from '../social/social';
 import { STICKY_MOST, type Sticky, type StickyChange } from '../social/types';
 
@@ -126,6 +127,18 @@ function put(sticky: Sticky) {
 export function nextPlace(count: number): Pick<Sticky, 'x' | 'y'> {
   const step = count % 8;
   return { x: 40 + step * 28 + Math.floor(count / 8) * 240, y: 48 + step * 28 };
+}
+
+/**
+ * Where a sticky of `width` at (x, y) shows on a screen of `viewport`'s
+ * size: under the menu bar, with at least its strip in reach. Only how
+ * it's shown: where it was left is kept for the screen it was left on.
+ */
+export function onScreen(x: number, y: number, width: number, { width: vw, height: vh }: Viewport): Pick<Sticky, 'x' | 'y'> {
+  return {
+    x: Math.round(Math.min(Math.max(0, x), Math.max(0, vw - Math.min(width, 80)))),
+    y: Math.round(Math.min(Math.max(MENU_BAR_HEIGHT + 2, y), Math.max(MENU_BAR_HEIGHT + 2, vh - 40)))
+  };
 }
 
 /** Puts up a new sticky of the member's own, empty, where the next one goes. */
