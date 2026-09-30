@@ -168,7 +168,9 @@ for both Production and Preview. The names the Supabase integration for
 Vercel uses, `NEXT_PUBLIC_SUPABASE_URL` and
 `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, work as well. A project set up from
 an older schema needs the files in `supabase/migrations/`, run in the
-order of their timestamped names. Test a migration against the live project inside `begin; …
+order of their timestamped names: `supabase db push` runs the ones the
+project's migration history hasn't recorded (HANDOFF.md §1 has the
+commands for this project). Test a migration against the live project inside `begin; …
 rollback;` first (`supabase db query --linked -f`).
 
 Without those variables, production hides these features, and `astro dev`
@@ -189,8 +191,9 @@ browser.
   functions get `execute` revoked from all three (triggers still fire:
   the right is only checked when a trigger is created). A function that
   only reads what its caller may read anyway is `security invoker`.
-- Policies check something real: no `with check (true)`. Run Supabase's
-  Advisors › Security after each migration; the findings left on purpose
+- Policies check something real: no `with check (true)`. Run the
+  Security Advisor after each migration (`supabase db advisors --linked
+  --type security`); the findings left on purpose
   are listed in `supabase/migrations/20260926100511_advisor.sql`,
   `20260929100000_owner.sql` and `20260929140000_playlists.sql`.
 - A limit that counts rows before inserting ("three a day") takes a

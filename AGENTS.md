@@ -39,8 +39,12 @@ characters over `git ls-files`.
 Keep [HANDOFF.md](HANDOFF.md) current without being asked: when a piece
 of work is done (merged, deployed, or stopped partway), update what
 production runs, what's merged but not deployed, what the owner still
-has to do (migrations, deployments, the bot) and any decision made, in
-the same pull request or one right after. A new session starts from it.
+has to do and any decision made, in the same pull request or one right
+after. A new session starts from it.
+
+Migrations and Edge Functions are the agent's to put live, once their
+pull request has merged, from an up-to-date `main`, with the Supabase
+CLI: how is in HANDOFF.md (§1). Tell the owner what ran.
 
 Before opening a pull request for a significant change (a feature, a
 migration, a dependency, anything touching accounts, data, Realtime,
@@ -86,7 +90,7 @@ it, and when one is done, record it in HANDOFF.md and take it out.
 | any code | `npm run check` (types), `npm run lint` (hooks), `npm test` |
 | an app, the shell or anything a visitor sees | `npm run build`, then `npm run test:smoke`; open it in a browser too (`npm run serve`) |
 | the first load, a dependency, or anything per frame | `npm run build`, then `npm run perf`: every line within budget |
-| the schema, a migration, a policy or a limit | `npm run test:db`, with a check (and a race for a limit) for the new rule; then the Supabase Security Advisor |
+| the schema, a migration, a policy or a limit | `npm run test:db`, with a check (and a race for a limit) for the new rule; once merged, `supabase db push` and `supabase db advisors` (HANDOFF.md §1) |
 | an Edge Function | `npm test` (its `*.test.mjs`) |
 | a project's cover or the home page's look | `npm run preview:capture` |
 
