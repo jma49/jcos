@@ -366,6 +366,23 @@ only `kit/`. The lint enforces all three.
 
 ## Social
 
+- `src/os/apps/ical/`: iCal, in Applications: a member's own days and
+  to-dos, which only they see (`calendar.ts`; the tables in
+  [supabase.md](supabase.md)); signed out, it says how to have some.
+  Tiger's brushed metal round the calendars (Home and Work, each shown or
+  hidden on this device, and a little month under them), the month
+  (six weeks from the Sunday on or before its first day; a day lists
+  three events and "more…") and To Do. A double-click on a day makes an
+  event there, all day, its title chosen to be typed over in the info
+  drawer (`EventInfo.tsx`: title, all day or from and to, the day, the
+  calendar, notes); File › New Event (⌥N) and New To Do (⌥K) as ⌘N and ⌘K
+  were. To-dos tick off, rename with a click, and take their priority,
+  when they're due and their calendar from a right-click
+  (`Todos.tsx`). The arrow keys move the day chosen; Delete deletes its
+  event, asked first. Events are read six weeks at a time as the month
+  moves, to-dos whole; the member's other tabs read again on every
+  change. Narrow (a phone), it shows the month or To Do, chosen at the
+  top.
 - `src/os/stickies/`: a member's own stickies (`mine.ts`, the table in
   [supabase.md](supabase.md)). Signed in, a member's notes sit on their
   own desktop (`DesktopStickies.tsx`, drawn by `shell/DesktopStickiesLayer.tsx`,

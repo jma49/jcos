@@ -16,6 +16,7 @@ import browser from './apps/browser/manifest';
 import terminal from './apps/terminal/manifest';
 import photos from './apps/photos/manifest';
 import stickies from './apps/stickies/manifest';
+import ical from './apps/ical/manifest';
 import soapbox from './apps/soapbox/manifest';
 import finder from './apps/finder/manifest';
 import appstore from './apps/appstore/manifest';
@@ -47,6 +48,7 @@ export const catalog = [
   terminal,
   photos,
   stickies,
+  ical,
   soapbox,
   finder,
   appstore,

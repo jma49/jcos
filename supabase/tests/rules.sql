@@ -238,6 +238,58 @@ select pg_temp.check((select count(*) from public.stickies) = 1, 'the limit is e
 reset role;
 update public.music_settings set value = '50' where name = 'sticky_limit';
 
+-- iCal of one's own ---------------------------------------------------------
+
+select pg_temp.act_as('authenticated', '11111111-1111-1111-1111-111111111111');
+insert into public.events (title, day) values ('Mum''s birthday', '2026-10-04');
+insert into public.events (title, calendar, day, starts, ends, notes) values ('Standup', 'work', '2026-09-30', 540, 555, 'Room 4');
+insert into public.todos (title, priority, due) values ('Book the tent', 3, '2026-10-02');
+insert into public.todos (title) values ('Call the bank');
+select pg_temp.check((select count(*) from public.events) = 2 and (select count(*) from public.todos) = 2, 'a member keeps events and to-dos of their own');
+select pg_temp.check((select starts is null and ends is null and calendar = 'home' from public.events where title = 'Mum''s birthday'), 'an event is all day unless it has times, and on Home unless it says');
+update public.todos set done = true where title = 'Call the bank';
+select pg_temp.check((select done_at is not null from public.todos where title = 'Call the bank'), 'a to-do done knows when');
+update public.todos set title = 'Called the bank' where title = 'Call the bank';
+update public.todos set done = false where title = 'Called the bank';
+select pg_temp.check((select done_at is null from public.todos where title = 'Called the bank'), 'and forgets when it''s not done any more');
+select pg_temp.check(pg_temp.refused($$update public.todos set done_at = now() - interval '1 year'$$), 'when a to-do was done is the database''s');
+select pg_temp.check(pg_temp.refused($$select user_id from public.events$$), 'whose an event is isn''t asked for');
+select pg_temp.check(pg_temp.refused($$insert into public.events (title, day, starts) values ('x', '2026-10-01', 600)$$)
+  and pg_temp.refused($$insert into public.events (title, day, starts, ends) values ('x', '2026-10-01', 600, 540)$$)
+  and pg_temp.refused($$insert into public.events (title, day, starts, ends) values ('x', '2026-10-01', 0, 1441)$$), 'an event has both its times, the end after the start, within the day');
+select pg_temp.check(pg_temp.refused($$insert into public.events (title, day) values ('   ', '2026-10-01')$$)
+  and pg_temp.refused($$insert into public.events (title, day) values (E'two\nlines', '2026-10-01')$$)
+  and pg_temp.refused($$insert into public.events (title, day, calendar) values ('x', '2026-10-01', 'school')$$)
+  and pg_temp.refused($$insert into public.todos (title, priority) values ('x', 4)$$), 'a title is one line, a calendar Home or Work, a priority 0 to 3');
+reset role;
+
+-- No one else reads or changes them, not even the owner.
+select pg_temp.act_as('authenticated', '22222222-2222-2222-2222-222222222222');
+select pg_temp.check((select count(*) from public.events) = 0 and (select count(*) from public.todos) = 0, 'another member sees none of them');
+update public.events set title = 'Hijacked';
+delete from public.todos;
+reset role;
+select pg_temp.check(not exists (select 1 from public.events where title = 'Hijacked') and (select count(*) from public.todos) = 2, 'another member can''t change or delete them');
+select pg_temp.act_as('authenticated', '99999999-9999-9999-9999-999999999999');
+select pg_temp.check((select count(*) from public.events) = 0, 'not even Jincheng reads a member''s calendar');
+reset role;
+select pg_temp.act_as('anon');
+select pg_temp.check(pg_temp.refused($$select 1 from public.events$$) and pg_temp.refused($$select 1 from public.todos$$), 'visitors can''t ask for events or to-dos');
+reset role;
+
+-- The limits: a full calendar or to-do list refuses another, each member's own.
+update public.music_settings set value = '2' where name in ('event_limit', 'todo_limit');
+select pg_temp.act_as('authenticated', '11111111-1111-1111-1111-111111111111');
+select pg_temp.check(pg_temp.refused($$insert into public.events (title, day) values ('One more', '2026-10-05')$$)
+  and pg_temp.refused($$insert into public.todos (title) values ('One more')$$), 'a member at event_limit or todo_limit can''t add another');
+reset role;
+select pg_temp.act_as('authenticated', '33333333-3333-3333-3333-333333333333');
+insert into public.events (title, day) values ('Carol''s', '2026-10-05');
+select pg_temp.check((select count(*) from public.events) = 1, 'the limits are each member''s own');
+reset role;
+update public.music_settings set value = '5000' where name = 'event_limit';
+update public.music_settings set value = '1000' where name = 'todo_limit';
+
 -- Security Advisor ------------------------------------------------------------
 
 select pg_temp.check(not has_function_privilege('anon', 'public.notes_by_member()', 'execute')
