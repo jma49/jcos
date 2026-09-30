@@ -316,11 +316,11 @@ ryOS (AGPL-3.0).
 **Waiting on Jincheng**: nothing.
 
 - Every migration in `supabase/migrations/` has run, through
-  `20260929160000_home.sql`, and the project's migration history says
-  so (`supabase migration list --project-ref hszogpoyyqgwjuznbegd`):
-  playlists and the home folder were pushed with the CLI on 2026-09-29,
-  the rest had been run by hand and were recorded with `supabase
-  migration repair`. Jincheng's account is the owner (the `insert` in
+  `20260929185931_rls_initplan.sql`, and the project's migration history
+  says so (`supabase migration list --project-ref hszogpoyyqgwjuznbegd`):
+  playlists, the home folder and the policies' `(select auth.uid())`
+  were pushed with the CLI on 2026-09-29, the rest had been run by hand
+  and were recorded with `supabase migration repair`. Jincheng's account is the owner (the `insert` in
   the owner migration's header), as Jincheng reported on 2026-09-29;
   `/api/songs` serving `discs` confirmed the shelf. Both Edge
   Functions were deployed from `main` that day: `account-recovery`
@@ -341,9 +341,10 @@ ryOS (AGPL-3.0).
   (`private.owners`, `private.password_resets`,
   `private.recovery_emails`, `private.secrets`, `music_settings`,
   `soapbox_settings`): row-level security with no policy, on purpose.
-  The performance advisor warns that seven older policies (Stickies,
-  Soapbox reactions, chat) call `auth.uid()` for every row instead of
-  once (`(select auth.uid())`).
+  The performance advisor has nothing at the warning level since
+  `20260929185931_rls_initplan.sql`, which has seven older policies
+  (Stickies, Soapbox reactions, chat) ask `(select auth.uid())` once
+  instead of `auth.uid()` for every row.
 - DVD Player's disc lengths: until 2026-09-29 (#174) a disc put in
   after another could be given the other's length, which went to
   `public.discs` when the owner did it. A wrong length is put right the

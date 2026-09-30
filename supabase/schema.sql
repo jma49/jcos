@@ -1730,3 +1730,55 @@ drop trigger if exists documents_within_limit on public.documents;
 create trigger documents_within_limit before insert on public.documents for each row execute function public.home_within_limit();
 drop trigger if exists diary_within_limit on public.diary;
 create trigger diary_within_limit before insert on public.diary for each row execute function public.home_within_limit();
+
+-- ---------------------------------------------------------------------
+-- Policies ask who the caller is once per statement (the same as
+-- supabase/migrations/20260929185931_rls_initplan.sql, whose header explains it).
+
+drop policy if exists "Members can leave notes" on public.notes;
+create policy "Members can leave notes"
+  on public.notes for insert
+  to authenticated
+  with check (approved and user_id = (select auth.uid()));
+
+drop policy if exists "Members can take their notes down" on public.notes;
+create policy "Members can take their notes down"
+  on public.notes for delete
+  to authenticated
+  using (user_id = (select auth.uid()));
+
+drop policy if exists "Anyone can react" on public.soapbox_reactions;
+create policy "Anyone can react"
+  on public.soapbox_reactions for insert
+  to anon, authenticated
+  with check (
+    exists (select 1 from public.soapbox_posts p where p.id = post_id)
+    and ((select auth.uid()) is null or visitor = 'user:' || (select auth.uid()))
+  );
+
+drop policy if exists "Members can change their reaction" on public.soapbox_reactions;
+create policy "Members can change their reaction"
+  on public.soapbox_reactions for update
+  to authenticated
+  using (visitor = 'user:' || (select auth.uid()))
+  with check (visitor = 'user:' || (select auth.uid()));
+
+drop policy if exists "Members can take their reaction back" on public.soapbox_reactions;
+create policy "Members can take their reaction back"
+  on public.soapbox_reactions for delete
+  to authenticated
+  using (visitor = 'user:' || (select auth.uid()));
+
+drop policy if exists "Members can talk" on public.chat_messages;
+create policy "Members can talk"
+  on public.chat_messages for insert
+  to authenticated
+  with check (user_id = (select auth.uid()) and public.chat_can_write(room));
+
+drop policy if exists "Members can take their messages back" on public.chat_messages;
+create policy "Members can take their messages back"
+  on public.chat_messages for delete
+  to authenticated
+  using (user_id = (select auth.uid()));
+
+notify pgrst, 'reload schema';
