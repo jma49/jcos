@@ -141,3 +141,12 @@ stuck=$(psql -tA -d "$DB" -c "select count(*) from public.stickies where user_id
 echo "ok: five stickies at once, room for two, two made"
 psql -q -v ON_ERROR_STOP=1 -d "$DB" -c "update public.music_settings set value = '50' where name = 'sticky_limit'" >/dev/null
 
+# A member's calendar: with room for two, five events added at once, two are made.
+psql -q -v ON_ERROR_STOP=1 -d "$DB" -c "update public.music_settings set value = to_jsonb((select count(*) from public.events where user_id = '$DAVE') + 2) where name = 'event_limit'" >/dev/null
+for i in 1 2 3 4 5; do as_dave "insert into public.events (title, day) values ('race $i', '2026-10-01')" & done
+wait
+added=$(psql -tA -d "$DB" -c "select count(*) from public.events where user_id = '$DAVE'")
+[ "$added" = 2 ] || { echo "FAILED: five events at once with room for two made $added"; exit 1; }
+echo "ok: five events at once, room for two, two made"
+psql -q -v ON_ERROR_STOP=1 -d "$DB" -c "update public.music_settings set value = '5000' where name = 'event_limit'" >/dev/null
+

@@ -29,6 +29,7 @@ advisory lock (Security, below).
 | `documents` (Jincheng's home folder) | everyone, those in Public; the rest, the owner | Jincheng, signed in | `music_settings.document_limit` documents (500), 100,000 characters each |
 | `diary` (Jincheng's diary) | the owner | Jincheng, signed in | `music_settings.diary_limit` entries (10,000), 20,000 characters each |
 | `stickies` (a member's own) | that member alone (not even the owner) | that member | `music_settings.sticky_limit` a member (50), 4,000 characters each |
+| `events`, `todos` (a member's own iCal) | that member alone (not even the owner) | that member | `music_settings.event_limit` events (5,000) and `todo_limit` to-dos (1,000) a member |
 | `private.recovery_emails`, `private.password_resets`, `private.secrets` | not reachable through the API | account functions and the database | resets: 3 per account and 3 per address an hour, 60 an hour in all; a link lasts 30 minutes |
 | `private.owners` | not reachable through the API; `is_owner()` tells the caller whether they're in it | Jincheng, once, in the SQL editor | Jincheng's account |
 | `soapbox` storage bucket | everyone | the bot | images only, 10 MB each |
@@ -82,6 +83,17 @@ The code that isn't in the browser (each endpoint's parameters, answers and conv
   most `music_settings.sticky_limit` a member (50), under an advisory
   lock per member. The site uses it through `stickies/mine.ts`
   ([desktop.md](desktop.md)).
+- **iCal of one's own** (`public.events`, `public.todos`; migration
+  `20260929202730_ical_of_their_own.sql`): each member's own events and
+  to-dos, given to that member alone as stickies are. An event has a
+  one-line title, a calendar (Home or Work), a day, and either no times
+  (all day) or a start and an end after it, in minutes after midnight on
+  that day where the member is, and notes. A to-do has a title, a
+  calendar, a priority from 0 (none) to 3 (high), perhaps a day it's due,
+  and whether it's done; when it was done is the database's (a trigger
+  sets and clears `done_at`). The limits are counted under an advisory
+  lock per member. iCal uses them through `apps/ical/calendar.ts`, which
+  reads events a few weeks at a time.
 - **Soapbox reactions**: members react as themselves and can change or take
   back a reaction; everyone else gets one per post, by salted IP hash.
 - **The music library** (`public.songs`, `public.albums`; migration
