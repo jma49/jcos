@@ -33,6 +33,17 @@ again.
   records each version it ran (the ones run by hand before were marked
   with `supabase migration repair`): never rename a migration once it
   has run, or the CLI takes it for a new one and runs it again.
+- Supabase grants everything made in `public` (tables, functions,
+  sequences) to `anon` and `authenticated` by default. `revoke … from
+  public` leaves those grants, so revoke from `anon` (and
+  `authenticated`) by name: `chat_can_write()` was callable by visitors
+  for that reason (2026-09-29). `supabase/tests/stubs.sql` makes the
+  same default grants, so `test:db` sees what production does.
+- A record that a migration ran isn't proof: the chat rooms migration
+  was noted as run and had never taken. Before relying on production's
+  schema, compare its structure with `schema.sql` (read the catalogs
+  with `supabase db query --linked`, build `schema.sql` in a scratch
+  database, diff; no rows needed).
 - Every migration must run twice without harm:
   - `if not exists` for tables and indexes;
   - `create or replace` for functions;
