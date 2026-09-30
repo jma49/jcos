@@ -1,9 +1,13 @@
-import { useEffect, useState, type CSSProperties, type SubmitEvent } from 'react';
+import { useEffect, useRef, useState, type CSSProperties, type SubmitEvent } from 'react';
 import { getSocial, NOTE_COLORS, NOTE_MAX, NOTES_PER_DAY, SocialError, type Note, type NoteColor, type Social } from '../../social/social';
+import { STICKY_MOST } from '../../social/types';
 import { useAccount } from '../../social/account';
 import type { AppProps } from '../../core/registry';
 import { launch } from '../../core/registry';
 import { play } from '../../core/sound';
+import { useFocusedId, useWindows } from '../../core/store';
+import { addSticky, readMine, useMyStickies } from '../../stickies/mine';
+import { Yours } from './Yours';
 
 type Load = { state: 'loading' } | { state: 'offline' } | { state: 'ready'; social: Social; notes: Note[] };
 type Draft = { state: 'idle' | 'writing' | 'sending' } | { state: 'error'; message: string };
@@ -15,13 +19,64 @@ function tilt(id: string) {
   return ((hash % 7) - 3) * 0.6;
 }
 
+/** Everyone's notes (the wall), or the member's own (stickies/mine.ts). */
+type View = 'everyone' | 'yours';
+
 /**
- * Mac OS X Stickies as a guestbook: everyone's notes on a wall. Members
- * (signed in) can put up three a day, signed with their username, and take
- * their own down.
+ * Mac OS X Stickies, twice over. Everyone's: a guestbook, everyone's notes
+ * on a wall, where members (signed in) can put up three a day, signed with
+ * their username, and take their own down. Yours: each member's own
+ * stickies, which only they see, on their own desktop and here. File ›
+ * New Sticky (⌥N; the browser keeps ⌘N) puts one up.
  */
-export default function Stickies(_: AppProps) {
+export default function Stickies({ win }: AppProps) {
   const { account } = useAccount();
+  const [view, setView] = useState<View>(win.props?.view === 'yours' ? 'yours' : 'everyone');
+  /** The sticky just put up here, for the caret to go into. */
+  const [newest, setNewest] = useState<string | null>(null);
+  const [stickyTrouble, setStickyTrouble] = useState<string | null>(null);
+  const mine = useMyStickies();
+  const newSticky = useRef(async () => {});
+  newSticky.current = async () => {
+    setView('yours');
+    if (!account) return;
+    setStickyTrouble(null);
+    try {
+      // The ones there already first, so the new one goes down and across from them.
+      await readMine(account.id);
+      const made = await addSticky();
+      play('pop');
+      setNewest(made.id);
+    } catch (error) {
+      setStickyTrouble(error instanceof Error ? error.message : 'Couldn’t put one up.');
+    }
+  };
+  const signedIn = !!account;
+
+  // The File menu while Stickies is in front, and ⌥N.
+  const front = useFocusedId() === win.id;
+  useEffect(() => {
+    const { setMenus, close } = useWindows.getState();
+    setMenus(win.id, {
+      File: [
+        { label: 'New Sticky', shortcut: '⌥N', disabled: !signedIn, action: () => void newSticky.current() },
+        { label: '', divider: true },
+        { label: 'Close Window', shortcut: '⌥W', action: () => close(win.id) }
+      ]
+    });
+    return () => setMenus(win.id, undefined);
+  }, [win.id, signedIn]);
+  useEffect(() => {
+    if (!front || !signedIn) return;
+    // e.code: ⌥ changes e.key on a Mac.
+    const onKey = (e: KeyboardEvent) => {
+      if (!e.altKey || e.metaKey || e.code !== 'KeyN') return;
+      e.preventDefault();
+      void newSticky.current();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [front, signedIn]);
   const [load, setLoad] = useState<Load>({ state: 'loading' });
   const [draft, setDraft] = useState<Draft>({ state: 'idle' });
   /** How many more notes the member can put up today; null until known. */
@@ -85,26 +140,53 @@ export default function Stickies(_: AppProps) {
     }
   };
 
-  if (load.state === 'loading') {
+  const writing = draft.state === 'writing' || draft.state === 'sending' || draft.state === 'error';
+
+  const whose = (
+    <div className="os-segmented" role="group" aria-label="Whose stickies">
+      <button type="button" aria-pressed={view === 'everyone'} onClick={() => setView('everyone')}>
+        Everyone’s
+      </button>
+      <button type="button" aria-pressed={view === 'yours'} onClick={() => setView('yours')}>
+        Yours
+      </button>
+    </div>
+  );
+
+  if (view === 'yours') {
     return (
-      <div className="os-app os-empty">
-        <p>Loading notes…</p>
-      </div>
-    );
-  }
-  if (load.state === 'offline') {
-    return (
-      <div className="os-app os-empty">
-        <p>Stickies are offline right now.</p>
+      <div className="os-app os-stickies">
+        <div className="os-toolbar">
+          {whose}
+          {account ? (
+            <button type="button" className="os-button" onClick={() => void newSticky.current()} disabled={mine.length >= STICKY_MOST}>
+              New Sticky
+            </button>
+          ) : null}
+          <span className="os-toolbar-meta">
+            {stickyTrouble ?? (account ? `${mine.length} of ${STICKY_MOST} · only you see these` : 'only you would see them')}
+          </span>
+        </div>
+        <Yours account={account?.id ?? null} newest={newest} />
       </div>
     );
   }
 
-  const writing = draft.state === 'writing' || draft.state === 'sending' || draft.state === 'error';
+  if (load.state !== 'ready') {
+    return (
+      <div className="os-app os-stickies">
+        <div className="os-toolbar">{whose}</div>
+        <div className="os-empty os-stickies-status">
+          <p>{load.state === 'loading' ? 'Loading notes…' : 'Stickies are offline right now.'}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="os-app os-stickies">
       <div className="os-toolbar">
+        {whose}
         {account ? (
           <button type="button" className="os-button" onClick={() => setDraft({ state: 'writing' })} disabled={writing || left === 0}>
             New Note

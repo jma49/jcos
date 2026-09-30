@@ -28,6 +28,7 @@ advisory lock (Security, below).
 | `playlists`, `playlist_songs` (Jincheng's playlists) | everyone | Jincheng, signed in: `save_playlist()`, and deletes | `music_settings.playlist_limit` playlists (50); a song once per playlist |
 | `documents` (Jincheng's home folder) | everyone, those in Public; the rest, the owner | Jincheng, signed in | `music_settings.document_limit` documents (500), 100,000 characters each |
 | `diary` (Jincheng's diary) | the owner | Jincheng, signed in | `music_settings.diary_limit` entries (10,000), 20,000 characters each |
+| `stickies` (a member's own) | that member alone (not even the owner) | that member | `music_settings.sticky_limit` a member (50), 4,000 characters each |
 | `private.recovery_emails`, `private.password_resets`, `private.secrets` | not reachable through the API | account functions and the database | resets: 3 per account and 3 per address an hour, 60 an hour in all; a link lasts 30 minutes |
 | `private.owners` | not reachable through the API; `is_owner()` tells the caller whether they're in it | Jincheng, once, in the SQL editor | Jincheng's account |
 | `soapbox` storage bucket | everyone | the bot | images only, 10 MB each |
@@ -69,6 +70,18 @@ The code that isn't in the browser (each endpoint's parameters, answers and conv
 - **Stickies**: members only, three notes in any 24 hours, signed with the
   username; members can take their own down. Hide a note by setting
   `approved` to false in the Table editor.
+- **Stickies of one's own** (`public.stickies`; migration
+  `20260929194437_stickies_of_their_own.sql`): each member's own notes,
+  on their own desktop, which row-level security gives that member alone,
+  the owner no more than anyone. A note keeps its text, one of Tiger's
+  six colours, and where it sits (`x`, `y`, `width`, `height`,
+  `collapsed`); whose it is, its `version` and its times are the
+  database's. `version` counts saves of the text alone, so moving a note
+  in one tab doesn't make what's being typed into it in another out of
+  date, while a save of the text names the version it was typed over. At
+  most `music_settings.sticky_limit` a member (50), under an advisory
+  lock per member. The site uses it through `stickies/mine.ts`
+  ([desktop.md](desktop.md)).
 - **Soapbox reactions**: members react as themselves and can change or take
   back a reaction; everyone else gets one per post, by salted IP hash.
 - **The music library** (`public.songs`, `public.albums`; migration

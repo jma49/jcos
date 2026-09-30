@@ -23,10 +23,12 @@ import {
   type HomeFolder,
   type Listening,
   type Note,
+  type NoteColor,
   type Post,
   type PostImage,
   type Reaction,
   type Social,
+  type Sticky,
   type VisitorInfo
 } from './types';
 
@@ -107,6 +109,38 @@ const entryOf = (row: EntryRow): DiaryEntry => ({
   created: row.created_at,
   updated: row.updated_at
 });
+
+/** The columns of a member's sticky, as they read it. */
+const STICKY_COLUMNS = 'id,body,color,x,y,width,height,collapsed,version,updated_at';
+
+interface StickyRow {
+  id: string;
+  body: string;
+  color: NoteColor;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  collapsed: boolean;
+  version: number;
+  updated_at: string;
+}
+
+const stickyOf = (row: StickyRow): Sticky => ({
+  id: row.id,
+  body: row.body,
+  color: row.color,
+  x: row.x,
+  y: row.y,
+  width: row.width,
+  height: row.height,
+  collapsed: row.collapsed,
+  version: row.version,
+  updated: row.updated_at
+});
+
+/** A sticky the database's checks refuse. */
+const badSticky = () => new SocialError('invalid', 'A sticky holds 4,000 characters at most, in one of its six colours.');
 
 /** A save refused because another one landed first, or the thing is gone. */
 const changedElsewhere = () => new SocialError('conflict', 'It was changed or thrown away somewhere else since this copy was opened.');
@@ -637,6 +671,40 @@ export function supabaseSocial(url: string, key: string): Social {
       member();
       const { error } = await client.from('diary').delete().eq('id', id);
       if (error) throw error.code === '42501' ? notOwner('Jincheng’s diary') : refusal(error);
+    },
+
+    // A member's own stickies: row-level security gives each member theirs alone.
+    async myStickies() {
+      await ready;
+      if (!current) return [];
+      const { data, error } = await client.from('stickies').select(STICKY_COLUMNS).order('created_at');
+      if (error) throw error;
+      return (data ?? []).map(stickyOf);
+    },
+
+    async addSticky(sticky) {
+      member();
+      const { data, error } = await client.from('stickies').insert(sticky).select(STICKY_COLUMNS).single();
+      if (error) throw error.code === '23514' ? badSticky() : refusal(error);
+      return stickyOf(data);
+    },
+
+    // Only a change of the text names the version it was made from: moving
+    // a note never makes what's typed into it elsewhere out of date.
+    async changeSticky(id, change, version) {
+      member();
+      let request = client.from('stickies').update(change).eq('id', id);
+      if (change.body !== undefined && version !== undefined) request = request.eq('version', version);
+      const { data, error } = await request.select(STICKY_COLUMNS).maybeSingle();
+      if (error) throw error.code === '23514' ? badSticky() : refusal(error);
+      if (!data) throw changedElsewhere();
+      return stickyOf(data);
+    },
+
+    async removeSticky(id) {
+      member();
+      const { error } = await client.from('stickies').delete().eq('id', id);
+      if (error) throw refusal(error);
     },
 
     async nowPlaying() {

@@ -131,3 +131,13 @@ made=$(( $(psql -tA -d "$DB" -c "select count(*) from public.documents") - befor
 [ "$made" = 2 ] || { echo "FAILED: five documents at once with room for two made $made"; exit 1; }
 echo "ok: five documents at once, room for two, two made"
 psql -q -v ON_ERROR_STOP=1 -d "$DB" -c "update public.music_settings set value = '500' where name = 'document_limit'" >/dev/null
+
+# A member's own stickies: with room for two, five put up at once, two are made.
+psql -q -v ON_ERROR_STOP=1 -d "$DB" -c "update public.music_settings set value = to_jsonb((select count(*) from public.stickies where user_id = '$DAVE') + 2) where name = 'sticky_limit'" >/dev/null
+for i in 1 2 3 4 5; do as_dave "insert into public.stickies (body) values ('race $i')" & done
+wait
+stuck=$(psql -tA -d "$DB" -c "select count(*) from public.stickies where user_id = '$DAVE'")
+[ "$stuck" = 2 ] || { echo "FAILED: five stickies at once with room for two made $stuck"; exit 1; }
+echo "ok: five stickies at once, room for two, two made"
+psql -q -v ON_ERROR_STOP=1 -d "$DB" -c "update public.music_settings set value = '50' where name = 'sticky_limit'" >/dev/null
+

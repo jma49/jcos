@@ -5,6 +5,7 @@ import { MenuBar } from './shell/MenuBar';
 import { Spotlight } from './shell/Spotlight';
 import { DashboardLayer } from './shell/DashboardLayer';
 import { DesktopLyricsLayer } from './shell/DesktopLyricsLayer';
+import { DesktopStickiesLayer } from './shell/DesktopStickiesLayer';
 import { Window } from './shell/Window';
 import { Expose, exposeLayout } from './shell/Expose';
 import { Screensaver } from './shell/Screensaver';
@@ -159,6 +160,9 @@ function Shell({ data }: { data: OSData }) {
         <Sky sky={sky} tinted={picture.tinted} />
         <MenuBar sky={sky} />
         <DesktopIcons />
+        <Contained name="Stickies">
+          <DesktopStickiesLayer />
+        </Contained>
         <WindowLayer />
         <Contained name="Desktop lyrics">
           <DesktopLyricsLayer />
