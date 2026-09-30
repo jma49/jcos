@@ -15,12 +15,15 @@ import {
   cleanInfo,
   dmPeer,
   isDM,
+  CALENDARS,
+  EVENT_MOST,
   NOTE_COLORS,
   NOTES_PER_DAY,
   PASSWORD_MIN,
   SocialError,
   STICKY_MAX,
   STICKY_MOST,
+  TODO_MOST,
   USERNAME,
   type Account,
   type ChatHandlers,
@@ -36,12 +39,16 @@ import {
   type Social,
   type Sticky,
   type StickyChange,
+  type CalendarEvent,
+  type Todo,
   type VisitorInfo
 } from './types';
 
 const NOTES_KEY = 'os-dev-notes';
 /** Every member's own stickies, by account id. */
 const STICKIES_KEY = 'os-dev-stickies';
+/** Every member's own calendar, by account id. */
+const CALENDAR_KEY = 'os-dev-calendar';
 const REACTIONS_KEY = 'os-dev-reactions';
 const USERS_KEY = 'os-dev-users';
 const SESSION_KEY = 'os-dev-session';
@@ -164,6 +171,27 @@ export function localSocial(): Social {
     saveJSON(STICKIES_KEY, { ...all, [member().id]: mine });
     return result;
   };
+  /** Changes the member's stored calendar from what's stored now; a refusal thrown by `change` stores nothing. */
+  const changeCalendar = <T,>(change: (mine: { events: CalendarEvent[]; todos: Todo[] }) => T): T => {
+    const all = loadJSON<Record<string, { events: CalendarEvent[]; todos: Todo[] }>>(CALENDAR_KEY, {});
+    const mine = all[member().id] ?? { events: [], todos: [] };
+    const result = change(mine);
+    saveJSON(CALENDAR_KEY, { ...all, [member().id]: mine });
+    return result;
+  };
+  const calendarOf = () => (current ? (loadJSON<Record<string, { events: CalendarEvent[]; todos: Todo[] }>>(CALENDAR_KEY, {})[current.id] ?? { events: [], todos: [] }) : null);
+  /** The database's checks on an event's or a to-do's title and calendar, and an event's times. */
+  const checkEntry = (e: { title: string; calendar: string; starts?: number | null; ends?: number | null; priority?: number }) => {
+    const titled = e.title.length >= 1 && e.title.length <= 200 && e.title === e.title.trim() && !/[\u0000-\u001f\u007f]/.test(e.title);
+    const timed =
+      (e.starts == null && e.ends == null) ||
+      (e.starts != null && e.ends != null && e.starts >= 0 && e.starts <= 1439 && e.ends >= 1 && e.ends <= 1440 && e.ends > e.starts);
+    const ranked = e.priority === undefined || (Number.isInteger(e.priority) && e.priority >= 0 && e.priority <= 3);
+    if (!titled || !timed || !ranked || !(CALENDARS as readonly string[]).includes(e.calendar)) {
+      throw new SocialError('invalid', 'A title is one line of 200 characters at most, and an event ends after it starts.');
+    }
+  };
+
   /** The database's checks on a sticky. */
   const checkSticky = (s: StickyChange) => {
     const size = (n: number | undefined, least: number, most: number) => n === undefined || (Number.isInteger(n) && n >= least && n <= most);
@@ -571,6 +599,56 @@ export function localSocial(): Social {
       changeStickies((mine) => {
         const at = mine.findIndex((s) => s.id === id);
         if (at >= 0) mine.splice(at, 1);
+      });
+    },
+
+    // A member's own calendar, in this browser, each account's apart, with the database's rules.
+    async myEvents(from, to) {
+      return (calendarOf()?.events ?? []).filter((e) => e.day >= from && e.day <= to);
+    },
+    async myTodos() {
+      return calendarOf()?.todos ?? [];
+    },
+    async saveEvent({ id, ...fields }) {
+      checkEntry(fields);
+      return changeCalendar((mine) => {
+        if (!id) {
+          if (mine.events.length >= EVENT_MOST) throw new SocialError('limit', `Your calendar holds ${EVENT_MOST} events already. Delete some first.`);
+          const made: CalendarEvent = { id: crypto.randomUUID(), ...fields };
+          mine.events.push(made);
+          return made;
+        }
+        const at = mine.events.findIndex((e) => e.id === id);
+        if (at < 0) throw changedElsewhere();
+        mine.events[at] = { ...mine.events[at], ...fields };
+        return mine.events[at];
+      });
+    },
+    async removeEvent(id) {
+      changeCalendar((mine) => {
+        mine.events = mine.events.filter((e) => e.id !== id);
+      });
+    },
+    async saveTodo({ id, ...fields }) {
+      checkEntry(fields);
+      return changeCalendar((mine) => {
+        const now = new Date().toISOString();
+        if (!id) {
+          if (mine.todos.length >= TODO_MOST) throw new SocialError('limit', `You have ${TODO_MOST} to-dos already. Delete some you’ve done first.`);
+          const made: Todo = { id: crypto.randomUUID(), ...fields, doneAt: fields.done ? now : null, created: now };
+          mine.todos.push(made);
+          return made;
+        }
+        const at = mine.todos.findIndex((t) => t.id === id);
+        if (at < 0) throw changedElsewhere();
+        const was = mine.todos[at];
+        mine.todos[at] = { ...was, ...fields, doneAt: !fields.done ? null : was.done ? was.doneAt : now };
+        return mine.todos[at];
+      });
+    },
+    async removeTodo(id) {
+      changeCalendar((mine) => {
+        mine.todos = mine.todos.filter((t) => t.id !== id);
       });
     },
 

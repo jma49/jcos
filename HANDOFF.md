@@ -293,9 +293,17 @@ ryOS (AGPL-3.0).
   Yours; a member's own notes sit on their own desktop, above its icons
   and below every window, and are made from the desktop's right-click
   menu or Stickies' File › New Sticky. A phone, with no desktop for
-  them, has them in Yours. iCal follows the same rule, next. The first
-  load grew 0.3 KB for the layer that loads them after sign-in (159.8 of
-  160 KB).
+  them, has them in Yours. The first load grew 0.3 KB for the layer that
+  loads them after sign-in (159.8 of 160 KB).
+- **iCal of one's own, for every account** (2026-09-29), by the same
+  rule: each member's own events and to-dos, which only they see, in
+  Tiger's iCal (brushed metal, the calendars on the left, the month in
+  the middle, To Do on the right, the info drawer). Two calendars, Home
+  and Work, as Tiger's iCal began; no repeating or multi-day events yet,
+  and times are where the member is, as on a paper calendar. Deleting an
+  event asks first, since there's no Undo. The first load grew 0.1 KB
+  for its manifest (159.9 of 160 KB): room on the first load (ROADMAP
+  §1) is now what's next before anything else goes on the first screen.
 - **The home folder from Telegram** (2026-09-29): the bot's `/diary
   <text>` writes a diary entry, on the day it was sent where Jincheng is
   (the place `/at` set), and `/doc <text>` a document in Documents named
@@ -343,7 +351,7 @@ code is tested with a fake Telegram and database, not yet with the real
 ones).
 
 - Every migration in `supabase/migrations/` has run, through
-  `20260929194437_stickies_of_their_own.sql`, and the project's
+  `20260929202730_ical_of_their_own.sql`, and the project's
   migration history says so (`supabase migration list --project-ref
   hszogpoyyqgwjuznbegd`). On 2026-09-29 production's structure was
   compared with `schema.sql` (columns, policies, functions, triggers,
