@@ -8,11 +8,10 @@ export function useShortcuts() {
     const onKey = (e: KeyboardEvent) => {
       const s = useWindows.getState();
       const top = [...s.order].reverse().find((id) => !s.windows[id]?.minimized);
+      // Escape and the rest of Exposé's keys are Exposé's own (Expose.tsx).
       if (e.key === 'F9' && !isPhone()) {
         e.preventDefault();
         s.setExpose(!s.exposeOpen);
-      } else if (e.key === 'Escape' && s.exposeOpen) {
-        s.setExpose(false);
       } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
         s.setSpotlight(!s.spotlightOpen);

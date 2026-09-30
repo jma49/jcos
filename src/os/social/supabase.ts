@@ -5,6 +5,7 @@
 import { createClient, type PostgrestError, type User } from '@supabase/supabase-js';
 import { CURSOR_COLORS } from './social';
 import { discOf, songOf, type Disc } from '../../lib/library';
+import { playlistNameProblem } from './playlistNames';
 import {
   LOBBY,
   NOTES_PER_DAY,
@@ -17,6 +18,10 @@ import {
   type ChatHandlers,
   type ChatMessage,
   type ChatRoom,
+  type DiaryEntry,
+  type HomeDocument,
+  type HomeFolder,
+  type Listening,
   type Note,
   type Post,
   type PostImage,
@@ -47,8 +52,77 @@ const discRow = (d: Partial<Disc>) => ({
   ...(d.duration !== undefined ? { duration_ms: d.duration } : {})
 });
 
-/** A write to the shelf from anyone but the owner, which row-level security refuses (42501). */
-const notOwner = () => new SocialError('failed', 'Only Jincheng can change the discs everyone sees.');
+/** A write only the owner may make, from anyone else: row-level security refuses it (42501). */
+const notOwner = (what = 'the discs everyone sees') => new SocialError('failed', `Only Jincheng can change ${what}.`);
+
+interface StatsRow {
+  song_id: string;
+  rating: number | null;
+  plays: number;
+  played_at: string | null;
+}
+
+interface PlaylistRow {
+  id: number;
+  name: string;
+  playlist_songs: { song_id: string }[] | null;
+}
+
+/** The columns of a document and of a diary entry, as the owner (or, in Public, anyone) reads them. */
+const DOCUMENT_COLUMNS = 'id,folder,name,body,version,updated_at';
+const ENTRY_COLUMNS = 'id,day,body,version,created_at,updated_at';
+
+interface DocumentRow {
+  id: string;
+  folder: HomeFolder;
+  name: string;
+  body: string;
+  version: number;
+  updated_at: string;
+}
+
+interface EntryRow {
+  id: string;
+  day: string;
+  body: string;
+  version: number;
+  created_at: string;
+  updated_at: string;
+}
+
+const documentOf = (row: DocumentRow): HomeDocument => ({
+  id: row.id,
+  folder: row.folder,
+  name: row.name,
+  body: row.body,
+  version: row.version,
+  updated: row.updated_at
+});
+
+const entryOf = (row: EntryRow): DiaryEntry => ({
+  id: row.id,
+  day: row.day,
+  body: row.body,
+  version: row.version,
+  created: row.created_at,
+  updated: row.updated_at
+});
+
+/** A save refused because another one landed first, or the thing is gone. */
+const changedElsewhere = () => new SocialError('conflict', 'It was changed or thrown away somewhere else since this copy was opened.');
+
+/** Jincheng's ratings, plays and playlists as the iPod uses them, leaving out what isn't set. */
+export function listeningOf(stats: StatsRow[], playlists: PlaylistRow[]): Listening {
+  return {
+    stats: Object.fromEntries(
+      stats.map((row) => [
+        row.song_id,
+        { ...(row.rating ? { rating: row.rating } : {}), plays: row.plays, ...(row.played_at ? { played: row.played_at } : {}) }
+      ])
+    ),
+    playlists: playlists.map((row) => ({ id: Number(row.id), name: row.name, songs: (row.playlist_songs ?? []).map((s) => s.song_id) }))
+  };
+}
 
 /** Turns a database refusal into one the interface can explain. */
 function refusal(error: PostgrestError): SocialError {
@@ -457,6 +531,112 @@ export function supabaseSocial(url: string, key: string): Social {
       return () => {
         client.removeChannel(channel);
       };
+    },
+
+    // Jincheng's ratings, plays and playlists: everyone reads them, and the
+    // database lets only the owner change them. Playlists come with their
+    // songs in one request (PostgREST embeds them by the foreign key).
+    async listening() {
+      const [stats, playlists] = await Promise.all([
+        client.from('song_stats').select('song_id,rating,plays,played_at'),
+        client.from('playlists').select('id,name,playlist_songs(song_id)').order('id').order('position', { referencedTable: 'playlist_songs' })
+      ]);
+      if (stats.error) throw stats.error;
+      if (playlists.error) throw playlists.error;
+      return listeningOf(stats.data ?? [], playlists.data ?? []);
+    },
+
+    async rateSong(id, rating) {
+      member();
+      const { error } = await client.rpc('rate_song', { p_song: id, p_rating: rating });
+      if (error) throw error.code === '42501' ? notOwner('the ratings everyone sees') : refusal(error);
+    },
+
+    async songPlayed(id) {
+      member();
+      const { error } = await client.rpc('song_played', { p_song: id });
+      if (error) throw error.code === '42501' ? notOwner('the play counts everyone sees') : refusal(error);
+    },
+
+    async savePlaylist(name, songs) {
+      member();
+      const { data, error } = await client.rpc('save_playlist', { p_name: name, p_songs: songs });
+      if (error) {
+        if (error.code === '42501') throw notOwner('the playlists everyone sees');
+        // A name the table's check refuses.
+        if (error.code === '23514') throw new SocialError('invalid', playlistNameProblem(name) ?? 'That name won’t do.');
+        throw refusal(error);
+      }
+      return Number(data);
+    },
+
+    // Row-level security lets anyone else's delete reach no row, without an
+    // error; the site offers these only to the owner.
+    async unlistSong(playlist, song) {
+      member();
+      const { error } = await client.from('playlist_songs').delete().eq('playlist_id', playlist).eq('song_id', song);
+      if (error) throw error.code === '42501' ? notOwner('the playlists everyone sees') : refusal(error);
+    },
+
+    async deletePlaylist(playlist) {
+      member();
+      const { error } = await client.from('playlists').delete().eq('id', playlist);
+      if (error) throw error.code === '42501' ? notOwner('the playlists everyone sees') : refusal(error);
+    },
+
+    // Jincheng's home folder. Row-level security gives anyone else only
+    // the documents in Public, and no diary at all.
+    async home(owner) {
+      const [documents, diary] = await Promise.all([
+        client.from('documents').select(DOCUMENT_COLUMNS).order('folder').order('name'),
+        owner
+          ? client.from('diary').select(ENTRY_COLUMNS).order('day', { ascending: false }).order('created_at')
+          : Promise.resolve({ data: [] as EntryRow[], error: null })
+      ]);
+      if (documents.error) throw documents.error;
+      if (diary.error) throw diary.error;
+      return { documents: (documents.data ?? []).map(documentOf), diary: (diary.data ?? []).map(entryOf) };
+    },
+
+    // A save names the version it was made from, so one from an older copy
+    // reaches no row and is refused rather than overwriting what's newer.
+    async saveDocument({ id, version, folder, name, body }) {
+      member();
+      const request = id
+        ? client.from('documents').update({ folder, name, body }).eq('id', id).eq('version', version ?? 0).select(DOCUMENT_COLUMNS).maybeSingle()
+        : client.from('documents').insert({ folder, name, body }).select(DOCUMENT_COLUMNS).single();
+      const { data, error } = await request;
+      if (error) {
+        if (error.code === '42501') throw notOwner('Jincheng’s documents');
+        if (error.code === '23505') throw new SocialError('already', `There’s already a document called “${name}” in that folder.`);
+        if (error.code === '23514') throw new SocialError('invalid', 'A name is one line, without “/” or “:”, and a document holds 100,000 characters at most.');
+        throw refusal(error);
+      }
+      if (!data) throw changedElsewhere();
+      return documentOf(data);
+    },
+
+    async deleteDocument(id) {
+      member();
+      const { error } = await client.from('documents').delete().eq('id', id);
+      if (error) throw error.code === '42501' ? notOwner('Jincheng’s documents') : refusal(error);
+    },
+
+    async saveEntry({ id, version, day, body }) {
+      member();
+      const request = id
+        ? client.from('diary').update({ day, body }).eq('id', id).eq('version', version ?? 0).select(ENTRY_COLUMNS).maybeSingle()
+        : client.from('diary').insert({ day, body }).select(ENTRY_COLUMNS).single();
+      const { data, error } = await request;
+      if (error) throw error.code === '42501' ? notOwner('Jincheng’s diary') : refusal(error);
+      if (!data) throw changedElsewhere();
+      return entryOf(data);
+    },
+
+    async deleteEntry(id) {
+      member();
+      const { error } = await client.from('diary').delete().eq('id', id);
+      if (error) throw error.code === '42501' ? notOwner('Jincheng’s diary') : refusal(error);
     },
 
     async nowPlaying() {

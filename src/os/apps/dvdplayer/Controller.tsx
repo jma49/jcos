@@ -2,6 +2,7 @@ import { useState, type CSSProperties, type PointerEvent as ReactPointerEvent } 
 import { createPortal } from 'react-dom';
 import { PauseGlyph, PlayGlyph, SpeakerLowGlyph } from '../../core/glyphs';
 import { loadSettings, updateJSON } from '../../core/storage';
+import { releaseAfterPointer } from '../../core/useKeys';
 import { MENU_BAR_HEIGHT } from '../../core/store';
 import type { Rect } from '../../core/types';
 import { ChapterBackGlyph, ChapterNextGlyph, EjectGlyph, FastForwardGlyph, RewindGlyph, StopGlyph } from './glyphs';
@@ -80,7 +81,15 @@ function Remote(p: ControllerProps & { drawer: boolean; onDrawer: () => void }) 
             <span className="os-dvd-vol" aria-hidden="true">
               <SpeakerLowGlyph />
             </span>
-            <input type="range" min={0} max={100} value={p.volume} onChange={(e) => p.onVolume(Number(e.target.value))} aria-label="Volume" />
+            <input
+              type="range"
+              min={0}
+              max={100}
+              value={p.volume}
+              onPointerDown={releaseAfterPointer}
+              onChange={(e) => p.onVolume(Number(e.target.value))}
+              aria-label="Volume"
+            />
           </div>
         </div>
         <div className="os-dvd-transport">

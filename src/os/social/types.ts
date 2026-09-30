@@ -192,7 +192,7 @@ export interface ChatHandlers {
  * (one reaction per visitor), `taken` (username), `credentials` (wrong
  * username or password), `invalid` (a bad username, password or note).
  */
-export type Refusal = 'signed-out' | 'limit' | 'already' | 'taken' | 'credentials' | 'invalid' | 'expired' | 'failed';
+export type Refusal = 'signed-out' | 'limit' | 'already' | 'taken' | 'credentials' | 'invalid' | 'expired' | 'conflict' | 'failed';
 
 export class SocialError extends Error {
   constructor(
@@ -300,6 +300,105 @@ export interface Social {
    * shelf, from any page or the bot; returns a function that stops watching.
    */
   watchDiscs: (handlers: { onDisc: (disc: Disc, burned: boolean) => void; onRemove: (id: string) => void }) => () => void;
+
+  /** Jincheng's ratings, plays and playlists, as the database has them now. */
+  listening: () => Promise<Listening>;
+  /** Rates a song one to five stars, or clears its rating with 0. Only the owner may. */
+  rateSong: (id: string, rating: number) => Promise<void>;
+  /** Counts a play of a song listened to the end. Only the owner's are counted. */
+  songPlayed: (id: string) => Promise<void>;
+  /**
+   * Saves songs into the playlist called `name` (whatever its case),
+   * making it if there's none, and returns its id. Only the owner may.
+   */
+  savePlaylist: (name: string, songs: string[]) => Promise<number>;
+  /** Takes a song out of one of the playlists. Only the owner may. */
+  unlistSong: (playlist: number, song: string) => Promise<void>;
+  /** Deletes one of the playlists. Only the owner may. */
+  deletePlaylist: (playlist: number) => Promise<void>;
+
+  /**
+   * Jincheng's home folder: the documents anyone may read (those in
+   * Public) and, for the owner, the rest and the diary.
+   */
+  home: (owner: boolean) => Promise<Home>;
+  /**
+   * Writes one of Jincheng's documents: a new one without an `id`, else a
+   * save made from `version`, refused ('conflict') if it has been saved or
+   * thrown away since. Only the owner may.
+   */
+  saveDocument: (doc: DocumentDraft) => Promise<HomeDocument>;
+  /** Throws one of Jincheng's documents away. Only the owner may. */
+  deleteDocument: (id: string) => Promise<void>;
+  /** Writes an entry in Jincheng's diary, as saveDocument does a document. */
+  saveEntry: (entry: EntryDraft) => Promise<DiaryEntry>;
+  /** Takes an entry out of the diary. */
+  deleteEntry: (id: string) => Promise<void>;
+}
+
+/** A folder of Jincheng's home that holds documents (Sites lists Jincheng's sites instead). */
+export type HomeFolder = 'desktop' | 'documents' | 'downloads' | 'library' | 'movies' | 'music' | 'pictures' | 'public';
+
+/** One of Jincheng's documents. */
+export interface HomeDocument {
+  id: string;
+  folder: HomeFolder;
+  /** With its extension: "Things to remember.txt". */
+  name: string;
+  body: string;
+  /** Counts saves: a save names the version it was made from. */
+  version: number;
+  /** When it was last saved (ISO 8601). */
+  updated: string;
+}
+
+/** A document as it's saved: `id` and `version` for one that's there. */
+export type DocumentDraft = Pick<HomeDocument, 'folder' | 'name' | 'body'> & { id?: string; version?: number };
+
+/** An entry in Jincheng's diary. */
+export interface DiaryEntry {
+  id: string;
+  /** The day it's about (YYYY-MM-DD), in the writer's own time zone. */
+  day: string;
+  body: string;
+  version: number;
+  /** When it was written (ISO 8601), which orders a day's entries. */
+  created: string;
+  updated: string;
+}
+
+export type EntryDraft = Pick<DiaryEntry, 'day' | 'body'> & { id?: string; version?: number };
+
+/** Jincheng's home folder, as far as the reader may see it. */
+export interface Home {
+  documents: HomeDocument[];
+  /** Empty for anyone but the owner. */
+  diary: DiaryEntry[];
+}
+
+/** Jincheng's rating and plays of a song. */
+export interface SongStats {
+  /** One to five stars; missing until rated. */
+  rating?: number;
+  /** How many times Jincheng has listened to it to the end, on the site. */
+  plays: number;
+  /** When Jincheng last did (ISO 8601). */
+  played?: string;
+}
+
+/** One of Jincheng's own playlists: its songs' YouTube ids, in order. */
+export interface Playlist {
+  id: number;
+  name: string;
+  songs: string[];
+}
+
+/** What the iPod shows everyone of Jincheng's listening. */
+export interface Listening {
+  /** By song id; a song never rated or played isn't in it. */
+  stats: Record<string, SongStats>;
+  /** In the order they were made. */
+  playlists: Playlist[];
 }
 
 /** A song Jincheng is playing for everyone on the desktop (/play in Telegram). */

@@ -189,6 +189,28 @@ select pg_temp.check(not has_function_privilege('anon', 'public.notes_by_member(
   and not has_function_privilege('authenticated', 'public.chat_flood_guard()', 'execute')
   and not has_function_privilege('authenticated', 'public.handle_new_account()', 'execute'), 'trigger functions can''t be called over the API');
 select pg_temp.check(not exists (select from pg_proc where proname = 'notes_one_per_visitor'), 'the old one-note-per-visitor function is gone');
+select pg_temp.check(not exists (
+  select from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+  where n.nspname in ('public', 'private') and p.prosecdef
+    and not exists (select from unnest(coalesce(p.proconfig, '{}')) c where c like 'search_path=%')
+), 'every security definer function sets its search_path');
+select pg_temp.check(not exists (
+  select from pg_policies
+  where schemaname in ('public', 'private')
+    and replace(coalesce(qual, '') || ' ' || coalesce(with_check, ''), 'SELECT auth.uid()', '') ~ 'auth\.uid\(\)'
+), 'every policy asks who the caller is once, with (select auth.uid()), not for each row');
+-- The security definer functions the API roles may call are the ones kept on
+-- purpose (supabase/migrations/20260926100511_advisor.sql and those after it).
+select pg_temp.check((
+  select coalesce(string_agg(p.oid::regprocedure::text, ' ' order by p.oid::regprocedure::text), '')
+  from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+  where n.nspname = 'public' and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')
+) = 'is_owner() song_limit()', 'visitors may call only the security definer functions kept on purpose');
+select pg_temp.check((
+  select coalesce(string_agg(p.oid::regprocedure::text, ' ' order by p.oid::regprocedure::text), '')
+  from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+  where n.nspname = 'public' and p.prosecdef and has_function_privilege('authenticated', p.oid, 'execute')
+) = 'chat_can_write(text) is_owner() my_reactions() my_recovery_email() set_recovery_email(text) song_limit() song_played(text)', 'members may call only the security definer functions kept on purpose');
 select pg_temp.check(not has_function_privilege('anon', 'public.my_reactions()', 'execute'), 'visitors can''t ask for members'' reactions');
 select pg_temp.act_as('anon');
 select pg_temp.check(public.username_available('someone_new') and not public.username_available('alice'), 'visitors can still check a username');
@@ -306,6 +328,11 @@ select pg_temp.check(pg_temp.refused($$insert into public.discs (id, title) valu
 select pg_temp.check(pg_temp.refused($$insert into public.discs (id, title) values ('bbbbbbbbbbb', '   ')$$), 'a disc has a title');
 select pg_temp.check(pg_temp.refused($$insert into public.discs (id, title, cover_x) values ('bbbbbbbbbbb', 'x', 101)$$), 'the crop stays on the picture');
 select pg_temp.check(pg_temp.refused($$insert into public.discs (id, title, added_at) values ('bbbbbbbbbbb', 'x', now() - interval '1 year')$$), 'a disc''s burn date is the database''s');
+select pg_temp.check(pg_temp.refused($$insert into public.discs (id, title, cover) values ('bbbbbbbbbbb', 'x', 'hq9')$$), 'a case''s picture is one YouTube makes (hq1 to hq3, not hq9)');
+select pg_temp.check(pg_temp.refused($$update public.discs set duration_ms = 999 where id = 'jWQx2f-CErU'$$)
+  and pg_temp.refused($$update public.discs set duration_ms = 86400001 where id = 'jWQx2f-CErU'$$), 'a disc''s length is between a second and a day');
+select pg_temp.check(pg_temp.refused($$update public.discs set id = 'zzzzzzzzzzz' where id = 'jWQx2f-CErU'$$)
+  and pg_temp.refused($$update public.discs set added_at = now() - interval '1 year' where id = 'jWQx2f-CErU'$$), 'not even the owner changes which video a disc is, or when it was burned');
 reset role;
 
 -- The limit: a full shelf refuses another disc.
@@ -317,6 +344,207 @@ reset role;
 delete from public.discs where id = 'ccccccccccc';
 update public.music_settings set value = '200' where name = 'disc_limit';
 select pg_temp.check(exists (select 1 from pg_publication_tables where pubname = 'supabase_realtime' and tablename = 'discs'), 'the shelf''s changes reach open desktops over Realtime');
+
+-- The iPod's ratings and playlists ------------------------------------------
+
+-- Visitors and members read what Jincheng rated, played and saved, as
+-- the site asks for it (src/os/social/supabase.ts), and change none of it.
+select pg_temp.act_as('anon');
+select pg_temp.check((select count(*) from (select song_id, rating, plays, played_at from public.song_stats) s) = 0
+  -- Playlists with their songs embedded, as PostgREST reads them for the iPod.
+  and (select count(*) from (
+    select p.id, p.name, coalesce((select json_agg(s) from (select ps.song_id from public.playlist_songs ps where ps.playlist_id = p.id order by ps.position) s), '[]')
+    from public.playlists p order by p.id
+  ) p) = 0, 'visitors read ratings, plays and playlists as the iPod asks for them');
+select pg_temp.check(pg_temp.refused($$select public.rate_song('OxtZF0WGXtE', 5)$$), 'visitors can''t rate songs');
+select pg_temp.check(pg_temp.refused($$select public.song_played('OxtZF0WGXtE')$$), 'a visitor''s plays aren''t counted');
+select pg_temp.check(pg_temp.refused($$select public.save_playlist('Mine', array['OxtZF0WGXtE'])$$), 'visitors can''t save playlists');
+select pg_temp.check(pg_temp.refused($$insert into public.playlists (name) values ('Mine')$$), 'visitors can''t make playlists');
+reset role;
+select pg_temp.act_as('authenticated', '11111111-1111-1111-1111-111111111111');
+select pg_temp.check(pg_temp.refused($$select public.rate_song('OxtZF0WGXtE', 5)$$), 'members can''t rate songs');
+select pg_temp.check(pg_temp.refused($$insert into public.song_stats (song_id, rating) values ('OxtZF0WGXtE', 5)$$), 'members can''t write ratings directly');
+select pg_temp.check(pg_temp.refused($$select public.song_played('OxtZF0WGXtE')$$), 'a member''s plays aren''t counted');
+select pg_temp.check(pg_temp.refused($$select public.save_playlist('Mine', array['OxtZF0WGXtE'])$$), 'members can''t save playlists');
+select pg_temp.check(pg_temp.refused($$insert into public.playlists (name) values ('Mine')$$), 'members can''t make playlists directly');
+reset role;
+select pg_temp.check(not exists (select 1 from public.song_stats) and not exists (select 1 from public.playlists), 'nothing was rated, counted or saved');
+
+-- Jincheng rates, listens and saves.
+select pg_temp.act_as('authenticated', '99999999-9999-9999-9999-999999999999');
+select public.rate_song('OxtZF0WGXtE', 4);
+select public.rate_song('OxtZF0WGXtE', 5);
+select public.rate_song('QLHMhVonF-s', 3);
+select public.rate_song('QLHMhVonF-s', 0);
+select pg_temp.check((select rating from public.song_stats where song_id = 'OxtZF0WGXtE') = 5
+  and (select rating is null from public.song_stats where song_id = 'QLHMhVonF-s'), 'Jincheng rates songs, changes a rating and clears one');
+select pg_temp.check(pg_temp.refused($$select public.rate_song('OxtZF0WGXtE', 6)$$) and pg_temp.refused($$select public.rate_song('OxtZF0WGXtE', -1)$$), 'a rating is one to five stars');
+select pg_temp.check(pg_temp.refused($$select public.rate_song('aaaaaaaaaaa', 3)$$), 'only songs in the library are rated');
+select public.song_played('OxtZF0WGXtE');
+select public.song_played('OxtZF0WGXtE');
+select public.song_played('TkmfOyuGSdQ');
+select pg_temp.check((select plays = 2 and played_at > now() - interval '1 minute' and rating = 5 from public.song_stats where song_id = 'OxtZF0WGXtE')
+  and (select plays = 1 and rating is null from public.song_stats where song_id = 'TkmfOyuGSdQ'), 'Jincheng''s plays are counted, when, and leave the rating be');
+select pg_temp.check(pg_temp.refused($$update public.song_stats set plays = 100 where song_id = 'OxtZF0WGXtE'$$), 'no one sets a play count');
+select pg_temp.check(pg_temp.refused($$update public.song_stats set played_at = now() - interval '1 year' where song_id = 'OxtZF0WGXtE'$$), 'a play''s time is the database''s');
+select pg_temp.check(pg_temp.refused($$insert into public.song_stats (song_id, plays) values ('0o-s_8Wt9zc', 100)$$), 'nor does a new song start with plays');
+
+select set_config('test.playlist', public.save_playlist('  Rainy Days ', array['OxtZF0WGXtE', 'QLHMhVonF-s', 'OxtZF0WGXtE', 'aaaaaaaaaaa'])::text, false);
+select pg_temp.check((select name from public.playlists where id = current_setting('test.playlist')::bigint) = 'Rainy Days'
+  and (select array_agg(song_id order by position) from public.playlist_songs where playlist_id = current_setting('test.playlist')::bigint) = array['OxtZF0WGXtE', 'QLHMhVonF-s'],
+  'Jincheng saves a playlist: named, in order, each song once, only songs in the library');
+select set_config('test.again', public.save_playlist('rainy days', array['TkmfOyuGSdQ', 'OxtZF0WGXtE'])::text, false);
+select pg_temp.check(current_setting('test.again') = current_setting('test.playlist')
+  and (select array_agg(song_id order by position) from public.playlist_songs where playlist_id = current_setting('test.playlist')::bigint) = array['OxtZF0WGXtE', 'QLHMhVonF-s', 'TkmfOyuGSdQ']
+  and (select count(*) from public.playlists) = 1, 'songs saved into a playlist of the same name go after its own');
+select pg_temp.check(pg_temp.refused($$select public.save_playlist('On-The-Go', array['OxtZF0WGXtE'])$$)
+  and pg_temp.refused($$select public.save_playlist('top 25 most played', array['OxtZF0WGXtE'])$$), 'the iPod''s own playlists'' names are taken');
+select pg_temp.check(pg_temp.refused($$select public.save_playlist('   ', array['OxtZF0WGXtE'])$$), 'a playlist has a name');
+select pg_temp.check(pg_temp.refused($$select public.save_playlist(repeat('x', 41), array['OxtZF0WGXtE'])$$), 'a playlist''s name fits the iPod''s screen');
+select pg_temp.check(pg_temp.refused($$select public.save_playlist(E'Two\nlines', array['OxtZF0WGXtE'])$$), 'a playlist''s name is one line');
+select pg_temp.check(pg_temp.refused($$insert into public.playlist_songs (playlist_id, song_id, position) values (current_setting('test.playlist')::bigint, '0o-s_8Wt9zc', 0)$$), 'a song''s place in a playlist is the database''s');
+delete from public.playlist_songs where playlist_id = current_setting('test.playlist')::bigint and song_id = 'QLHMhVonF-s';
+select pg_temp.check((select array_agg(song_id order by position) from public.playlist_songs where playlist_id = current_setting('test.playlist')::bigint) = array['OxtZF0WGXtE', 'TkmfOyuGSdQ'], 'Jincheng takes a song out of a playlist');
+reset role;
+
+-- No one else changes them.
+select pg_temp.act_as('authenticated', '11111111-1111-1111-1111-111111111111');
+select pg_temp.check(pg_temp.refused($$select public.save_playlist('Rainy Days', array['0o-s_8Wt9zc'])$$), 'members can''t add to Jincheng''s playlists');
+select pg_temp.check(pg_temp.refused($$insert into public.playlist_songs (playlist_id, song_id) values (current_setting('test.playlist')::bigint, 'QLHMhVonF-s')$$), 'nor put a song straight into one');
+delete from public.playlist_songs where playlist_id = current_setting('test.playlist')::bigint;
+delete from public.playlists where id = current_setting('test.playlist')::bigint;
+update public.song_stats set rating = 1 where song_id = 'OxtZF0WGXtE';
+select pg_temp.act_as('anon');
+select pg_temp.check(pg_temp.refused($$delete from public.playlist_songs where playlist_id = current_setting('test.playlist')::bigint$$)
+  and pg_temp.refused($$delete from public.playlists where id = current_setting('test.playlist')::bigint$$)
+  and pg_temp.refused($$update public.song_stats set rating = 1 where song_id = 'OxtZF0WGXtE'$$), 'visitors can''t take songs out, delete playlists or change ratings');
+reset role;
+select pg_temp.check((select count(*) from public.playlist_songs where playlist_id = current_setting('test.playlist')::bigint) = 2
+  and (select rating from public.song_stats where song_id = 'OxtZF0WGXtE') = 5, 'members can''t take songs out, delete playlists or change ratings');
+
+-- A song that leaves the library leaves every playlist, and its rating and plays go with it.
+select pg_temp.act_as('service_role');
+insert into public.songs (id, title, artist) values ('eeeeeeeeeee', 'Leaving', 'Someone');
+select pg_temp.act_as('authenticated', '99999999-9999-9999-9999-999999999999');
+select public.rate_song('eeeeeeeeeee', 2);
+select public.save_playlist('Rainy Days', array['eeeeeeeeeee']);
+select pg_temp.act_as('service_role');
+delete from public.songs where id = 'eeeeeeeeeee';
+reset role;
+select pg_temp.check(not exists (select 1 from public.playlist_songs where song_id = 'eeeeeeeeeee')
+  and not exists (select 1 from public.song_stats where song_id = 'eeeeeeeeeee'), 'a song removed from the library leaves its playlists, and its rating goes');
+
+-- The limit: with every playlist made, a new one is refused, and songs
+-- still go into one that's there.
+update public.music_settings set value = to_jsonb((select count(*) from public.playlists) + 1) where name = 'playlist_limit';
+select pg_temp.act_as('authenticated', '99999999-9999-9999-9999-999999999999');
+select public.save_playlist('While Coding', array['0o-s_8Wt9zc']);
+select pg_temp.check(pg_temp.refused($$select public.save_playlist('One Too Many', array['OxtZF0WGXtE'])$$), 'a full set of playlists refuses another');
+select public.save_playlist('while coding', array['bX33UI9ZPLk']);
+select pg_temp.check((select count(*) from public.playlist_songs p join public.playlists l on l.id = p.playlist_id where l.name = 'While Coding') = 2, 'songs still go into a playlist that''s there');
+delete from public.playlists where name = 'While Coding';
+select pg_temp.check(not exists (select 1 from public.playlists where name = 'While Coding')
+  and not exists (select 1 from public.playlist_songs where song_id = 'bX33UI9ZPLk'), 'Jincheng deletes a playlist, and its songs with it');
+reset role;
+update public.music_settings set value = '50' where name = 'playlist_limit';
+
+select pg_temp.check(not (select prosecdef from pg_proc where oid = 'public.rate_song(text, int)'::regprocedure)
+  and not (select prosecdef from pg_proc where oid = 'public.save_playlist(text, text[])'::regprocedure), 'rating and saving run as the caller, under the policies');
+-- Jincheng's home folder ---------------------------------------------------
+
+select pg_temp.act_as('authenticated', '99999999-9999-9999-9999-999999999999');
+insert into public.documents (folder, name, body) values
+  ('documents', 'Things to remember.txt', 'Climbing tape.'),
+  ('public', 'Hello.txt', 'Welcome to the hideout.');
+insert into public.diary (day, body) values ('2026-09-28', 'Finished the Dock tonight.'), ('2026-09-27', 'Added 青花 to the library.');
+select pg_temp.check((select count(*) from public.documents) = 2 and (select count(*) from public.diary) = 2, 'Jincheng writes documents and the diary');
+reset role;
+
+-- Visitors and members read Public, as the site asks for it (src/os/social/supabase.ts), and nothing else.
+select pg_temp.act_as('anon');
+select pg_temp.check((select count(*) from (select id, folder, name, body, version, created_at, updated_at from public.documents order by folder, name) d) = 1
+  and (select name from public.documents) = 'Hello.txt', 'visitors read what''s in Public, and only that');
+select pg_temp.check(pg_temp.refused($$select 1 from public.diary$$), 'visitors can''t ask for the diary');
+select pg_temp.check(pg_temp.refused($$insert into public.documents (folder, name, body) values ('public', 'Mine.txt', 'x')$$), 'visitors can''t write documents');
+select pg_temp.check(pg_temp.refused($$delete from public.documents where name = 'Hello.txt'$$), 'visitors can''t throw documents away');
+reset role;
+select pg_temp.act_as('authenticated', '11111111-1111-1111-1111-111111111111');
+select pg_temp.check((select count(*) from public.documents) = 1, 'members read what''s in Public, and only that');
+select pg_temp.check((select count(*) from public.diary) = 0, 'members read nothing of the diary');
+select pg_temp.check(pg_temp.refused($$insert into public.documents (folder, name, body) values ('public', 'Mine.txt', 'x')$$), 'members can''t write documents');
+select pg_temp.check(pg_temp.refused($$insert into public.diary (day, body) values ('2026-09-29', 'x')$$), 'members can''t write in the diary');
+update public.documents set body = 'Defaced.' where name = 'Hello.txt';
+delete from public.documents where name = 'Hello.txt';
+update public.diary set body = 'Defaced.' where day = '2026-09-28';
+reset role;
+select pg_temp.check((select body from public.documents where name = 'Hello.txt') = 'Welcome to the hideout.'
+  and (select body from public.diary where day = '2026-09-28') = 'Finished the Dock tonight.', 'members can''t change or throw away documents, or the diary');
+
+-- Jincheng's saves: numbered by the database, and one made from an older copy changes nothing.
+select pg_temp.act_as('authenticated', '99999999-9999-9999-9999-999999999999');
+select set_config('test.doc', (select id::text from public.documents where name = 'Things to remember.txt'), false);
+update public.documents set body = 'Climbing tape. Chalk.' where id = current_setting('test.doc')::uuid and version = 1;
+update public.documents set body = 'From an older copy.' where id = current_setting('test.doc')::uuid and version = 1;
+select pg_temp.check((select body = 'Climbing tape. Chalk.' and version = 2 and updated_at >= created_at from public.documents where id = current_setting('test.doc')::uuid),
+  'a save counts, and one made from an older copy changes nothing');
+select pg_temp.check(pg_temp.refused($$update public.documents set version = 99 where name = 'Hello.txt'$$), 'no one sets a version');
+select pg_temp.check(pg_temp.refused($$update public.documents set updated_at = now() - interval '1 year' where name = 'Hello.txt'$$), 'a save''s time is the database''s');
+select pg_temp.check(pg_temp.refused($$insert into public.documents (folder, name) values ('documents', 'things TO remember.txt')$$), 'a name is used once in a folder, whatever its case');
+insert into public.documents (folder, name) values ('desktop', 'Things to remember.txt');
+select pg_temp.check((select count(*) from public.documents where lower(name) = 'things to remember.txt') = 2, 'but can be used again in another folder');
+select pg_temp.check(pg_temp.refused($$insert into public.documents (folder, name) values ('documents', 'a/b.txt')$$)
+  and pg_temp.refused($$insert into public.documents (folder, name) values ('documents', 'a:b.txt')$$)
+  and pg_temp.refused($$insert into public.documents (folder, name) values ('documents', '.hidden')$$)
+  and pg_temp.refused($$insert into public.documents (folder, name) values ('documents', E'Two\nlines.txt')$$)
+  and pg_temp.refused($$insert into public.documents (folder, name) values ('documents', '  ')$$)
+  and pg_temp.refused($$insert into public.documents (folder, name) values ('documents', repeat('x', 81))$$), 'a name is one line, with no slash or colon, not hidden, and fits');
+select pg_temp.check(pg_temp.refused($$insert into public.documents (folder, name) values ('Sites', 'x.txt')$$), 'a document is in one of the home''s folders (Sites isn''t one)');
+select pg_temp.check(pg_temp.refused($$insert into public.documents (folder, name, body) values ('documents', 'Big.txt', repeat('x', 100001))$$), 'a document holds 100,000 characters at most');
+update public.documents set folder = 'public' where id = current_setting('test.doc')::uuid;
+select pg_temp.check(pg_temp.refused($$insert into public.diary (day, body) values ('2026-09-29', '   ')$$), 'a diary entry says something');
+select pg_temp.check(pg_temp.refused($$insert into public.diary (day, body) values ('1999-12-31', 'x')$$), 'a diary entry is on a day this century');
+update public.diary set body = 'Finished the Dock tonight. Smoke!' where day = '2026-09-28';
+select pg_temp.check((select version from public.diary where day = '2026-09-28') = 2, 'Jincheng changes a diary entry');
+delete from public.diary where day = '2026-09-27';
+select pg_temp.check((select count(*) from public.diary) = 1, 'Jincheng throws a diary entry away');
+reset role;
+select pg_temp.act_as('anon');
+select pg_temp.check((select count(*) from public.documents) = 2, 'a document moved to Public is everyone''s to read');
+reset role;
+
+-- The limits: a full home refuses another document, a full diary another entry.
+update public.music_settings set value = to_jsonb((select count(*) from public.documents)) where name = 'document_limit';
+update public.music_settings set value = to_jsonb((select count(*) from public.diary)) where name = 'diary_limit';
+select pg_temp.act_as('authenticated', '99999999-9999-9999-9999-999999999999');
+select pg_temp.check(pg_temp.refused($$insert into public.documents (folder, name) values ('documents', 'One more.txt')$$), 'a full home folder refuses another document');
+select pg_temp.check(pg_temp.refused($$insert into public.diary (day, body) values ('2026-09-29', 'One more.')$$), 'a full diary refuses another entry');
+reset role;
+update public.music_settings set value = '500' where name = 'document_limit';
+update public.music_settings set value = '10000' where name = 'diary_limit';
+
+-- From Telegram: the bot (the service role) writes an entry or a document
+-- with the message it came from, once, and the site never reads which.
+select pg_temp.act_as('service_role');
+insert into public.diary (day, body, telegram_message_id) values ('2026-09-29', 'Sent from the bus.', 900);
+insert into public.documents (folder, name, body, telegram_message_id) values ('documents', 'Packing list.txt', 'Packing list', 901);
+select pg_temp.check(pg_temp.refused($$insert into public.diary (day, body, telegram_message_id) values ('2026-09-29', 'Sent twice.', 900)$$)
+  and pg_temp.refused($$insert into public.documents (folder, name, telegram_message_id) values ('documents', 'Sent twice.txt', 901)$$), 'a Telegram message is saved once, however often it arrives');
+update public.diary set body = 'Sent from the bus, then edited.' where telegram_message_id = 900;
+select pg_temp.check((select version from public.diary where telegram_message_id = 900) = 2, 'editing the message edits the entry, and counts as a save');
+reset role;
+select pg_temp.act_as('authenticated', '99999999-9999-9999-9999-999999999999');
+select pg_temp.check((select count(*) from public.diary where body like 'Sent from the bus%') = 1
+  and (select count(*) from public.documents where name = 'Packing list.txt') = 1, 'Jincheng reads what came from Telegram');
+select pg_temp.check(pg_temp.refused($$select telegram_message_id from public.diary$$)
+  and pg_temp.refused($$select telegram_message_id from public.documents$$), 'the site never reads which Telegram message something came from');
+reset role;
+select pg_temp.check(not has_function_privilege('authenticated', 'public.home_saved()', 'execute')
+  and not has_function_privilege('authenticated', 'public.home_within_limit()', 'execute'), 'no one calls the home folder''s trigger functions');
+
+select pg_temp.check(not has_function_privilege('anon', 'public.song_played(text)', 'execute')
+  and not has_function_privilege('anon', 'public.rate_song(text, int)', 'execute')
+  and not has_function_privilege('anon', 'public.save_playlist(text, text[])', 'execute')
+  and not has_function_privilege('authenticated', 'public.playlists_within_limit()', 'execute'), 'visitors can''t call the owner''s functions, and no one calls the trigger''s');
 
 -- Supabase's API loads pg_safeupdate, which refuses a DELETE or UPDATE
 -- without a WHERE clause, even inside a function ("DELETE requires a

@@ -1443,3 +1443,360 @@ begin
   end if;
 end
 $$;
+
+-- ---------------------------------------------------------------------
+-- The iPod's ratings and playlists (the same as
+-- supabase/migrations/20260929140000_playlists.sql, whose header explains it).
+-- Everyone reads Jincheng's ratings, plays and playlists; only the owner writes them.
+
+create table if not exists public.song_stats (
+  song_id text primary key references public.songs (id) on delete cascade,
+  -- Jincheng's rating: one to five stars, none until rated.
+  rating smallint check (rating between 1 and 5),
+  -- How many times Jincheng has listened to it to the end, on the site.
+  plays int not null default 0 check (plays >= 0),
+  -- When Jincheng last did.
+  played_at timestamptz
+);
+
+create table if not exists public.playlists (
+  id bigint generated always as identity primary key,
+  -- Shown on the iPod's screen: one line, and none of the iPod's own playlists' names.
+  name text not null check (
+    char_length(name) between 1 and 40
+    and name = btrim(name)
+    and name !~ '[[:cntrl:]]'
+    and lower(name) not in ('on-the-go', 'my top rated', 'recently played', 'top 25 most played')
+  ),
+  created_at timestamptz not null default now()
+);
+-- One playlist to a name, whatever its case.
+create unique index if not exists playlists_name on public.playlists (lower(name));
+
+create table if not exists public.playlist_songs (
+  playlist_id bigint not null references public.playlists (id) on delete cascade,
+  song_id text not null references public.songs (id) on delete cascade,
+  -- The playlist's order: a song added later comes after.
+  position bigint generated always as identity,
+  primary key (playlist_id, song_id)
+);
+
+alter table public.song_stats enable row level security;
+alter table public.playlists enable row level security;
+alter table public.playlist_songs enable row level security;
+
+drop policy if exists "Jincheng's listening is public" on public.song_stats;
+create policy "Jincheng's listening is public" on public.song_stats for select to anon, authenticated using (true);
+drop policy if exists "Jincheng rates songs" on public.song_stats;
+create policy "Jincheng rates songs" on public.song_stats for insert to authenticated with check ((select public.is_owner()));
+drop policy if exists "Jincheng changes ratings" on public.song_stats;
+create policy "Jincheng changes ratings" on public.song_stats for update to authenticated
+  using ((select public.is_owner())) with check ((select public.is_owner()));
+
+drop policy if exists "Playlists are public" on public.playlists;
+create policy "Playlists are public" on public.playlists for select to anon, authenticated using (true);
+drop policy if exists "Jincheng makes playlists" on public.playlists;
+create policy "Jincheng makes playlists" on public.playlists for insert to authenticated with check ((select public.is_owner()));
+drop policy if exists "Jincheng deletes playlists" on public.playlists;
+create policy "Jincheng deletes playlists" on public.playlists for delete to authenticated using ((select public.is_owner()));
+
+drop policy if exists "Playlists are public" on public.playlist_songs;
+create policy "Playlists are public" on public.playlist_songs for select to anon, authenticated using (true);
+drop policy if exists "Jincheng adds songs to playlists" on public.playlist_songs;
+create policy "Jincheng adds songs to playlists" on public.playlist_songs for insert to authenticated with check ((select public.is_owner()));
+drop policy if exists "Jincheng takes songs out of playlists" on public.playlist_songs;
+create policy "Jincheng takes songs out of playlists" on public.playlist_songs for delete to authenticated using ((select public.is_owner()));
+
+-- Everyone reads; the owner's writes go through the policies above. Plays
+-- and their times aren't granted: only song_played() changes them.
+revoke all on public.song_stats, public.playlists, public.playlist_songs from anon, authenticated;
+grant select (song_id, rating, plays, played_at) on public.song_stats to anon, authenticated;
+grant insert (song_id, rating) on public.song_stats to authenticated;
+grant update (rating) on public.song_stats to authenticated;
+grant select (id, name, created_at) on public.playlists to anon, authenticated;
+grant insert (name) on public.playlists to authenticated;
+grant delete on public.playlists to authenticated;
+grant select (playlist_id, song_id, position) on public.playlist_songs to anon, authenticated;
+grant insert (playlist_id, song_id) on public.playlist_songs to authenticated;
+grant delete on public.playlist_songs to authenticated;
+grant select, insert, update, delete on public.song_stats, public.playlists, public.playlist_songs to service_role;
+
+insert into public.music_settings (name, value) values ('playlist_limit', '50') on conflict (name) do nothing;
+
+-- At most playlist_limit playlists. Songs saved into one that exists
+-- aren't a new playlist, so they pass even when the limit is reached.
+create or replace function public.playlists_within_limit()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  most int := coalesce((select (value #>> '{}')::int from public.music_settings where name = 'playlist_limit'), 50);
+begin
+  perform pg_advisory_xact_lock(hashtextextended('playlists', 0));
+  if (select count(*) from public.playlists) >= most
+    and not exists (select 1 from public.playlists where lower(name) = lower(new.name)) then
+    raise exception using errcode = 'P0429', message = format('There are %s playlists already. Delete one first.', most);
+  end if;
+  return new;
+end;
+$$;
+revoke execute on function public.playlists_within_limit() from public, anon, authenticated;
+
+drop trigger if exists playlists_within_limit on public.playlists;
+create trigger playlists_within_limit
+  before insert on public.playlists
+  for each row execute function public.playlists_within_limit();
+
+-- Rates a song one to five stars, or clears its rating (null or 0).
+create or replace function public.rate_song(p_song text, p_rating int)
+returns void
+language sql
+security invoker
+set search_path = public
+as $$
+  insert into public.song_stats (song_id, rating) values (p_song, nullif(p_rating, 0))
+  on conflict (song_id) do update set rating = excluded.rating;
+$$;
+revoke all on function public.rate_song(text, int) from public, anon;
+grant execute on function public.rate_song(text, int) to authenticated;
+
+-- Counts one play of a song, now: Jincheng listened to it to the end.
+create or replace function public.song_played(p_song text)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if not public.is_owner() then
+    raise exception using errcode = '42501', message = 'Only Jincheng''s plays are counted.';
+  end if;
+  insert into public.song_stats (song_id, plays, played_at) values (p_song, 1, now())
+  on conflict (song_id) do update set plays = song_stats.plays + 1, played_at = now();
+end;
+$$;
+revoke all on function public.song_played(text) from public, anon;
+grant execute on function public.song_played(text) to authenticated;
+
+-- Saves songs into the playlist called p_name, making it if there's none
+-- (the name's case aside), after the songs it has: each song once, songs
+-- no longer in the library left out. Returns the playlist's id.
+create or replace function public.save_playlist(p_name text, p_songs text[])
+returns bigint
+language plpgsql
+security invoker
+set search_path = public
+as $$
+declare
+  playlist bigint;
+begin
+  if not public.is_owner() then
+    raise exception using errcode = '42501', message = 'Only Jincheng saves playlists.';
+  end if;
+  insert into public.playlists (name) values (btrim(p_name))
+  on conflict ((lower(name))) do nothing
+  returning id into playlist;
+  if playlist is null then
+    select id into playlist from public.playlists where lower(name) = lower(btrim(p_name));
+  end if;
+  insert into public.playlist_songs (playlist_id, song_id)
+  select playlist, t.id
+  from unnest(p_songs) with ordinality as t(id, n)
+  where exists (select 1 from public.songs s where s.id = t.id)
+  order by t.n
+  on conflict do nothing;
+  return playlist;
+end;
+$$;
+revoke all on function public.save_playlist(text, text[]) from public, anon;
+grant execute on function public.save_playlist(text, text[]) to authenticated;
+
+-- ---------------------------------------------------------------------
+-- Jincheng's home folder (the same as
+-- supabase/migrations/20260929160000_home.sql, whose header explains it).
+-- Documents in Public are everyone's to read; everything else, and the diary, only the owner's.
+
+create table if not exists public.documents (
+  id uuid primary key default gen_random_uuid(),
+  -- Which of the home's folders it's in; Public is everyone's to read.
+  folder text not null check (folder in ('desktop', 'documents', 'downloads', 'library', 'movies', 'music', 'pictures', 'public')),
+  -- Its name with its extension ("Things to remember.txt"): one line, no
+  -- slash or colon (Finder's separators), not hidden.
+  name text not null check (
+    char_length(name) between 1 and 80
+    and name = btrim(name)
+    and name !~ '[[:cntrl:]/:]'
+    and left(name, 1) <> '.'
+  ),
+  body text not null default '' check (char_length(body) <= 100000),
+  -- Counts saves: a save names the version it was made from.
+  version int not null default 1,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+-- One document to a name in a folder, whatever its case.
+create unique index if not exists documents_name on public.documents (folder, lower(name));
+
+create table if not exists public.diary (
+  id uuid primary key default gen_random_uuid(),
+  -- The day it's about, in the writer's own time zone.
+  day date not null check (day between date '2000-01-01' and date '2100-12-31'),
+  body text not null check (char_length(btrim(body)) between 1 and 20000),
+  version int not null default 1,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+create index if not exists diary_day on public.diary (day desc, created_at desc);
+
+alter table public.documents enable row level security;
+alter table public.diary enable row level security;
+
+drop policy if exists "Public is everyone's to read; the rest is Jincheng's" on public.documents;
+create policy "Public is everyone's to read; the rest is Jincheng's" on public.documents for select to anon, authenticated
+  using (folder = 'public' or (select public.is_owner()));
+drop policy if exists "Jincheng writes documents" on public.documents;
+create policy "Jincheng writes documents" on public.documents for insert to authenticated with check ((select public.is_owner()));
+drop policy if exists "Jincheng changes documents" on public.documents;
+create policy "Jincheng changes documents" on public.documents for update to authenticated
+  using ((select public.is_owner())) with check ((select public.is_owner()));
+drop policy if exists "Jincheng throws documents away" on public.documents;
+create policy "Jincheng throws documents away" on public.documents for delete to authenticated using ((select public.is_owner()));
+
+drop policy if exists "Jincheng's diary is Jincheng's" on public.diary;
+create policy "Jincheng's diary is Jincheng's" on public.diary for all to authenticated
+  using ((select public.is_owner())) with check ((select public.is_owner()));
+
+-- Visitors read documents in Public (the policy above); the diary isn't
+-- theirs to ask for at all. Versions and times are the database's.
+revoke all on public.documents, public.diary from anon, authenticated;
+grant select (id, folder, name, body, version, created_at, updated_at) on public.documents to anon, authenticated;
+grant insert (folder, name, body) on public.documents to authenticated;
+grant update (folder, name, body) on public.documents to authenticated;
+grant delete on public.documents to authenticated;
+grant select (id, day, body, version, created_at, updated_at) on public.diary to authenticated;
+grant insert (day, body) on public.diary to authenticated;
+grant update (day, body) on public.diary to authenticated;
+grant delete on public.diary to authenticated;
+grant select, insert, update, delete on public.documents, public.diary to service_role;
+
+-- A save counts: the version goes up and the time is now's.
+create or replace function public.home_saved()
+returns trigger
+language plpgsql
+set search_path = public
+as $$
+begin
+  new.version := old.version + 1;
+  new.updated_at := now();
+  return new;
+end;
+$$;
+revoke execute on function public.home_saved() from public, anon, authenticated;
+
+drop trigger if exists documents_saved on public.documents;
+create trigger documents_saved before update on public.documents for each row execute function public.home_saved();
+drop trigger if exists diary_saved on public.diary;
+create trigger diary_saved before update on public.diary for each row execute function public.home_saved();
+
+insert into public.music_settings (name, value) values ('document_limit', '500'), ('diary_limit', '10000') on conflict (name) do nothing;
+
+-- At most document_limit documents and diary_limit entries.
+create or replace function public.home_within_limit()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  setting text := case tg_table_name when 'documents' then 'document_limit' else 'diary_limit' end;
+  most int := coalesce((select (value #>> '{}')::int from public.music_settings where name = setting), 500);
+  counted int;
+begin
+  perform pg_advisory_xact_lock(hashtextextended(tg_table_name, 0));
+  execute format('select count(*) from public.%I', tg_table_name) into counted;
+  if counted >= most then
+    raise exception using errcode = 'P0429', message = case tg_table_name
+      when 'documents' then format('There are %s documents already. Throw one away first.', most)
+      else format('The diary is full (%s entries).', most) end;
+  end if;
+  return new;
+end;
+$$;
+revoke execute on function public.home_within_limit() from public, anon, authenticated;
+
+drop trigger if exists documents_within_limit on public.documents;
+create trigger documents_within_limit before insert on public.documents for each row execute function public.home_within_limit();
+drop trigger if exists diary_within_limit on public.diary;
+create trigger diary_within_limit before insert on public.diary for each row execute function public.home_within_limit();
+
+-- ---------------------------------------------------------------------
+-- Policies ask who the caller is once per statement (the same as
+-- supabase/migrations/20260929185931_rls_initplan.sql, whose header explains it).
+
+drop policy if exists "Members can leave notes" on public.notes;
+create policy "Members can leave notes"
+  on public.notes for insert
+  to authenticated
+  with check (approved and user_id = (select auth.uid()));
+
+drop policy if exists "Members can take their notes down" on public.notes;
+create policy "Members can take their notes down"
+  on public.notes for delete
+  to authenticated
+  using (user_id = (select auth.uid()));
+
+drop policy if exists "Anyone can react" on public.soapbox_reactions;
+create policy "Anyone can react"
+  on public.soapbox_reactions for insert
+  to anon, authenticated
+  with check (
+    exists (select 1 from public.soapbox_posts p where p.id = post_id)
+    and ((select auth.uid()) is null or visitor = 'user:' || (select auth.uid()))
+  );
+
+drop policy if exists "Members can change their reaction" on public.soapbox_reactions;
+create policy "Members can change their reaction"
+  on public.soapbox_reactions for update
+  to authenticated
+  using (visitor = 'user:' || (select auth.uid()))
+  with check (visitor = 'user:' || (select auth.uid()));
+
+drop policy if exists "Members can take their reaction back" on public.soapbox_reactions;
+create policy "Members can take their reaction back"
+  on public.soapbox_reactions for delete
+  to authenticated
+  using (visitor = 'user:' || (select auth.uid()));
+
+drop policy if exists "Members can talk" on public.chat_messages;
+create policy "Members can talk"
+  on public.chat_messages for insert
+  to authenticated
+  with check (user_id = (select auth.uid()) and public.chat_can_write(room));
+
+drop policy if exists "Members can take their messages back" on public.chat_messages;
+create policy "Members can take their messages back"
+  on public.chat_messages for delete
+  to authenticated
+  using (user_id = (select auth.uid()));
+
+notify pgrst, 'reload schema';
+
+-- ---------------------------------------------------------------------
+-- chat_can_write() is for members only (the same as
+-- supabase/migrations/20260929191409_chat_can_write_members.sql, whose header explains it).
+
+revoke execute on function public.chat_can_write(text) from anon;
+
+-- ---------------------------------------------------------------------
+-- The home folder from Telegram (the same as
+-- supabase/migrations/20260929192005_home_from_telegram.sql, whose header explains it).
+
+alter table public.diary add column if not exists telegram_message_id bigint;
+create unique index if not exists diary_telegram_message on public.diary (telegram_message_id);
+
+alter table public.documents add column if not exists telegram_message_id bigint;
+create unique index if not exists documents_telegram_message on public.documents (telegram_message_id);
+
+notify pgrst, 'reload schema';

@@ -26,3 +26,20 @@ export function useKeys(active: boolean, keys: Record<string, () => void>) {
     return () => window.removeEventListener('keydown', onKey);
   }, [active]);
 }
+
+/**
+ * For a slider on an app's remote (a volume, a position): let go by the
+ * pointer, it lets go of the keys too, so Space and the arrows are the
+ * app's again (a focused slider keeps them, and useKeys leaves them to
+ * it). Tabbed to, it keeps them.
+ */
+export function releaseAfterPointer(e: { currentTarget: HTMLElement }) {
+  const el = e.currentTarget;
+  const done = () => {
+    window.removeEventListener('pointerup', done);
+    window.removeEventListener('pointercancel', done);
+    el.blur();
+  };
+  window.addEventListener('pointerup', done);
+  window.addEventListener('pointercancel', done);
+}

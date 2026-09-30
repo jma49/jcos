@@ -11,7 +11,7 @@ import { useLibraryRefresh } from '../../media/refresh';
 import { useShelf, useShelfRefresh } from '../../media/discs';
 import { formatTime } from '../../media/music';
 import { useIsOwner } from '../../social/owner';
-import { AirDropIcon, DiskIcon } from '../../core/icons';
+import { AirDropIcon, DiskIcon, FinderIcon } from '../../core/icons';
 import { Drawer } from '../../shell/drawer';
 import { ContextMenu, type ContextMenuItem } from '../../shell/ContextMenu';
 import { load, loadSettings, updateJSON } from '../../core/storage';
@@ -24,6 +24,10 @@ import { ShelfView } from './ShelfView';
 import { QuickLook } from './QuickLook';
 import { BurnSheet } from './BurnSheet';
 import { discPath, moviesFolder } from './movies';
+import { Alert } from '../../shell/Alert';
+import { HOME, usersFolder } from './home';
+import { deleteDocument, useHome, useHomeRefresh, type HomeDocument } from '../../home/home';
+import { notify } from '../../core/notices';
 
 // Finder over Macintosh HD (files.ts): a sidebar of places, back and
 // forward, icon, list or column views, a search field that looks through
@@ -31,7 +35,9 @@ import { discPath, moviesFolder } from './movies';
 // (or Enter) opens; the arrow keys move the selection, typing a name
 // jumps to it, Space shows Quick Look, and a right-click or a drag onto
 // AirDrop shares. The Movies folder is DVD Player's shelf (movies.tsx),
-// with Burn in the toolbar to make a disc from a YouTube link.
+// with Burn in the toolbar to make a disc from a YouTube link. Users ›
+// jincheng is Jincheng's home (home.tsx): locked to anyone else but for
+// Public and Sites, and opening a locked folder brings up Finder's alert.
 
 interface Prefs {
   view: View;
@@ -67,10 +73,16 @@ export default function Finder({ win }: AppProps) {
   const shelf = useShelf();
   const owner = useIsOwner();
   const movies = useMemo(() => moviesFolder(shelf, owner), [shelf, owner]);
-  const disk = useMemo(() => buildDisk(data, applets, { songs, albums }, movies), [data, applets, songs, albums, movies]);
+  // Jincheng's home: what this visitor may see of it, and the owner's documents to throw away (after asking).
+  const home = useHome();
+  const [trashing, setTrashing] = useState<HomeDocument | null>(null);
+  const users = useMemo(() => usersFolder(home, owner, data.projects, setTrashing), [home, owner, data.projects]);
+  const disk = useMemo(() => buildDisk(data, applets, { songs, albums }, movies, users), [data, applets, songs, albums, movies, users]);
   const all = useMemo(() => everything(disk), [disk]);
   const [history, setHistory] = useState<string[]>(() => [win.props?.path ?? '/']);
   const [at, setAt] = useState(0);
+  // A locked folder someone tried to open: Finder's alert says so.
+  const [locked, setLocked] = useState<FileNode | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
   const [prefs, setPrefs] = useState<Prefs>(savedPrefs);
   const [query, setQuery] = useState('');
@@ -97,6 +109,8 @@ export default function Finder({ win }: AppProps) {
   const view: View = searching && prefs.view === 'columns' ? 'list' : prefs.view === 'shelf' && !atMovies ? 'icons' : prefs.view;
   // While Movies shows, the shelf is read fresh (the library's copy can be a minute old).
   useShelfRefresh(atMovies);
+  // And the home folder while it shows, or a search might find something in it.
+  useHomeRefresh(path.startsWith('/Users') || searching, owner);
 
   // Keep the window's title on the folder it shows.
   useEffect(() => {
@@ -110,8 +124,12 @@ export default function Finder({ win }: AppProps) {
     if (asked) goAsked(asked);
   }, [asked]);
 
-  /** Shows a folder; `replace` doesn't add a step to Back (column view's clicks). */
+  /** Shows a folder; `replace` doesn't add a step to Back (column view's clicks). A locked one, or one inside it, says so instead. */
   const go = (next: string, { replace = false, select = null as string | null } = {}) => {
+    const shut = ancestry(next)
+      .map((p) => find(disk, p))
+      .find((n) => n?.locked);
+    if (shut) return setLocked(shut);
     setQuery('');
     setSelected(select);
     if (next === history[at]) return;
@@ -125,7 +143,8 @@ export default function Finder({ win }: AppProps) {
 
   const open = (node: FileNode, el: Element | null) => {
     setLooking(false);
-    if (node.children) go(node.path);
+    if (node.locked) setLocked(node);
+    else if (node.children) go(node.path);
     else node.open?.(el);
   };
 
@@ -196,6 +215,8 @@ export default function Finder({ win }: AppProps) {
   // e.key on a Mac.
   const onKey = useRef<(e: KeyboardEvent) => void>(() => {});
   onKey.current = (e) => {
+    // A sheet or an alert is up: the window's keys are its, not Finder's under it.
+    if (burning || locked || trashing) return;
     if (e.metaKey || e.altKey) {
       if (e.metaKey && e.code === 'Backspace' && selectedNode?.trash && !typing(e)) {
         e.preventDefault();
@@ -257,7 +278,13 @@ export default function Finder({ win }: AppProps) {
     if (!selectedNode) setLooking(false);
   }, [selectedNode]);
 
-  const [disk0, ...folders] = [{ ...disk, Icon: DiskIcon }, ...(disk.children ?? [])];
+  // The sidebar's places: the home first, as on a Mac, then the disk's folders (Users is reached through the home).
+  const homePlace = find(disk, HOME);
+  const [disk0, ...folders] = [
+    { ...disk, Icon: DiskIcon },
+    ...(homePlace ? [homePlace] : []),
+    ...(disk.children ?? []).filter((n) => n.path !== '/Users')
+  ];
 
   const viewItems: ContextMenuItem[] = [
     { label: 'as Icons', shortcut: '⌥1', checked: view === 'icons', action: () => update({ view: 'icons' }) },
@@ -602,6 +629,28 @@ export default function Finder({ win }: AppProps) {
         <FileInfo node={selectedNode ?? folder} disk={disk} />
       </Drawer>
       {menu && <ContextMenu at={menu} items={menuFor(menu.node)} onClose={() => setMenu(null)} label={menu.node?.name ?? folder.name} />}
+      {locked && (
+        <Alert
+          Icon={FinderIcon}
+          message={`The folder “${locked.name}” could not be opened because you do not have sufficient access privileges.`}
+          onConfirm={() => setLocked(null)}
+        />
+      )}
+      {trashing && (
+        <Alert
+          Icon={FinderIcon}
+          message={`The item “${trashing.name}” will be deleted immediately.`}
+          detail="Are you sure you want to continue? You can’t undo this action."
+          onCancel={() => setTrashing(null)}
+          onConfirm={() => {
+            const doc = trashing;
+            setTrashing(null);
+            void deleteDocument(doc.id).catch((error) =>
+              notify({ id: `document-${doc.id}`, title: `“${doc.name}” is still there`, body: error instanceof Error ? error.message : String(error) })
+            );
+          }}
+        />
+      )}
     </div>
   );
 }
