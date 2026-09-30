@@ -1,21 +1,27 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
-import { onStored, saveJSON, updateJSON } from './storage';
+import { loadForTab, onStored, saveForTab, saveJSON, updateJSON } from './storage';
 
 // Several tabs of one visitor share storage: a change builds on what's
-// stored now, and a tab hears of the others' changes.
+// stored now, and a tab hears of the others' changes. What's kept for one
+// tab alone lives apart.
 
 let map: Map<string, string>;
+let tab: Map<string, string>;
 let target: EventTarget;
+
+const storage = (kept: Map<string, string>) => ({
+  getItem: (key: string) => kept.get(key) ?? null,
+  setItem: (key: string, value: string) => void kept.set(key, value),
+  removeItem: (key: string) => void kept.delete(key)
+});
 
 beforeEach(() => {
   map = new Map();
+  tab = new Map();
   target = new EventTarget();
   vi.stubGlobal('window', {
-    localStorage: {
-      getItem: (key: string) => map.get(key) ?? null,
-      setItem: (key: string, value: string) => void map.set(key, value),
-      removeItem: (key: string) => void map.delete(key)
-    },
+    localStorage: storage(map),
+    sessionStorage: storage(tab),
     addEventListener: target.addEventListener.bind(target),
     removeEventListener: target.removeEventListener.bind(target)
   });
@@ -48,5 +54,24 @@ describe('onStored', () => {
     stop();
     otherTabWrote('os-system');
     expect(heard).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe('loadForTab and saveForTab', () => {
+  test('keep a value for this tab, out of the storage every tab shares', () => {
+    saveForTab('os-booted', '1');
+    expect(loadForTab('os-booted')).toBe('1');
+    expect(map.has('os-booted')).toBe(false);
+    expect(loadForTab('os-other')).toBeNull();
+  });
+
+  test('do nothing, and answer null, where storage is blocked', () => {
+    vi.stubGlobal('window', {
+      get sessionStorage(): Storage {
+        throw new Error('blocked');
+      }
+    });
+    expect(() => saveForTab('os-booted', '1')).not.toThrow();
+    expect(loadForTab('os-booted')).toBeNull();
   });
 });

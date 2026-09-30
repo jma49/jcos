@@ -1,6 +1,7 @@
 # Checks every pull request and every push to main: known advisories in
-# the production dependencies, the types, the rules of React hooks, the
-# unit tests, a production build with every app opened in a browser and
+# the production dependencies, the types, the lint (hooks, the app
+# boundaries, storage), the unit tests, a production build with every
+# app opened in a browser and
 # measured against the performance budgets, and the database's rules
 # against a real Postgres.
 name: CI

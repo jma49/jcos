@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { pngIcon } from '../../core/icons';
 import type { AppProps } from '../../core/registry';
 import { launch } from '../../core/registry';
+import { loadJSON, onStored, saveJSON } from '../../core/storage';
 import { useFocusedId, useWindows } from '../../core/store';
 import { ownsKey } from '../../core/useKeys';
 import { Alert } from '../../shell/Alert';
@@ -45,22 +46,14 @@ const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 /** How many events a day of the month lists before "more". */
 const DAY_ROOM = 3;
 
-/** This device's choices: which calendars show, and whether To Do does. */
+/** This browser's choices: which calendars show, and whether To Do does. The member's other tabs follow (onStored). */
 const SHOWN_KEY = 'os-ical-shown';
 const TODOS_KEY = 'os-ical-todos';
 const loadShown = (): CalendarName[] => {
-  try {
-    const stored: unknown = JSON.parse(localStorage.getItem(SHOWN_KEY) ?? 'null');
-    return Array.isArray(stored) ? CALENDARS.filter((c) => stored.includes(c)) : [...CALENDARS];
-  } catch {
-    return [...CALENDARS];
-  }
+  const stored = loadJSON<unknown>(SHOWN_KEY, null);
+  return Array.isArray(stored) ? CALENDARS.filter((c) => stored.includes(c)) : [...CALENDARS];
 };
-const remember = (key: string, value: unknown) => {
-  try {
-    localStorage.setItem(key, JSON.stringify(value));
-  } catch {}
-};
+const loadTodosShown = () => loadJSON<unknown>(TODOS_KEY, true) !== false;
 
 const monthName = (month: string) => dateOf(`${month}-01`).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
@@ -92,13 +85,9 @@ function Calendar({ win, account }: AppProps & { account: string }) {
   const [fresh, setFresh] = useState<string | null>(null);
   const [info, setInfo] = useState(false);
   const [shown, setShown] = useState(loadShown);
-  const [todosShown, setTodosShown] = useState(() => {
-    try {
-      return localStorage.getItem(TODOS_KEY) !== 'false';
-    } catch {
-      return true;
-    }
-  });
+  const [todosShown, setTodosShown] = useState(loadTodosShown);
+  useEffect(() => onStored(SHOWN_KEY, () => setShown(loadShown())), []);
+  useEffect(() => onStored(TODOS_KEY, () => setTodosShown(loadTodosShown())), []);
   const [pane, setPane] = useState<'month' | 'todos'>('month');
   const [editingTodo, setEditingTodo] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<CalendarEvent | null>(null);
@@ -156,11 +145,10 @@ function Calendar({ win, account }: AppProps & { account: string }) {
     void removeEvent(e.id).catch(say);
   };
 
-  const toggleTodos = () =>
-    setTodosShown((s) => {
-      remember(TODOS_KEY, !s);
-      return !s;
-    });
+  const toggleTodos = () => {
+    saveJSON(TODOS_KEY, !todosShown);
+    setTodosShown(!todosShown);
+  };
 
   // The menu bar's File and View while iCal is in front, and the keys.
   const commands = useRef({ newEvent, newTodo, toggleTodos, goTo, day, chosenEvent, info });
@@ -260,13 +248,11 @@ function Calendar({ win, account }: AppProps & { account: string }) {
                       <input
                         type="checkbox"
                         checked={shown.includes(c)}
-                        onChange={() =>
-                          setShown((s) => {
-                            const next = s.includes(c) ? s.filter((x) => x !== c) : CALENDARS.filter((x) => x === c || s.includes(x));
-                            remember(SHOWN_KEY, next);
-                            return next;
-                          })
-                        }
+                        onChange={() => {
+                          const next = shown.includes(c) ? shown.filter((x) => x !== c) : CALENDARS.filter((x) => x === c || shown.includes(x));
+                          saveJSON(SHOWN_KEY, next);
+                          setShown(next);
+                        }}
                       />
                       <span className="os-ical-swatch" aria-hidden="true" />
                       {CALENDAR_NAMES[c]}

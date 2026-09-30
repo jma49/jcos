@@ -297,6 +297,13 @@ again.
   through three merged pull requests; it covers `src/os/**` now and names
   what it leaves out. `tests/eslint.test.ts` probes each rule with a
   snippet that fails without it: a new rule gets one.
+- A rule that lives only in prose isn't kept. AGENTS.md said everything
+  remembered in the browser goes through `core/storage.ts`, and iCal
+  read and wrote `localStorage` itself (#206): another tab didn't follow
+  a change, and a blocked storage wasn't handled. The lint refuses
+  `localStorage` and `sessionStorage` outside `storage.ts` now; the one
+  per-tab value (the boot screen's `os-booted`) has `loadForTab` and
+  `saveForTab` there.
 - There's no Prettier config. Don't reformat whole files; it buries the
   change in the diff.
 - Wrapping a big JSX tree reindents all of it. Wrap through a small

@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import { wholeStorage } from '../../core/storage';
 import { useSystem } from '../../core/system';
 import { usePlace, placeLabel } from '../../ambient/place';
 import { setDiscoverable, useAirDrop } from '../../social/airdrop';
@@ -149,7 +150,7 @@ export function BackupPane() {
   const backUp = () => {
     let backup;
     try {
-      backup = makeBackup(window.localStorage);
+      backup = makeBackup(wholeStorage());
     } catch {
       return setMessage('This browser isn’t letting JM/OS remember anything, so there’s nothing to back up.');
     }
@@ -164,7 +165,7 @@ export function BackupPane() {
 
   const restore = async (picked: File) => {
     try {
-      const count = restoreBackup(window.localStorage, await picked.text());
+      const count = restoreBackup(wholeStorage(), await picked.text());
       setMessage(`Restored ${count} settings. Restarting…`);
       setTimeout(() => window.location.reload(), 900);
     } catch (e) {
@@ -221,7 +222,7 @@ export function BackupPane() {
                 className="os-button os-button-primary"
                 onClick={() => {
                   try {
-                    resetPreferences(window.localStorage);
+                    resetPreferences(wholeStorage());
                   } catch {}
                   reset();
                   window.location.reload();

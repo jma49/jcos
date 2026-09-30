@@ -25,6 +25,7 @@ import { useAppearance } from './look/useAppearance';
 import { watchWindows } from './core/sound';
 import { OSDataContext } from './core/context';
 import { openSession, saveWindowsAsTheyChange } from './core/windowSession';
+import { loadForTab, saveForTab } from './core/storage';
 import { isPhone, useFocusedId, useWindows } from './core/store';
 import type { OSData } from './core/types';
 import { useReduceMotion, useSystem } from './core/system';
@@ -52,13 +53,8 @@ function Shell({ data }: { data: OSData }) {
   const closeMenu = useCallback(() => setMenuAt(null), []);
   const reduced = useReduceMotion();
   const root = useRef<HTMLDivElement>(null);
-  const [booting, setBooting] = useState(() => {
-    try {
-      return !sessionStorage.getItem('os-booted');
-    } catch {
-      return true;
-    }
-  });
+  // The boot screen runs once a tab (a reload skips it; a new tab gets it).
+  const [booting, setBooting] = useState(() => !loadForTab('os-booted'));
 
   useEffect(watchWindows, []);
   useEffect(saveWindowsAsTheyChange, []);
@@ -106,9 +102,7 @@ function Shell({ data }: { data: OSData }) {
 
 
   const finishBoot = () => {
-    try {
-      sessionStorage.setItem('os-booted', '1');
-    } catch {}
+    saveForTab('os-booted', '1');
     setBooting(false);
   };
 

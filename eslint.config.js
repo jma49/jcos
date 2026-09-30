@@ -1,9 +1,10 @@
 // Lints React hooks (the rules of hooks, and effects' dependencies: an
 // effect that should run on one trigger but read the latest values reads
-// them through useEffectEvent, rather than leaving them out) and the
-// boundaries between the OS, apps and applets (docs/agents/desktop.md).
-// Formatting and style are left to the surrounding code (see AGENTS.md).
-// tests/eslint.test.ts probes each rule.
+// them through useEffectEvent, rather than leaving them out), the
+// boundaries between the OS, apps and applets (docs/agents/desktop.md),
+// and that anything remembered in the browser goes through
+// core/storage.ts. Formatting and style are left to the surrounding code
+// (see AGENTS.md). tests/eslint.test.ts probes each rule.
 import reactHooks from 'eslint-plugin-react-hooks';
 import tseslint from 'typescript-eslint';
 
@@ -69,6 +70,9 @@ const osImports = [{ regex: '(^|/)(apps|applets)/', message: 'The OS reaches app
 // A manifest is in the first load, so it holds data and a lazy import only.
 const manifestImports = [{ regex: '^\\.\\./(?!\\.\\./(kit/manifest|core/icons)$)', message: 'A manifest imports only kit/manifest, core/icons and its own folder.' }];
 
+const storageMessage = 'Anything remembered in the browser goes through src/os/core/storage.ts.';
+const storageGlobals = ['localStorage', 'sessionStorage'];
+
 // A later block that sets the same rule for the same file replaces the
 // earlier block's options (docs/agents/pitfalls.md): the file sets below
 // are kept apart, and a manifest's stricter patterns replace its app's on
@@ -127,5 +131,16 @@ export default [
   {
     files: ['src/os/apps/*/manifest.ts'],
     rules: { 'no-restricted-imports': ['error', { patterns: manifestImports }] }
+  },
+  // Storage can be missing, blocked or full, and every tab of a visitor
+  // shares it: core/storage.ts handles both (AGENTS.md), so nothing else
+  // touches localStorage or sessionStorage, bare or on window.
+  {
+    files: ['src/os/**/*.{ts,tsx}'],
+    ignores: ['src/os/core/storage.ts', '**/*.test.ts'],
+    rules: {
+      'no-restricted-globals': ['error', ...storageGlobals.map((name) => ({ name, message: storageMessage }))],
+      'no-restricted-properties': ['error', ...storageGlobals.flatMap((property) => ['window', 'globalThis'].map((object) => ({ object, property, message: storageMessage })))]
+    }
   }
 ];

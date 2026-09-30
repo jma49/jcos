@@ -4,9 +4,10 @@ import { describe, expect, test } from 'vitest';
 
 // The lint's own rules (eslint.config.js), each probed with a snippet that
 // fails without it: the boundaries between the OS, apps and applets
-// (docs/agents/desktop.md), for import declarations and import() alike.
-// The snippets name files that don't exist: ESLint needs only the path to
-// choose the rules.
+// (docs/agents/desktop.md), for import declarations and import() alike,
+// and that anything remembered in the browser goes through
+// core/storage.ts. The snippets name files that don't exist: ESLint needs
+// only the path to choose the rules.
 
 const root = fileURLToPath(new URL('..', import.meta.url));
 const eslint = new ESLint({ cwd: root });
@@ -93,5 +94,19 @@ describe('an applet sees only the kit', () => {
       "export const load = () => import('./Probe');"
     ].join('\n');
     expect(await lint('src/os/applets/probe/manifest.ts', code)).toBe('');
+  });
+});
+
+describe('the browser’s memory goes through core/storage.ts', () => {
+  const rule = 'Anything remembered in the browser goes through src/os/core/storage.ts.';
+  test('localStorage and sessionStorage, bare or on window', async () => {
+    expect(await lint('src/os/apps/probe/Probe.tsx', "localStorage.getItem('os-probe');")).toContain(rule);
+    expect(await lint('src/os/shell/Probe.tsx', "sessionStorage.setItem('os-probe', '1');")).toContain(rule);
+    expect(await lint('src/os/probe/probe.ts', "window.localStorage.getItem('os-probe');")).toContain(rule);
+    expect(await lint('src/os/Desktop.tsx', "globalThis.sessionStorage.getItem('os-probe');")).toContain(rule);
+  });
+  test('storage.ts itself, and tests', async () => {
+    expect(await lint('src/os/core/storage.ts', "window.localStorage.getItem('os-probe');")).toBe('');
+    expect(await lint('src/os/apps/probe/probe.test.ts', "localStorage.clear();")).toBe('');
   });
 });
