@@ -6,7 +6,7 @@ import { buildDisk, find } from '../../core/files';
 import { AirDropIcon } from '../../core/icons';
 import { useWindows } from '../../core/store';
 import type { AppId } from '../../core/types';
-import { flag } from '../../social/Presence';
+import { flag } from '../../social/online';
 import { hue } from '../../social/chatState';
 import { useAccount } from '../../social/account';
 import {

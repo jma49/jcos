@@ -1,0 +1,425 @@
+[
+ {
+  "file": "azul_dark.png",
+  "name": "Azul Dark",
+  "size": [
+   64,
+   64
+  ],
+  "pixel": true
+ },
+ {
+  "file": "azul_extra_light.png",
+  "name": "Azul Extra Light",
+  "size": [
+   64,
+   64
+  ],
+  "pixel": true
+ },
+ {
+  "file": "azul_light.png",
+  "name": "Azul Light",
+  "size": [
+   64,
+   64
+  ],
+  "pixel": true
+ },
+ {
+  "file": "bondi.png",
+  "name": "Bondi",
+  "size": [
+   64,
+   64
+  ],
+  "pixel": true
+ },
+ {
+  "file": "bondi_dark.png",
+  "name": "Bondi Dark",
+  "size": [
+   64,
+   64
+  ],
+  "pixel": true
+ },
+ {
+  "file": "bondi_extra_dark.png",
+  "name": "Bondi Extra Dark",
+  "size": [
+   64,
+   64
+  ],
+  "pixel": true
+ },
+ {
+  "file": "bondi_light.png",
+  "name": "Bondi Light",
+  "size": [
+   64,
+   64
+  ],
+  "pixel": true
+ },
+ {
+  "file": "bondi_medium.png",
+  "name": "Bondi Medium",
+  "size": [
+   64,
+   64
+  ],
+  "pixel": true
+ },
+ {
+  "file": "bossanova_bondi.png",
+  "name": "Bossanova Bondi",
+  "size": [
+   64,
+   64
+  ],
+  "pixel": false
+ },
+ {
+  "file": "bossanova_poppy.png",
+  "name": "Bossanova Poppy",
+  "size": [
+   64,
+   64
+  ],
+  "pixel": false
+ },
+ {
+  "file": "bossanova_poppy_2.png",
+  "name": "Bossanova Poppy 2",
+  "size": [
+   64,
+   64
+  ],
+  "pixel": false
+ },
+ {
+  "file": "bubbles_bondi.png",
+  "name": "Bubbles Bondi",
+  "size": [
+   64,
+   64
+  ],
+  "pixel": false
+ },
+ {
+  "file": "bubbles_poppy.png",
+  "name": "Bubbles Poppy",
+  "size": [
+   64,
+   64
+  ],
+  "pixel": false
+ },
+ {
+  "file": "candy_bar.png",
+  "name": "Candy Bar",
+  "size": [
+   64,
+   64
+  ],
+  "pixel": false
+ },
+ {
+  "file": "candy_bar_azul.png",
+  "name": "Candy Bar Azul",
+  "size": [
+   64,
+   64
+  ],
+  "pixel": false
+ },
+ {
+  "file": "candy_bar_pistachio.png",
+  "name": "Candy Bar Pistachio",
+  "size": [
+   64,
+   64
+  ],
+  "pixel": false
+ },
+ {
+  "file": "candy_bar_sunny.png",
+  "name": "Candy Bar Sunny",
+  "size": [
+   64,
+   64
+  ],
+  "pixel": false
+ },
+ {
+  "file": "default.jpg",
+  "name": "Default (JPEG)",
+  "size": [
+   416,
+   312
+  ],
+  "pixel": false
+ },
+ {
+  "file": "default.png",
+  "name": "Default",
+  "size": [
+   64,
+   64
+  ],
+  "pixel": false
+ },
+ {
+  "file": "diagonals_bondi.png",
+  "name": "Diagonals Bondi",
+  "size": [
+   64,
+   64
+  ],
+  "pixel": false
+ },
+ {
+  "file": "diagonals_bondi_dark.png",
+  "name": "Diagonals Bondi Dark",
+  "size": [
+   64,
+   64
+  ],
+  "pixel": false
+ },
+ {
+  "file": "diagonals_poppy.png",
+  "name": "Diagonals Poppy",
+  "size": [
+   64,
+   64
+  ],
+  "pixel": false
+ },
+ {
+  "file": "flat_peanuts.png",
+  "name": "Flat Peanuts",
+  "size": [
+   64,
+   64
+  ],
+  "pixel": false
+ },
+ {
+  "file": "flat_peanuts_poppy.png",
+  "name": "Flat Peanuts Poppy",
+  "size": [
+   64,
+   64
+  ],
+  "pixel": false
+ },
+ {
+  "file": "french_blue_dark.png",
+  "name": "French Blue Dark",
+  "size": [
+   64,
+   64
+  ],
+  "pixel": true
+ },
+ {
+  "file": "french_blue_light.png",
+  "name": "French Blue Light",
+  "size": [
+   64,
+   64
+  ],
+  "pixel": true
+ },
+ {
+  "file": "macos.png",
+  "name": "Macos",
+  "size": [
+   256,
+   192
+  ],
+  "pixel": false
+ },
+ {
+  "file": "peanuts_azul.png",
+  "name": "Peanuts Azul",
+  "size": [
+   64,
+   64
+  ],
+  "pixel": false
+ },
+ {
+  "file": "peanuts_pistachio.png",
+  "name": "Peanuts Pistachio",
+  "size": [
+   64,
+   64
+  ],
+  "pixel": false
+ },
+ {
+  "file": "pistachio_dark.png",
+  "name": "Pistachio Dark",
+  "size": [
+   64,
+   64
+  ],
+  "pixel": true
+ },
+ {
+  "file": "pistachio_light.png",
+  "name": "Pistachio Light",
+  "size": [
+   64,
+   64
+  ],
+  "pixel": true
+ },
+ {
+  "file": "pistachio_medium.png",
+  "name": "Pistachio Medium",
+  "size": [
+   64,
+   64
+  ],
+  "pixel": true
+ },
+ {
+  "file": "poppy.png",
+  "name": "Poppy",
+  "size": [
+   64,
+   64
+  ],
+  "pixel": true
+ },
+ {
+  "file": "poppy_dark.png",
+  "name": "Poppy Dark",
+  "size": [
+   64,
+   64
+  ],
+  "pixel": true
+ },
+ {
+  "file": "poppy_light.png",
+  "name": "Poppy Light",
+  "size": [
+   64,
+   64
+  ],
+  "pixel": true
+ },
+ {
+  "file": "poppy_medium.png",
+  "name": "Poppy Medium",
+  "size": [
+   64,
+   64
+  ],
+  "pixel": true
+ },
+ {
+  "file": "rio_azul.png",
+  "name": "Rio Azul",
+  "size": [
+   64,
+   64
+  ],
+  "pixel": false
+ },
+ {
+  "file": "rio_pistachio.png",
+  "name": "Rio Pistachio",
+  "size": [
+   64,
+   64
+  ],
+  "pixel": false
+ },
+ {
+  "file": "ripple_azul.png",
+  "name": "Ripple Azul",
+  "size": [
+   64,
+   64
+  ],
+  "pixel": false
+ },
+ {
+  "file": "ripple_bondi.png",
+  "name": "Ripple Bondi",
+  "size": [
+   64,
+   64
+  ],
+  "pixel": false
+ },
+ {
+  "file": "ripple_poppy.png",
+  "name": "Ripple Poppy",
+  "size": [
+   64,
+   64
+  ],
+  "pixel": false
+ },
+ {
+  "file": "sunny.png",
+  "name": "Sunny",
+  "size": [
+   64,
+   64
+  ],
+  "pixel": true
+ },
+ {
+  "file": "sunny_dark.png",
+  "name": "Sunny Dark",
+  "size": [
+   64,
+   64
+  ],
+  "pixel": true
+ },
+ {
+  "file": "sunny_light.png",
+  "name": "Sunny Light",
+  "size": [
+   64,
+   64
+  ],
+  "pixel": true
+ },
+ {
+  "file": "waves_azul.png",
+  "name": "Waves Azul",
+  "size": [
+   64,
+   64
+  ],
+  "pixel": false
+ },
+ {
+  "file": "waves_bondi.png",
+  "name": "Waves Bondi",
+  "size": [
+   64,
+   64
+  ],
+  "pixel": false
+ },
+ {
+  "file": "waves_sunny.png",
+  "name": "Waves Sunny",
+  "size": [
+   64,
+   64
+  ],
+  "pixel": false
+ }
+]

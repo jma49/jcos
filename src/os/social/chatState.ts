@@ -99,7 +99,7 @@ let started = false;
 
 /**
  * Watches chat whenever it's useful: while a Chat window is open, or all
- * the time for a signed-in member. Call once, as the desktop starts.
+ * the time for a signed-in member. Call once, as the desktop settles.
  */
 export function startChatWatch() {
   if (started) return;

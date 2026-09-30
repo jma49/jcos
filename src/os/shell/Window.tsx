@@ -9,7 +9,7 @@ import {
   type PointerEvent as ReactPointerEvent,
   type ReactNode
 } from 'react';
-import { animate, m, useMotionValue } from 'motion/react';
+import { cubicBezier, m } from 'motion/react';
 import { appComponent, apps } from '../core/registry';
 import { DOCK_CLEARANCE, MENU_BAR_HEIGHT, isPhone, useWindows } from '../core/store';
 import { frameOf } from './Expose';
@@ -18,6 +18,23 @@ import { DrawerSlot } from './drawer';
 import { AppBoundary } from './AppBoundary';
 import type { Rect, WindowState } from '../core/types';
 import { useReduceMotion } from '../core/system';
+
+/**
+ * Moves a number from `from` to `to` over `duration` seconds, after
+ * `delay`, eased by a cubic Bézier, calling `draw` each frame; returns a
+ * stop. For the genie's warp, which is one number: motion's own animate()
+ * would bring its whole engine into the first load for it (4 KB).
+ */
+function tween(from: number, to: number, { duration, delay = 0, ease }: { duration: number; delay?: number; ease: [number, number, number, number] }, draw: (value: number) => void) {
+  const eased = cubicBezier(...ease);
+  const start = performance.now() + delay * 1000;
+  let frame = requestAnimationFrame(function step(now) {
+    const t = Math.min(1, Math.max(0, (now - start) / (duration * 1000)));
+    draw(from + (to - from) * eased(t));
+    if (t < 1) frame = requestAnimationFrame(step);
+  });
+  return () => cancelAnimationFrame(frame);
+}
 
 type Edge = 'e' | 's' | 'se' | 'w' | 'sw';
 
@@ -239,21 +256,21 @@ export const Window = memo(function Window({ win, focused, z, exposed }: Props) 
   }
   const genieNeck = genie?.neck;
   const map = useMemo(() => (genieNeck === undefined ? null : genieMap(genieNeck)), [genieNeck]);
-  const warp = useMotionValue(0);
+  /** How far the genie has warped the window, 0 to 1, drawn by the displacement map. */
+  const warp = useRef(0);
   const displacement = useRef<SVGFEDisplacementMapElement>(null);
   const filterId = `genie-${win.id.replace(/[^\w-]/g, '-')}`;
 
-  useEffect(
-    () => warp.on('change', (v) => displacement.current?.setAttribute('scale', String(v * 2 * GENIE_REACH))),
-    [warp]
-  );
   useEffect(() => {
     if (!genie) return;
-    const controls = win.minimized
-      ? animate(warp, 1, { duration: 0.26, ease: [0.4, 0, 1, 1] })
-      : animate(warp, 0, { duration: 0.24, delay: 0.26, ease: [0, 0, 0.6, 1] });
-    return () => controls.stop();
-  }, [genie, win.minimized, warp]);
+    const draw = (v: number) => {
+      warp.current = v;
+      displacement.current?.setAttribute('scale', String(v * 2 * GENIE_REACH));
+    };
+    return win.minimized
+      ? tween(warp.current, 1, { duration: 0.26, ease: [0.4, 0, 1, 1] }, draw)
+      : tween(warp.current, 0, { duration: 0.24, delay: 0.26, ease: [0, 0, 0.6, 1] }, draw);
+  }, [genie, win.minimized]);
 
   // Every target names the same values: one that a target leaves out goes
   // back to its `initial`, which put windows in Exposé at their opening size.

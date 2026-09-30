@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'vitest';
-import { anyoneWatching, CALM, CROWD, isCrowded } from './Presence';
+import { CALM, CROWD, isCrowded } from './online';
+import { anyoneWatching } from './Presence';
 import { cleanInfo } from './types';
 
 // Other visitors' pointers: drawn only for those who ask, sent only while

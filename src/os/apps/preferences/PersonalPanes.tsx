@@ -9,18 +9,8 @@ import { choosePlace, clockTimeZone, HOME, placeLabel, usePlace, usesFahrenheit 
 import { PlaceSearch } from '../../ambient/PlaceSearch';
 import { SAVER_STYLES, SAVER_VIEWS } from '../../shell/saverViews';
 import { ACCENTS, cachedAccent, type AccentChoice } from '../../look/accent';
-import {
-  backgroundFor,
-  COVER,
-  PATTERNS,
-  PICTURE_SETS,
-  SCENIC,
-  setOf,
-  SKY,
-  SOLID_COLORS,
-  tileBackground,
-  TILES
-} from '../../look/wallpapers';
+import { backgroundFor, COVER, PATTERNS, SKY, SOLID_COLORS, tileBackground, TILES } from '../../look/wallpapers';
+import { PICTURE_SETS, SCENIC, setOf } from '../../look/pictureSets';
 import { coverOf, SONGS } from '../../media/library';
 import { useMusic } from '../../media/music';
 import { useSky } from '../../ambient/Sky';
