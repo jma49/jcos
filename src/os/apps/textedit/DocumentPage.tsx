@@ -13,6 +13,7 @@ import {
   readHome,
   saveDocument,
   useHome,
+  useHomeRefresh,
   type HomeDocument,
   type HomeFolder
 } from '../../home/home';
@@ -68,6 +69,8 @@ export function DocumentPage({ win, owner }: { win: WindowState; owner: boolean 
       live = false;
     };
   }, [owner]);
+  // And while it's open: a save in another tab reaches this page.
+  useHomeRefresh(true, owner);
 
   // The document, once it's here. Something typed and not saved (a draft) wins, and is saved again (below).
   useEffect(() => {
