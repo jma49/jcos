@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { AnimatePresence, LazyMotion, MotionConfig, domAnimation, m } from 'motion/react';
 import { Dock } from './shell/Dock';
 import { MenuBar } from './shell/MenuBar';
-import { Spotlight } from './shell/Spotlight';
+import { SpotlightLayer } from './shell/SpotlightLayer';
 import { DashboardLayer } from './shell/DashboardLayer';
 import { DesktopLyricsLayer } from './shell/DesktopLyricsLayer';
 import { DesktopStickiesLayer } from './shell/DesktopStickiesLayer';
@@ -15,12 +15,8 @@ import { DesktopMenu } from './shell/DesktopMenu';
 import { Boot, BootSkip } from './shell/Boot';
 import { useShortcuts } from './shell/useShortcuts';
 import { Sky, useSky } from './ambient/Sky';
-import { Presence } from './social/Presence';
 import { startAccount } from './social/account';
-import { startChatWatch } from './social/chatState';
-import { startListeningAlong } from './media/together';
 import { afterSettled } from './core/warmUp';
-import { startAirDrop } from './social/airdrop';
 import { Notices } from './shell/Notices';
 import { Contained } from './shell/Contained';
 import { useDesktopPicture } from './look/useDesktopPicture';
@@ -73,22 +69,34 @@ function Shell({ data }: { data: OSData }) {
   useEffect(saveWindowsAsTheyChange, []);
   // Whether someone's signed in (the social backend loads on its own, after the desktop).
   useEffect(startAccount, []);
-  // Unread counts, and alerts for private messages and @mentions.
-  useEffect(startChatWatch, []);
-  // Songs Jincheng plays for everyone from Telegram, to listen along to.
-  useEffect(startListeningAlong, []);
-  // Discs Jincheng burns, kept on the shelf and told to whoever is here (loaded once the desktop has settled).
+  // What isn't on the first screen waits until the desktop has settled
+  // (core/warmUp.ts), so none of it is in the first load: chat's unread
+  // counts and alerts for private messages and @mentions, songs Jincheng
+  // plays for everyone to listen along to, AirDrop, and the discs Jincheng
+  // burns. Who else is here is Presence's (below).
   useEffect(() => {
     let dead = false;
-    let stop = () => {};
-    const cancel = afterSettled(() => import('./media/discWatch').then((watch) => !dead && (stop = watch.watchDiscs())));
+    const stops: (() => void)[] = [];
+    // Each on its own, so one that fails to load doesn't hold back the rest.
+    const start = (begin: () => (() => void) | void) => {
+      if (dead) return;
+      const stop = begin();
+      if (stop) stops.push(stop);
+    };
+    const cancel = afterSettled(() =>
+      Promise.allSettled([
+        import('./social/chatState').then((chat) => start(chat.startChatWatch)),
+        import('./media/together').then((together) => start(together.startListeningAlong)),
+        import('./social/airdrop').then((airdrop) => start(() => airdrop.startAirDrop(data))),
+        import('./media/discWatch').then((discs) => start(discs.watchDiscs))
+      ])
+    );
     return () => {
       dead = true;
       cancel();
-      stop();
+      stops.forEach((stop) => stop());
     };
-  }, []);
-  useEffect(() => startAirDrop(data), [data]);
+  }, [data]);
   // The page's plain-text copy (index.astro) is for screen readers, which
   // still read it; with the desktop running, its links would only be
   // invisible stops for someone moving through the page with Tab.
@@ -172,14 +180,14 @@ function Shell({ data }: { data: OSData }) {
         <Contained name="Dashboard">
           <DashboardLayer />
         </Contained>
-        <Spotlight />
+        <SpotlightLayer />
         <AppSwitcher />
         <Contained name="The screen saver">
           <Screensaver />
         </Contained>
         {!booting && (
           <Contained name="Presence">
-            <Presence />
+            <PresenceLayer />
           </Contained>
         )}
         <Contained name="Notifications">
@@ -193,6 +201,24 @@ function Shell({ data }: { data: OSData }) {
       </div>
     </OSDataContext.Provider>
   );
+}
+
+/**
+ * Who else is here, and their pointers: Presence joins the desktop's
+ * channel once the desktop has settled, as it isn't on the first screen
+ * (the menu bar's count is social/online.tsx, and shows once it has).
+ */
+function PresenceLayer() {
+  const [presence, setPresence] = useState<typeof import('./social/Presence') | null>(null);
+  useEffect(() => {
+    let live = true;
+    const cancel = afterSettled(() => import('./social/Presence').then((m) => live && setPresence(m)));
+    return () => {
+      live = false;
+      cancel();
+    };
+  }, []);
+  return presence ? <presence.Presence /> : null;
 }
 
 /** The open windows and Exposé: the one part of the desktop that follows every move of a window. */

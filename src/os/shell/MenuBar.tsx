@@ -3,7 +3,7 @@ import { apps, launch } from '../core/registry';
 import { isPhone, useFocusedId, useWindowList, useWindows } from '../core/store';
 import { useOSData } from '../core/context';
 import { SkyStatus, type SkyState } from '../ambient/Sky';
-import { OnlineStatus } from '../social/Presence';
+import { OnlineStatus } from '../social/online';
 import { NowPlaying } from './NowPlaying';
 import { Contained } from './Contained';
 import { clockTimeZone, HOME, sameTime } from '../ambient/place';

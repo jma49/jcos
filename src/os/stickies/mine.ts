@@ -8,6 +8,7 @@
 // Loaded once someone is signed in, not with the desktop.
 
 import { useEffect, useSyncExternalStore } from 'react';
+import { loadJSON, saveJSON } from '../core/storage';
 import { getSocial } from '../social/social';
 import { STICKY_MOST, type Sticky, type StickyChange } from '../social/types';
 
@@ -184,25 +185,16 @@ export interface Draft {
   version: number;
 }
 
-// Read and written here rather than through core/storage: sharing it
-// with this module would split it out of the first load's chunk into one
-// of its own, which costs the first load more than these few lines.
 function drafts(): Record<string, unknown> {
-  try {
-    const stored: unknown = JSON.parse(window.localStorage.getItem(DRAFTS_KEY) ?? '{}');
-    return stored && typeof stored === 'object' && !Array.isArray(stored) ? (stored as Record<string, unknown>) : {};
-  } catch {
-    return {};
-  }
+  const stored = loadJSON<unknown>(DRAFTS_KEY, {});
+  return stored && typeof stored === 'object' && !Array.isArray(stored) ? (stored as Record<string, unknown>) : {};
 }
 
 /** Changes the drafts from what's stored now, as another tab may have changed them. */
 function changeDrafts(change: (stored: Record<string, unknown>) => void) {
   const stored = drafts();
   change(stored);
-  try {
-    window.localStorage.setItem(DRAFTS_KEY, JSON.stringify(stored));
-  } catch {}
+  saveJSON(DRAFTS_KEY, stored);
 }
 
 export const draftOf = (id: string): Draft | undefined => {

@@ -1,7 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { PlaceSearch } from '../ambient/PlaceSearch';
 import { getSocial, type Post } from '../social/social';
-import { flag } from '../social/Presence';
+import { flag } from '../social/online';
 import { launch } from '../core/registry';
 import { AnimatePresence, m } from 'motion/react';
 import { useWindows } from '../core/store';

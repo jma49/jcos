@@ -3,7 +3,7 @@ import { AnimatePresence, m } from 'motion/react';
 import type { SaverStyle } from '../core/store';
 import { clockTimeZone, usePlace } from '../ambient/place';
 import { describe, useWeather } from '../ambient/weather';
-import { SCENIC } from '../look/wallpapers';
+import { SCENIC } from '../look/pictureSets';
 import { Artwork, Bounce, Flurry, SoapboxSaver } from './savers';
 import { useReduceMotion } from '../core/system';
 

@@ -1,10 +1,12 @@
-// Desktop pictures beyond photos: solid colours, patterns and a dynamic sky.
-// The store keeps one string: a photo's URL (as before), or `color:<id>`,
-// `pattern:<id>`, `dynamic:sky` or `dynamic:cover` (the cover of the song
-// that's playing). backgroundFor() turns it into CSS.
+// Desktop pictures beyond photos: solid colours, patterns, tiles and a
+// dynamic sky. The store keeps one string: a photo's URL (as before), or
+// `color:<id>`, `pattern:<id>`, `dynamic:sky` or `dynamic:cover` (the
+// cover of the song that's playing). backgroundFor() turns it into CSS.
+// The ryOS photo collections, which only choosing a picture needs, are in
+// pictureSets.ts.
 
 import { accentFromPixels, brightness } from './accent';
-import catalogue from '../../data/wallpapers.json' with { type: 'json' };
+import tiles from '../../data/wallpaper-tiles.json' with { type: 'json' };
 import type { Condition } from '../ambient/weather';
 
 export interface SolidColor {
@@ -90,8 +92,8 @@ export const PATTERNS: Pattern[] = [
   }
 ];
 
-/** A picture in one of the sets below: what's stored, its name and a thumbnail. */
-interface SetPicture {
+/** A picture in a set (a ryOS collection, or Tiles): what's stored, its name and a thumbnail. */
+export interface SetPicture {
   value: string;
   name: string;
   thumb: string;
@@ -103,30 +105,16 @@ export interface PictureSet {
   items: SetPicture[];
 }
 
-const ROOT = '/os/wallpapers';
-
-/**
- * Desktop pictures from ryOS (public/os/wallpapers, see NOTICE): its photo
- * collections, stored as the picture's path like any photo, and its tiles.
- */
-export const PICTURE_SETS: PictureSet[] = catalogue.sets.map((set) => ({
-  id: set.id,
-  name: set.name,
-  items: set.items.map((item) => ({
-    value: `${ROOT}/photos/${set.id}/${item.file}.webp`,
-    name: item.name,
-    thumb: `${ROOT}/thumbs/${set.id}/${item.file}.webp`
-  }))
-}));
+export const ROOT = '/os/wallpapers';
 
 /** Small repeating patterns in the colours of the iMac and Mac OS 9. */
 export const TILES: PictureSet = {
   id: 'tiles',
   name: 'Tiles',
-  items: catalogue.tiles.map((tile) => ({ value: `${ROOT}/tiles/${tile.file}`, name: tile.name, thumb: `${ROOT}/tiles/${tile.file}` }))
+  items: tiles.map((tile) => ({ value: `${ROOT}/tiles/${tile.file}`, name: tile.name, thumb: `${ROOT}/tiles/${tile.file}` }))
 };
 
-const tileInfo = (value: string) => catalogue.tiles.find((t) => value === `${ROOT}/tiles/${t.file}`);
+const tileInfo = (value: string) => tiles.find((t) => value === `${ROOT}/tiles/${t.file}`);
 
 /** The CSS background that repeats a tile at its size. */
 export function tileBackground(value: string) {
@@ -137,9 +125,6 @@ export function tileBackground(value: string) {
 
 /** Whether a tile is pixel art, drawn with hard edges when enlarged. */
 export const isPixelTile = (value: string | null) => !!value && !!tileInfo(value)?.pixel;
-
-/** The set (a ryOS collection, or Tiles) a stored picture belongs to. */
-export const setOf = (value: string | null) => [...PICTURE_SETS, TILES].find((set) => set.items.some((item) => item.value === value));
 
 export const SKY = 'dynamic:sky';
 export const COVER = 'dynamic:cover';
@@ -253,33 +238,4 @@ export function topBrightnessOfGenerated(value: string, sky: SkyInput): number |
   }
   if (value === SKY) return brightness(...skyColors(sky.minutes, sky.sunrise, sky.sunset, sky.condition)[0]);
   return null;
-}
-
-/**
- * Mac OS X's photographic desktop pictures: what the default picture moves
- * on to, and what the Desktop Pictures screen saver shows. (Jincheng's own
- * photos stay in Photos.)
- */
-export const SCENIC: SetPicture[] = PICTURE_SETS.filter((set) =>
-  ['nature', 'landscapes', 'plants', 'nostalgia', 'black_and_white'].includes(set.id)
-).flatMap((set) => set.items);
-
-/**
- * The picture to show next when the desktop changes by itself: another one
- * from the collection the current one belongs to. The default picture moves
- * on to the scenic ones; the dynamic ones (sky, cover) change anyway, so
- * they stay.
- */
-export function nextPicture(current: string | null): string | null {
-  let pool: string[];
-  const set = setOf(current);
-  if (set) pool = set.items.map((item) => item.value);
-  else if (current?.startsWith('color:')) pool = SOLID_COLORS.map((c) => `color:${c.id}`);
-  else if (current?.startsWith('pattern:')) pool = PATTERNS.map((p) => `pattern:${p.id}`);
-  else if (current?.startsWith('dynamic:')) return null;
-  // A picture of the visitor's own (from Photo Booth) stays put.
-  else if (current?.startsWith('data:')) return null;
-  else pool = SCENIC.map((item) => item.value);
-  const others = pool.filter((value) => value !== current);
-  return others.length ? others[Math.floor(Math.random() * others.length)] : null;
 }
