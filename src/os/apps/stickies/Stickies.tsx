@@ -6,6 +6,7 @@ import type { AppProps } from '../../core/registry';
 import { launch } from '../../core/registry';
 import { play } from '../../core/sound';
 import { useFocusedId, useWindows } from '../../core/store';
+import { ownsKey } from '../../core/useKeys';
 import { addSticky, readMine, useMyStickies } from '../../stickies/mine';
 import { Yours } from './Yours';
 
@@ -68,9 +69,9 @@ export default function Stickies({ win }: AppProps) {
   }, [win.id, signedIn]);
   useEffect(() => {
     if (!front || !signedIn) return;
-    // e.code: ⌥ changes e.key on a Mac.
+    // e.code: ⌥ changes e.key on a Mac; in a note's text, ⌥N types (core/useKeys.ts).
     const onKey = (e: KeyboardEvent) => {
-      if (!e.altKey || e.metaKey || e.code !== 'KeyN') return;
+      if (!e.altKey || e.metaKey || e.code !== 'KeyN' || !ownsKey(e)) return;
       e.preventDefault();
       void newSticky.current();
     };

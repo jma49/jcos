@@ -384,6 +384,13 @@ ryOS (AGPL-3.0).
   for a personal site, a table, a public write path with abuse limits
   and a bot change aren't worth it. Each window's error boundary keeps a
   crash to that window; crashes only show in the visitor's console.
+- **Whose a key is** (2026-09-30, #186–#188): an app's window-level
+  keys apply with focus on the page itself or inside its window; a
+  focused control anywhere else (a Dock icon, the menu bar, a window's
+  close box) keeps its own Return, Space and arrows, and in a text
+  field ⌥ with a key types rather than running a shortcut. The rule is
+  `ownsKey` in `core/useKeys.ts` (docs/agents/desktop.md, Windows and
+  the shell).
 - No link back to a classic site; Chinese is on hold.
 - Don't change ocra for now; it will be redesigned.
 - The "Ask me" AI assistant is on hold.
@@ -395,8 +402,16 @@ ryOS (AGPL-3.0).
 
 **Waiting on Jincheng**: trying `/diary` and `/doc` in the bot (the
 code is tested with a fake Telegram and database, not yet with the real
-ones); Job Hunt's permission rule (§3), before its first sync.
+ones).
 
+- Job Hunt's first sync (2026-09-30) brought in 149 applications and
+  299 messages from the three months before, checked with Jincheng
+  first. Jincheng's choices for it: applications with no word for weeks
+  closed as no reply, a gig platform's talent pools left out, agencies
+  kept under the names the mail gives, and one row to a company and role
+  (repeat applications merged). The next sync starts a little before the
+  newest message Job Hunt has (§3). No company goes in this file: the
+  repository is public.
 - Every migration in `supabase/migrations/` has run, through
   `20260930062024_job_hunt.sql`, and the project's
   migration history says so (`supabase migration list --project-ref
@@ -459,6 +474,14 @@ pull requests.
 
 What comes next, in order, is in [ROADMAP.md](ROADMAP.md).
 
+The 2026-09-30 audit and architecture review are issues #186–#220, fixed
+one batch at a time in this order: the keys (#186–#188), the session and
+data (#189–#191), guard rails and stale docs (#206, #208, #209, #211,
+#213, #214), the viewport (#192), focus and modals (#193–#195), small
+fixes in the site (#196–#199, #203, #205), the server side (#200–#202,
+#204, #207, #215, #216), docs and tooling (#212, #218–#220), then the
+architecture (#210, #217).
+
 1. **Songs.** Lyric timing will be reworked as a whole (ROADMAP.md).
    Ten starter songs carry ryOS's timing, unchecked by ear; 三個人的晚餐
    uses the official MV, ten seconds shorter than the album cut. Chrome
@@ -477,9 +500,10 @@ What comes next, in order, is in [ROADMAP.md](ROADMAP.md).
    one; receivers act only on well-formed ones, which carry nothing but
    names and Macintosh HD paths. Proper identity would need Realtime
    Authorization and server-checked presence.
-4. **The first load** is 150 of its 160 KB budget (149.6, 2026-09-29,
-   after room was made on it and Time Machine and Job Hunt came), 67 of it
-   react-dom. What else could move:
+4. **The first load** is 150 of its 160 KB budget (150.2, 2026-09-30:
+   149.6 after room was made on it and Time Machine and Job Hunt came,
+   plus `core/useKeys.ts`, 0.5 KB, now shared with the desktop's
+   shortcuts), 67 of it react-dom. What else could move:
    Exposé's overlay (1.1 KB), the context menu (0.8) and the ⌥Tab
    switcher's panel (0.6), each making its first use in the first
    seconds wait for its code, and chat's watch, split from the Dock's

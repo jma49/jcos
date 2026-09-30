@@ -184,7 +184,9 @@ only `kit/`. The lint enforces all three.
   gone, not under them. A slider used with the pointer (volume,
   position) gives the keys back when it's let go
   (`releaseAfterPointer` in `core/useKeys.ts`), so Space and the arrows
-  stay DVD Player's; tabbed to, it keeps them. A phone, which DVD Player fills
+  stay DVD Player's; tabbed to, it keeps them. The Controller's buttons
+  leave them to DVD Player too, as a panel of its own (`data-panel`,
+  `ownsKey` in `core/useKeys.ts`). A phone, which DVD Player fills
   anyway, always has that look instead of the Controller. The Controls
   menu and the keys (Space, ←/→ for chapters, ↑/↓ and Return in menus,
   Escape, ⌘F, ⌘E) do what its buttons do. A disc slides into the slot in the
@@ -210,6 +212,25 @@ only `kit/`. The lint enforces all three.
   desktop's).
 - `src/os/shell/AppSwitcher.tsx`: ⌥Tab steps through open windows, most
   recent first; releasing ⌥ focuses the chosen one.
+- `src/os/core/useKeys.ts`: whose a key is. A handler on `window`
+  (`useKeys`; Finder's, the iPod's centre key, Time Machine's browser,
+  Job Hunt's, iCal's, TextEdit's, Stickies', an alert's, the Burn
+  sheet's) listens only while its window is in front
+  (`useFocusedId() === win.id`) and takes a key only when `ownsKey(e)`
+  says it's the app's: an unmodified key with focus on the page itself
+  or anywhere in the window (a panel the app draws outside it, DVD
+  Player's Controller, counts as inside by its `data-panel`), never on a
+  control elsewhere, which keeps its own Return, Space and arrows: a
+  Dock icon, the menu bar and its menus, a window's close box (the title
+  bar is the shell's), another window. ⌘ and ⌥ shortcuts are the front
+  app's wherever focus is, as menu commands are, except in a text field,
+  where only ⌘ gets through: ⌥ with a key types a character there
+  (`typing(e)`, which the desktop's ⌥W, ⌥M and ⌥T in
+  `shell/useShortcuts.ts` check as well). Applets get `ownsKey` from the
+  kit (Pinball). Exposé, the ⌥Tab switcher and a full-screen app's own
+  keys (Time Machine's Escape and Page Up/Down) hold theirs wherever
+  focus is, and an Escape closes Quick Look before it leaves Time
+  Machine.
 - `src/os/shell/drawer.tsx`: Tiger-style drawers. Each window has a slot
   along its edge (right, left if there's no room, or over the content
   when neither side fits); an app renders `<Drawer open>` anywhere and it
@@ -346,8 +367,9 @@ only `kit/`. The lint enforces all three.
   none of its code. In Movies the toolbar has Burn (`BurnSheet.tsx`) and
   the list shows Date Added, Length and Kind. The Burn sheet and Finder's
   alerts are modal: while one is up, Finder's own keys are off, and the
-  sheet takes Escape (stop, or close) and Return (Burn) wherever the
-  focus is. On a phone the toolbar's buttons keep their size and what
+  sheet takes Escape (stop, or close) and Return (Burn) wherever in the
+  window the focus is (a control outside it, a Dock icon, keeps its own:
+  `ownsKey`). On a phone the toolbar's buttons keep their size and what
   doesn't fit goes to a second row, where the search field takes the
   rest of the width.
 - What Time Machine shows as well lives in `files/`: a file's picture
@@ -393,7 +415,9 @@ only `kit/`. The lint enforces all three.
   message, with OK, Cancel and a third choice, Return and Escape. It
   takes the keys only while its window is in front: one that comes up
   behind (a save refused after the window was left) waits, and Return
-  typed in another window stays that window's.
+  typed in another window stays that window's, as Return on a control
+  outside the window (a Dock icon) stays that control's (`ownsKey` in
+  `core/useKeys.ts`).
 - `src/os/social/airdrop.ts` and `apps/airdrop/`: AirDrop between
   signed-in members on the desktop (signed out, it asks you to sign in).
   Only a Macintosh HD path is sent, and the receiver looks it up on its

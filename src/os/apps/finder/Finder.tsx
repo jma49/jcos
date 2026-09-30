@@ -4,6 +4,7 @@ import { useOSData } from '../../core/context';
 import type { AppProps } from '../../core/registry';
 import { launch } from '../../core/registry';
 import { useFocusedId, useWindows } from '../../core/store';
+import { ownsKey, typing } from '../../core/useKeys';
 import { useInstalledApplets } from '../../core/applets';
 import { buildDisk, find, type FileNode } from '../../core/files';
 import { ALBUMS, SONGS, useLibraryVersion } from '../../media/library';
@@ -58,9 +59,6 @@ function savedPrefs(): Prefs {
   const prefs = loadSettings(PREFS_KEY, { ...DEFAULT_PREFS, view });
   return VIEWS.includes(prefs.view) ? prefs : { ...prefs, view: 'icons' };
 }
-
-/** Whether a key press belongs to a text field rather than to Finder. */
-const typing = (e: KeyboardEvent) => e.target instanceof HTMLElement && e.target.matches('input, textarea, select, [contenteditable]');
 
 export default function Finder({ win }: AppProps) {
   const data = useOSData();
@@ -218,6 +216,9 @@ export default function Finder({ win }: AppProps) {
   onKey.current = (e) => {
     // A sheet or an alert is up: the window's keys are its, not Finder's under it.
     if (burning || locked || trashing) return;
+    // A control outside the window (a Dock icon, the menu bar) keeps its keys,
+    // and the search field its typing, ⌥ with a key included (core/useKeys.ts).
+    if (!ownsKey(e)) return;
     if (e.metaKey || e.altKey) {
       if (e.metaKey && e.code === 'Backspace' && selectedNode?.trash && !typing(e)) {
         e.preventDefault();
@@ -243,7 +244,7 @@ export default function Finder({ win }: AppProps) {
       }
       return;
     }
-    if (typing(e) || e.ctrlKey) return;
+    if (e.ctrlKey) return;
     if (e.key.startsWith('Arrow')) {
       e.preventDefault();
       move(e.key);

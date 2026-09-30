@@ -9,5 +9,6 @@ export { play, audio, type Sound } from '../core/sound';
 export { useGameLoop } from './loop';
 export { saved, type Saved } from './saved';
 export { useIsFront, resizeWindow } from './window';
+export { ownsKey } from '../core/useKeys';
 export { usePhotos } from './data';
 export { useSoundSetting, soundSetting, turnSoundOn } from './sound';
