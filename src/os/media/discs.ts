@@ -281,15 +281,23 @@ export async function throwAwayForEveryone(id: string) {
   changeShelf(DISCS.filter((d) => d.id !== id));
 }
 
+/** How far a kept length may be from the player's before it's put right: YouTube's own rounding. */
+const LENGTH_SLACK_MS = 2000;
+
 /**
  * Notes a disc's length once DVD Player knows it: a DVD-R's in this
  * browser, one of Jincheng's in the database when the owner is watching.
+ * One kept already is put right if it's off (DVD Player once gave a disc
+ * the length of the one before it).
  */
 export function noteLength(disc: ShelfDisc, duration: number, owner: boolean) {
   const ms = Math.round(duration * 1000);
-  if (disc.duration || ms < 1000 || ms > 86_400_000) return;
+  if (ms < 1000 || ms > 86_400_000 || (disc.duration && Math.abs(disc.duration - ms) <= LENGTH_SLACK_MS)) return;
   if (disc.burnedHere) {
-    if (mine.some((d) => d.id === disc.id && !d.duration)) changeMine((list) => list.map((d) => (d.id === disc.id ? { ...d, duration: ms } : d)));
+    const kept = mine.find((d) => d.id === disc.id);
+    if (kept && !(kept.duration && Math.abs(kept.duration - ms) <= LENGTH_SLACK_MS)) {
+      changeMine((list) => list.map((d) => (d.id === disc.id ? { ...d, duration: ms } : d)));
+    }
     return;
   }
   if (!owner) return;

@@ -192,6 +192,32 @@
     display: none;
   }
 
+  /* A phone is too narrow for the whole toolbar: the buttons keep their
+     size (squeezed, a segmented control is clipped to a sliver), and what
+     doesn't fit goes to a second row, where the search field takes the
+     rest of the width. */
+  .os-finder-app .os-toolbar {
+    height: auto;
+    min-height: 36px;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 6px 8px;
+  }
+
+  .os-finder-app .os-toolbar > * {
+    flex: none;
+  }
+
+  .os-finder-app .os-toolbar .os-segmented button {
+    padding: 0 9px;
+  }
+
+  .os-finder-app .os-toolbar .os-search-field {
+    flex: 1 1 120px;
+    width: auto;
+    margin-left: 0;
+  }
+
   .os-files-head,
   .os-files-list button {
     grid-template-columns: minmax(0, 1fr) 110px;

@@ -136,6 +136,33 @@ describe('burning', () => {
   });
 });
 
+describe('a DVD-R’s length', () => {
+  test('is kept once DVD Player knows it, and not changed for YouTube’s rounding', async () => {
+    const { burnHere, noteLength, shelf } = await load();
+    burnHere({ id: DISC.id, title: 'Whiplash', cover: 'hq1', coverX: 50 });
+    noteLength(shelf()[0], 191.2, false);
+    expect(shelf()[0].duration).toBe(191200);
+    noteLength(shelf()[0], 192.9, false);
+    expect(shelf()[0].duration).toBe(191200);
+  });
+
+  test('is put right when it’s off, as when a disc was given the length of the one before it', async () => {
+    stored.set('os-dvds', JSON.stringify([{ ...DISC, duration: 207000 }]));
+    const { noteLength, shelf } = await load();
+    noteLength(shelf()[0], 191.2, false);
+    expect(shelf()[0].duration).toBe(191200);
+    expect(JSON.parse(stored.get('os-dvds')!)[0].duration).toBe(191200);
+  });
+
+  test('isn’t a length YouTube can’t mean', async () => {
+    const { burnHere, noteLength, shelf } = await load();
+    burnHere({ id: DISC.id, title: 'Whiplash', cover: 'hq1', coverX: 50 });
+    noteLength(shelf()[0], 0.4, false);
+    noteLength(shelf()[0], 90_000, false);
+    expect(shelf()[0].duration).toBeUndefined();
+  });
+});
+
 describe('reading a link', () => {
   const oembed = (answer: Response) => vi.stubGlobal('fetch', vi.fn(async () => answer));
 
