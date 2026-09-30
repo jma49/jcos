@@ -391,6 +391,12 @@ ryOS (AGPL-3.0).
   field ⌥ with a key types rather than running a shortcut. The rule is
   `ownsKey` in `core/useKeys.ts` (docs/agents/desktop.md, Windows and
   the shell).
+- **The session and the home folder across tabs** (2026-09-30,
+  #189–#191): a `?open=` link opens its target over the saved session
+  and leaves the address once handled, so a reload brings the session
+  back; TextEdit saves a draft it finds as a page opens; the owner's
+  tabs follow each other's saves and deletes in the home folder over
+  `os-home`, as stickies and iCal do (docs/agents/desktop.md).
 - No link back to a classic site; Chinese is on hold.
 - Don't change ocra for now; it will be redesigned.
 - The "Ask me" AI assistant is on hold.
@@ -500,10 +506,12 @@ architecture (#210, #217).
    one; receivers act only on well-formed ones, which carry nothing but
    names and Macintosh HD paths. Proper identity would need Realtime
    Authorization and server-checked presence.
-4. **The first load** is 150 of its 160 KB budget (150.2, 2026-09-30:
+4. **The first load** is 150 of its 160 KB budget (150.1, 2026-09-30:
    149.6 after room was made on it and Time Machine and Job Hunt came,
    plus `core/useKeys.ts`, 0.5 KB, now shared with the desktop's
-   shortcuts), 67 of it react-dom. What else could move:
+   shortcuts, less 0.1 when the desktop's start-up moved into
+   `core/windowSession.ts` for #189), 67 of it react-dom. What else
+   could move:
    Exposé's overlay (1.1 KB), the context menu (0.8) and the ⌥Tab
    switcher's panel (0.6), each making its first use in the first
    seconds wait for its code, and chat's watch, split from the Dock's

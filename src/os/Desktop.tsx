@@ -24,18 +24,12 @@ import { useDesktopPicture } from './look/useDesktopPicture';
 import { useAppearance } from './look/useAppearance';
 import { watchWindows } from './core/sound';
 import { OSDataContext } from './core/context';
-import { launch } from './core/registry';
-import { openFromUrl } from './core/deepLink';
-import { restoreWindows, saveWindowsAsTheyChange } from './core/windowSession';
-import { load, save } from './core/storage';
+import { openSession, saveWindowsAsTheyChange } from './core/windowSession';
 import { isPhone, useFocusedId, useWindows } from './core/store';
 import type { OSData } from './core/types';
 import { useReduceMotion, useSystem } from './core/system';
 import { NightShift } from './shell/NightShift';
 import './os.css';
-
-/** Set once the first visit's welcome has been shown. */
-const WELCOMED_KEY = 'os-welcomed';
 
 export default function Desktop({ data }: { data: OSData }) {
   // Animations follow Displays in System Preferences, or the device's own setting.
@@ -118,18 +112,11 @@ function Shell({ data }: { data: OSData }) {
     setBooting(false);
   };
 
-  // Once the desktop is up, open whatever ?open= names (an app or a project
-  // slug), or put back the windows of the last visit. The very first time,
-  // the welcome comes alone, in the middle; otherwise the desktop starts
-  // clear, the way a Mac does.
+  // Once the desktop is up, the windows of the last visit come back, with
+  // whatever ?open= names on top of them (core/windowSession.ts).
   useEffect(() => {
     if (booting || Object.keys(useWindows.getState().windows).length > 0) return;
-    const greet = () => {
-      if (load(WELCOMED_KEY)) return;
-      save(WELCOMED_KEY, '1');
-      launch('welcome', { center: true });
-    };
-    const t = setTimeout(() => openFromUrl(data) || restoreWindows() || greet(), reduced ? 0 : 250);
+    const t = setTimeout(() => openSession(data), reduced ? 0 : 250);
     return () => clearTimeout(t);
   }, [booting, reduced, data]);
 
