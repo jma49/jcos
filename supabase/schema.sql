@@ -1788,3 +1788,15 @@ notify pgrst, 'reload schema';
 -- supabase/migrations/20260929191409_chat_can_write_members.sql, whose header explains it).
 
 revoke execute on function public.chat_can_write(text) from anon;
+
+-- ---------------------------------------------------------------------
+-- The home folder from Telegram (the same as
+-- supabase/migrations/20260929192005_home_from_telegram.sql, whose header explains it).
+
+alter table public.diary add column if not exists telegram_message_id bigint;
+create unique index if not exists diary_telegram_message on public.diary (telegram_message_id);
+
+alter table public.documents add column if not exists telegram_message_id bigint;
+create unique index if not exists documents_telegram_message on public.documents (telegram_message_id);
+
+notify pgrst, 'reload schema';

@@ -69,12 +69,21 @@ asks for the token (without echoing it) and your user ID, and does steps
 | `/dvd <YouTube link>` | burns the video onto a disc on DVD Player's shelf, in everyone's Movies folder, named as `/add` guesses a song (`/dvd <link> Title - Artist` names it; sent again with a name, it relabels the disc) |
 | `/dvd` | how many discs of the limit (200), and the latest |
 | `/dvd remove <title or link>` | takes a disc off the shelf |
+| `/diary <text>` | an entry in your diary, for the day it was sent where you are (`/at`); yours alone, in Documents › Diary |
+| `/diary` | today's entries: how many, and the latest |
+| `/doc <text>` | a document in Documents, named after its first line ("Packing list.txt"; "Packing list 2.txt" if that's taken) |
+| editing a `/diary` or `/doc` message | edits the entry or the document |
 
 The music commands (`music.ts`) need the music library migration
 (`20260927030802_music_library.sql`). A song is named by words from its
 title (its YouTube id works too); when several match, the bot shows a
 button for each, and pressing one does the command to that song. Only the id is taken from a link: every address the bot
 fetches is one it builds, on YouTube, Apple or lrclib.
+
+`/diary` and `/doc` (`home.ts`) need the home folder migrations
+(`20260929160000_home.sql`, `20260929192005_home_from_telegram.sql`).
+They're never public: a photo sent with either is posted nowhere. The
+Soapbox's `/note` is a public post, as plain text is.
 
 `/dvd` (`discs.ts`) needs the discs migration (`20260929120000_discs.sql`).
 A disc's case uses the video's full-size thumbnail where YouTube has one.

@@ -521,6 +521,23 @@ select pg_temp.check(pg_temp.refused($$insert into public.diary (day, body) valu
 reset role;
 update public.music_settings set value = '500' where name = 'document_limit';
 update public.music_settings set value = '10000' where name = 'diary_limit';
+
+-- From Telegram: the bot (the service role) writes an entry or a document
+-- with the message it came from, once, and the site never reads which.
+select pg_temp.act_as('service_role');
+insert into public.diary (day, body, telegram_message_id) values ('2026-09-29', 'Sent from the bus.', 900);
+insert into public.documents (folder, name, body, telegram_message_id) values ('documents', 'Packing list.txt', 'Packing list', 901);
+select pg_temp.check(pg_temp.refused($$insert into public.diary (day, body, telegram_message_id) values ('2026-09-29', 'Sent twice.', 900)$$)
+  and pg_temp.refused($$insert into public.documents (folder, name, telegram_message_id) values ('documents', 'Sent twice.txt', 901)$$), 'a Telegram message is saved once, however often it arrives');
+update public.diary set body = 'Sent from the bus, then edited.' where telegram_message_id = 900;
+select pg_temp.check((select version from public.diary where telegram_message_id = 900) = 2, 'editing the message edits the entry, and counts as a save');
+reset role;
+select pg_temp.act_as('authenticated', '99999999-9999-9999-9999-999999999999');
+select pg_temp.check((select count(*) from public.diary where body like 'Sent from the bus%') = 1
+  and (select count(*) from public.documents where name = 'Packing list.txt') = 1, 'Jincheng reads what came from Telegram');
+select pg_temp.check(pg_temp.refused($$select telegram_message_id from public.diary$$)
+  and pg_temp.refused($$select telegram_message_id from public.documents$$), 'the site never reads which Telegram message something came from');
+reset role;
 select pg_temp.check(not has_function_privilege('authenticated', 'public.home_saved()', 'execute')
   and not has_function_privilege('authenticated', 'public.home_within_limit()', 'execute'), 'no one calls the home folder''s trigger functions');
 
