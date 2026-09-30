@@ -5,6 +5,7 @@ import { AboutIcon } from '../../core/icons';
 export default defineApp({
   id: 'textedit',
   name: 'TextEdit',
+  added: '2026-09-29',
   Icon: AboutIcon,
   window: { width: 600, height: 520, minWidth: 320, minHeight: 240 },
   inApplications: true,

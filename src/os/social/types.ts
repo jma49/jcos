@@ -439,6 +439,8 @@ export interface HomeDocument {
   body: string;
   /** Counts saves: a save names the version it was made from. */
   version: number;
+  /** When it was first saved (ISO 8601): from then on, Time Machine shows it. */
+  created: string;
   /** When it was last saved (ISO 8601). */
   updated: string;
 }

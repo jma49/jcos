@@ -4,6 +4,7 @@ import { DVDPlayerIcon } from '../../core/icons';
 export default defineApp({
   id: 'dvdplayer',
   name: 'DVD Player',
+  added: '2026-09-29',
   Icon: DVDPlayerIcon,
   // A 16:9 picture under the 23 px title bar.
   window: { width: 720, height: 428, minWidth: 400, minHeight: 248 },

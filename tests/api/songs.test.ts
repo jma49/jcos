@@ -15,9 +15,10 @@ const SONG = {
   track: null,
   instrumental: false,
   lyrics_offset: -850,
-  lyrics_id: null
+  lyrics_id: null,
+  added_at: '2026-09-27T05:13:00+00:00'
 };
-const ALBUM = { title: 'An Album', artist: 'Someone', year: 1998, cover: 'https://is1-ssl.mzstatic.com/a.jpg', note: null };
+const ALBUM = { title: 'An Album', artist: 'Someone', year: 1998, cover: 'https://is1-ssl.mzstatic.com/a.jpg', note: null, added_at: '2026-09-26T12:00:00+00:00' };
 const DISC = { id: 'jWQx2f-CErU', title: 'Whiplash', artist: 'aespa', cover: 'maxresdefault', cover_x: 30, duration_ms: null, added_at: '2026-09-29T08:00:00+00:00' };
 
 function fakeSupabase(answer: (path: string) => Response) {
@@ -48,8 +49,8 @@ describe('from Supabase', () => {
     expect(res.headers.get('cache-control')).toBe('public, s-maxage=30, stale-while-revalidate=30');
     expect(res.headers.get('x-library')).toBeNull();
     expect(await res.json()).toEqual({
-      albums: [{ title: 'An Album', artist: 'Someone', year: 1998, cover: 'https://is1-ssl.mzstatic.com/a.jpg' }],
-      songs: [{ id: 'dQw4w9WgXcQ', title: 'A Song', artist: 'Someone', cover: SONG.cover, offset: -850 }],
+      albums: [{ title: 'An Album', artist: 'Someone', year: 1998, cover: 'https://is1-ssl.mzstatic.com/a.jpg', added: '2026-09-26T12:00:00+00:00' }],
+      songs: [{ id: 'dQw4w9WgXcQ', title: 'A Song', artist: 'Someone', cover: SONG.cover, offset: -850, added: '2026-09-27T05:13:00+00:00' }],
       discs: [{ id: 'jWQx2f-CErU', title: 'Whiplash', artist: 'aespa', cover: 'maxresdefault', coverX: 30, added: '2026-09-29T08:00:00+00:00' }]
     });
   });

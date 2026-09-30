@@ -3,7 +3,7 @@
 - **Budgets** (checked by `npm run perf`; see [self-audit.md](self-audit.md)) for a first visit,
   meaning what's requested in the first seven seconds, before the
   desktop settles and fetches ahead:
-  - at most 160 KB of JavaScript, gzipped (149 today; react-dom alone
+  - at most 160 KB of JavaScript, gzipped (150 today; react-dom alone
     is 67), and 20 KB of CSS (16 today);
   - at most 1.1 MB of images and 250 KB of fonts;
   - nothing downloaded twice.
@@ -67,6 +67,10 @@
   - 0.6 KB: Spotlight, and the applet list it was the first screen's
     only user of.
   - 0.2 KB back: `core/storage` has a chunk of its own since (below).
+
+  Time Machine took 0.5 KB of it the same day: its manifest, every
+  app's `added` date and the full-screen layer (`shell/FullScreenLayer.tsx`);
+  its own code loads as it opens.
 - **Read the chunk list `npm run perf` prints** after adding a dynamic
   import. Rolldown puts the modules that the same entries reach in one
   chunk, so a module loaded later that reaches some of a first-load

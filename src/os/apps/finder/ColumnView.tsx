@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef } from 'react';
 import { find, type FileNode } from '../../core/files';
-import { ancestry, formatDate, Thumb } from './parts';
+import { ancestry, formatDate, Thumb } from '../../files/parts';
 
 /**
  * Tiger's column view: one column per folder from the disk down to the

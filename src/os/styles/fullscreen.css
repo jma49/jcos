@@ -1,0 +1,11 @@
+/* ---------- A full-screen app (Time Machine) ---------- */
+
+/* Over everything but the screen saver, the boot screen and Night Shift. */
+.os-fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  overflow: hidden;
+  background: #000;
+  color: #fff;
+}

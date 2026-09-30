@@ -1,10 +1,10 @@
-import type { FileNode } from '../../core/files';
-import { rectOf } from '../../core/registry';
-import { notify } from '../../core/notices';
-import { DiscLook, DiscThumb, MoviesFolderIcon } from '../../media/discArt';
-import { throwAwayForEveryone, throwAwayHere, type ShelfDisc } from '../../media/discs';
-import { insertDisc } from '../../media/drive';
-import { formatTime } from '../../media/music';
+import type { FileNode } from '../core/files';
+import { rectOf } from '../core/registry';
+import { notify } from '../core/notices';
+import { DiscLook, DiscThumb, MoviesFolderIcon } from '../media/discArt';
+import { throwAwayForEveryone, throwAwayHere, type ShelfDisc } from '../media/discs';
+import { insertDisc } from '../media/drive';
+import { formatTime } from '../media/music';
 
 // The Movies folder: DVD Player's shelf (media/discs.ts). Each disc's
 // icon is its case, Quick Look shows the case with the disc beside it, and
