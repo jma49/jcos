@@ -194,6 +194,11 @@ select pg_temp.check(not exists (
   where n.nspname in ('public', 'private') and p.prosecdef
     and not exists (select from unnest(coalesce(p.proconfig, '{}')) c where c like 'search_path=%')
 ), 'every security definer function sets its search_path');
+select pg_temp.check(not exists (
+  select from pg_policies
+  where schemaname in ('public', 'private')
+    and replace(coalesce(qual, '') || ' ' || coalesce(with_check, ''), 'SELECT auth.uid()', '') ~ 'auth\.uid\(\)'
+), 'every policy asks who the caller is once, with (select auth.uid()), not for each row');
 select pg_temp.check(not has_function_privilege('anon', 'public.my_reactions()', 'execute'), 'visitors can''t ask for members'' reactions');
 select pg_temp.act_as('anon');
 select pg_temp.check(public.username_available('someone_new') and not public.username_available('alice'), 'visitors can still check a username');
