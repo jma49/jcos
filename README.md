@@ -17,6 +17,8 @@ Around them sits a small working system:
   (YouTube videos burned onto discs, kept in Finder's Movies folder),
   Chess, Photo Booth, and applets from the Applet Store (Minesweeper,
   Spider Solitaire, Pinball, Synth and more).
+- **Job Hunt:** every company Jincheng has applied to, on a board of
+  stages kept up from Gmail; everyone else sees only the numbers.
 - **Social:** member accounts, Chat with rooms and private conversations,
   a Stickies guestbook and, for every member, stickies on their own
   desktop and an iCal of their own,

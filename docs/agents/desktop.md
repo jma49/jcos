@@ -420,6 +420,27 @@ only `kit/`. The lint enforces all three.
   moves, to-dos whole; the member's other tabs read again on every
   change. Narrow (a phone), it shows the month or To Do, chosen at the
   top.
+- `src/os/apps/jobhunt/`: Job Hunt, in Applications, with Bento's icon:
+  every company Jincheng has applied to (`jobs.ts`; the tables in
+  [supabase.md](supabase.md)). Jincheng sees a board in iCal's brushed
+  metal, a column to a stage (Applied, Assessment, Interviewing, Offer,
+  Closed), a card to an application, the one that moved last on top;
+  a card still Applied after 14 days with no word says how long it has
+  waited. Drag a card to another column when something happens that Mail
+  didn't say. The stages and sources on the left show and hide columns
+  and filter, with how far they got under them; iTunes' capacity bar
+  along the bottom. Or the list (⌥2), sorted by a header. The info drawer
+  (⌥I, or a double-click) renames, moves, dates and notes one, and lists
+  what Mail said about it, each message a link back to Gmail; ⌥N adds
+  one by hand, Delete deletes one, asked first. Saves to one application
+  go one after another, each from the version the last one got, so a
+  note left by clicking the stage menu doesn't meet a refusal of its
+  own. Anyone else sees only the numbers (Jincheng decided on
+  2026-09-29): how many at each stage on blank cards, how far they got
+  and the capacity bar, from `job_hunt_totals()`. What Mail said comes in
+  through Claude and `scripts/job-hunt-import.mjs` (HANDOFF.md, Job
+  Hunt). Narrow (a phone), one stage at a time, picked at the top, and the
+  drawer's contents in the window.
 - `src/os/stickies/`: a member's own stickies (`mine.ts`, the table in
   [supabase.md](supabase.md)). Signed in, a member's notes sit on their
   own desktop (`DesktopStickies.tsx`, drawn by `shell/DesktopStickiesLayer.tsx`,

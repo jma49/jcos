@@ -30,6 +30,7 @@ advisory lock (Security, below).
 | `diary` (Jincheng's diary) | the owner | Jincheng, signed in | `music_settings.diary_limit` entries (10,000), 20,000 characters each |
 | `stickies` (a member's own) | that member alone (not even the owner) | that member | `music_settings.sticky_limit` a member (50), 4,000 characters each |
 | `events`, `todos` (a member's own iCal) | that member alone (not even the owner) | that member | `music_settings.event_limit` events (5,000) and `todo_limit` to-dos (1,000) a member |
+| `job_applications`, `job_events` (Job Hunt) | the owner; everyone else only the counts, through `job_hunt_totals()` | Jincheng, signed in (applications); messages only through `private.import_job_hunt()` | `music_settings.job_limit` applications (2,000) and `job_event_limit` messages (20,000) |
 | `private.recovery_emails`, `private.password_resets`, `private.secrets` | not reachable through the API | account functions and the database | resets: 3 per account and 3 per address an hour, 60 an hour in all; a link lasts 30 minutes |
 | `private.owners` | not reachable through the API; `is_owner()` tells the caller whether they're in it | Jincheng, once, in the SQL editor | Jincheng's account |
 | `soapbox` storage bucket | everyone | the bot | images only, 10 MB each |
@@ -94,6 +95,27 @@ The code that isn't in the browser (each endpoint's parameters, answers and conv
   sets and clears `done_at`). The limits are counted under an advisory
   lock per member. iCal uses them through `apps/ical/calendar.ts`, which
   reads events a few weeks at a time.
+- **Job Hunt** (`public.job_applications`, `public.job_events`; migration
+  `20260930062024_job_hunt.sql`): every company Jincheng has applied to,
+  one row to a company and role whatever their case, with its stage,
+  why it closed, the furthest it got (which a trigger keeps, and closing
+  doesn't undo), the day it was applied for, source, place, posting and
+  notes; and what Mail said about each, a row to a Gmail message (unique,
+  so a message read twice is kept once). Only the owner reads either or
+  writes applications (saves name their `version`, as documents' do);
+  messages are written only by `private.import_job_hunt(batch)`, which
+  the API can't reach. Visitors and members get only
+  `public.job_hunt_totals()`: how many at each stage, how many got as
+  far as an assessment, interviews or an offer, and when it last
+  changed, never a company (a security definer function they may call on
+  purpose; `test:db` checks the totals name none). The import finds an
+  application by company and role, moves it on but never back and
+  reopens nothing closed (Jincheng may have moved it by hand), fills in
+  only what's blank, keeps the earliest day, and writes nothing if any
+  of the batch is malformed. `scripts/job-hunt-import.mjs` checks a batch
+  and sends it through the Supabase CLI (`--dry-run` only checks it,
+  `--db-url` sends it to a local database to try); only Claude runs it,
+  under the permission rule Jincheng added for it (HANDOFF.md, Job Hunt).
 - **Soapbox reactions**: members react as themselves and can change or take
   back a reaction; everyone else gets one per post, by salted IP hash.
 - **The music library** (`public.songs`, `public.albums`; migration
