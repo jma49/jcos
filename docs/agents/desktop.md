@@ -72,7 +72,8 @@ only `kit/`. The lint enforces all three.
   A drop lands in one step (`instant`), with the dragged icon kept over
   its place until the slot shows. With motion reduced, slots jump. Keep the Dock and the
   desktop (`shell/DesktopIcons.tsx`: Macintosh HD, About Me, Résumé,
-  Projects, and a disc while one is in DVD Player's drive) short; a phone's home screen lists every app.
+  Projects) short, and nothing is added to them, not even a disc in DVD
+  Player's drive (Jincheng's rule, 2026-09-29); a phone's home screen lists every app.
 - `src/os/apps/`: one folder per built-in app. Content comes from `OSData`,
   assembled at build time in `index.astro` from `src/i18n/content.ts`, the
   projects collection and `src/lib/photos.ts` (Unsplash, fetched at build).
@@ -137,7 +138,8 @@ only `kit/`. The lint enforces all three.
   (`media/drive.ts`) shows its menu (Play Movie, Scene Selection, Loop)
   and then the picture, always 16:9 with black around it; its own
   YouTube player (`useDiscPlayer.ts`) takes no pointer, so YouTube's
-  buttons never come up. The Controller is a floating panel, as on a
+  hover controls never come up (its middle button after a play or a seek
+  does, and DVD Player masks it: [media.md](media.md)). The Controller is a floating panel, as on a
   Mac: drawn by the app into `.os-root` just above the windows, shown
   only while DVD Player is the window in front (not in Exposé or
   minimized), dragged by its metal and left where it was put
@@ -146,18 +148,23 @@ only `kit/`. The lint enforces all three.
   screen on the picture itself, since the player can't move without
   reloading, with the chapters along the top and the controls along the
   bottom, which rest out of sight (and the pointer with them) 2.5 s after
-  the pointer stops while the disc plays. A phone, which DVD Player fills
+  the pointer stops while the disc plays. Its position slider
+  (`core/useScrub.ts`) stays where it's put: dragged, it seeks within
+  what's loaded as it goes and properly where it's let go, and the clock
+  doesn't move it back meanwhile. What DVD Player says for a moment
+  ("Chapter 2", "▶ Play") shows in the corner once the chapters have
+  gone, not under them. A slider used with the pointer (volume,
+  position) gives the keys back when it's let go
+  (`releaseAfterPointer` in `core/useKeys.ts`), so Space and the arrows
+  stay DVD Player's; tabbed to, it keeps them. A phone, which DVD Player fills
   anyway, always has that look instead of the Controller. The Controls
   menu and the keys (Space, ←/→ for chapters, ↑/↓ and Return in menus,
   Escape, ⌘F, ⌘E) do what its buttons do. A disc slides into the slot in the
   screen's right edge on its way in and out (`media/insertion.ts`, Web
-  Animations, skipped with motion reduced), DVD Player's icon bounces in
-  the Dock as it opens, and while the disc is in it's on the desktop
-  under Macintosh HD (the window store's `disc`, so the desktop needn't
-  load the drive), or in the first free place if the icons have been
-  moved (`freePlace` in `media/drive.ts`). Dragging it turns the Dock's
-  Trash into Eject (`ejecting`, drawn in `dock.css`); dropped there, it
-  ejects, and icons that were in their column go back to it.
+  Animations, skipped with motion reduced), and DVD Player's icon
+  bounces in the Dock as it opens. The disc never goes on the desktop:
+  Jincheng wants no icons added there (2026-09-29), so the Controller and
+  ⌘E are the ways to eject it.
 
 ## Windows and the shell
 
@@ -170,7 +177,9 @@ only `kit/`. The lint enforces all three.
   Nothing opens About by itself.
 - `src/os/shell/Expose.tsx`: the Exposé grid (F9, the bottom-left hot
   corner or View → Exposé). Windows animate to their slot in place, so
-  iframes don't reload.
+  iframes don't reload. While it's open it has the keys, before any
+  window (Escape leaves it and does nothing else; F9 and ⌘ keys are the
+  desktop's).
 - `src/os/shell/AppSwitcher.tsx`: ⌥Tab steps through open windows, most
   recent first; releasing ⌥ focuses the chosen one.
 - `src/os/shell/drawer.tsx`: Tiger-style drawers. Each window has a slot
@@ -302,7 +311,52 @@ only `kit/`. The lint enforces all three.
   from `media/discs.ts`) and hands it to `buildDisk`, so the desktop's
   own copy of the disk (AirDrop's, in the first load) has no Movies and
   none of its code. In Movies the toolbar has Burn (`BurnSheet.tsx`) and
-  the list shows Date Added, Length and Kind.
+  the list shows Date Added, Length and Kind. The Burn sheet and Finder's
+  alerts are modal: while one is up, Finder's own keys are off, and the
+  sheet takes Escape (stop, or close) and Return (Burn) wherever the
+  focus is. On a phone the toolbar's buttons keep their size and what
+  doesn't fit goes to a second row, where the search field takes the
+  rest of the width.
+- Users › jincheng is Jincheng's home folder (`apps/finder/home.tsx`,
+  handed to `buildDisk` as Movies is, and first in the sidebar with the
+  house FileVault puts on a locked home): Desktop, Documents, Downloads,
+  Library, Movies, Music, Pictures, Public and Sites. To anyone but the
+  owner every folder but Public and Sites is `locked`: it wears Mac OS
+  X's red "no access" badge (drawn in `Thumb`, so every view has it) and
+  opening it, from any view, the sidebar or a path, brings up Finder's
+  alert ("The folder … could not be opened because you do not have
+  sufficient access privileges."). Signed in as the owner, they open and
+  hold Jincheng's documents, and Documents holds the diary, a year to a
+  document ("Diary 2026.rtf"). Public holds what Jincheng lets everyone
+  read; Sites, the projects' live sites as Internet locations that open
+  in the Browser. The documents come from the database (`home/home.ts`,
+  [supabase.md](supabase.md)), which gives anyone else only Public's,
+  read when a folder under Users shows (at most every 30 s). Move to
+  Trash on one of the owner's documents asks first ("will be deleted
+  immediately"), since there's no Trash to take it back from.
+- `src/os/apps/textedit/`: TextEdit, in Applications. A white page for
+  one of Jincheng's documents (`DocumentPage.tsx`), or a year of the
+  diary (`DiaryPage.tsx`): the days newest first under their dates in
+  grey, each entry a paragraph that grows as it's typed, and this year's
+  with today at the top and a line to write a new entry on. The owner
+  writes; anyone else can only read a document in Public. What's typed
+  is saved once the typing rests for a second, at once with ⌘S, and when
+  the window closes (`useAutosave.ts`), and kept as a draft in the
+  browser until it is, so a closed tab loses nothing. A save names the
+  version it was typed over, so one from an older copy is refused and
+  the alert offers Revert or Save Anyway. File › New (⌥N; the browser
+  keeps ⌘N) starts a document that goes into Documents as "Untitled.txt"
+  once something is typed; Save As (⇧⌘S, `SaveAsSheet.tsx`) renames it
+  or moves it to another folder, Public included. An emptied diary entry
+  is taken out when it's left. Entries and documents also come from
+  Telegram (the bot's `/diary` and `/doc`); they show on the next read of
+  the home folder (at most 30 s, or when the tab comes back).
+- `src/os/shell/Alert.tsx` (with `alert.css`, which an app's stylesheet
+  imports): an app's alert as Tiger drew one, the app's icon beside the
+  message, with OK, Cancel and a third choice, Return and Escape. It
+  takes the keys only while its window is in front: one that comes up
+  behind (a save refused after the window was left) waits, and Return
+  typed in another window stays that window's.
 - `src/os/social/airdrop.ts` and `apps/airdrop/`: AirDrop between
   signed-in members on the desktop (signed out, it asks you to sign in).
   Only a Macintosh HD path is sent, and the receiver looks it up on its

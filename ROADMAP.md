@@ -32,25 +32,14 @@ each uses the same Aqua styles and the ryOS icon set (new icons from it
 go in `public/os/icons` and NOTICE). One pull request each, in this
 order:
 
-1. **iPod ratings and playlists**: rate the playing song (the Now
-   Playing rating screen), On-The-Go, and the smart playlists (My Top
-   Rated, Recently Played, Top 25 Most Played) plus Jincheng's own. The
-   owner's ratings, play counts and playlists are shared (owner writes
-   only); a visitor's On-The-Go stays in their browser. Uses the owner
-   check.
-2. **Jincheng's home folder**: Users › jincheng in Finder. Visitors see
-   the real "no access" badges and Tiger's alert on every folder but
-   Public and Sites; signed in as the owner, the folders open and hold
-   the owner's diary and notes, written in a TextEdit window (or sent
-   from Telegram). Uses the owner check.
-3. **Stickies and iCal for Jincheng**: notes on the owner's own desktop
+1. **Stickies and iCal for Jincheng**: notes on the owner's own desktop
    and iCal with the owner's days and to-dos, shown only when the owner
    is signed in. What to call them beside the visitors' Stickies is
    Jincheng's to decide. Uses the owner check.
-4. **Time Machine**: Leopard's starfield, a window per day going back, a
+2. **Time Machine**: Leopard's starfield, a window per day going back, a
    timeline on the right: Soapbox, the guestbook and the library as they
    were. Public things for everyone, locked ones for the owner.
-5. **A stack in the Dock**: things Jincheng sends the bot (screenshots,
+3. **A stack in the Dock**: things Jincheng sends the bot (screenshots,
    tickets, links) kept in a Dock stack that fans out as Leopard's did,
    private or public per item. Jincheng's note: the interaction and the
    UI have to be done well. The Dock is on the first screen, so room on

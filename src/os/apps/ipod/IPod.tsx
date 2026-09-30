@@ -2,7 +2,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNo
 import { NextGlyph, PauseGlyph, PlayGlyph, PlayPauseGlyph, PreviousGlyph, ShuffleGlyph, SpeakerHighGlyph, SpeakerLowGlyph } from '../../core/glyphs';
 import type { AppProps } from '../../core/registry';
 import { launch } from '../../core/registry';
-import { isPhone, useFocusedId } from '../../core/store';
+import { isPhone, useFocusedId, useWindows } from '../../core/store';
 import { lineAt, useLyrics } from '../../media/lyrics';
 import { albumNamed, albumOf, coverOf, fromLibrary, lyricOffset, SONG_LIMIT, SONGS, tracksOf, useLibraryVersion } from '../../media/library';
 import { useLibraryRefresh } from '../../media/refresh';
@@ -16,12 +16,38 @@ import { Quiz } from './Quiz';
 import { Marquee } from './Marquee';
 import type { ScreenInput } from './input';
 import { loadSettings, updateJSON } from '../../core/storage';
+import {
+  addToGo,
+  clearOnTheGo,
+  deletePlaylist,
+  indexesOf,
+  mostPlayed,
+  onTheGo,
+  playlists,
+  rate,
+  ratingOf,
+  ratingRefused,
+  recentlyPlayed,
+  takeOffGo,
+  topRated,
+  unlist,
+  useListening,
+  useListeningRefresh,
+  type Playlist
+} from '../../media/playlists';
+import { useIsOwner } from '../../social/owner';
+import { SavePlaylist } from './SavePlaylist';
+import { ratingLabel, Stars } from './Stars';
 
 // An iPod with a click wheel. Drag round the wheel (or scroll, or use the
 // arrow keys) to move through the menus; MENU goes back, the centre button
 // chooses, and the wheel's edges are ⏮ ⏭ ⏯. The songs are YouTube videos
 // (see music.ts). Now Playing shows the album art, as an iPod would, or the
-// video; the centre button switches between them. Music has Cover Flow and
+// video (Settings); the centre button there turns the progress bar into
+// Jincheng's rating of the song, which the wheel changes when Jincheng is
+// signed in. Holding the centre button puts the song, album, artist or
+// playlist chosen into On-The-Go (or takes a song out of a playlist that
+// can be changed). Music has Cover Flow, Playlists (media/playlists.ts) and
 // album pages; Extras has Karaoke, Brick and a Music Quiz. The screen's
 // backlight goes down after a while without a touch, and the iPod comes in
 // white, black or U2 red and black.
@@ -38,6 +64,10 @@ interface Item {
   /** A track number, shown before the label. */
   number?: number;
   action?: () => void;
+  /** The songs (places in SONGS) holding the centre button puts into On-The-Go, worked out when it's held. */
+  songs?: () => number[];
+  /** What holding the centre button does instead, in a playlist that can be changed: takes the song out. */
+  remove?: () => void;
 }
 
 type Screen =
@@ -45,7 +75,8 @@ type Screen =
   | { kind: 'now' }
   | { kind: 'coverflow' }
   | { kind: 'brick' }
-  | { kind: 'quiz' };
+  | { kind: 'quiz' }
+  | { kind: 'save' };
 
 interface Frame {
   screen: Screen;
@@ -77,12 +108,31 @@ const TITLES: Record<Exclude<Screen['kind'], 'menu'>, string> = {
   now: 'Now Playing',
   coverflow: 'Cover Flow',
   brick: 'Brick',
-  quiz: 'Music Quiz'
+  quiz: 'Music Quiz',
+  save: 'Save Playlist'
 };
 
 const REPEATS: Repeat[] = ['off', 'one', 'all'];
 /** Degrees of wheel travel per step. */
 const STEP = (18 * Math.PI) / 180;
+/** How long the centre button is held to put a song into On-The-Go. */
+const HOLD_MS = 600;
+/** How long the rating shows on Now Playing after the last touch. */
+const RATING_MS = 4000;
+/** The rows at the top of Playlists: On-The-Go and the three smart playlists. */
+const IPOD_PLAYLIST_ROWS = 4;
+
+/** What an empty playlist says, for Jincheng (`owner`) or a visitor. */
+const EMPTY: Partial<Record<string, (owner: boolean) => string>> = {
+  otg: () => 'Hold the centre button on a song, an album or an artist to add it here.',
+  toprated: (owner) =>
+    owner
+      ? 'Press the centre button on Now Playing to rate the song. Four stars and up show here.'
+      : 'Songs Jincheng rates four stars and up show here.',
+  recent: (owner) => `Songs ${owner ? 'you play' : 'Jincheng plays'} to the end show here for two weeks.`,
+  mostplayed: (owner) => `The songs ${owner ? 'you play' : 'Jincheng plays'} most show here.`,
+  playlist: () => 'No songs.'
+};
 
 /** The library's artists, its albums (whole ones first) and every song. */
 const shelves = fromLibrary(() => ({
@@ -102,6 +152,10 @@ export default function IPod({ win }: AppProps) {
   // Songs added during the visit show up here too (media/library.ts).
   useLibraryVersion();
   useLibraryRefresh();
+  // Jincheng's ratings and playlists, and this visitor's On-The-Go.
+  useListening();
+  useListeningRefresh();
+  const owner = useIsOwner();
   const { artists, albums, all: ALL } = shelves();
   const { host, status, live } = usePlayer('ipod');
   const music = useMusic();
@@ -114,6 +168,13 @@ export default function IPod({ win }: AppProps) {
     ...(win.props?.nowPlaying && useMusic.getState().owner === 'ipod' ? [{ screen: { kind: 'now' } as Screen, selected: 0 }] : [])
   ]);
   const [showVolume, setShowVolume] = useState(0);
+  // When Now Playing last showed the rating in place of the progress bar (0: it doesn't).
+  const [rating, setRating] = useState(0);
+  // When the chosen row last flashed, for songs put into On-The-Go.
+  const [flash, setFlash] = useState(0);
+  // Something that went wrong, said for a moment under the menu.
+  const [note, setNote] = useState<{ text: string; at: number } | null>(null);
+  const say = (error: unknown) => setNote({ text: error instanceof Error ? error.message : 'That didn’t work. Try again.', at: Date.now() });
   const [prefs, setPrefs] = useState(savedPrefs);
   const [touched, setTouched] = useState(() => Date.now());
   const [dim, setDim] = useState(false);
@@ -139,6 +200,21 @@ export default function IPod({ win }: AppProps) {
   const push = (screen: Screen) => setStack((s) => [...s, { screen, selected: 0 }]);
   const pop = () => setStack((s) => (s.length > 1 ? s.slice(0, -1) : s));
   const nowPlaying = () => push({ kind: 'now' });
+  /** Back to Playlists, past a playlist that's gone (the menu, if Playlists isn't on the way back). */
+  const toPlaylists = useCallback(
+    () =>
+      setStack((s) => {
+        const at = s.findLastIndex(({ screen }) => screen.kind === 'menu' && screen.id === 'playlists');
+        return at < 0 ? s.slice(0, 1) : s.slice(0, at + 1);
+      }),
+    []
+  );
+  // A playlist deleted elsewhere while it's open here goes as if deleted here.
+  const openList = top.screen.kind === 'menu' ? /^(?:playlist|delete):(\d+)$/.exec(top.screen.id)?.[1] : undefined;
+  const gone = openList !== undefined && !playlists().some((p) => p.id === Number(openList));
+  useEffect(() => {
+    if (gone) toPlaylists();
+  }, [gone, toPlaylists]);
   const menuOf = (id: string, title: string) => () => push({ kind: 'menu', id, title });
 
   const setPref = <K extends keyof Prefs>(key: K, value: Prefs[K]) =>
@@ -156,7 +232,24 @@ export default function IPod({ win }: AppProps) {
     []
   );
 
-  const songsOf = (list: number[]): Item[] => list.map((i) => ({ label: SONGS[i].title, action: () => playSong(i, list) }));
+  /** Rows for songs, playing `list` from the one chosen; `remove` is what holding the centre button does, where it takes a song out. */
+  const songsOf = (list: number[], remove?: (i: number) => () => void): Item[] =>
+    list.map((i) => ({ label: SONGS[i].title, action: () => playSong(i, list), songs: () => [i], ...(remove ? { remove: remove(i) } : {}) }));
+
+  /**
+   * After On-The-Go is saved: back on Playlists, at the playlist it went
+   * into. If MENU left the screen while it was saving, the iPod stays where
+   * it has been taken since.
+   */
+  const saved = (playlist: Playlist) =>
+    setStack((s) => {
+      if (s[s.length - 1].screen.kind !== 'save') return s;
+      const rest = s.length > 2 ? s.slice(0, -2) : s.slice(0, 1);
+      const last = rest[rest.length - 1];
+      if (last.screen.kind !== 'menu' || last.screen.id !== 'playlists') return rest;
+      const at = playlists().findIndex((p) => p.id === playlist.id);
+      return [...rest.slice(0, -1), { ...last, selected: at < 0 ? last.selected : IPOD_PLAYLIST_ROWS + at }];
+    });
 
   const menu = (id: string): Item[] => {
     switch (id) {
@@ -177,6 +270,7 @@ export default function IPod({ win }: AppProps) {
       case 'music':
         return [
           { label: 'Cover Flow', more: true, action: () => push({ kind: 'coverflow' }) },
+          { label: 'Playlists', more: true, action: menuOf('playlists', 'Playlists') },
           { label: 'Albums', more: true, action: menuOf('albums', 'Albums') },
           { label: 'Artists', more: true, action: menuOf('artists', 'Artists') },
           // How full the library is, as a setting's value: "34/200".
@@ -190,13 +284,56 @@ export default function IPod({ win }: AppProps) {
         ];
       case 'songs':
         return songsOf(ALL);
+      // On-The-Go and the smart playlists first, as on an iPod, then Jincheng's own.
+      case 'playlists':
+        return [
+          { label: 'On-The-Go', more: true, action: menuOf('otg', 'On-The-Go') },
+          { label: 'My Top Rated', more: true, songs: topRated, action: menuOf('toprated', 'My Top Rated') },
+          { label: 'Recently Played', more: true, songs: () => recentlyPlayed(), action: menuOf('recent', 'Recently Played') },
+          { label: 'Top 25 Most Played', more: true, songs: mostPlayed, action: menuOf('mostplayed', 'Top 25 Most Played') },
+          ...playlists().map((p) => ({ label: p.name, more: true, songs: () => indexesOf(p.songs), action: menuOf(`playlist:${p.id}`, p.name) }))
+        ];
+      case 'otg': {
+        const list = indexesOf(onTheGo());
+        if (!list.length) return [];
+        return [
+          ...songsOf(list, (i) => () => takeOffGo(SONGS[i].id)),
+          // Saving makes it one of Jincheng's playlists, for everyone.
+          ...(owner ? [{ label: 'Save Playlist', more: true, action: () => push({ kind: 'save' }) }] : []),
+          { label: 'Clear Playlist', more: true, action: menuOf('clear', 'Clear Playlist') }
+        ];
+      }
+      case 'clear':
+        return [
+          { label: 'Cancel', action: pop },
+          {
+            label: 'Clear Playlist',
+            action: () => {
+              clearOnTheGo();
+              pop();
+            }
+          }
+        ];
+      case 'toprated':
+        return songsOf(topRated());
+      case 'recent':
+        return songsOf(recentlyPlayed());
+      case 'mostplayed':
+        return songsOf(mostPlayed());
       case 'albums':
         return albums.map((title) => {
           const first = SONGS[albumTracks(title)[0]];
-          return { label: title, sub: first.artist, cover: coverOf(first), more: true, action: menuOf(`album:${title}`, title) };
+          return {
+            label: title,
+            sub: first.artist,
+            cover: coverOf(first),
+            more: true,
+            songs: () => albumTracks(title),
+            action: menuOf(`album:${title}`, title)
+          };
         });
       case 'artists':
-        return artists.map((a) => ({ label: a, more: true, action: menuOf(`artist:${a}`, a) }));
+        return artists.map((a) => ({ label: a, more: true, songs: () => ALL.filter((i) => SONGS[i].artist === a), action: menuOf(`artist:${a}`, a) }));
       case 'settings':
         return [
           { label: 'Shuffle', value: music.shuffle ? 'Songs' : 'Off', action: () => music.setShuffle(!music.shuffle) },
@@ -254,18 +391,40 @@ export default function IPod({ win }: AppProps) {
                 playSong(list[Math.floor(Math.random() * list.length)], list);
               }
             },
-            ...list.map((i, n) => ({ label: SONGS[i].title, number: SONGS[i].track ?? n + 1, action: () => playSong(i, list) }))
+            ...list.map((i, n) => ({ label: SONGS[i].title, number: SONGS[i].track ?? n + 1, songs: () => [i], action: () => playSong(i, list) }))
           ];
         }
         if (id.startsWith('artist:')) {
           const name = id.slice(7);
           return songsOf(ALL.filter((i) => SONGS[i].artist === name));
         }
+        // One of Jincheng's playlists; Jincheng can take songs out of it, or delete it.
+        if (id.startsWith('playlist:')) {
+          const list = playlists().find((p) => p.id === Number(id.slice(9)));
+          if (!list) return [];
+          return [
+            ...songsOf(indexesOf(list.songs), owner ? (i) => () => void unlist(list.id, SONGS[i].id).catch(say) : undefined),
+            ...(owner ? [{ label: 'Delete Playlist', more: true, action: menuOf(`delete:${list.id}`, 'Delete Playlist') }] : [])
+          ];
+        }
+        if (id.startsWith('delete:')) {
+          const playlist = Number(id.slice(7));
+          return [
+            { label: 'Cancel', action: pop },
+            {
+              label: 'Delete Playlist',
+              // Back to Playlists, past the playlist that's gone.
+              action: () => void deletePlaylist(playlist).then(toPlaylists, say)
+            }
+          ];
+        }
         return [];
     }
   };
 
   const items = kind === 'menu' ? menu((top.screen as { id: string }).id) : [];
+  // The row chosen, kept on the list when it gets shorter (a song taken out, a playlist deleted, another tab's change).
+  const chosen = Math.min(top.selected, Math.max(0, items.length - 1));
   const albumTitle = top.screen.kind === 'menu' && top.screen.id.startsWith('album:') ? top.screen.id.slice(6) : null;
   const albumPage = albumTitle ? { title: albumTitle, first: SONGS[albumTracks(albumTitle)[0]], whole: albumNamed(albumTitle) } : null;
 
@@ -280,13 +439,21 @@ export default function IPod({ win }: AppProps) {
     wake();
     if (view.current) return view.current.step(delta);
     if (kind === 'now') {
+      // While the rating shows, the wheel changes it, if it's Jincheng's to
+      // change; for anyone else it's the volume again.
+      if (rating && owner) {
+        rate(song.id, ratingOf(song.id) + delta);
+        setRating(Date.now());
+        return;
+      }
+      setRating(0);
       music.setVolume(music.volume + delta * 4);
       setShowVolume(Date.now());
       return;
     }
     setStack((s) => {
       const last = s[s.length - 1];
-      const selected = Math.min(items.length - 1, Math.max(0, last.selected + delta));
+      const selected = Math.min(items.length - 1, Math.max(0, Math.min(last.selected, items.length - 1) + delta));
       return selected === last.selected ? s : [...s.slice(0, -1), { ...last, selected }];
     });
   };
@@ -295,9 +462,43 @@ export default function IPod({ win }: AppProps) {
     playSound('click');
     wake();
     if (view.current) return view.current.choose();
-    // On Now Playing the centre button switches between the artwork and the video.
-    if (kind === 'now') return setPref('show', prefs.show === 'artwork' ? 'video' : 'artwork');
-    items[top.selected]?.action?.();
+    // On Now Playing the centre button shows the rating in place of the progress bar, and back.
+    if (kind === 'now') {
+      setShowVolume(0);
+      return setRating((r) => (r ? 0 : Date.now()));
+    }
+    items[chosen]?.action?.();
+  };
+
+  /**
+   * Holding the centre button: the song, album, artist or playlist chosen
+   * goes into On-The-Go (the song playing, on Now Playing), and its row
+   * flashes, as on an iPod. In a playlist that can be changed, the song
+   * chosen comes out instead.
+   */
+  const hold = () => {
+    wake();
+    if (view.current) return;
+    if (kind === 'now') {
+      playSound('click');
+      addToGo([song.id]);
+      return setFlash(Date.now());
+    }
+    const item = kind === 'menu' ? items[chosen] : undefined;
+    if (item?.remove) {
+      playSound('click');
+      item.remove();
+      // The choice stays where it was, or on the last row if that was the last.
+      return setStack((s) => {
+        const last = s[s.length - 1];
+        return [...s.slice(0, -1), { ...last, selected: Math.max(0, Math.min(last.selected, items.length - 2)) }];
+      });
+    }
+    const songs = item?.songs?.() ?? [];
+    if (!songs.length) return;
+    playSound('click');
+    addToGo(songs.map((i) => SONGS[i].id));
+    setFlash(Date.now());
   };
 
   const press = (button: 'menu' | 'next' | 'previous' | 'play') => {
@@ -319,6 +520,25 @@ export default function IPod({ win }: AppProps) {
     const t = setTimeout(() => setShowVolume(0), 1500);
     return () => clearTimeout(t);
   }, [showVolume]);
+
+  // The rating gives way to the progress bar a few seconds after the last touch.
+  useEffect(() => {
+    if (!rating) return;
+    const t = setTimeout(() => setRating(0), RATING_MS);
+    return () => clearTimeout(t);
+  }, [rating]);
+
+  useEffect(() => {
+    if (!flash) return;
+    const t = setTimeout(() => setFlash(0), 700);
+    return () => clearTimeout(t);
+  }, [flash]);
+
+  useEffect(() => {
+    if (!note) return;
+    const t = setTimeout(() => setNote(null), 3000);
+    return () => clearTimeout(t);
+  }, [note]);
 
   // The backlight goes down after a while without a touch (not during a game).
   const playingGame = kind === 'brick' || kind === 'quiz';
@@ -347,24 +567,25 @@ export default function IPod({ win }: AppProps) {
     const row = el.querySelector<HTMLElement>('[role="option"][aria-selected="true"]');
     if (row) {
       // The first row shows the album card above it too.
-      const rowTop = top.selected === 0 ? 0 : row.offsetTop;
+      const rowTop = chosen === 0 ? 0 : row.offsetTop;
       const rowBottom = row.offsetTop + row.offsetHeight;
       if (rowTop < el.scrollTop) el.scrollTop = rowTop;
       else if (rowBottom > el.scrollTop + el.clientHeight) el.scrollTop = rowBottom - el.clientHeight;
     }
     placeThumb();
-  }, [top.selected, top.screen, items.length, placeThumb]);
+  }, [chosen, top.screen, items.length, placeThumb]);
 
   useKeys(focused, {
     ArrowUp: () => step(-1),
     ArrowDown: () => step(1),
     ArrowLeft: () => press('previous'),
     ArrowRight: () => press('next'),
-    Enter: choose,
     ' ': () => press('play'),
     Escape: () => press('menu'),
     Backspace: () => press('menu')
   });
+  // Return is the centre button: it chooses when let go, and holds when held.
+  useCentreKey(focused, choose, hold);
 
   const offset = lyricOffset(song, music.offsets);
   const line = lyrics.state === 'ready' ? lyrics.lines[lineAt(lyrics.lines, time + offset)]?.text : undefined;
@@ -374,6 +595,15 @@ export default function IPod({ win }: AppProps) {
   const position = queue.indexOf(music.index);
   const album = albumOf(song);
   const title = kind === 'menu' ? (top.screen as { title: string }).title : TITLES[kind];
+  // The rating, in place of the progress bar: Jincheng's, which only Jincheng changes.
+  const showRating = now && rating > 0;
+  const stars = ratingOf(song.id);
+  const refused = ratingRefused();
+  const unsaved = owner && refused?.id === song.id && Date.now() - refused.at < RATING_MS;
+  // What an empty playlist says in place of songs.
+  const menuId = top.screen.kind === 'menu' ? top.screen.id : '';
+  const emptyNote = EMPTY[menuId.startsWith('playlist:') ? 'playlist' : menuId];
+  const empty = emptyNote && !items.some((item) => item.songs && !item.more) ? emptyNote(owner) : null;
 
   return (
     <div className="os-app os-ipod-app">
@@ -396,7 +626,7 @@ export default function IPod({ win }: AppProps) {
           {showVideo && !live && <img className="os-ipod-video-cover" src={coverOf(song)} alt="" />}
 
           {now && (
-            <div className="os-ipod-now" data-show={prefs.show}>
+            <div className="os-ipod-now" data-show={prefs.show} data-flash={flash ? true : undefined}>
               {status === 'offline' && <p className="os-ipod-note">YouTube can’t be reached.</p>}
               {prefs.show === 'artwork' ? (
                 <div className="os-ipod-artwork">
@@ -418,9 +648,16 @@ export default function IPod({ win }: AppProps) {
                     <span>{album ? `${song.artist} — ${song.album}` : song.artist}</span>
                   </p>
                 )}
-                <p className="os-ipod-count">{position >= 0 ? `${position + 1} of ${queue.length}` : ''}</p>
+                <p className="os-ipod-count">
+                  {showRating && (unsaved || !owner) && <span>{unsaved ? 'Couldn’t save the rating' : 'Jincheng’s rating'}</span>}
+                  {position >= 0 ? `${position + 1} of ${queue.length}` : ''}
+                </p>
               </div>
-              {showVolume ? (
+              {showRating ? (
+                <div className="os-ipod-bar os-ipod-rating" role="img" aria-label={`${owner ? 'Your' : 'Jincheng’s'} rating: ${ratingLabel(stars)}`}>
+                  <Stars rating={stars} />
+                </div>
+              ) : showVolume ? (
                 <div className="os-ipod-bar" aria-label={`Volume ${music.volume}`}>
                   <SpeakerLowGlyph />
                   <div className="os-ipod-progress">
@@ -462,8 +699,9 @@ export default function IPod({ win }: AppProps) {
                     <li
                       key={`${i}:${item.label}`}
                       role="option"
-                      aria-selected={i === top.selected}
+                      aria-selected={i === chosen}
                       data-tall={item.cover ? true : undefined}
+                      data-flash={flash && i === chosen ? true : undefined}
                       onClick={() => {
                         setStack((s) => [...s.slice(0, -1), { ...s[s.length - 1], selected: i }]);
                         playSound('click');
@@ -475,48 +713,62 @@ export default function IPod({ win }: AppProps) {
                       {item.number !== undefined && <span className="os-ipod-number">{item.number}</span>}
                       {item.sub ? (
                         <span className="os-ipod-two">
-                          <Marquee text={item.label} run={i === top.selected} />
+                          <Marquee text={item.label} run={i === chosen} />
                           <small>{item.sub}</small>
                         </span>
                       ) : (
-                        <Marquee className="os-ipod-label-text" text={item.label} run={i === top.selected} />
+                        <Marquee className="os-ipod-label-text" text={item.label} run={i === chosen} />
                       )}
                       {item.value && <span className="os-ipod-value">{item.value}</span>}
                       {item.more && <span aria-hidden="true">›</span>}
                     </li>
                   ))}
                 </ul>
+                {empty && <p className="os-ipod-empty">{empty}</p>}
               </div>
               <div className="os-ipod-scrollbar" aria-hidden="true">
                 <span ref={thumb} />
               </div>
+              {note && (
+                <p className="os-ipod-problem" role="alert">
+                  {note.text}
+                </p>
+              )}
             </div>
           )}
 
           {kind === 'coverflow' && <CoverFlow input={setView} start={music.owner ? song.album : undefined} onPlay={playSong} />}
           {kind === 'brick' && <Brick input={setView} />}
           {kind === 'quiz' && <Quiz input={setView} />}
+          {kind === 'save' && <SavePlaylist input={setView} onSaved={saved} onCancel={pop} />}
         </div>
 
-        <Wheel onStep={step} onPress={press} onChoose={choose} />
+        <Wheel onStep={step} onPress={press} onChoose={choose} onHold={hold} />
       </div>
     </div>
   );
 }
 
-/** The click wheel: turn it for steps, press its edges for buttons and its centre to choose. */
+/** The click wheel: turn it for steps, press its edges for buttons and its centre to choose (or hold it). */
 function Wheel({
   onStep,
   onPress,
-  onChoose
+  onChoose,
+  onHold
 }: {
   onStep: (delta: number) => void;
   onPress: (button: 'menu' | 'next' | 'previous' | 'play') => void;
   onChoose: () => void;
+  onHold: () => void;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const drag = useRef<{ last: number; turned: number; pending: number } | null>(null);
   const wheelDelta = useRef(0);
+  // The centre button held down: it holds after HOLD_MS, and then letting go doesn't choose too.
+  const centre = useRef<{ timer: number; held: boolean } | null>(null);
+  const letGo = () => clearTimeout(centre.current?.timer);
+  // Closed while the button is held: nothing goes into On-The-Go afterwards.
+  useEffect(() => () => clearTimeout(centre.current?.timer), []);
 
   const angle = (e: React.PointerEvent) => {
     const r = ref.current!.getBoundingClientRect();
@@ -589,10 +841,76 @@ function Wheel({
       <button
         type="button"
         className="os-ipod-center"
-        aria-label="Select"
-        onPointerDown={(e) => e.stopPropagation()}
-        onClick={onChoose}
+        aria-label="Select (hold to add to On-The-Go)"
+        onPointerDown={(e) => {
+          e.stopPropagation();
+          if (e.button !== 0) return;
+          const press = { held: false, timer: 0 };
+          press.timer = window.setTimeout(() => {
+            press.held = true;
+            onHold();
+          }, HOLD_MS);
+          centre.current = press;
+        }}
+        onPointerUp={letGo}
+        onPointerLeave={letGo}
+        onPointerCancel={letGo}
+        // A long press on a phone would open the browser's own menu.
+        onContextMenu={(e) => e.preventDefault()}
+        onClick={() => {
+          const press = centre.current;
+          centre.current = null;
+          if (!press?.held) onChoose();
+        }}
       />
     </div>
   );
+}
+
+/**
+ * Return as the centre button, while the iPod is in front: a press chooses
+ * when it's let go, and one held for HOLD_MS holds instead. Typing in a
+ * field (the playlist's name) is left alone.
+ */
+function useCentreKey(active: boolean, onChoose: () => void, onHold: () => void) {
+  const latest = useRef({ onChoose, onHold });
+  latest.current = { onChoose, onHold };
+  useEffect(() => {
+    if (!active) return;
+    let timer = 0;
+    let down = false;
+    let held = false;
+    const reset = () => {
+      down = false;
+      clearTimeout(timer);
+    };
+    const onDown = (e: KeyboardEvent) => {
+      if (e.key !== 'Enter' || e.metaKey || e.ctrlKey || e.altKey || useWindows.getState().exposeOpen) return;
+      if ((e.target as HTMLElement).closest?.('input, textarea, select, [contenteditable]')) return;
+      // Not the focused button's own click as well.
+      e.preventDefault();
+      // The key repeating while it's held.
+      if (down) return;
+      down = true;
+      held = false;
+      timer = window.setTimeout(() => {
+        held = true;
+        latest.current.onHold();
+      }, HOLD_MS);
+    };
+    const onUp = (e: KeyboardEvent) => {
+      if (e.key !== 'Enter' || !down) return;
+      reset();
+      if (!held) latest.current.onChoose();
+    };
+    window.addEventListener('keydown', onDown);
+    window.addEventListener('keyup', onUp);
+    window.addEventListener('blur', reset);
+    return () => {
+      reset();
+      window.removeEventListener('keydown', onDown);
+      window.removeEventListener('keyup', onUp);
+      window.removeEventListener('blur', reset);
+    };
+  }, [active]);
 }

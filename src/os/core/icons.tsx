@@ -34,7 +34,7 @@ export const PreferencesIcon = pngIcon('preferences');
 export const IPodIcon = pngIcon('ipod');
 export const KaraokeIcon = pngIcon('karaoke');
 export const DVDPlayerIcon = pngIcon('dvd-player');
-/** A DVD: the disc in the drive, on the desktop. */
+/** A DVD: the disc in DVD Player, the burn sheet and the notice of a new one. */
 export const DiscIcon = pngIcon('dvd');
 export const ChatIcon = pngIcon('chat');
 export const AccountIcon = pngIcon('account');

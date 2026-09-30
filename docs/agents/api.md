@@ -22,6 +22,9 @@ and two Supabase Edge Functions.
   | `song_limit()` | everyone | how many songs the library may hold (read by `/api/songs`) |
   | `now_playing_position()` | everyone | where the song Jincheng is playing is now, by the database's clock |
   | `is_owner()` | everyone | whether the caller is Jincheng, the owner; owner-only policies call it, and the site asks only to decide what to show |
+  | `rate_song(song, rating)` | members (only the owner's is kept) | rates a song one to five stars, or clears it with 0; runs as the caller, under the owner-only policies |
+  | `song_played(song)` | members (only the owner's are counted) | counts a play of a song Jincheng listened to the end, at the database's clock |
+  | `save_playlist(name, songs)` | members (only the owner may) | saves songs into the playlist of that name, making it if there's none; returns its id |
   | `my_reactions()` | members | the member's own Soapbox reactions |
   | `my_recovery_email()`, `set_recovery_email(address)` | members | the member's recovery address |
   | `chat_can_read(room)`, `chat_can_write(room)` | everyone / members | used by chat's row-level security, not called by the site |
@@ -29,9 +32,10 @@ and two Supabase Edge Functions.
 - **Realtime** (`src/os/social/supabase.ts`): `desktop` (presence,
   pointers and short signals such as nudges and AirDrop offers, which
   anyone with the public key can send, so receivers check them),
-  `chat-room` (new and removed chat messages, `postgres_changes`) and
+  `chat-room` (new and removed chat messages, `postgres_changes`),
   `now-playing` (what Jincheng plays, `postgres_changes` on a table only
-  the bot writes).
+  the bot writes) and `discs` (DVD Player's shelf, `postgres_changes` on
+  a table only the owner and the bot write).
 
 ## Vercel Functions (`api/`)
 

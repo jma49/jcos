@@ -1,6 +1,6 @@
 # Handoff: majincheng.com (JM/OS)
 
-State of the project as of 2026-09-28, for picking the work up in a new
+State of the project as of 2026-09-29, for picking the work up in a new
 session: where it runs, how we work, what was decided, and what's open.
 Conventions and a map of the code are in [AGENTS.md](AGENTS.md) and
 [docs/agents/](docs/agents/); what was built when is in the git history.
@@ -31,12 +31,24 @@ Conventions and a map of the code are in [AGENTS.md](AGENTS.md) and
   data.
 - `supabase/schema.sql` describes the full current state for a new
   project; changes to an existing one go in a new file under
-  `supabase/migrations/`, written so it can be rerun, and the owner runs
-  it by hand in the SQL editor. The editor warns about "destructive
-  operations" for `drop policy` / `drop trigger` lines; that's expected.
-- Deploy the Edge Functions from an up-to-date `main`: `supabase
-  functions deploy` uploads the working copy, so deploying from an old
-  branch puts old code live.
+  `supabase/migrations/`, written so it can be rerun. The agent applies
+  it once the pull request has merged, from an up-to-date `main`, with
+  the Supabase CLI (logged in on the owner's Mac; no database password
+  needed, it makes a temporary login role): `supabase db push --dry-run
+  --project-ref hszogpoyyqgwjuznbegd`, then without `--dry-run` (with
+  `--yes`), then `supabase db advisors --linked --project-ref
+  hszogpoyyqgwjuznbegd --type security`. The CLI records each one in the
+  project's migration history, so it never runs one twice. The owner
+  handed this over on 2026-09-29 (before, migrations were pasted into the
+  SQL editor by hand, and the history was then filled in with `supabase
+  migration repair`). The repository's old link file isn't read by CLI
+  2.118, hence `--project-ref`.
+- The agent deploys the Edge Functions too, from an up-to-date `main`:
+  `supabase functions deploy <name> --project-ref hszogpoyyqgwjuznbegd`
+  uploads the working copy, so deploying from an old branch puts old
+  code live. The owner's Claude Code allows `supabase migration repair`,
+  `supabase db push` and `supabase functions deploy`; anything else on
+  the production project (its data, its settings) is still asked first.
 - Free Supabase projects pause after a week without activity; the social
   features then hide themselves until it's resumed.
 - The "Update project previews" workflow runs on macOS once a day and by
@@ -116,9 +128,9 @@ ryOS (AGPL-3.0).
   don't import each other, and the OS reaches apps only through the
   catalog; the lint enforces all of it. Removing an applet keeps what it
   saved.
-- **The music library moves to Supabase** (decided 2026-09-26, not yet
-  built): Jincheng adds songs and plays them for whoever is on the desktop
-  from the Telegram bot. Limits and choices:
+- **The music library is in Supabase** (decided and built 2026-09-26):
+  Jincheng adds songs and plays them for whoever is on the desktop from
+  the Telegram bot. Limits and choices:
   - at most 200 songs, enforced in the database with an advisory lock; a
     full library refuses new songs (the bot says so) rather than dropping
     old ones;
@@ -210,9 +222,9 @@ ryOS (AGPL-3.0).
   framing, so ours doesn't need one. `/api/framing` only reads headers
   and answers yes or no.
 - **JM/OS is a secret base, not a portfolio** (decided 2026-09-29). It's
-  Jincheng's own hideout: features serve him (music, things kept for
-  himself, looking back, idling), not recruiters. Mostly open to
-  visitors, with a few rooms only he can enter, locked by the database.
+  Jincheng's own hideout: features serve Jincheng (music, things kept
+  for later, looking back, idling), not recruiters. Mostly open to
+  visitors, with a few rooms only Jincheng can enter, locked by the database.
   New things are only what existed in Tiger or Leopard, drawn with the
   same styles and the ryOS icon set: an idea board framed for job hunting
   and its invented styles were rejected. From prototypes staged in the
@@ -234,18 +246,63 @@ ryOS (AGPL-3.0).
   is a panel the app draws above the windows while it's in front, not a
   second window, so the window manager didn't change. A disc starts at
   its menu, so Play Movie is the click that starts the sound. Visitors'
-  DVD-Rs never leave their browser. Inserting and ejecting (the slot,
-  the disc on the desktop, the Trash turning into Eject) and starting the
-  shelf's watch cost the first load 0.4 KB: it's at 159.7 of 160 KB now
-  (2026-09-29), so ROADMAP.md item 1 (room on the first load) comes
-  before anything else on the first screen.
+  DVD-Rs never leave their browser. Two of the thirteen were taken out
+  again at Jincheng's word (2026-09-29): the disc on the desktop while
+  it's in the drive, and the Trash turning into Eject as it's dragged.
+  Nothing is added to the desktop; the Controller and ⌘E eject. That
+  gave the first load back 0.3 KB: it's at 159.4 of 160 KB now, so
+  ROADMAP.md item 1 (room on the first load) still comes before anything
+  else on the first screen.
+- **The iPod's ratings and playlists, as Jincheng chose them**
+  (2026-09-29): the Now Playing rating screen, On-The-Go and the smart
+  playlists, from the design board. Where the board left it open:
+  On-The-Go is every visitor's own, Jincheng's included, kept in the
+  browser; Jincheng's has Save Playlist, which makes it one of the
+  playlists everyone sees, named on a screen of its own (a real iPod
+  can't name one; the board asked for "Rainy Days"). The centre button
+  on Now Playing now shows the rating, as the board has it, so artwork
+  or video is chosen in Settings only. Holding the centre button puts
+  a song, an album, an artist or a playlist into On-The-Go, and takes a
+  song out of a playlist that can be changed. A play counts only when
+  Jincheng listens to the end, and visitors see "Jincheng's rating".
+  Plays go through `song_played()`, the one `security definer` function
+  of the three, so no one sets a count or a time; the Security Advisor
+  lists it on purpose. The first load didn't change (159.7 KB).
+- **Jincheng's home folder, as the board had it** (2026-09-29): Users ›
+  jincheng with the folders a Mac's home has, locked to anyone else but
+  for Public and Sites, with Mac OS X's badge and Tiger's alert word for
+  word; signed in as the owner, they open. Where the board left it open:
+  documents open in a TextEdit that saves as it's typed (not Tiger's
+  Save dialog; ⌘S saves at once, and a draft stays in the browser until
+  a save lands), since the database is the only copy; a new document
+  goes into Documents as "Untitled.txt", and Save As renames it or moves
+  it, to Public for everyone to read. The diary is an entry at a time on
+  a day, shown a year to a document ("Diary 2026.rtf"), with today's line
+  at the top. Throwing a document away asks first, since there's no
+  Trash to take it back from. Sites lists the projects' live sites.
+  The first load grew 0.1 KB for TextEdit's manifest (159.5 of 160 KB).
+- **The home folder from Telegram** (2026-09-29): the bot's `/diary
+  <text>` writes a diary entry, on the day it was sent where Jincheng is
+  (the place `/at` set), and `/doc <text>` a document in Documents named
+  after its first line; `/diary` alone says how today looks. Not
+  `/note`, as the roadmap first had it: that's the Soapbox's (a public
+  post, the same as plain text), and a private note mustn't turn public
+  by habit or the other way round. Each keeps the Telegram message it
+  came from (`telegram_message_id`, never granted to the site), so
+  editing the message edits it and a message delivered twice is saved
+  once. A photo sent with either goes nowhere rather than onto the
+  Soapbox.
 - **YouTube's middle button is covered, not shown** (2026-09-29).
-  YouTube's embed now shows its own play/pause button for about 4–5 s
-  after every start, seek and resume, and no setting turns it off. So the
-  iPod, Karaoke and DVD Player keep their artwork (DVD Player: the
-  chapter's frame) over the first 5 s of a video and of every seek, and
-  the rule that YouTube's chrome never shows still holds
-  (docs/agents/pitfalls.md).
+  YouTube's embed now shows its own play/pause button for about 4.3 s
+  after every start, seek and resume, and no setting turns it off. The
+  iPod and Karaoke keep their artwork over the first 5 s of a video and
+  of every seek. DVD Player covered its picture the same way, with the
+  chapter's frame, and Jincheng found the picture stopping at every
+  pause and play "not smooth". Asked to choose, Jincheng picked a picture
+  that never stops: DVD Player keeps it, paused or not, masks only the
+  button with one of its own, and lets YouTube's darkening of the picture
+  show for those seconds, the one exception to "YouTube's chrome never
+  shows" (docs/agents/pitfalls.md).
 - **Considered and left out** (2026-09-26 and 27 audits): a "continue
   playing" prompt for hidden tabs, more reduced-motion fallbacks, a spec
   template for changes, `llms.txt` in robots.txt (no crawler reads it
@@ -266,38 +323,57 @@ ryOS (AGPL-3.0).
 
 ## 4. Current state
 
-**Waiting on Jincheng** (2026-09-29):
-1. Deploy `account-recovery` from an up-to-date `main` (`supabase
-   functions deploy account-recovery`). Until then the old version runs
-   (checked 2026-09-29, after the first deploy), which lets any site's
-   page call it (CORS `*`) and answers other methods with 404; the new
-   one answers CORS for the site's own origins only and other methods
-   with 405 (docs/agents/api.md).
-2. Run `supabase/migrations/20260929100000_owner.sql` in the SQL editor,
-   then the one `insert` in its header with Jincheng's username. Until
-   then nobody is the owner, so the secret base's locked rooms stay shut
-   for Jincheng too.
-3. Run `supabase/migrations/20260929120000_discs.sql` (after the owner
-   migration), then deploy `soapbox-bot` from an up-to-date `main` for
-   `/dvd`. Until the migration runs, `/api/songs` serves the music
-   without a shelf (no error), so DVD Player's Movies folder holds only
-   a visitor's own DVD-Rs. The bot now imports
-   `supabase/functions/_shared/youtube.ts`, which the CLI bundles with it;
-   the deploy also brings `/add` and `/dvd` the better guess for music
-   videos named "Artist 'Song'" (2026-09-29).
+**Waiting on Jincheng**: trying `/diary` and `/doc` in the bot (the
+code is tested with a fake Telegram and database, not yet with the real
+ones).
 
-- Every migration in `supabase/migrations/` has been run, through
-  `20260927100000_now_playing_realtime.sql`. Both Edge Functions are
-  deployed from `main` and work: password reset sends mail, and the
-  whole music loop (`/add`, `/play`, "Listen along", `/stop`) was
-  checked live on 2026-09-27.
-- The Security Advisor shows only the findings kept on purpose, listed
-  in `supabase/migrations/20260926100511_advisor.sql`: `song_limit()`
-  callable by visitors (it returns only the limit), `my_reactions()` and
-  the other member-only helpers callable by members, and leaked password
-  protection (an Auth setting on the Pro plan). Once the owner migration
-  runs, `is_owner()` joins them: callable by everyone, it says only
-  whether the caller is the owner.
+- Every migration in `supabase/migrations/` has run, through
+  `20260929192005_home_from_telegram.sql`, and the project's
+  migration history says so (`supabase migration list --project-ref
+  hszogpoyyqgwjuznbegd`). On 2026-09-29 production's structure was
+  compared with `schema.sql` (columns, policies, functions, triggers,
+  indexes, grants, constraints, Realtime; no rows read): the chat rooms
+  migration had never taken (no rooms or private conversations, so the
+  site showed the Lobby alone, and public chat messages' moderation
+  notices were silently dropped), and the recovery email functions and
+  the hardened `recovery_request()` were missing. `20260926071227`,
+  `…094533`, `…095149` and `…100511` were run again (`migration repair
+  --status reverted`, then `db push --include-all`). Production now
+  matches `schema.sql`, but for comments that only `schema.sql` has in
+  `music_stop()` and `soapbox_add_images()`. Jincheng's account is the owner (the `insert` in
+  the owner migration's header), as Jincheng reported on 2026-09-29;
+  `/api/songs` serving `discs` confirmed the shelf. Both Edge
+  Functions were deployed from `main` that day: `account-recovery`
+  answers CORS for the site's own origins only and other methods with
+  405 (checked). `soapbox-bot` was deployed again by the agent, with
+  `/diary` and `/doc` (2026-09-29). Password reset sends
+  mail, and the whole music loop (`/add`, `/play`, "Listen along",
+  `/stop`) was checked live on 2026-09-27.
+- The Security Advisor (checked with `supabase db advisors` on
+  2026-09-29, after the home folder) shows only the findings kept on
+  purpose, listed in `supabase/migrations/20260926100511_advisor.sql`:
+  `song_limit()` callable by visitors (it returns only the limit),
+  `my_reactions()` and the other member-only helpers callable by
+  members, and leaked password protection (an Auth setting on the Pro
+  plan). `is_owner()` joins them (callable by everyone, it says only
+  whether the caller is the owner), and `song_played()` (callable by
+  members, it counts nothing but the owner's plays). `chat_can_write()`,
+  `my_recovery_email()` and `set_recovery_email()` are there for members
+  too, as `advisor.sql` says; `rules.sql` checks the exact list for
+  visitors and for members. At the info level
+  it lists the tables no role may reach through the API
+  (`private.owners`, `private.password_resets`,
+  `private.recovery_emails`, `private.secrets`, `music_settings`,
+  `soapbox_settings`): row-level security with no policy, on purpose.
+  The performance advisor has nothing at the warning level since
+  `20260929185931_rls_initplan.sql`, which has seven older policies
+  (Stickies, Soapbox reactions, chat) ask `(select auth.uid())` once
+  instead of `auth.uid()` for every row.
+- DVD Player's disc lengths: until 2026-09-29 (#174) a disc put in
+  after another could be given the other's length, which went to
+  `public.discs` when the owner did it. A wrong length is put right the
+  next time the disc goes in with the owner watching (a DVD-R's in its
+  visitor's browser), so nothing needs clearing by hand.
 - Merges to `main` deploy, except those the ignored build step skips
   (only docs, tests, CI, Supabase or tooling). Still unconfirmed: that
   Vercel builds on Node 24; only a deployment's build log shows it (its
@@ -335,9 +411,9 @@ What comes next, in order, is in [ROADMAP.md](ROADMAP.md).
 5. **Not ported from ryOS**, in Chat: @ryo (AI replies, on hold with the
    AI assistant), voice messages, IRC rooms and admins making rooms from
    the app.
-6. **Upkeep in the Supabase dashboard:** run Advisors › Security after
-   each migration, and keep Settings › API › Exposed schemas to `public`
-   (plus `graphql_public` only if GraphQL is used).
+6. **Upkeep on Supabase:** the agent runs `supabase db advisors` after
+   each migration; in the dashboard, keep Settings › API › Exposed
+   schemas to `public` (plus `graphql_public` only if GraphQL is used).
 7. **What CI checks** on every pull request: `npm audit --omit=dev
    --audit-level=high`, the type check, the hooks lint, the unit tests
    (Vitest), the build, a smoke test that opens every app in a browser,

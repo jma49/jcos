@@ -46,16 +46,21 @@ own chrome never shows.
   video with the artwork until `usePlayer`'s `live` is true. `live`
   waits `YOUTUBE_BUTTON_MS` (5 s) after every start, seek and resume,
   because YouTube's embed shows its own play/pause button in the middle
-  of the picture for about 4–5 s then, whatever the player's settings
-  (`revealAfterButton` in `player.ts`; DVD Player uses it too).
+  of the picture for about 4.3 s then, whatever the player's settings
+  (`revealAfterButton` in `player.ts`). DVD Player instead keeps its
+  picture, paused or not, and masks just the middle with a button of its
+  own while YouTube's may be up (`middleControls`), so pausing and
+  playing never stop the picture; YouTube's darkening of the picture
+  during those seconds stays, as Jincheng chose (2026-09-29; the details
+  are in pitfalls.md).
 - `src/os/media/together.ts`: listening along. When Jincheng plays a song
   from Telegram (`/play`), everyone on the desktop gets a notification
   (and so does whoever arrives before it ends); "Listen along" opens the
-  iPod at his place in the song, from `now_playing_position()`, the
+  iPod at Jincheng's place in the song, from `now_playing_position()`, the
   database's clock rather than the visitor's. It waits for that click,
   since browsers don't play sound unasked, and then follows the sound
   switch like all music. The notification goes when the song ends
-  (`remaining_ms`) or when he sends `/stop`.
+  (`remaining_ms`) or when Jincheng sends `/stop`.
 - The iPod's menus scroll natively (a finger, a mouse wheel, a
   trackpad), which leaves the choice where it is; the click wheel and the
   arrow keys move the choice, and the list scrolls just enough to show
@@ -63,7 +68,36 @@ own chrome never shows.
 - `src/os/apps/ipod/`: the iPod's full-screen views (Cover Flow, Brick,
   Music Quiz), which take the wheel through a `ScreenInput`, and the
   `Marquee` used for long titles. The iPod's own settings (theme,
-  backlight, artwork or video) live in `os-ipod`.
+  backlight, artwork or video) live in `os-ipod`. Return is the centre
+  button: it chooses when let go, and holds when held (`useCentreKey`).
+- `src/os/media/playlists.ts` (with `apps/ipod/SavePlaylist.tsx` and
+  `Stars.tsx`): ratings and playlists. Music › Playlists lists
+  On-The-Go, the smart playlists (My Top Rated: four stars and up; Recently
+  Played: played to the end in the last two weeks, 25 at most; Top 25
+  Most Played) and Jincheng's own playlists, by name. Ratings, plays and
+  playlists are Jincheng's, in the database (`song_stats`, `playlists`,
+  `playlist_songs`; [supabase.md](supabase.md)), and every iPod shows
+  them: `useListeningRefresh()` reads them when the iPod opens and when
+  the tab comes back, at most every 30 s, and drops a read that started
+  before a change made on the page. On Now Playing the centre button
+  shows the rating in place of the progress bar, for four seconds after
+  the last touch. Signed in as the owner, the wheel changes it; it's
+  saved once the wheel has rested (`SAVE_RATING_AFTER_MS`, 0.8 s), one
+  save after another, and put back if the database refuses it. Anyone
+  else sees "Jincheng's rating", and the wheel is the volume again. A
+  play counts when Jincheng listens to a song to the end (`countPlay()`,
+  called by `player.ts` when YouTube says the video ended); no one
+  else's count. Holding the centre button (`HOLD_MS`, 0.6 s) puts the
+  song, album, artist or playlist chosen (the song playing, on Now
+  Playing) into On-The-Go, and its row flashes; in a playlist that can
+  be changed (On-The-Go, and Jincheng's own when signed in as the owner)
+  it takes the song out instead. On-The-Go is each visitor's own, in
+  `os-ipod-on-the-go` (their other tabs share it; 500 songs at most).
+  Jincheng's has Save Playlist, which saves it for everyone under a name
+  ("New Playlist 1" to start; the name of a playlist that's there adds
+  the songs to it) and then empties it, and Jincheng's playlists have
+  Delete Playlist. Settings › Now Playing switches between the artwork
+  and the video.
 - `src/os/shell/DesktopLyrics.tsx`: the lyrics floating over the desktop,
   two lines (the one being sung fills as Karaoke's does, via `lineFill()`
   in `lyrics.ts`), off until the visitor turns them on (the iPod's
@@ -92,18 +126,31 @@ own chrome never shows.
   with `supabase/functions/_shared/youtube.ts`, as the bot does, and
   YouTube's oEmbed from the browser; the four pictures are asked for with
   HEAD, nothing downloaded. Opening a disc slides it into the drive and
-  opens DVD Player (desktop.md); Eject (the Controller, ⌘E, or the disc
-  dropped on the Dock's Trash) slides it out: a video is four chapters of equal
+  opens DVD Player (desktop.md); Eject (the Controller or ⌘E) slides it
+  out. Opening the disc already in the drive only brings DVD Player
+  forward, and what's playing plays on (Jincheng's disc and a visitor's
+  DVD-R of the same video are two discs); a different disc opened while
+  one slides in goes in after it. DVD Player shows the disc as the shelf
+  has it now, so one relabelled while it's in shows its new name.
+  Nothing goes on the desktop: no disc icon while it plays. A video is four chapters of equal
   length, pictured by YouTube's own frames. DVD Player has its own
   player, made as the disc goes in and cued so Play Movie starts inside
   the click; it follows the one sound switch and the music's volume,
   and shares the speakers with the iPod and Karaoke: playing a disc
   pauses the music, and music starting (or Listen along) pauses the
-  disc. A disc's length is learned as it plays and kept (a DVD-R's in
-  the browser, one of Jincheng's in the database when the owner watches it).
+  disc. When YouTube can't be reached, or won't play the video, Play
+  does nothing and a note says why; a player not ready 8 s after Play
+  isn't claimed to be playing. A disc's length is learned as it plays and kept (a DVD-R's in
+  the browser, one of Jincheng's in the database when the owner watches
+  it, once it's known the owner is watching), and put right if it's off
+  by more than YouTube’s rounding: until 2026-09-29 a disc put in after
+  another could be given the other's length, as DVD Player's clock
+  still held it for a moment. The clock is now the insertion's own.
   When Jincheng burns a disc, whoever is on the desktop gets a notice
   with Play DVD, as for a song played for everyone (`media/discWatch.ts`,
-  over Realtime; the page that burned it isn't told).
+  over Realtime; the page that burned it isn't told). A change Realtime
+  brings counts as a write: a shelf read already under way is dropped,
+  so it can't put the old shelf back.
 - The iTunes Artwork screen saver (`Artwork` in `shell/savers.tsx`, the
   arithmetic in `shell/artwork.ts`) turns the library's covers over on
   a wall. Not being an app with a manifest, it calls `loadLibrary()`

@@ -24,6 +24,10 @@ advisory lock (Security, below).
 | `music_settings` | the bot; visitors only through `song_limit()` | Jincheng, in the Table editor | |
 | `now_playing` | everyone, while the song plays | the bot, through `music_play()` and `music_stop()` | one song |
 | `discs` (DVD Player's shelf) | everyone | Jincheng: the bot's `/dvd`, or the site signed in as the owner | `music_settings.disc_limit` discs (200) |
+| `song_stats` (the iPod's ratings and plays) | everyone | Jincheng, signed in: ratings through `rate_song()`, plays only through `song_played()` | a row per song in the library |
+| `playlists`, `playlist_songs` (Jincheng's playlists) | everyone | Jincheng, signed in: `save_playlist()`, and deletes | `music_settings.playlist_limit` playlists (50); a song once per playlist |
+| `documents` (Jincheng's home folder) | everyone, those in Public; the rest, the owner | Jincheng, signed in | `music_settings.document_limit` documents (500), 100,000 characters each |
+| `diary` (Jincheng's diary) | the owner | Jincheng, signed in | `music_settings.diary_limit` entries (10,000), 20,000 characters each |
 | `private.recovery_emails`, `private.password_resets`, `private.secrets` | not reachable through the API | account functions and the database | resets: 3 per account and 3 per address an hour, 60 an hour in all; a link lasts 30 minutes |
 | `private.owners` | not reachable through the API; `is_owner()` tells the caller whether they're in it | Jincheng, once, in the SQL editor | Jincheng's account |
 | `soapbox` storage bucket | everyone | the bot | images only, 10 MB each |
@@ -96,6 +100,43 @@ The code that isn't in the browser (each endpoint's parameters, answers and conv
   new disc brings a notice with Play DVD, except on the page that burned
   it. Visitors' own discs (DVD-Rs) stay in their browser and never reach
   the database.
+- **The iPod's ratings and playlists** (`public.song_stats`,
+  `public.playlists`, `public.playlist_songs`; migration
+  `20260929140000_playlists.sql`): Jincheng's rating of each song (one to
+  five stars), how many times Jincheng has listened to it to the end and
+  when, and Jincheng's own playlists, which every iPod shows. Everyone
+  reads them (the iPod asks Supabase itself, not `/api/songs`, so a
+  change shows at once); only the owner writes. `rate_song()` and
+  `save_playlist()` run as the caller, so the owner-only policies decide;
+  `song_played()` is `security definer`, because no one may set a count
+  or a time directly, and asks `is_owner()` before anything else. A song
+  that leaves the library leaves every playlist, and its rating and
+  plays go (foreign keys). At most `music_settings.playlist_limit`
+  playlists (50), counted under an advisory lock; songs saved into a
+  playlist that's there pass even at the limit. A name is one line of at
+  most 40 characters, never one of the iPod's own (On-The-Go, My Top
+  Rated, Recently Played, Top 25 Most Played). A visitor's On-The-Go
+  stays in their browser ([media.md](media.md)).
+- **Jincheng's home folder** (`public.documents`, `public.diary`;
+  migration `20260929160000_home.sql`): Jincheng's documents, each in one
+  of the home's folders, and the diary, an entry at a time on a day.
+  Row-level security gives everyone the documents in Public and nothing
+  else; the rest, and the diary, only the owner reads, and only the owner
+  writes anything (the diary isn't even granted to visitors). A name is
+  one line of at most 80 characters, with no slash or colon, not hidden,
+  and unique in its folder whatever its case. Every save names the
+  `version` it was made from (`update … where id = … and version = …`);
+  a trigger counts saves and stamps the time, so a save from an older
+  copy reaches no row and is refused, and races can't lose one
+  (`race.sh`: four saves from one copy at once, one lands). At most
+  `music_settings.document_limit` documents (500) and `diary_limit`
+  entries (10,000), counted under advisory locks. Finder and TextEdit use
+  it through `home/home.ts` ([desktop.md](desktop.md)). The bot writes
+  entries and documents too (`/diary`, `/doc`, with the service role;
+  `20260929192005_home_from_telegram.sql`), each with the Telegram
+  message it came from in `telegram_message_id` (unique, and not granted
+  to the site), so an edited message edits it and a redelivered one is
+  saved once.
 - **Chat** (`apps/chat/`, `social/chatState.ts`): public rooms listed
   in `public.chat_rooms` (add one in the Table editor) and private
   conversations between two members (rooms named
@@ -132,7 +173,9 @@ for both Production and Preview. The names the Supabase integration for
 Vercel uses, `NEXT_PUBLIC_SUPABASE_URL` and
 `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, work as well. A project set up from
 an older schema needs the files in `supabase/migrations/`, run in the
-order of their timestamped names. Test a migration against the live project inside `begin; …
+order of their timestamped names: `supabase db push` runs the ones the
+project's migration history hasn't recorded (HANDOFF.md §1 has the
+commands for this project). Test a migration against the live project inside `begin; …
 rollback;` first (`supabase db query --linked -f`).
 
 Without those variables, production hides these features, and `astro dev`
@@ -153,10 +196,15 @@ browser.
   functions get `execute` revoked from all three (triggers still fire:
   the right is only checked when a trigger is created). A function that
   only reads what its caller may read anyway is `security invoker`.
-- Policies check something real: no `with check (true)`. Run Supabase's
-  Advisors › Security after each migration; the findings left on purpose
-  are listed in `supabase/migrations/20260926100511_advisor.sql` and
-  `20260929100000_owner.sql`.
+- A policy asks who the caller is with `(select auth.uid())` (and
+  `(select public.is_owner())`), worked out once per statement; a bare
+  `auth.uid()` is asked again for every row (the performance advisor's
+  auth_rls_initplan). `rules.sql` checks every policy.
+- Policies check something real: no `with check (true)`. Run the
+  Security Advisor after each migration (`supabase db advisors --linked
+  --type security`); the findings left on purpose
+  are listed in `supabase/migrations/20260926100511_advisor.sql`,
+  `20260929100000_owner.sql` and `20260929140000_playlists.sql`.
 - A limit that counts rows before inserting ("three a day") takes a
   transaction-scoped advisory lock for whoever it limits first
   (`pg_advisory_xact_lock`), or concurrent requests all get through.

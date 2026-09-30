@@ -1,13 +1,11 @@
 import { useEffect, useRef, useState, type ComponentType } from 'react';
 import { apps, launch, launcherApps, mobileDockApps, rectOf } from '../core/registry';
-import { DiscIcon, DiskIcon, DocumentIcon } from '../core/icons';
+import { DiskIcon, DocumentIcon } from '../core/icons';
 import { MENU_BAR_HEIGHT, isPhone, useWindows, type IconPositions } from '../core/store';
 import type { AppId } from '../core/types';
 
 // The icons down the right of the desktop: a double-click (a tap on a
-// phone) opens them, and they can be dragged anywhere. A disc in DVD
-// Player's drive is there too, under Macintosh HD; dragging it turns the
-// Dock's Trash into Eject, and dropping it there ejects it.
+// phone) opens them, and they can be dragged anywhere.
 
 interface Shortcut {
   id: string;
@@ -24,10 +22,8 @@ export function DesktopIcons() {
   // The desktop keeps a few things, as a tidy Mac's does; everything else
   // is in the Dock, Finder's Applications folder and Spotlight. A phone's
   // home screen has no Finder, so it lists every app, as iOS does.
-  const disc = useWindows((s) => s.disc);
   const shortcuts: Shortcut[] = [
     { id: 'hd', label: 'Macintosh HD', Icon: DiskIcon, open: (el) => openApp('finder', el, { props: { path: '/' } }) },
-    ...(disc && !isPhone() ? [{ id: 'disc', label: disc.title, Icon: DiscIcon, open: (el: HTMLElement) => openApp('dvdplayer', el) }] : []),
     { id: 'about', label: 'About Me', Icon: apps.about.Icon, open: (el) => openApp('about', el) },
     {
       id: 'resume',
@@ -75,41 +71,22 @@ export function DesktopIcons() {
     let layout: IconPositions | null = null;
     dragged.current = false;
 
-    // A disc can be carried down to the Dock, where the Trash is Eject.
-    const disc = id === 'disc';
-    const grid = !useWindows.getState().iconPositions;
-    const lowest = (bottom: number) => window.innerHeight - rect.height - bottom;
     const onMove = (ev: PointerEvent) => {
       const dx = ev.clientX - start.x;
       const dy = ev.clientY - start.y;
       if (!layout && Math.hypot(dx, dy) < 4) return;
       layout ??= { ...snapshot(), ...useWindows.getState().iconPositions };
       dragged.current = true;
-      if (disc && !useWindows.getState().ejecting) useWindows.setState({ ejecting: true });
       // Keep the icon on the desktop: below the menu bar, above the Dock.
-      const top = Math.min(lowest(disc ? 0 : 80), Math.max(MENU_BAR_HEIGHT + 4, rect.top + dy));
+      const top = Math.min(window.innerHeight - rect.height - 80, Math.max(MENU_BAR_HEIGHT + 4, rect.top + dy));
       const right = Math.min(window.innerWidth - rect.width, Math.max(0, window.innerWidth - rect.right - dx));
       layout = { ...layout, [id]: { top, right } };
       useWindows.getState().setIconPositions(layout);
     };
-    const onUp = (ev: PointerEvent) => {
+    const onUp = () => {
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerup', onUp);
       window.removeEventListener('pointercancel', onUp);
-      if (!disc || !layout) return;
-      const eject = document.querySelector('[data-dock-trash]')?.getBoundingClientRect();
-      const over = ev.type === 'pointerup' && eject && ev.clientX >= eject.left && ev.clientX <= eject.right && ev.clientY >= eject.top && ev.clientY <= eject.bottom;
-      const { iconPositions, setIconPositions } = useWindows.getState();
-      if (over) {
-        // Out of the drive; icons that were in their column before go back to it.
-        if (grid) setIconPositions(null);
-        void import('../media/drive').then((drive) => drive.ejectDisc());
-        return;
-      }
-      useWindows.setState({ ejecting: false });
-      // Left on the desktop: back above the Dock.
-      const at = iconPositions?.disc;
-      if (at) setIconPositions({ ...iconPositions, disc: { ...at, top: Math.min(at.top, lowest(80)) } });
     };
     window.addEventListener('pointermove', onMove);
     window.addEventListener('pointerup', onUp);
