@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import type { IconComponent } from '../core/icons';
+import { useWindows } from '../core/store';
 
 // An app's alert, as Tiger drew one: the app's icon on the left, what
 // happened beside it, and OK (with Cancel, and perhaps a third choice,
@@ -33,11 +34,11 @@ export function Alert({
   latest.current = { onConfirm, onCancel };
 
   useEffect(() => {
-    // Only while its window is in front: one that comes up behind (a save
-    // refused after its window was left) waits there, and what's typed in
-    // the window in front, Return too, is that window's.
+    // Only while its window is in front, and not in Exposé: one that comes
+    // up behind (a save refused after its window was left) waits there, and
+    // what's typed in the window in front, Return too, is that window's.
     const win = ok.current?.closest('.os-window');
-    const front = () => !win || win.getAttribute('data-focused') === 'true';
+    const front = () => !useWindows.getState().exposeOpen && (!win || win.getAttribute('data-focused') === 'true');
     if (front()) ok.current?.focus();
     const onKey = (e: KeyboardEvent) => {
       if ((e.key !== 'Enter' && e.key !== 'Escape') || !front()) return;

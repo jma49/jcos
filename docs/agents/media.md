@@ -142,7 +142,10 @@ own chrome never shows.
   does nothing and a note says why; a player not ready 8 s after Play
   isn't claimed to be playing. A disc's length is learned as it plays and kept (a DVD-R's in
   the browser, one of Jincheng's in the database when the owner watches
-  it, once it's known the owner is watching).
+  it, once it's known the owner is watching), and put right if it's off
+  by more than YouTube’s rounding: until 2026-09-29 a disc put in after
+  another could be given the other's length, as DVD Player's clock
+  still held it for a moment. The clock is now the insertion's own.
   When Jincheng burns a disc, whoever is on the desktop gets a notice
   with Play DVD, as for a song played for everyone (`media/discWatch.ts`,
   over Realtime; the page that burned it isn't told). A change Realtime
