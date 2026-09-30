@@ -76,8 +76,10 @@ Conventions and a map of the code are in [AGENTS.md](AGENTS.md) and
   GitHub CI stays the gate meanwhile). Only `main` deploys now
   (`git.deploymentEnabled` in vercel.json), so a pull request spends no
   deployment until it merges, and `scripts/vercel-ignore.sh` (the
-  `ignoreCommand`) skips `main`'s build when only docs, tests, CI,
-  Supabase or tooling changed. On a busy day, batch merges.
+  `ignoreCommand`) skips `main`'s build when only docs, tests, CI, the
+  database, the Edge Functions' own folders or tooling changed
+  (`supabase/functions/_shared` is bundled into the site, so it builds:
+  #209). On a busy day, batch merges.
 
 The icons, fonts (Lucida Grande, Apple Garamond, Monaco) and the stones
 wallpaper are copied from ryOS. Using them was a deliberate choice after
@@ -468,7 +470,8 @@ ones).
   next time the disc goes in with the owner watching (a DVD-R's in its
   visitor's browser), so nothing needs clearing by hand.
 - Merges to `main` deploy, except those the ignored build step skips
-  (only docs, tests, CI, Supabase or tooling). Still unconfirmed: that
+  (only docs, tests, CI, the database, the Edge Functions' own folders
+  or tooling). Still unconfirmed: that
   Vercel builds on Node 24; only a deployment's build log shows it (its
   first lines).
 - Only `main` is left; every other branch is deleted.
@@ -523,7 +526,8 @@ architecture (#210, #217).
    each migration; in the dashboard, keep Settings › API › Exposed
    schemas to `public` (plus `graphql_public` only if GraphQL is used).
 7. **What CI checks** on every pull request: `npm audit --omit=dev
-   --audit-level=high`, the type check, the hooks lint, the unit tests
+   --audit-level=high`, the type check, the lint (hooks, the app
+   boundaries, storage), the unit tests
    (Vitest), the build, a smoke test that opens every app in a browser,
    the download budgets of `npm run perf`, and `npm run test:db` (the
    database rules and races against the per-member limits, on Postgres

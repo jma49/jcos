@@ -2,7 +2,9 @@
 // by the Telegram bot (soapbox-bot's /add and /dvd) and the site (DVD
 // Player's Burn, src/os/media/discs.ts), so both read a link and name a
 // video the same way. Plain TypeScript with no imports, as Deno and the
-// site's bundler both take it.
+// site's bundler both take it. Since the site bundles this folder, a
+// change here deploys the site (scripts/vercel-ignore.sh), as well as
+// going out with the bot's next deploy.
 
 /** A YouTube video id: 11 letters, digits, dashes or underscores. */
 export const VIDEO_ID = /^[A-Za-z0-9_-]{11}$/;

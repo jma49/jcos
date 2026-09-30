@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 # Vercel's Ignored Build Step ("ignoreCommand" in vercel.json): exit 0
 # skips the deployment, 1 builds it. The Hobby plan caps builds a day, and
-# a change that only touches docs, tests, CI, the Supabase side or tooling
-# looks the same once deployed, so it doesn't spend one. Whenever this
-# can't tell what changed, it builds.
+# a change that only touches docs, tests, CI, the database, the Edge
+# Functions or tooling looks the same once deployed, so it doesn't spend
+# one. Whenever this can't tell what changed, it builds: what's left out
+# is named path by path, so a new path builds until it's listed here.
 #
 # Try it: scripts/vercel-ignore.sh <base commit> [<head commit>]
 
@@ -25,13 +26,20 @@ if [ -z "$base" ] || ! git cat-file -e "$base^{commit}" 2>/dev/null; then
   exit 1
 fi
 
-# Everything the site is built from, which is everything but these.
+# Everything the site is built from, which is everything but these. Under
+# supabase/, only the database and the functions' own folders are left
+# out: the site bundles supabase/functions/_shared (src/os/media/discs.ts),
+# so a change there deploys.
 changed=$(git diff --name-only "$base" "$head" -- . \
   ':(exclude)docs' \
   ':(exclude)tests' \
   ':(exclude,glob)**/*.test.ts' \
   ':(exclude).github' \
-  ':(exclude)supabase' \
+  ':(exclude)supabase/migrations' \
+  ':(exclude)supabase/tests' \
+  ':(exclude)supabase/schema.sql' \
+  ':(exclude)supabase/functions/account-recovery' \
+  ':(exclude)supabase/functions/soapbox-bot' \
   ':(exclude)scripts' \
   ':(exclude,glob)*.md' \
   ':(exclude)LICENSE' \
@@ -45,7 +53,7 @@ changed=$(git diff --name-only "$base" "$head" -- . \
 }
 
 if [ -z "$changed" ]; then
-  echo "Only docs, tests, CI or tooling changed since ${base:0:7}: skipping the build."
+  echo "Only docs, tests, CI, the backend or tooling changed since ${base:0:7}: skipping the build."
   exit 0
 fi
 

@@ -1,6 +1,7 @@
 # JM/OS: majincheng.com
 
-Jincheng Ma's portfolio, as a Mac OS X Aqua desktop in the browser. It's
+Jincheng Ma's own place on the web, a Mac OS X Aqua desktop in the
+browser: a hideout rather than a portfolio (HANDOFF.md, decisions). It's
 live at **[www.majincheng.com](https://www.majincheng.com)**.
 
 Projects, the résumé, photos and posts open as windows on the desktop.
@@ -70,8 +71,9 @@ Copy `.env.example` to `.env`. Every value is optional.
 | `PUBLIC_SUPABASE_URL`, `PUBLIC_SUPABASE_ANON_KEY` | accounts, Chat, Stickies, presence, Soapbox |
 | `UNSPLASH_ACCESS_KEY` | fetching the latest photos at build time |
 
-Set the same variables in Vercel, for Production and Preview. Server-side
-secrets never go in `.env` or Vercel. They live in Supabase as Edge
+Set the same variables in Vercel, for Production (only `main` deploys, so
+there are no previews: `git.deploymentEnabled` in `vercel.json`).
+Server-side secrets never go in `.env` or Vercel. They live in Supabase as Edge
 Function secrets:
 - the Telegram bot token, for the Soapbox bot;
 - `RESEND_API_KEY`, for the account-recovery function.
@@ -93,13 +95,14 @@ Function secrets:
 ## Layout
 
 ```
-src/os/            the desktop: core/ shell/ apps/ applets/ kit/ ambient/ look/ media/ social/ styles/
+src/os/            the desktop: core/ shell/ files/ home/ stickies/ apps/ applets/ kit/ ambient/ look/ media/ social/ styles/
+src/lib/           what the pages, the desktop and api/ share: the media library's shape, photos, projects
 src/pages/         the home page, project pages, robots.txt, llms.txt
 src/content/       projects (Markdown, one file per language) and their covers
 src/i18n/          the site's copy (English; the Chinese copy is kept for later)
 src/data/          songs, desktop pictures, the photo snapshot
 api/               Vercel Functions: geo, lyrics, songs, framing (docs/agents/api.md)
-tests/api/         the Vercel Functions' unit tests (not in api/, or Vercel would deploy them)
+tests/             the Vercel Functions' unit tests (api/; not in api/, or Vercel would deploy them) and the lint's probes
 supabase/          schema, migrations, Edge Functions, database tests
 scripts/           preview capture, photo refresh, favicon and portrait builders, bot setup
 public/os/         icons, fonts and desktop pictures (from ryOS, see NOTICE)
@@ -156,8 +159,8 @@ significant change goes through.
 | --- | --- |
 | `npm run check` | Type-checks the site (`astro check`). CI runs it on every pull request. |
 | `npm run preview:capture` | Screenshots project pages into their covers, and the home page into `public/og.png`. A workflow runs it once a day. |
-| `bash scripts/vercel-ignore.sh <base>` | Vercel's ignored build step: says whether a deployment would be skipped (only docs, tests, CI or tooling changed since `<base>`). |
-| `npm run lint` | Checks the rules of React hooks and effects' dependencies (ESLint, hooks rules only). CI runs it on every pull request. |
+| `bash scripts/vercel-ignore.sh <base>` | Vercel's ignored build step: says whether a deployment would be skipped (nothing the site is built from changed since `<base>`: only docs, tests, CI, the database, the Edge Functions' own folders or tooling). |
+| `npm run lint` | Checks the rules of React hooks and effects' dependencies, the boundaries between the OS, apps and applets (`import()` included), and that anything remembered in the browser goes through `src/os/core/storage.ts` (ESLint; `tests/eslint.test.ts` probes each rule). CI runs it on every pull request. |
 | `npm run perf` | Measures a production build against the performance budgets (see `docs/agents/performance.md`). |
 | `npm run photos:update` | Refreshes `src/data/photos.json` from Unsplash. |
 | `npm run songs:snapshot` | Saves the music library from Supabase to `src/data/songs.json`, the fallback. |

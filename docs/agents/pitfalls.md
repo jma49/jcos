@@ -50,7 +50,10 @@ again.
   - `drop … if exists` before `create policy` and `create trigger`;
   - `on conflict` for seed rows.
 
-  `run.sh` reruns the latest migrations over the schema to prove it.
+  `run.sh` reruns every migration from `20260926071227` on over the
+  schema to prove it: it loops over the folder, so a new file is covered
+  without being listed (it used to name them by hand, and seven of forty
+  commits edited the list).
 - Counting rows before an insert is not a limit under concurrency. Six
   notes sent at once all got through a "three a day" check. Take
   `pg_advisory_xact_lock` first (see [supabase.md](supabase.md#security)).
@@ -288,6 +291,22 @@ again.
   matching the same file sets the same rule; it doesn't merge them. A
   block for manifests silently lifted the applet rule from applets'
   manifests. Use a different rule, or keep the file sets apart.
+- ESLint's `no-restricted-imports` looks only at import and export
+  declarations, and `import()` is how the desktop loads almost
+  everything: a dynamic import across a boundary passed the lint until
+  #208. `eslint.config.js` holds `import()` to the same patterns with a
+  local rule (`local/no-restricted-dynamic-imports`). The OS block also
+  listed its folders by name, and `home/` and `stickies/` went unguarded
+  through three merged pull requests; it covers `src/os/**` now and names
+  what it leaves out. `tests/eslint.test.ts` probes each rule with a
+  snippet that fails without it: a new rule gets one.
+- A rule that lives only in prose isn't kept. AGENTS.md said everything
+  remembered in the browser goes through `core/storage.ts`, and iCal
+  read and wrote `localStorage` itself (#206): another tab didn't follow
+  a change, and a blocked storage wasn't handled. The lint refuses
+  `localStorage` and `sessionStorage` outside `storage.ts` now; the one
+  per-tab value (the boot screen's `os-booted`) has `loadForTab` and
+  `saveForTab` there.
 - There's no Prettier config. Don't reformat whole files; it buries the
   change in the diff.
 - Wrapping a big JSX tree reindents all of it. Wrap through a small
@@ -304,6 +323,12 @@ again.
   its merge undeployed. Branches don't deploy any more
   (`git.deploymentEnabled`: only `main`); a `*` pattern wouldn't have
   matched `fix/…` names, since it stops at `/`, hence `**`.
+- `vercel-ignore.sh` left out all of `supabase/` as backend-only, while
+  the site bundles `supabase/functions/_shared/youtube.ts` (DVD Player's
+  Burn sheet): a fix there (8daa72f) reached the bot and skipped the
+  site's build, silently (#209). What's left out is named path by path
+  now, so a new path builds until it's listed, and a file the site
+  bundles says so in its header.
 - A guess made to get a check green went wrong: CI's perf counted the
   Dashboard (161 KB against 160) and the pointer was moved away before
   loading, which CI's Chromium ignored. Listing when each file was asked
