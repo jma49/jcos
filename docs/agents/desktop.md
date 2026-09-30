@@ -202,9 +202,13 @@ only `kit/`. The lint enforces all three.
   theme and appearance, Spotlight, Dashboard, Exposé, the screensaver
   and its settings, the visitor's place and the chosen desktop picture.
 - Open windows survive a reload (`src/os/core/windowSession.ts`, saved in
-  `os-windows`); `?open=` wins. A first visit gets the Welcome window
-  alone, centred (`os-welcomed`); otherwise the desktop starts clear.
-  Nothing opens About by itself.
+  `os-windows`); `openSession()` puts them back and then opens what a
+  `?open=` link names on top of them, once: `open` leaves the address as
+  it's handled (`history.replaceState` in `core/deepLink.ts`), so a reload
+  brings the session back, the link's target among it, rather than the
+  target alone (#189). With neither a session nor a link, a first visit
+  gets the Welcome window alone, centred (`os-welcomed`); otherwise the
+  desktop starts clear. Nothing opens About by itself.
 - `src/os/shell/Expose.tsx`: the Exposé grid (F9, the bottom-left hot
   corner or View → Exposé). Windows animate to their slot in place, so
   iframes don't reload. While it's open it has the keys, before any
@@ -390,9 +394,13 @@ only `kit/`. The lint enforces all three.
   read; Sites, the projects' live sites as Internet locations that open
   in the Browser. The documents come from the database (`home/home.ts`,
   [supabase.md](supabase.md)), which gives anyone else only Public's,
-  read when a folder under Users shows (at most every 30 s). Move to
-  Trash on one of the owner's documents asks first ("will be deleted
-  immediately"), since there's no Trash to take it back from.
+  read when a folder under Users shows (at most every 30 s, again when
+  the tab comes back, and at once when another tab of the owner's saves
+  or deletes something: `useHomeRefresh`, told over the `os-home`
+  BroadcastChannel, as stickies and iCal are; a tab showing nothing of
+  the home reads again the next time it does). Move to Trash on one of
+  the owner's documents asks first ("will be deleted immediately"),
+  since there's no Trash to take it back from.
 - `src/os/apps/textedit/`: TextEdit, in Applications. A white page for
   one of Jincheng's documents (`DocumentPage.tsx`), or a year of the
   diary (`DiaryPage.tsx`): the days newest first under their dates in
@@ -401,15 +409,20 @@ only `kit/`. The lint enforces all three.
   writes; anyone else can only read a document in Public. What's typed
   is saved once the typing rests for a second, at once with ⌘S, and when
   the window closes (`useAutosave.ts`), and kept as a draft in the
-  browser until it is, so a closed tab loses nothing. A save names the
-  version it was typed over, so one from an older copy is refused and
-  the alert offers Revert or Save Anyway. File › New (⌥N; the browser
+  browser until it is, so a closed tab loses nothing: a draft found as a
+  page opens (a document's, a new document's, a diary entry's) is saved
+  again then, as a sticky's is (#190). A save names the version it was
+  typed over, so one from an older copy, a restored draft's included, is
+  refused and the alert offers Revert or Save Anyway. File › New (⌥N; the browser
   keeps ⌘N) starts a document that goes into Documents as "Untitled.txt"
   once something is typed; Save As (⇧⌘S, `SaveAsSheet.tsx`) renames it
   or moves it to another folder, Public included. An emptied diary entry
-  is taken out when it's left. Entries and documents also come from
-  Telegram (the bot's `/diary` and `/doc`); they show on the next read of
-  the home folder (at most 30 s, or when the tab comes back).
+  is taken out when it's left. A save or a delete in one of the owner's
+  tabs reaches the pages open in the others at once (`os-home`, above);
+  a page with unsaved typing keeps it, and its next save meets the
+  conflict alert. Entries and documents also come from Telegram (the
+  bot's `/diary` and `/doc`); they show on the next read of the home
+  folder (at most 30 s, or when the tab comes back).
 - `src/os/shell/Alert.tsx` (with `alert.css`, which an app's stylesheet
   imports): an app's alert as Tiger drew one, the app's icon beside the
   message, with OK, Cancel and a third choice, Return and Escape. It
@@ -508,7 +521,10 @@ only `kit/`. The lint enforces all three.
 ## Links, the tab title and the Chinese site
 
 - Deep links: `/?open=<app|project-slug|dashboard|screensaver>` opens that
-  window.
+  window over the saved session, once; the address loses `open` (and a
+  reset link's token) as it's handled, so a reload doesn't open it again
+  (`core/deepLink.ts`). An applet not installed opens its store page, and
+  Time Machine takes the screen, as from anywhere else (`launch()`).
 - The home page's browser tab says "Jincheng" (`tabTitle` in
   `Layout.astro`); link previews keep the full title.
 - The Chinese site is offline for now: `/zh/*` redirects to the English

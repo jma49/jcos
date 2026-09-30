@@ -14,6 +14,7 @@ import {
   saveEntry,
   today,
   useHome,
+  useHomeRefresh,
   type DiaryEntry
 } from '../../home/home';
 import { Alert } from '../../shell/Alert';
@@ -58,6 +59,8 @@ export function DiaryPage({ win, year, owner }: { win: WindowState; year: number
       live = false;
     };
   }, [owner]);
+  // And while it's open: an entry written in another tab reaches this page.
+  useHomeRefresh(true, owner);
 
   useEffect(() => {
     useWindows.getState().setTitle(win.id, `Diary ${year}.rtf`);
@@ -222,6 +225,14 @@ function EntryEditor({
       }
     }
   });
+
+  // A draft from before (a closed tab, a dropped connection) is saved again, once, as the page opens.
+  const opened = useRef(false);
+  useEffect(() => {
+    if (opened.current) return;
+    opened.current = true;
+    if (dirty) saver.soon();
+  }, [dirty, saver]);
 
   return (
     <textarea

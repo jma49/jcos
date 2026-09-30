@@ -1,14 +1,17 @@
 // Open windows survive a reload: where they were, how big, minimized or
 // zoomed, in what order, and what they showed (a project, a folder). Saved
-// as they change; put back when the desktop starts, unless a link asks for
-// something else (?open=).
+// as they change; put back when the desktop starts, with whatever a link
+// asks for (?open=, deepLink.ts) opened on top of them.
 
-import { apps } from './registry';
-import { loadJSON, saveJSON } from './storage';
+import { openFromUrl } from './deepLink';
+import { apps, launch } from './registry';
+import { load, loadJSON, save, saveJSON } from './storage';
 import { DOCK_CLEARANCE, MENU_BAR_HEIGHT, isPhone, placement, useWindows } from './store';
-import type { WindowState } from './types';
+import type { OSData, WindowState } from './types';
 
 const KEY = 'os-windows';
+/** Set once the first visit's welcome has been shown. */
+const WELCOMED_KEY = 'os-welcomed';
 
 interface Saved {
   windows: WindowState[];
@@ -45,6 +48,21 @@ export function restoreWindows(): boolean {
   if (!windows.length || !saved) return false;
   useWindows.getState().restore(windows.map(fit), saved.order);
   return true;
+}
+
+/**
+ * What's on screen as the desktop comes up: the windows of the last visit,
+ * then what the link asks for (?open=) on top of them, so a reload brings
+ * both back (the link is handled once: deepLink.ts). With neither, the
+ * very first visit gets the welcome alone, in the middle; otherwise the
+ * desktop starts clear, the way a Mac does.
+ */
+export function openSession(data: OSData) {
+  const restored = restoreWindows();
+  const opened = openFromUrl(data);
+  if (restored || opened || load(WELCOMED_KEY)) return;
+  save(WELCOMED_KEY, '1');
+  launch('welcome', { center: true });
 }
 
 let watching = false;

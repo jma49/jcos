@@ -3,12 +3,30 @@ import type { DiaryEntry, Home, HomeDocument } from '../social/types';
 
 // Jincheng's home folder (home.ts): how the diary reads, names for new
 // documents, what a visitor is left with, reads that can't undo a save,
-// and drafts shared by the owner's tabs.
+// the owner's other tabs told of a change, and drafts shared by them.
 
 const backend = vi.hoisted(() => ({ social: null as null | Record<string, (...args: never[]) => unknown> }));
 vi.mock('../social/social', () => ({ getSocial: async () => backend.social }));
 
 const stored = new Map<string, string>();
+
+/** The browser's BroadcastChannel: a message reaches every other channel of the same name, after a moment. */
+class FakeChannel {
+  static open: FakeChannel[] = [];
+  static posted: unknown[] = [];
+  onmessage: ((e: { data: unknown }) => void) | null = null;
+  constructor(public name: string) {
+    FakeChannel.open.push(this);
+  }
+  postMessage(data: unknown) {
+    FakeChannel.posted.push(data);
+    for (const other of FakeChannel.open) {
+      if (other !== this && other.name === this.name) queueMicrotask(() => other.onmessage?.({ data }));
+    }
+  }
+}
+/** Lets posted messages arrive. */
+const delivered = () => new Promise((resolve) => setTimeout(resolve, 0));
 
 const doc = (id: string, folder: HomeDocument['folder'], name: string, body = ''): HomeDocument => ({
   id,
@@ -47,6 +65,8 @@ const load = async () => {
 beforeEach(() => {
   stored.clear();
   backend.social = null;
+  FakeChannel.open = [];
+  FakeChannel.posted = [];
   vi.stubGlobal('window', {
     localStorage: {
       getItem: (key: string) => stored.get(key) ?? null,
@@ -56,6 +76,8 @@ beforeEach(() => {
     addEventListener: () => {},
     removeEventListener: () => {}
   });
+  vi.stubGlobal('document', { visibilityState: 'visible', addEventListener: () => {}, removeEventListener: () => {} });
+  vi.stubGlobal('BroadcastChannel', FakeChannel);
 });
 
 afterEach(() => vi.unstubAllGlobals());
@@ -152,6 +174,49 @@ describe('reading', () => {
     await h.readHome(true);
     expect(h.homeNow().documents).toEqual([]);
     await expect(h.saveDocument({ folder: 'documents', name: 'x.txt', body: '' })).rejects.toThrow(/database/);
+  });
+});
+
+describe('the owner’s other tabs', () => {
+  const home: Home = { documents: [doc('d', 'documents', 'Things to remember.txt')], diary: [entry('e', '2026-09-28', 't')] };
+
+  test('are told of every save and delete, and of no read', async () => {
+    database(home);
+    const h = await load();
+    await h.readHome(true);
+    await h.readHome(true, { now: true });
+    expect(FakeChannel.posted).toEqual([]);
+    await h.saveDocument({ id: 'd', version: 1, folder: 'documents', name: 'Things to remember.txt', body: 'Chalk.' });
+    await h.deleteDocument('d');
+    await h.saveEntry({ day: '2026-09-29', body: 'Sent it.' });
+    await h.deleteEntry('e');
+    expect(FakeChannel.posted).toHaveLength(4);
+  });
+
+  test('a tab showing the home folder reads it again at once; one that isn’t, the next time something shows it', async () => {
+    const { answer, social } = database(home);
+    // Three tabs: A saves; B shows the home folder (Finder, TextEdit); C read it once and shows nothing now.
+    const a = await load();
+    const b = await load();
+    const c = await load();
+    await Promise.all([a.readHome(true), b.readHome(true), c.readHome(true)]);
+    const stop = b.watchHome(true);
+    expect(social.home).toHaveBeenCalledTimes(3);
+    answer.home.documents[0] = { ...answer.home.documents[0], body: 'Chalk.', version: 2 };
+    await a.saveDocument({ id: 'd', version: 1, folder: 'documents', name: 'Things to remember.txt', body: 'Chalk.' });
+    await delivered();
+    await vi.waitFor(() => expect(b.homeNow().documents[0].body).toBe('Chalk.'));
+    expect(social.home).toHaveBeenCalledTimes(4);
+    // C didn't ask for it, but its copy is stale now: showing it reads again, within the 30 s a read stands otherwise.
+    expect(c.homeNow().documents[0].body).toBe('');
+    await c.readHome(true);
+    expect(social.home).toHaveBeenCalledTimes(5);
+    expect(c.homeNow().documents[0].body).toBe('Chalk.');
+    // Once B shows nothing, it's left alone.
+    stop();
+    await a.saveEntry({ day: '2026-09-29', body: 'Sent it.' });
+    await delivered();
+    expect(social.home).toHaveBeenCalledTimes(5);
   });
 });
 
