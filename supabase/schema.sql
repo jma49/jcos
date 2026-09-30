@@ -1782,3 +1782,9 @@ create policy "Members can take their messages back"
   using (user_id = (select auth.uid()));
 
 notify pgrst, 'reload schema';
+
+-- ---------------------------------------------------------------------
+-- chat_can_write() is for members only (the same as
+-- supabase/migrations/20260929191409_chat_can_write_members.sql, whose header explains it).
+
+revoke execute on function public.chat_can_write(text) from anon;

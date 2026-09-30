@@ -316,11 +316,19 @@ ryOS (AGPL-3.0).
 **Waiting on Jincheng**: nothing.
 
 - Every migration in `supabase/migrations/` has run, through
-  `20260929185931_rls_initplan.sql`, and the project's migration history
-  says so (`supabase migration list --project-ref hszogpoyyqgwjuznbegd`):
-  playlists, the home folder and the policies' `(select auth.uid())`
-  were pushed with the CLI on 2026-09-29, the rest had been run by hand
-  and were recorded with `supabase migration repair`. Jincheng's account is the owner (the `insert` in
+  `20260929191409_chat_can_write_members.sql`, and the project's
+  migration history says so (`supabase migration list --project-ref
+  hszogpoyyqgwjuznbegd`). On 2026-09-29 production's structure was
+  compared with `schema.sql` (columns, policies, functions, triggers,
+  indexes, grants, constraints, Realtime; no rows read): the chat rooms
+  migration had never taken (no rooms or private conversations, so the
+  site showed the Lobby alone, and public chat messages' moderation
+  notices were silently dropped), and the recovery email functions and
+  the hardened `recovery_request()` were missing. `20260926071227`,
+  `…094533`, `…095149` and `…100511` were run again (`migration repair
+  --status reverted`, then `db push --include-all`). Production now
+  matches `schema.sql`, but for comments that only `schema.sql` has in
+  `music_stop()` and `soapbox_add_images()`. Jincheng's account is the owner (the `insert` in
   the owner migration's header), as Jincheng reported on 2026-09-29;
   `/api/songs` serving `discs` confirmed the shelf. Both Edge
   Functions were deployed from `main` that day: `account-recovery`
@@ -336,7 +344,10 @@ ryOS (AGPL-3.0).
   members, and leaked password protection (an Auth setting on the Pro
   plan). `is_owner()` joins them (callable by everyone, it says only
   whether the caller is the owner), and `song_played()` (callable by
-  members, it counts nothing but the owner's plays). At the info level
+  members, it counts nothing but the owner's plays). `chat_can_write()`,
+  `my_recovery_email()` and `set_recovery_email()` are there for members
+  too, as `advisor.sql` says; `rules.sql` checks the exact list for
+  visitors and for members. At the info level
   it lists the tables no role may reach through the API
   (`private.owners`, `private.password_resets`,
   `private.recovery_emails`, `private.secrets`, `music_settings`,
