@@ -280,8 +280,18 @@ ryOS (AGPL-3.0).
   a day, shown a year to a document ("Diary 2026.rtf"), with today's line
   at the top. Throwing a document away asks first, since there's no
   Trash to take it back from. Sites lists the projects' live sites.
-  Sending diary entries and notes from Telegram comes next, in the bot.
   The first load grew 0.1 KB for TextEdit's manifest (159.5 of 160 KB).
+- **The home folder from Telegram** (2026-09-29): the bot's `/diary
+  <text>` writes a diary entry, on the day it was sent where Jincheng is
+  (the place `/at` set), and `/doc <text>` a document in Documents named
+  after its first line; `/diary` alone says how today looks. Not
+  `/note`, as the roadmap first had it: that's the Soapbox's (a public
+  post, the same as plain text), and a private note mustn't turn public
+  by habit or the other way round. Each keeps the Telegram message it
+  came from (`telegram_message_id`, never granted to the site), so
+  editing the message edits it and a message delivered twice is saved
+  once. A photo sent with either goes nowhere rather than onto the
+  Soapbox.
 - **YouTube's middle button is covered, not shown** (2026-09-29).
   YouTube's embed now shows its own play/pause button for about 4.3 s
   after every start, seek and resume, and no setting turns it off. The
@@ -313,10 +323,12 @@ ryOS (AGPL-3.0).
 
 ## 4. Current state
 
-**Waiting on Jincheng**: nothing.
+**Waiting on Jincheng**: trying `/diary` and `/doc` in the bot (the
+code is tested with a fake Telegram and database, not yet with the real
+ones).
 
 - Every migration in `supabase/migrations/` has run, through
-  `20260929191409_chat_can_write_members.sql`, and the project's
+  `20260929192005_home_from_telegram.sql`, and the project's
   migration history says so (`supabase migration list --project-ref
   hszogpoyyqgwjuznbegd`). On 2026-09-29 production's structure was
   compared with `schema.sql` (columns, policies, functions, triggers,
@@ -333,7 +345,8 @@ ryOS (AGPL-3.0).
   `/api/songs` serving `discs` confirmed the shelf. Both Edge
   Functions were deployed from `main` that day: `account-recovery`
   answers CORS for the site's own origins only and other methods with
-  405 (checked), and `soapbox-bot` has `/dvd`. Password reset sends
+  405 (checked). `soapbox-bot` was deployed again by the agent, with
+  `/diary` and `/doc` (2026-09-29). Password reset sends
   mail, and the whole music loop (`/add`, `/play`, "Listen along",
   `/stop`) was checked live on 2026-09-27.
 - The Security Advisor (checked with `supabase db advisors` on
