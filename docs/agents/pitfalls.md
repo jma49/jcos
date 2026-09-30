@@ -123,10 +123,19 @@ again.
 - Motion's `useReducedMotion()` only knows the device. Use
   `useReduceMotion()` from `core/system.ts`, which honours System
   Preferences.
-- A keyboard handler must check that its window is the front one.
-  Photos' lightbox and Pinball once took keys meant for other windows.
-  Pinball's restart moved from N to F2 so typing elsewhere can't
-  trigger it.
+- A keyboard handler must check that its window is the front one, and
+  whose the key is. Photos' viewer took the arrows and Escape from other
+  windows until #188 (2026-09-30): this entry had recorded that as
+  fixed while the check had never been in the code, so read the code,
+  not the pitfall, before trusting a fix. Pinball once did the same, and
+  its restart moved from N to F2 so typing elsewhere can't trigger it.
+  Until #186 every window-level handler also took Return and Space from
+  a focused control outside its window (a Dock icon, the menu bar, a
+  window's close box), so a keyboard user couldn't open an app from the
+  Dock while Finder had a selection, and ⌥ shortcuts fired while typing
+  in a field (#187). Listen while `useFocusedId() === win.id`, ask
+  `ownsKey(e)` (`core/useKeys.ts`) before taking a key, and prefer
+  `useKeys`, which asks it for you.
 - Release pointer capture on `pointerup` and `pointercancel`. Pinball's
   flippers stuck otherwise.
 - Anything kept in window `props` is saved in `os-windows` and survives

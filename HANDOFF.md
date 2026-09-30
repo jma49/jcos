@@ -384,6 +384,13 @@ ryOS (AGPL-3.0).
   for a personal site, a table, a public write path with abuse limits
   and a bot change aren't worth it. Each window's error boundary keeps a
   crash to that window; crashes only show in the visitor's console.
+- **Whose a key is** (2026-09-30, #186–#188): an app's window-level
+  keys apply with focus on the page itself or inside its window; a
+  focused control anywhere else (a Dock icon, the menu bar, a window's
+  close box) keeps its own Return, Space and arrows, and in a text
+  field ⌥ with a key types rather than running a shortcut. The rule is
+  `ownsKey` in `core/useKeys.ts` (docs/agents/desktop.md, Windows and
+  the shell).
 - No link back to a classic site; Chinese is on hold.
 - Don't change ocra for now; it will be redesigned.
 - The "Ask me" AI assistant is on hold.
@@ -477,9 +484,10 @@ What comes next, in order, is in [ROADMAP.md](ROADMAP.md).
    one; receivers act only on well-formed ones, which carry nothing but
    names and Macintosh HD paths. Proper identity would need Realtime
    Authorization and server-checked presence.
-4. **The first load** is 150 of its 160 KB budget (149.6, 2026-09-29,
-   after room was made on it and Time Machine and Job Hunt came), 67 of it
-   react-dom. What else could move:
+4. **The first load** is 150 of its 160 KB budget (150.2, 2026-09-30:
+   149.6 after room was made on it and Time Machine and Job Hunt came,
+   plus `core/useKeys.ts`, 0.5 KB, now shared with the desktop's
+   shortcuts), 67 of it react-dom. What else could move:
    Exposé's overlay (1.1 KB), the context menu (0.8) and the ⌥Tab
    switcher's panel (0.6), each making its first use in the first
    seconds wait for its code, and chat's watch, split from the Dock's

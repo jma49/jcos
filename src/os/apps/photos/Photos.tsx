@@ -2,8 +2,9 @@ import { useEffect, useEffectEvent, useMemo, useRef, useState, type CSSPropertie
 import { BackGlyph, ForwardGlyph } from '../../core/glyphs';
 import { useOSData } from '../../core/context';
 import type { AppProps } from '../../core/registry';
-import { DOCK_CLEARANCE, MENU_BAR_HEIGHT, isPhone, useWindows } from '../../core/store';
+import { DOCK_CLEARANCE, MENU_BAR_HEIGHT, isPhone, useFocusedId, useWindows } from '../../core/store';
 import type { OSPhoto, WindowState } from '../../core/types';
+import { useKeys } from '../../core/useKeys';
 import { Drawer } from '../../shell/drawer';
 import { shareViaAirDrop } from '../../social/airdrop';
 
@@ -124,17 +125,14 @@ export default function Photos({ win }: AppProps) {
 
   const step = (delta: number) => setOpen((i) => (i === null ? i : (i + delta + photos.length) % photos.length));
 
-  const onKey = useEffectEvent((e: KeyboardEvent) => {
-    if (e.key === 'ArrowRight') step(1);
-    else if (e.key === 'ArrowLeft') step(-1);
-    else if (e.key === 'Escape') backToLibrary();
+  // The viewer's keys, only while Photos is the front window: the arrows
+  // and Escape pressed in another window are that window's.
+  const front = useFocusedId() === win.id;
+  useKeys(front && open !== null, {
+    ArrowRight: () => step(1),
+    ArrowLeft: () => step(-1),
+    Escape: backToLibrary
   });
-  useEffect(() => {
-    if (open === null) return;
-    const listener = (e: KeyboardEvent) => onKey(e);
-    window.addEventListener('keydown', listener);
-    return () => window.removeEventListener('keydown', listener);
-  }, [open]);
 
   if (photos.length === 0) {
     return (
