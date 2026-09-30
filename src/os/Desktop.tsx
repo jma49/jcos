@@ -7,7 +7,8 @@ import { DashboardLayer } from './shell/DashboardLayer';
 import { DesktopLyricsLayer } from './shell/DesktopLyricsLayer';
 import { DesktopStickiesLayer } from './shell/DesktopStickiesLayer';
 import { Window } from './shell/Window';
-import { Expose, exposeLayout } from './shell/Expose';
+import { Expose } from './shell/Expose';
+import { exposeLayout } from './shell/exposeLayout';
 import { Screensaver } from './shell/Screensaver';
 import { FullScreenLayer } from './shell/FullScreenLayer';
 import { AppSwitcher } from './shell/AppSwitcher';
@@ -26,7 +27,7 @@ import { watchWindows } from './core/sound';
 import { OSDataContext } from './core/context';
 import { openSession, saveWindowsAsTheyChange } from './core/windowSession';
 import { loadForTab, saveForTab } from './core/storage';
-import { isPhone, useFocusedId, useWindows } from './core/store';
+import { isPhone, useFocusedId, useWindows, watchViewport } from './core/store';
 import type { OSData } from './core/types';
 import { useReduceMotion, useSystem } from './core/system';
 import { NightShift } from './shell/NightShift';
@@ -58,6 +59,8 @@ function Shell({ data }: { data: OSData }) {
 
   useEffect(watchWindows, []);
   useEffect(saveWindowsAsTheyChange, []);
+  // A resize or a rotation fits every window to the browser again (core/store.ts).
+  useEffect(watchViewport, []);
   // Whether someone's signed in (the social backend loads on its own, after the desktop).
   useEffect(startAccount, []);
   // What isn't on the first screen waits until the desktop has settled
@@ -210,11 +213,12 @@ function PresenceLayer() {
 function WindowLayer() {
   const windows = useWindows((s) => s.windows);
   const order = useWindows((s) => s.order);
-  const exposeOpen = useWindows((s) => s.exposeOpen);
+  // The browser's size while Exposé is open, so its grid follows a resize; null while it's closed.
+  const exposeIn = useWindows((s) => (s.exposeOpen ? s.viewport : null));
   const focusedId = useFocusedId();
 
   // Exposé only has something to show while a window is open.
-  const layout = exposeOpen ? exposeLayout(Object.values(windows)) : null;
+  const layout = exposeIn ? exposeLayout(Object.values(windows), exposeIn) : null;
   const exposeEmpty = layout !== null && Object.keys(layout).length === 0;
   useEffect(() => {
     if (exposeEmpty) useWindows.getState().setExpose(false);

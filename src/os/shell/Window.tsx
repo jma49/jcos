@@ -11,8 +11,7 @@ import {
 } from 'react';
 import { cubicBezier, m } from 'motion/react';
 import { appComponent, apps } from '../core/registry';
-import { DOCK_CLEARANCE, MENU_BAR_HEIGHT, isPhone, useWindows } from '../core/store';
-import { frameOf } from './Expose';
+import { MENU_BAR_HEIGHT, phoneFrame, useWindows, zoomedFrame } from '../core/store';
 import { GENIE_REACH, genieMap, genieSupported } from './genie';
 import { DrawerSlot } from './drawer';
 import { AppBoundary } from './AppBoundary';
@@ -141,7 +140,11 @@ export const Window = memo(function Window({ win, focused, z, exposed }: Props) 
   const [App] = useState(() => appComponent(win.app));
   const reduced = useReduceMotion();
   const start = useRef(win);
-  const isMobile = isPhone();
+  const isMobile = useWindows((s) => s.phone);
+  // Zoomed windows and a phone's apps take their frame from the browser's
+  // size, and follow it (watchViewport in the store); a window with a
+  // frame of its own doesn't select it, so a resize doesn't render it.
+  const viewport = useWindows((s) => (win.maximized || s.phone ? s.viewport : null));
 
   // A thrown window glides on, slows down and bounces off the screen edges.
   const glide = useRef(0);
@@ -227,22 +230,16 @@ export const Window = memo(function Window({ win, focused, z, exposed }: Props) 
     className: `os-resize os-resize-${dir}`
   });
 
-  // Maximized windows fill the desktop between the menu bar and the Dock.
-  const frame =
-    win.maximized || isMobile
-      ? {
-          left: isMobile ? 0 : 8,
-          top: MENU_BAR_HEIGHT + (isMobile ? 0 : 8),
-          width: isMobile ? window.innerWidth : window.innerWidth - 16,
-          height: window.innerHeight - MENU_BAR_HEIGHT - (isMobile ? 0 : DOCK_CLEARANCE)
-        }
-      : { left: win.x, top: win.y, width: win.width, height: win.height };
+  // Where the window is: its own place, a phone's screen, or the desktop between the menu bar and the Dock.
+  const rect: Rect = !viewport
+    ? { x: win.x, y: win.y, width: win.width, height: win.height }
+    : isMobile
+      ? phoneFrame(viewport)
+      : zoomedFrame(viewport);
 
   const dockTarget = () =>
     document.querySelector(`[data-dock-app="${win.app}"]`)?.getBoundingClientRect() ??
     document.querySelector('[data-dock-minimized]')?.getBoundingClientRect();
-
-  const rect = isMobile ? { x: frame.left, y: frame.top, width: frame.width, height: frame.height } : frameOf(win);
 
   // Genie: from the moment the window minimizes until it has fully come back.
   const [genie, setGenie] = useState<{ neck: number; dx: number; dy: number } | null>(null);
@@ -300,7 +297,10 @@ export const Window = memo(function Window({ win, focused, z, exposed }: Props) 
       data-exposed={exposed ? true : undefined}
       className="os-window"
       style={{
-        ...frame,
+        left: rect.x,
+        top: rect.y,
+        width: rect.width,
+        height: rect.height,
         zIndex: z,
         pointerEvents: win.minimized ? 'none' : undefined,
         // Genie pours the window out of its bottom edge, above the Dock icon.

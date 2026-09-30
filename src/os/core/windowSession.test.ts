@@ -99,6 +99,24 @@ describe('restoreWindows', () => {
     expect(restored).toMatchObject({ x: 0, y: store.MENU_BAR_HEIGHT });
     expect(restored.origin).toBeUndefined();
   });
+
+  test('on a phone, every window comes back full screen, and the store knows the screen', () => {
+    Object.assign(window, { innerWidth: 390, innerHeight: 664, matchMedia: () => ({ matches: true }) });
+    try {
+      put([win('a', 'about'), win('t', 'terminal', { x: 900, y: 600, width: 300, height: 200 })], ['a', 't']);
+      session.restoreWindows();
+      const { windows, viewport, phone } = store.useWindows.getState();
+      expect(Object.values(windows).map(({ x, y, width, height }) => ({ x, y, width, height }))).toEqual([
+        { x: 0, y: 22, width: 390, height: 642 },
+        { x: 0, y: 22, width: 390, height: 642 }
+      ]);
+      expect(viewport).toEqual({ width: 390, height: 664 });
+      expect(phone).toBe(true);
+    } finally {
+      Object.assign(window, { innerWidth: 1280, innerHeight: 800, matchMedia: () => ({ matches: false }) });
+      store.useWindows.getState().fitToViewport();
+    }
+  });
 });
 
 describe('what isn’t put back', () => {
