@@ -216,15 +216,20 @@ The code that isn't in the browser (each endpoint's parameters, answers and conv
 
 To set it up, create a Supabase project, run the schema in its SQL editor,
 turn off "Confirm email", and set `PUBLIC_SUPABASE_URL` and
-`PUBLIC_SUPABASE_ANON_KEY` (see `.env.example`) in Vercel and in `.env`,
-for both Production and Preview. The names the Supabase integration for
+`PUBLIC_SUPABASE_ANON_KEY` (see `.env.example`) in Vercel (for
+Production: only `main` deploys, so there are no previews) and in `.env`.
+The names the Supabase integration for
 Vercel uses, `NEXT_PUBLIC_SUPABASE_URL` and
 `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, work as well. A project set up from
 an older schema needs the files in `supabase/migrations/`, run in the
 order of their timestamped names: `supabase db push` runs the ones the
 project's migration history hasn't recorded (HANDOFF.md §1 has the
 commands for this project). Test a migration against the live project inside `begin; …
-rollback;` first (`supabase db query --linked -f`).
+rollback;` first (`supabase db query --linked -f`). A migration must run
+twice without harm ([pitfalls.md](pitfalls.md)): `npm run test:db` reruns
+every one from `20260926071227` on over the full schema
+(`supabase/tests/run.sh` loops over the folder, so a new file is covered
+without being listed).
 
 Without those variables, production hides these features, and `astro dev`
 falls back to `src/os/social/local.ts`, which keeps accounts, notes and

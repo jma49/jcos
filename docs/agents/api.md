@@ -102,6 +102,14 @@ nothing of the page (the body is cancelled unread).
   s-maxage=300`) or redirects too many times (`public, s-maxage=3600`);
   logged.
 
+Under `astro dev` there are no functions: Vite takes the Browser's
+`/api/framing?url=…` for a module request (a path with no extension) and
+answers with `api/framing.ts` transformed, as JavaScript, which the
+Browser can't read as an answer, so it tries the frame anyway. Should
+Vite fail to transform the file, its error overlay comes up in every
+open tab of the dev server. To try the Browser as Vercel runs it, build
+and `npm run serve`, which runs the functions too.
+
 ## Edge Functions (`supabase/functions/`)
 
 ### `account-recovery` (POST)

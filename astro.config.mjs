@@ -15,7 +15,7 @@ export default defineConfig({
   vite: {
     plugins: [tailwindcss()],
     // NEXT_PUBLIC_ too: the Supabase integration for Vercel names its
-    // variables for Next.js (see src/os/social.ts).
+    // variables for Next.js (see src/os/social/social.ts).
     envPrefix: ['PUBLIC_', 'NEXT_PUBLIC_'],
     // The commit being built, for About This Mac. Vercel sets it; local builds say "dev".
     define: {
