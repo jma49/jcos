@@ -3,7 +3,7 @@
 - **Budgets** (checked by `npm run perf`; see [self-audit.md](self-audit.md)) for a first visit,
   meaning what's requested in the first seven seconds, before the
   desktop settles and fetches ahead:
-  - at most 160 KB of JavaScript, gzipped (150 today; react-dom alone
+  - at most 160 KB of JavaScript, gzipped (152 today; react-dom alone
     is 67), and 20 KB of CSS (16 today);
   - at most 1.1 MB of images and 250 KB of fonts;
   - nothing downloaded twice.
@@ -70,7 +70,10 @@
 
   Time Machine took 0.5 KB of it the same day: its manifest, every
   app's `added` date and the full-screen layer (`shell/FullScreenLayer.tsx`);
-  its own code loads as it opens.
+  its own code loads as it opens. Keyboard focus took 1.1 KB on
+  2026-10-03 (#193–#195): `core/focus.ts` in the store's chunk, and the
+  context menu's keys (`shell/menuKeys.ts`) with the menu, which the
+  Dock already brought into the first load.
 - **Read the chunk list `npm run perf` prints** after adding a dynamic
   import. Rolldown puts the modules that the same entries reach in one
   chunk, so a module loaded later that reaches some of a first-load

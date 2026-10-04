@@ -269,8 +269,8 @@ guarded from its first file; `tests/eslint.test.ts` probes each rule.
   took it closes. Spotlight, the Dashboard and a full-screen app note
   what had focus in the store's action that opens them (`setSpotlight`,
   `setDashboard`, `openFullScreen`), before anything of theirs mounts,
-  and their layers call `releaseFocus()` as they close; an alert notes
-  it as it renders. It comes back a frame later
+  and their layers call `releaseFocus()` as they close; an alert and a
+  context menu note it as they render. It comes back a frame later
   (after the key that closed it has been handled everywhere, so no app
   takes that key too), and only if focus is on the page itself or still
   in what closed: focus put somewhere else meanwhile stays. When what
@@ -294,7 +294,19 @@ guarded from its first file; `tests/eslint.test.ts` probes each rule.
   in `Window.tsx`.
 - `src/os/core/notices.ts` and `shell/Notices.tsx`: Growl-style
   notifications (chat mentions, AirDrop offers). `shell/ContextMenu.tsx`
-  is the right-click menu the desktop, the Dock and Finder share.
+  is the right-click menu the desktop, the Dock, Finder, Stickies and
+  iCal share. Shift+F10 or the context-menu key opens the focused
+  thing's (`openContextMenu` in `shell/menuKeys.ts`, from
+  `useShortcuts`: the same `contextmenu` event a right-click sends, from
+  the middle of what has focus, so every place with a menu has it; on
+  the page itself with no window in front, the desktop's; a text field
+  keeps the browser's). Focus goes into the menu as it opens: its first
+  item when the keyboard opened it, the menu itself when the pointer
+  did, so ↓ starts at the top. ↑ ↓ Home and End move through what can
+  be chosen (`menuStep`, as the menu bar's arrows go round); Escape and
+  Tab close it and give focus back to what opened it, as a command does
+  unless it put focus somewhere itself. The desktop icons have no menu
+  of their own.
 - The menu bar's menus after File come from the front window: the iPod
   and Karaoke's Controls, and any app's own, which it sets with
   `setMenus(win.id, menus)` in the store while it's open (Chess's Game
