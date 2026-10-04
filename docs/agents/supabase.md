@@ -228,27 +228,48 @@ The code that isn't in the browser (each endpoint's parameters, answers and conv
   owner on Telegram through `pg_net`, signed with a secret in
   `private.secrets`, with Hide / Show again buttons; `/watch on|off`.
 
-To set it up, create a Supabase project, run the schema in its SQL editor,
-turn off "Confirm email", and set `PUBLIC_SUPABASE_URL` and
+To set it up, create a Supabase project, apply the migrations
+(`supabase link --project-ref <ref>`, then `supabase db push`), turn off
+"Confirm email", and set `PUBLIC_SUPABASE_URL` and
 `PUBLIC_SUPABASE_ANON_KEY` (see `.env.example`) in Vercel (for
 Production: only `main` deploys, so there are no previews) and in `.env`.
 The names the Supabase integration for
 Vercel uses, `NEXT_PUBLIC_SUPABASE_URL` and
-`NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, work as well. A project set up from
-an older schema needs the files in `supabase/migrations/`, run in the
-order of their timestamped names: `supabase db push` runs the ones the
-project's migration history hasn't recorded (the commands for the live
-project are in the private operating notes, `../jmos-ops/HANDOFF.md`
-§1). Test a migration against the live project inside `begin; …
-rollback;` first (`supabase db query --linked -f`). A migration must run
-twice without harm ([pitfalls.md](pitfalls.md)): `npm run test:db` reruns
-every one from `20260926071227` on over the full schema
-(`supabase/tests/run.sh` loops over the folder, so a new file is covered
-without being listed). It dumps the structure (`pg_dump --schema-only`)
-before and after, and fails on any difference, so a change made in a
-migration and not in `schema.sql` (a function's body, a policy, a
-grant) is caught; a column only one side adds isn't, since `create
-table if not exists` hides it.
+`NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, work as well.
+
+The migrations are the one source of the schema
+([decision 0020](../decisions/0020-the-migrations-are-the-schema.md)).
+`20260925084925_baseline.sql` makes the first tables, and every later
+file changes the database in the order of their names; `supabase db
+push` runs the ones the project's migration history hasn't recorded (the
+commands for the live project are in the private operating notes,
+`../jmos-ops/HANDOFF.md` §1). Make a new one with `supabase migration new
+<what_it_does>` (a local file named by the time), never by hand.
+`supabase/schema.sql` is generated from them for reading (`npm run
+db:generate`; don't edit it): the whole structure in one file, without
+the rows the migrations seed. The same command writes
+`src/lib/database.types.ts` (`supabase gen types` of the public schema,
+formatted by oxfmt), which types the site's client
+(`createClient<Database>`), Job Hunt's and the music library's rows: a
+column a migration renames or retypes fails `npm run check` where it's
+read. The types know a column's type, not its check or its trigger, so
+a text column a check holds to a few values (a folder, a colour) is
+narrowed where it's read, and an insert whose column a trigger fills
+(`soapbox_reactions.visitor`) says so. Test a migration against the
+live project inside `begin; … rollback;` first (`supabase db query
+--linked -f`).
+
+`npm run test:db` (`supabase/tests/run.sh`) applies every migration in
+order to an empty database, as a new project gets them, and fails if
+`schema.sql` or the types aren't what they make. It loads the committed
+`schema.sql` and a fresh one and compares `pg_dump --schema-only` of
+both, so another pg_dump's wording isn't a failure; the types are
+compared as text, made with the Supabase CLI version CI pins (`run.sh`
+says which).
+A migration must also run twice without harm ([pitfalls.md](pitfalls.md)):
+the script reruns every one from `20260926071227` on over the result and
+fails on any change. It loops over the folder, so a new file is covered
+without being listed.
 
 Without those variables, production hides these features, and `astro dev`
 falls back to `src/os/social/local.ts`, which keeps accounts, notes and

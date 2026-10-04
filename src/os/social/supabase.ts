@@ -3,6 +3,7 @@
 // security, presence and live chat through Realtime.
 
 import { createClient, type PostgrestError, type User } from '@supabase/supabase-js';
+import type { Database, Tables, TablesInsert } from '../../lib/database.types';
 import { discOf, SONG_COLUMNS, songOf, type Disc } from '../../lib/library';
 import { playlistNameProblem } from './playlistNames';
 import { supabaseJobs } from './jobs';
@@ -17,9 +18,9 @@ import {
   SocialError,
   USERNAME,
   type Account,
+  type CalendarName,
   type ChatHandlers,
   type ChatMessage,
-  type ChatRoom,
   type DiaryEntry,
   type HomeDocument,
   type HomeFolder,
@@ -61,45 +62,26 @@ const discRow = (d: Partial<Disc>) => ({
 /** A write only the owner may make, from anyone else: row-level security refuses it (42501). */
 const notOwner = (what = 'the discs everyone sees') => new SocialError('failed', `Only Jincheng can change ${what}.`);
 
-interface StatsRow {
-  song_id: string;
-  rating: number | null;
-  plays: number;
-  played_at: string | null;
-}
+// Rows are typed by the generated types (src/lib/database.types.ts), with
+// the columns read. Those know a column's type but not its check: a text
+// column the table holds to a few values (a folder, a colour, a calendar)
+// is a string there, and is narrowed here to what the check allows.
 
-interface PlaylistRow {
-  id: number;
-  name: string;
-  playlist_songs: { song_id: string }[] | null;
-}
+type StatsRow = Pick<Tables<'song_stats'>, 'song_id' | 'rating' | 'plays' | 'played_at'>;
+
+type PlaylistRow = Pick<Tables<'playlists'>, 'id' | 'name'> & { playlist_songs: Pick<Tables<'playlist_songs'>, 'song_id'>[] | null };
 
 /** The columns of a document and of a diary entry, as the owner (or, in Public, anyone) reads them. */
 const DOCUMENT_COLUMNS = 'id,folder,name,body,version,created_at,updated_at';
 const ENTRY_COLUMNS = 'id,day,body,version,created_at,updated_at';
 
-interface DocumentRow {
-  id: string;
-  folder: HomeFolder;
-  name: string;
-  body: string;
-  version: number;
-  created_at: string;
-  updated_at: string;
-}
+type DocumentRow = Pick<Tables<'documents'>, 'id' | 'folder' | 'name' | 'body' | 'version' | 'created_at' | 'updated_at'>;
 
-interface EntryRow {
-  id: string;
-  day: string;
-  body: string;
-  version: number;
-  created_at: string;
-  updated_at: string;
-}
+type EntryRow = Pick<Tables<'diary'>, 'id' | 'day' | 'body' | 'version' | 'created_at' | 'updated_at'>;
 
 const documentOf = (row: DocumentRow): HomeDocument => ({
   id: row.id,
-  folder: row.folder,
+  folder: row.folder as HomeFolder,
   name: row.name,
   body: row.body,
   version: row.version,
@@ -119,23 +101,12 @@ const entryOf = (row: EntryRow): DiaryEntry => ({
 /** The columns of a member's sticky, as they read it. */
 const STICKY_COLUMNS = 'id,body,color,x,y,width,height,collapsed,version,updated_at';
 
-interface StickyRow {
-  id: string;
-  body: string;
-  color: NoteColor;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  collapsed: boolean;
-  version: number;
-  updated_at: string;
-}
+type StickyRow = Pick<Tables<'stickies'>, 'id' | 'body' | 'color' | 'x' | 'y' | 'width' | 'height' | 'collapsed' | 'version' | 'updated_at'>;
 
 const stickyOf = (row: StickyRow): Sticky => ({
   id: row.id,
   body: row.body,
-  color: row.color,
+  color: row.color as NoteColor,
   x: row.x,
   y: row.y,
   width: row.width,
@@ -149,16 +120,13 @@ const stickyOf = (row: StickyRow): Sticky => ({
 const EVENT_COLUMNS = 'id,title,calendar,day,starts,ends,notes,version';
 const TODO_COLUMNS = 'id,title,calendar,priority,due,done,done_at,created_at,version';
 
-type EventRow = CalendarEvent;
-interface TodoRow extends Omit<Todo, 'doneAt' | 'created'> {
-  done_at: string | null;
-  created_at: string;
-}
+type EventRow = Pick<Tables<'events'>, 'id' | 'title' | 'calendar' | 'day' | 'starts' | 'ends' | 'notes' | 'version'>;
+type TodoRow = Pick<Tables<'todos'>, 'id' | 'title' | 'calendar' | 'priority' | 'due' | 'done' | 'done_at' | 'created_at' | 'version'>;
 
 const eventOf = (row: EventRow): CalendarEvent => ({
   id: row.id,
   title: row.title,
-  calendar: row.calendar,
+  calendar: row.calendar as CalendarName,
   day: row.day,
   starts: row.starts,
   ends: row.ends,
@@ -169,7 +137,7 @@ const eventOf = (row: EventRow): CalendarEvent => ({
 const todoOf = (row: TodoRow): Todo => ({
   id: row.id,
   title: row.title,
-  calendar: row.calendar,
+  calendar: row.calendar as CalendarName,
   priority: row.priority,
   due: row.due,
   done: row.done,
@@ -209,7 +177,7 @@ function refusal(error: PostgrestError): SocialError {
 }
 
 export function supabaseSocial(url: string, key: string): Social {
-  const client = createClient(url, key, {
+  const client = createClient<Database>(url, key, {
     // The session stays in this browser, so members stay signed in.
     auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false, storageKey: 'os-auth' }
   });
@@ -358,7 +326,7 @@ export function supabaseSocial(url: string, key: string): Social {
       member();
       const { data, error } = await client.rpc('my_recovery_email');
       if (error) throw refusal(error);
-      return (data as string | null) ?? null;
+      return data ?? null;
     },
 
     async setRecoveryEmail(email) {
@@ -390,7 +358,7 @@ export function supabaseSocial(url: string, key: string): Social {
         .order('created_at', { ascending: false })
         .limit(60);
       if (error) throw new Error(error.message);
-      return data as Note[];
+      return data.map((note): Note => ({ ...note, color: note.color as NoteColor }));
     },
 
     async postNote(note) {
@@ -445,7 +413,7 @@ export function supabaseSocial(url: string, key: string): Social {
       if (!current) return {};
       const { data, error } = await client.rpc('my_reactions');
       if (error) throw refusal(error);
-      return Object.fromEntries((data as { post_id: string; emoji: Reaction }[]).map((r) => [r.post_id, r.emoji]));
+      return Object.fromEntries(data.map((r) => [r.post_id, r.emoji as Reaction]));
     },
 
     async react(postId, reaction) {
@@ -455,7 +423,9 @@ export function supabaseSocial(url: string, key: string): Social {
         if (error) throw refusal(error);
         return;
       }
-      const { error } = await client.from('soapbox_reactions').insert({ post_id: postId, emoji: reaction });
+      // `visitor` is the database's to fill in (a trigger), which the
+      // generated types can't know: they ask for every column without a default.
+      const { error } = await client.from('soapbox_reactions').insert({ post_id: postId, emoji: reaction } as TablesInsert<'soapbox_reactions'>);
       if (!error) return;
       // A member changing their mind: they already have a row for this post.
       if (error.code === '23505' && current) {
@@ -473,14 +443,14 @@ export function supabaseSocial(url: string, key: string): Social {
         roomless = true;
         return [LOBBY];
       }
-      return data?.length ? (data as ChatRoom[]) : [LOBBY];
+      return data?.length ? data : [LOBBY];
     },
 
     async chatActivity() {
       if (roomless) return [];
       const { data, error } = await client.rpc('chat_activity');
       if (error) return [];
-      return (data as { room: string; last_at: string }[]).map((a) => ({ room: a.room, last_at: a.last_at }));
+      return data.map((a) => ({ room: a.room, last_at: a.last_at }));
     },
 
     async findMember(username) {
@@ -562,7 +532,7 @@ export function supabaseSocial(url: string, key: string): Social {
 
     async burnDisc(disc) {
       member();
-      const { data, error } = await client.from('discs').insert(discRow(disc)).select(DISC_COLUMNS).single();
+      const { data, error } = await client.from('discs').insert({ ...discRow(disc), id: disc.id, title: disc.title }).select(DISC_COLUMNS).single();
       if (error) {
         if (error.code === '42501') throw notOwner();
         if (error.code === '23505') throw new SocialError('already', 'That video is already on the shelf.');
@@ -802,7 +772,7 @@ export function supabaseSocial(url: string, key: string): Social {
     async nowPlaying() {
       const { data, error } = await client.rpc('now_playing_position');
       if (error) throw error;
-      const row = (data as { song_id: string; elapsed_ms: number; remaining_ms: number }[] | null)?.[0];
+      const row = data?.[0];
       return row ? { songId: row.song_id, elapsedMs: Number(row.elapsed_ms), remainingMs: Number(row.remaining_ms) } : null;
     },
 

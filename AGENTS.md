@@ -13,8 +13,8 @@ descriptions, issues, code comments, documentation, and file names.
 
 The only exceptions are content that is Chinese by nature:
 - proper names in data, such as song titles and artists in
-  `src/data/songs.json`, the music library's seed in `supabase/`
-  (`schema.sql` and its migration) and Jincheng's name in Chinese
+  `src/data/songs.json`, the music library's seed in
+  `supabase/migrations/` and Jincheng's name in Chinese
   (`alternateName` in `src/content/site.ts`), which may also be quoted
   in the docs;
 - patterns that have to match Chinese text, such as the lyric credits in
@@ -125,11 +125,12 @@ pull request and starts CI on it itself.
   every file under `api/`; each Edge Function has its `*.test.mjs`. Keep logic worth
   testing in plain modules without React (as `applets/spider/rules.ts`
   and `applets/pinball/table.ts` are).
-- `npm run test:db` loads the schema into a local Postgres, reruns every
-  migration from `20260926071227` on over it (so a new migration is
-  rerun-tested without being listed anywhere), fails if `pg_dump` sees
-  a difference between the two (a migration's change missing from
-  `schema.sql`, or the other way round), checks the database's rules
+- `npm run test:db` applies every migration in order to an empty local
+  Postgres, as a new project gets them, fails if the generated
+  `supabase/schema.sql` or `src/lib/database.types.ts` isn't what they
+  make (`npm run db:generate` rewrites both), reruns every migration from `20260926071227` on over the
+  result (so a new migration is rerun-tested without being listed
+  anywhere) and fails if that changes anything, checks the database's rules
   (`supabase/tests/rules.sql`), then races the per-member limits with
   overlapping sessions (`supabase/tests/race.sh`).
 - `npm run test:smoke` opens every app in the registry in a production

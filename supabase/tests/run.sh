@@ -1,60 +1,134 @@
 #!/usr/bin/env bash
-# Loads supabase/schema.sql into a fresh Postgres database (with stand-ins
-# for Supabase's own parts), runs the latest migrations again on top to
-# show they can be rerun and that they end where schema.sql does (pg_dump
-# before and after), checks the rules in rules.sql, and races the
+# Makes the database as a new project gets it, every migration in order
+# into a fresh Postgres (with stand-ins for Supabase's own parts), and
+# checks that supabase/schema.sql and the TypeScript types, generated
+# from it, are up to date. Then
+# runs the latest migrations again on top to show they can be rerun
+# (pg_dump before and after), checks the rules in rules.sql, and races the
 # per-member limits (race.sh).
 #
-# Needs psql, pg_dump (as new as the server) and a Postgres server they
-# can reach as a superuser: set the usual PGHOST, PGPORT, PGUSER (and
-# PGPASSWORD) if the defaults don't.
-# Usage: npm run test:db
+# With --write (npm run db:generate) it writes schema.sql and the
+# TypeScript types (src/lib/database.types.ts) instead of checking them,
+# and stops there.
+#
+# Needs psql, pg_dump (as new as the server), Node with the packages
+# installed (npm ci), the Supabase CLI and a Postgres server they can
+# reach over TCP as a superuser: set the usual PGHOST, PGPORT, PGUSER
+# (and PGPASSWORD) if the defaults don't.
+# Usage: npm run test:db, or npm run db:generate
 set -euo pipefail
 cd "$(dirname "$0")/../.."
 
+WRITE=0
+[ "${1:-}" = "--write" ] && WRITE=1
+
+# The migrations, as a new project gets them; the committed schema.sql;
+# and schema.sql as the migrations generate it now.
 DB="jmos_test_$$"
+COMMITTED="jmos_committed_$$"
+FRESH="jmos_fresh_$$"
 DUMPS=$(mktemp -d)
-psql -q -v ON_ERROR_STOP=1 -d postgres -c "create database $DB"
-trap 'psql -q -d postgres -c "drop database if exists $DB" >/dev/null; rm -rf "$DUMPS"' EXIT
+psql -q -v ON_ERROR_STOP=1 -d postgres -c "create database $DB" -c "create database $COMMITTED" -c "create database $FRESH"
+trap 'psql -q -d postgres -c "drop database if exists $DB" -c "drop database if exists $COMMITTED" -c "drop database if exists $FRESH" >/dev/null; rm -rf "$DUMPS"' EXIT
 # The API roles are cluster-wide; make them once.
 psql -q -d postgres -c "do \$\$ begin create role anon nologin; create role authenticated nologin; create role service_role nologin bypassrls; exception when duplicate_object then null; end \$\$" >/dev/null
 
 # The database's structure as pg_dump writes it, without what changes from
 # one dump to the next (the \restrict key, pg_dump's own version).
 dump() {
-  pg_dump --schema-only -d "$DB" | grep -v -e '^\\restrict ' -e '^\\unrestrict ' -e '^-- Dumped ' > "$1"
+  pg_dump --schema-only -d "$1" | grep -v -e '^\\restrict ' -e '^\\unrestrict ' -e '^-- Dumped ' > "$2"
 }
 
 # Runs psql quietly; an error fails the test (it used to be printed and let through).
 run() {
   local out status=0
-  out=$(psql -q -v ON_ERROR_STOP=1 -d "$DB" "$@" 2>&1) || status=$?
+  out=$(psql -q -v ON_ERROR_STOP=1 "$@" 2>&1) || status=$?
   printf '%s\n' "$out" | grep -v -e 'NOTICE:.*skipping' -e 'wal_level' -e 'HINT:' -e '^$' || true
   return "$status"
 }
 
-run -c "$(grep -v '^create role' supabase/tests/stubs.sql)"
-run -1 -f supabase/schema.sql
-dump "$DUMPS/schema.sql"
-# Every migration from the first rerunnable one on, in the order of their
-# names (the three before it predate the rule that a migration runs twice
-# without harm), so a new file is tested without being listed here.
-FIRST_RERUNNABLE=20260926071227
+run -d "$DB" -c "$(grep -v '^create role' supabase/tests/stubs.sql)"
+dump "$DB" "$DUMPS/stubs.sql"
+# A new project: `supabase db push` applies every migration once, in the
+# order of their names, each in a transaction.
 for f in supabase/migrations/*.sql; do
-  if [[ ${f##*/} < "$FIRST_RERUNNABLE" ]]; then continue; fi
-  run -1 -f "$f"
+  run -d "$DB" -1 -f "$f"
 done
-# schema.sql makes a new project, the migrations change an existing one:
-# both must end in the same database. This sees only what a rerun can
-# change (create or replace, drop and create again, grants); a column only
-# one side adds hides behind `create table if not exists`.
-dump "$DUMPS/migrated.sql"
-if ! diff -u "$DUMPS/schema.sql" "$DUMPS/migrated.sql" > "$DUMPS/drift.diff"; then
-  echo "FAILED: schema.sql and the migrations rerun over it make different databases:"
+dump "$DB" "$DUMPS/migrated.sql"
+
+# schema.sql is that database's structure, generated (schema.mjs).
+node supabase/tests/schema.mjs "$DUMPS/stubs.sql" "$DUMPS/migrated.sql" > "$DUMPS/schema.sql"
+if [ "$WRITE" = 1 ]; then
+  cp "$DUMPS/schema.sql" supabase/schema.sql
+  echo "wrote supabase/schema.sql"
+fi
+# The check loads the committed file and the one generated now, and
+# compares what they make rather than their text, so a pg_dump of another
+# version writing it differently isn't a failure. Like any pg_dump,
+# schema.sql grants what each object has and revokes only what Postgres
+# itself grants, so it's loaded before the stand-ins' default grants
+# (pg_dump puts default privileges last too).
+load() {
+  run -d "$1" -c "$(grep -v -e '^create role' -e '^alter default privileges' supabase/tests/stubs.sql)"
+  run -d "$1" -1 -o /dev/null -f "$2"
+  run -d "$1" -c "$(grep '^alter default privileges' supabase/tests/stubs.sql)"
+  dump "$1" "$3"
+}
+load "$FRESH" "$DUMPS/schema.sql" "$DUMPS/fresh.sql"
+load "$COMMITTED" supabase/schema.sql "$DUMPS/committed.sql"
+if ! diff -u "$DUMPS/committed.sql" "$DUMPS/fresh.sql" > "$DUMPS/drift.diff"; then
+  echo "FAILED: supabase/schema.sql isn't what the migrations make; run npm run db:generate. What differs (- schema.sql, + the migrations):"
   cat "$DUMPS/drift.diff"
   exit 1
 fi
-echo "ok: schema.sql and the migrations rerun over it make the same database"
+echo "ok: supabase/schema.sql is what the migrations make"
+
+# The TypeScript types of what the API serves (the public schema), which
+# the site's Supabase client and the music library are typed with:
+# `supabase gen types` from the migrated database, formatted by oxfmt (as
+# the CLI suggests). Both write it differently from one version to the
+# next, so CI pins the CLI to this version and package.json pins oxfmt.
+SUPABASE_CLI=2.119.0
+if [ "$(supabase --version)" != "$SUPABASE_CLI" ]; then
+  echo "note: this is Supabase CLI $(supabase --version), and CI generates the types with $SUPABASE_CLI (.github/workflows/ci.yml)"
+fi
+TYPES=src/lib/database.types.ts
+url="postgresql://${PGUSER:-$USER}${PGPASSWORD:+:$PGPASSWORD}@${PGHOST:-localhost}:${PGPORT:-5432}/$DB?sslmode=disable"
+{
+  echo '// GENERATED by `npm run db:generate` from supabase/migrations (with'
+  echo "// \`supabase gen types\`): don't edit. \`npm run test:db\` fails when it's out"
+  echo '// of date. The types of every table, view and function the API serves.'
+  echo
+  supabase gen types typescript --db-url "$url" --schema public 2> "$DUMPS/types.err" || { cat "$DUMPS/types.err"; exit 1; }
+} | node_modules/.bin/oxfmt --stdin-filepath=database.types.ts > "$DUMPS/database.types.ts"
+if [ "$WRITE" = 1 ]; then
+  cp "$DUMPS/database.types.ts" "$TYPES"
+  echo "wrote $TYPES"
+  exit 0
+fi
+if ! diff -u "$TYPES" "$DUMPS/database.types.ts" > "$DUMPS/types.diff"; then
+  echo "FAILED: $TYPES isn't what the migrations make; run npm run db:generate. What differs:"
+  cat "$DUMPS/types.diff"
+  exit 1
+fi
+echo "ok: $TYPES is what the migrations make"
+
+# Every migration from the first rerunnable one on, again, in the order of
+# their names (the baseline and the three after it predate the rule that
+# a migration runs twice without harm), so a new file is tested without
+# being listed here. A rerun must change nothing.
+FIRST_RERUNNABLE=20260926071227
+for f in supabase/migrations/*.sql; do
+  if [[ ${f##*/} < "$FIRST_RERUNNABLE" ]]; then continue; fi
+  run -d "$DB" -1 -f "$f"
+done
+dump "$DB" "$DUMPS/rerun.sql"
+if ! diff -u "$DUMPS/migrated.sql" "$DUMPS/rerun.sql" > "$DUMPS/rerun.diff"; then
+  echo "FAILED: running the migrations again changed the database:"
+  cat "$DUMPS/rerun.diff"
+  exit 1
+fi
+echo "ok: the migrations run again without changing the database"
 out=$(psql -q -t -v ON_ERROR_STOP=1 -d "$DB" -f supabase/tests/rules.sql 2>&1) || { echo "$out"; exit 1; }
 echo "$out" | grep -o 'ok: .*'
 bash supabase/tests/race.sh "$DB"
@@ -63,7 +137,7 @@ bash supabase/tests/race.sh "$DB"
 # nothing removed since it seeded.
 psql -q -v ON_ERROR_STOP=1 -d "$DB" -c "delete from public.songs where id = 'OxtZF0WGXtE'; update public.music_settings set value = to_jsonb((select count(*) from public.songs)) where name = 'song_limit'" >/dev/null
 before=$(psql -tA -d "$DB" -c "select count(*) from public.songs")
-run -1 -f supabase/migrations/20260927030802_music_library.sql
+run -d "$DB" -1 -f supabase/migrations/20260927030802_music_library.sql
 after=$(psql -tA -d "$DB" -c "select count(*) from public.songs")
 [ "$before" = "$after" ] || { echo "FAILED: rerunning the music migration changed the library ($before songs, then $after)"; exit 1; }
 echo "ok: the music migration reruns with the library full, and a removed song stays removed"

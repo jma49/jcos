@@ -6,6 +6,8 @@
 // 20260929120000_discs.sql); this turns its rows into what the iPod,
 // Karaoke and DVD Player use.
 
+import type { Tables } from './database.types';
+
 export interface Song {
   /** The YouTube video id. */
   id: string;
@@ -74,37 +76,13 @@ export interface Library {
 /** The limit when it isn't known (the snapshot, or before song_limit() exists). */
 export const DEFAULT_LIMIT = 200;
 
-interface SongRow {
-  id: string;
-  title: string;
-  artist: string;
-  album: string | null;
-  cover: string | null;
-  track: number | null;
-  instrumental: boolean;
-  lyrics_offset: number;
-  lyrics_id: number | null;
-  added_at?: string;
-}
+// The rows as the generated types have them (database.types.ts), with the
+// columns read below.
+type SongRow = Pick<Tables<'songs'>, 'id' | 'title' | 'artist' | 'album' | 'cover' | 'track' | 'instrumental' | 'lyrics_offset' | 'lyrics_id' | 'added_at'>;
 
-interface DiscRow {
-  id: string;
-  title: string;
-  artist: string | null;
-  cover: string;
-  cover_x: number;
-  duration_ms: number | null;
-  added_at: string;
-}
+type DiscRow = Pick<Tables<'discs'>, 'id' | 'title' | 'artist' | 'cover' | 'cover_x' | 'duration_ms' | 'added_at'>;
 
-interface AlbumRow {
-  title: string;
-  artist: string;
-  year: number;
-  cover: string;
-  note: string | null;
-  added_at?: string;
-}
+type AlbumRow = Pick<Tables<'albums'>, 'title' | 'artist' | 'year' | 'cover' | 'note' | 'added_at'>;
 
 /** A song row as the site uses it, leaving out what isn't set. */
 export function songOf(row: SongRow): Song {

@@ -6,6 +6,7 @@
 // spread it into what getSocial() returns.
 
 import type { PostgrestError, SupabaseClient } from '@supabase/supabase-js';
+import type { Database, Tables } from '../../lib/database.types';
 import { loadJSON, saveJSON } from '../core/storage';
 import { SocialError, type Account } from './types';
 
@@ -104,39 +105,23 @@ const further = (a: JobReach, b: JobStage): JobReach => (b !== 'closed' && LADDE
 const JOB_COLUMNS = 'id,company,role,stage,outcome,reached,applied_on,source,location,posting,notes,version,created_at,updated_at';
 const EVENT_COLUMNS = 'id,application_id,kind,happened_at,subject,gmail_thread';
 
-interface JobRow {
-  id: string;
-  company: string;
-  role: string;
-  stage: JobStage;
-  outcome: JobOutcome | null;
-  reached: JobReach;
-  applied_on: string;
-  source: string;
-  location: string;
-  posting: string;
-  notes: string;
-  version: number;
-  created_at: string;
-  updated_at: string;
-}
+// The rows as the generated types have them (src/lib/database.types.ts).
+// The stage, outcome, reach and kind are text there; the tables' checks
+// hold them to the names above, so they're narrowed here.
+type JobRow = Pick<
+  Tables<'job_applications'>,
+  'id' | 'company' | 'role' | 'stage' | 'outcome' | 'reached' | 'applied_on' | 'source' | 'location' | 'posting' | 'notes' | 'version' | 'created_at' | 'updated_at'
+>;
 
-interface EventRow {
-  id: string;
-  application_id: string;
-  kind: JobKind;
-  happened_at: string;
-  subject: string;
-  gmail_thread: string | null;
-}
+type EventRow = Pick<Tables<'job_events'>, 'id' | 'application_id' | 'kind' | 'happened_at' | 'subject' | 'gmail_thread'>;
 
 const jobOf = (row: JobRow): JobApplication => ({
   id: row.id,
   company: row.company,
   role: row.role,
-  stage: row.stage,
-  outcome: row.outcome,
-  reached: row.reached,
+  stage: row.stage as JobStage,
+  outcome: row.outcome as JobOutcome | null,
+  reached: row.reached as JobReach,
   appliedOn: row.applied_on,
   source: row.source,
   location: row.location,
@@ -150,7 +135,7 @@ const jobOf = (row: JobRow): JobApplication => ({
 const eventOf = (row: EventRow): JobEvent => ({
   id: row.id,
   applicationId: row.application_id,
-  kind: row.kind,
+  kind: row.kind as JobKind,
   at: row.happened_at,
   subject: row.subject,
   thread: row.gmail_thread
@@ -171,7 +156,7 @@ const fieldsOf = (draft: JobDraft) => ({
 const changedElsewhere = () => new SocialError('conflict', 'It was changed or deleted somewhere else since this copy was opened.');
 
 /** Job Hunt over Supabase: `member` is the signed-in member (or a refusal), `refusal` how the backend words a database error. */
-export function supabaseJobs(client: SupabaseClient, member: () => Account, refusal: (error: PostgrestError) => SocialError): JobsSocial {
+export function supabaseJobs(client: SupabaseClient<Database>, member: () => Account, refusal: (error: PostgrestError) => SocialError): JobsSocial {
   return {
     async jobTotals() {
       const { data, error } = await client.rpc('job_hunt_totals');
@@ -188,8 +173,8 @@ export function supabaseJobs(client: SupabaseClient, member: () => Account, refu
       if (applications.error) throw refusal(applications.error);
       if (events.error) throw refusal(events.error);
       return {
-        applications: ((applications.data ?? []) as JobRow[]).map(jobOf),
-        events: ((events.data ?? []) as EventRow[]).map(eventOf)
+        applications: applications.data.map(jobOf),
+        events: events.data.map(eventOf)
       };
     },
 
@@ -206,7 +191,7 @@ export function supabaseJobs(client: SupabaseClient, member: () => Account, refu
         throw refusal(error);
       }
       if (!data) throw changedElsewhere();
-      return jobOf(data as JobRow);
+      return jobOf(data);
     },
 
     async removeJob(id) {
