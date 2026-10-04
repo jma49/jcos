@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import type { DiaryEntry, Home, HomeDocument } from '../social/types';
 
-// Jincheng's home folder (home.ts): how the diary reads, names for new
+// Jincheng's home folder (documents.ts): how the diary reads, names for new
 // documents, what a visitor is left with, reads that can't undo a save,
 // the owner's other tabs told of a change, and drafts shared by them.
 
@@ -59,7 +59,7 @@ function database(home: Home) {
 
 const load = async () => {
   vi.resetModules();
-  return import('./home');
+  return import('./documents');
 };
 
 beforeEach(() => {

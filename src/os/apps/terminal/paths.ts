@@ -1,4 +1,4 @@
-import type { FileNode } from '../../core/files';
+import type { FileNode } from '../../files/disk';
 
 // What the Terminal makes of a command line and the paths in it, kept
 // apart from the window so it can be tested.

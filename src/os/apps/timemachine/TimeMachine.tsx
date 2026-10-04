@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useOSData } from '../../core/context';
-import { buildDisk, type FileNode } from '../../core/files';
+import { buildDisk, type FileNode } from '../../files/disk';
 import { APPLETS } from '../../core/applets';
 import { apps, launch, type AppProps } from '../../core/registry';
 import { useWindows } from '../../core/store';
@@ -8,7 +8,7 @@ import { useReduceMotion } from '../../core/system';
 import type { AppId } from '../../core/types';
 import { usersFolder } from '../../files/home';
 import { moviesFolder } from '../../files/movies';
-import { useHome, useHomeRefresh } from '../../home/home';
+import { useHome, useHomeRefresh } from '../../files/documents';
 import { useShelf, useShelfRefresh } from '../../media/discs';
 import { ALBUMS, SONGS, useLibraryVersion } from '../../media/library';
 import { useIsOwner } from '../../social/owner';

@@ -9,7 +9,7 @@ export const SAVE_AFTER_MS = 1000;
  * or the note closing). Saves run one after another, each with what's
  * typed by the time it runs, so a later one can't overtake an earlier
  * one. Callers keep what's typed as a draft in the browser until it's
- * saved (home/home.ts, stickies/mine.ts), so closing the tab loses nothing,
+ * saved (files/documents.ts, stickies/mine.ts), so closing the tab loses nothing,
  * and ask for a draft they find as they open to be saved (`soon()`).
  */
 export function useAutosave(save: () => Promise<void>) {

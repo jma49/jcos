@@ -37,6 +37,28 @@ describe('the OS reaches apps only through the catalog', () => {
   });
 });
 
+describe('core/ takes only types from the rest of the OS', () => {
+  const rule = 'core/ imports only types from the rest of the OS; move shared code into its domain.';
+  test('a value from a domain folder', async () => {
+    expect(await lint('src/os/core/probe.ts', "import { useMusic } from '../media/music';")).toContain(rule);
+    expect(await lint('src/os/core/probe.ts', "import { getSocial, type Visitor } from '../social/social';")).toContain(rule);
+    expect(await lint('src/os/core/probe.ts', "export { buildDisk } from '../files/disk';")).toContain(rule);
+  });
+  test('an import() of one', async () => {
+    expect(await lint('src/os/core/probe.ts', "export const load = () => import('../files/disk');")).toContain(rule);
+  });
+  test('types, the catalog and its own folder', async () => {
+    const code = [
+      "import type { Visitor } from '../social/social';",
+      "import { type Place } from '../ambient/place';",
+      "import { catalog } from '../catalog';",
+      "import { loadJSON } from './storage';",
+      "export const load = () => import('./warmUp');"
+    ].join('\n');
+    expect(await lint('src/os/core/probe.ts', code)).toBe('');
+  });
+});
+
 describe('an app uses the OS, never another app or an applet', () => {
   const rule = 'An app doesn’t import another app; move what they share into the OS.';
   test('a sibling by name', async () => {

@@ -1,5 +1,5 @@
 import { useLayoutEffect, useRef } from 'react';
-import { find, type FileNode } from '../../core/files';
+import { find, type FileNode } from '../../files/disk';
 import { ancestry, formatDate, Thumb } from '../../files/parts';
 
 /**

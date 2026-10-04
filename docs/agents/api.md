@@ -20,6 +20,7 @@ and two Supabase Edge Functions.
   | `username_available(name)` | everyone | whether a username is free, for signing up |
   | `chat_activity()` | everyone | the last message time of each room the caller can read, for unread counts |
   | `song_limit()` | everyone | how many songs the library may hold (read by `/api/songs`) |
+  | `member_limits()` | everyone | the limits a member is held to: notes a day, stickies, events and to-dos (read once a page by Stickies and iCal) |
   | `now_playing_position()` | everyone | where the song Jincheng is playing is now, by the database's clock |
   | `is_owner()` | everyone | whether the caller is Jincheng, the owner; owner-only policies call it, and the site asks only to decide what to show |
   | `rate_song(song, rating)` | members (only the owner's is kept) | rates a song one to five stars, or clears it with 0; runs as the caller, under the owner-only policies |
@@ -30,7 +31,7 @@ and two Supabase Edge Functions.
   | `my_recovery_email()`, `set_recovery_email(address)` | members | the member's recovery address |
   | `chat_can_read(room)`, `chat_can_write(room)` | everyone / members | used by chat's row-level security, not called by the site |
 
-- **Realtime** (`src/os/social/supabase.ts`): `desktop` (presence,
+- **Realtime** (`src/os/social/supabase/`): `desktop` (presence,
   pointers and short signals such as nudges and AirDrop offers, which
   anyone with the public key can send, so receivers check them),
   `chat-room` (new and removed chat messages, `postgres_changes`),

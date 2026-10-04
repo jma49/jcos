@@ -484,6 +484,23 @@ $$;
 ALTER FUNCTION public.job_within_limit() OWNER TO postgres;
 
 --
+-- Name: member_limits(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.member_limits() RETURNS TABLE(notes_per_day integer, stickies integer, events integer, todos integer)
+    LANGUAGE sql STABLE SECURITY DEFINER
+    SET search_path TO 'public'
+    AS $$
+  select
+    coalesce((select (value #>> '{}')::int from public.music_settings where name = 'note_limit'), 3),
+    coalesce((select (value #>> '{}')::int from public.music_settings where name = 'sticky_limit'), 50),
+    coalesce((select (value #>> '{}')::int from public.music_settings where name = 'event_limit'), 5000),
+    coalesce((select (value #>> '{}')::int from public.music_settings where name = 'todo_limit'), 1000);
+$$;
+
+ALTER FUNCTION public.member_limits() OWNER TO postgres;
+
+--
 -- Name: moderation_check(text); Type: FUNCTION; Schema: public; Owner: postgres
 --
 
@@ -614,14 +631,15 @@ CREATE FUNCTION public.notes_by_member() RETURNS trigger
     AS $$
 declare
   member text := (select username from public.profiles where id = auth.uid());
+  most int := (select notes_per_day from public.member_limits());
 begin
   if member is null then
     raise exception using errcode = '42501', message = 'Sign in to leave a note.';
   end if;
   perform pg_advisory_xact_lock(hashtextextended('notes:' || auth.uid()::text, 0));
   if (select count(*) from public.notes
-      where user_id = auth.uid() and created_at > now() - interval '24 hours') >= 3 then
-    raise exception using errcode = 'P0429', message = 'That’s three notes today. Come back tomorrow.';
+      where user_id = auth.uid() and created_at > now() - interval '24 hours') >= most then
+    raise exception using errcode = 'P0429', message = format('That’s %s notes today. Come back tomorrow.', most);
   end if;
   new.user_id := auth.uid();
   new.name := member;
@@ -657,7 +675,7 @@ CREATE FUNCTION public.notes_left() RETURNS integer
     LANGUAGE sql STABLE SECURITY DEFINER
     SET search_path TO 'public'
     AS $$
-  select case when (select auth.uid()) is null then 0 else greatest(0, 3 - (
+  select case when (select auth.uid()) is null then 0 else greatest(0, (select notes_per_day from public.member_limits()) - (
     select count(*)::int from public.notes
     where user_id = (select auth.uid()) and created_at > now() - interval '24 hours'
   )) end;
@@ -2643,6 +2661,15 @@ GRANT ALL ON FUNCTION public.job_saved() TO service_role;
 
 REVOKE ALL ON FUNCTION public.job_within_limit() FROM PUBLIC;
 GRANT ALL ON FUNCTION public.job_within_limit() TO service_role;
+
+--
+-- Name: FUNCTION member_limits(); Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON FUNCTION public.member_limits() FROM PUBLIC;
+GRANT ALL ON FUNCTION public.member_limits() TO anon;
+GRANT ALL ON FUNCTION public.member_limits() TO authenticated;
+GRANT ALL ON FUNCTION public.member_limits() TO service_role;
 
 --
 -- Name: FUNCTION moderation_check(p_secret text); Type: ACL; Schema: public; Owner: postgres

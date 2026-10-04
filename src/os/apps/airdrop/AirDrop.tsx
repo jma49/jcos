@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { useOSData } from '../../core/context';
 import type { AppProps } from '../../core/registry';
 import { apps, launch } from '../../core/registry';
-import { buildDisk, find } from '../../core/files';
+import { buildDisk, find } from '../../files/disk';
 import { AirDropIcon } from '../../core/icons';
 import { useWindows } from '../../core/store';
 import type { AppId } from '../../core/types';

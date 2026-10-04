@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import type { FileNode } from '../../core/files';
+import type { FileNode } from '../../files/disk';
 import { resolve, words } from './paths';
 
 // The Terminal's command line: words split as zsh splits them, and paths

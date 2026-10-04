@@ -1,5 +1,5 @@
 import { useId } from 'react';
-import { find, type FileNode } from '../core/files';
+import { find, type FileNode } from './disk';
 
 // Pieces of Macintosh HD's views that Finder and Time Machine share: a
 // file's picture, with the badge on a folder this visitor may not open,

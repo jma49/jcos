@@ -70,6 +70,13 @@ const appImports = [
 ];
 // The OS knows apps only by their manifests, through src/os/catalog.ts.
 const osImports = [{ regex: '(^|/)(apps|applets)/', message: 'The OS reaches apps only through src/os/catalog.ts.' }];
+// core/ is the base layer every part of the OS uses: it imports values
+// only from itself and the catalog, and from the domain folders (files/,
+// media/, social/…) types alone, so no domain's code is in it by way of an
+// import (docs/agents/desktop.md, "Where new code goes").
+const coreImports = [
+  { regex: '^\\.\\./(?!catalog$)', allowTypeImports: true, message: 'core/ imports only types from the rest of the OS; move shared code into its domain.' }
+];
 // A manifest is in the first load, so it holds data and a lazy import only.
 const manifestImports = [{ regex: '^\\.\\./(?!\\.\\./(kit/manifest|core/icons)$)', message: 'A manifest imports only kit/manifest, core/icons and its own folder.' }];
 
@@ -117,6 +124,17 @@ export default [
     files: ['src/os/**/*.{ts,tsx}'],
     ignores: ['src/os/apps/**', 'src/os/applets/**', 'src/os/catalog*'],
     rules: imports(osImports)
+  },
+  // typescript-eslint's own rule, so it doesn't replace the OS block's
+  // no-restricted-imports above, and so `import type` passes. A dynamic
+  // import from core/ loads a value too: held to the same patterns.
+  {
+    files: ['src/os/core/**/*.{ts,tsx}'],
+    plugins: { '@typescript-eslint': tseslint.plugin },
+    rules: {
+      '@typescript-eslint/no-restricted-imports': ['error', { patterns: coreImports }],
+      'local/no-restricted-dynamic-imports': ['error', { patterns: [...osImports, ...coreImports.map(({ regex, message }) => ({ regex, message }))] }]
+    }
   },
   // A manifest holds no stylesheet, which arrives with the app's code.
   // (Applets' manifests are held to the applet rule above for their imports.)

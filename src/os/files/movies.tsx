@@ -1,4 +1,4 @@
-import type { FileNode } from '../core/files';
+import type { FileNode } from './disk';
 import { rectOf } from '../core/registry';
 import { notify } from '../core/notices';
 import { DiscLook, DiscThumb, MoviesFolderIcon } from '../media/discArt';

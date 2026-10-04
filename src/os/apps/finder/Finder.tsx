@@ -6,7 +6,7 @@ import { launch } from '../../core/registry';
 import { useFocusedId, useWindows } from '../../core/store';
 import { ownsKey, typing } from '../../core/useKeys';
 import { useInstalledApplets } from '../../core/applets';
-import { buildDisk, find, type FileNode } from '../../core/files';
+import { buildDisk, find, type FileNode } from '../../files/disk';
 import { ALBUMS, SONGS, useLibraryVersion } from '../../media/library';
 import { useLibraryRefresh } from '../../media/refresh';
 import { useShelf, useShelfRefresh } from '../../media/discs';
@@ -28,10 +28,10 @@ import { BurnSheet } from './BurnSheet';
 import { discPath, moviesFolder } from '../../files/movies';
 import { Alert } from '../../shell/Alert';
 import { HOME, usersFolder } from '../../files/home';
-import { deleteDocument, useHome, useHomeRefresh, type HomeDocument } from '../../home/home';
+import { deleteDocument, useHome, useHomeRefresh, type HomeDocument } from '../../files/documents';
 import { notify } from '../../core/notices';
 
-// Finder over Macintosh HD (files.ts): a sidebar of places, back and
+// Finder over Macintosh HD (files/disk.ts): a sidebar of places, back and
 // forward, icon, list or column views, a search field that looks through
 // the whole disk, and an action (gear) menu for arranging. Double-click
 // (or Enter) opens; the arrow keys move the selection, typing a name

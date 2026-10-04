@@ -1,5 +1,5 @@
 import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
-import type { FileNode } from '../core/files';
+import type { FileNode } from './disk';
 import { Thumb } from './parts';
 
 /**
