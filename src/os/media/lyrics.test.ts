@@ -4,8 +4,7 @@ import { lineAt, parseLrc, pick, toCandidate } from './lyrics';
 // Reading LRC files and choosing between lrclib's entries: crowd-sourced
 // lyrics come in several edits of a song, and some are placeholders.
 
-const lrc = (n: number, start = 0) =>
-  Array.from({ length: n }, (_, i) => `[00:${String(start + i * 2).padStart(2, '0')}.00] line ${i + 1}`).join('\n');
+const lrc = (n: number, start = 0) => Array.from({ length: n }, (_, i) => `[00:${String(start + i * 2).padStart(2, '0')}.00] line ${i + 1}`).join('\n');
 
 describe('parseLrc', () => {
   test('reads minutes, seconds and hundredths, sorted by time', () => {

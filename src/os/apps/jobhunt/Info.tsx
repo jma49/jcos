@@ -9,7 +9,21 @@ import { gmailLink, KIND_NAMES, KIND_STAGES, Monogram, OUTCOME_NAMES, STAGE_NAME
 // changed.
 
 /** A line of text kept when it's left or on Return, and taken back with Escape. */
-function Field({ label, value, onKeep, type = 'text', most, required = false }: { label: string; value: string; onKeep: (value: string) => void; type?: string; most: number; required?: boolean }) {
+function Field({
+  label,
+  value,
+  onKeep,
+  type = 'text',
+  most,
+  required = false
+}: {
+  label: string;
+  value: string;
+  onKeep: (value: string) => void;
+  type?: string;
+  most: number;
+  required?: boolean;
+}) {
   const [text, setText] = useState(value);
   useEffect(() => setText(value), [value]);
   const keep = () => {
@@ -67,7 +81,12 @@ export function Info({
         <Field label="role" value={app.role} most={160} onKeep={(role) => onChange({ role })} />
         <label>
           <span>stage</span>
-          <select value={app.stage} onChange={(e) => onChange({ stage: e.target.value as JobApplication['stage'], outcome: e.target.value === 'closed' ? (app.outcome ?? 'rejected') : null })}>
+          <select
+            value={app.stage}
+            onChange={(e) =>
+              onChange({ stage: e.target.value as JobApplication['stage'], outcome: e.target.value === 'closed' ? (app.outcome ?? 'rejected') : null })
+            }
+          >
             {JOB_STAGES.map((s) => (
               <option key={s} value={s}>
                 {STAGE_NAMES[s]}
@@ -89,7 +108,13 @@ export function Info({
         )}
         <label>
           <span>applied</span>
-          <input type="date" value={app.appliedOn} min="2000-01-01" max="2100-12-31" onChange={(e) => e.target.value && onChange({ appliedOn: e.target.value })} />
+          <input
+            type="date"
+            value={app.appliedOn}
+            min="2000-01-01"
+            max="2100-12-31"
+            onChange={(e) => e.target.value && onChange({ appliedOn: e.target.value })}
+          />
         </label>
         <Field label="source" value={app.source} most={40} onKeep={(source) => onChange({ source })} />
         <Field label="where" value={app.location} most={80} onKeep={(location) => onChange({ location })} />

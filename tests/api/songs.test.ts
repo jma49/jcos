@@ -18,8 +18,23 @@ const SONG = {
   lyrics_id: null,
   added_at: '2026-09-27T05:13:00+00:00'
 };
-const ALBUM = { title: 'An Album', artist: 'Someone', year: 1998, cover: 'https://is1-ssl.mzstatic.com/a.jpg', note: null, added_at: '2026-09-26T12:00:00+00:00' };
-const DISC = { id: 'jWQx2f-CErU', title: 'Whiplash', artist: 'aespa', cover: 'maxresdefault', cover_x: 30, duration_ms: null, added_at: '2026-09-29T08:00:00+00:00' };
+const ALBUM = {
+  title: 'An Album',
+  artist: 'Someone',
+  year: 1998,
+  cover: 'https://is1-ssl.mzstatic.com/a.jpg',
+  note: null,
+  added_at: '2026-09-26T12:00:00+00:00'
+};
+const DISC = {
+  id: 'jWQx2f-CErU',
+  title: 'Whiplash',
+  artist: 'aespa',
+  cover: 'maxresdefault',
+  cover_x: 30,
+  duration_ms: null,
+  added_at: '2026-09-29T08:00:00+00:00'
+};
 
 function fakeSupabase(answer: (path: string) => Response) {
   const fetch = vi.fn(async (url: string, init?: RequestInit) => {
@@ -43,7 +58,13 @@ afterEach(() => {
 describe('from Supabase', () => {
   test('serves the library as the site uses it, cached at the edge', async () => {
     fakeSupabase((path) =>
-      path.endsWith('/songs') ? Response.json([SONG]) : path.endsWith('/albums') ? Response.json([ALBUM]) : path.endsWith('/discs') ? Response.json([DISC]) : new Response(null, { status: 404 })
+      path.endsWith('/songs')
+        ? Response.json([SONG])
+        : path.endsWith('/albums')
+          ? Response.json([ALBUM])
+          : path.endsWith('/discs')
+            ? Response.json([DISC])
+            : new Response(null, { status: 404 })
     );
     const res = await GET();
     expect(res.headers.get('cache-control')).toBe('public, s-maxage=30, stale-while-revalidate=30');

@@ -15,7 +15,7 @@
   background: linear-gradient(#e4ecd7, #c9d6b3);
   box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.45);
   color: #1d2616;
-  font: 30px/1.1 var(--os-mono);
+  font: 30px / 1.1 var(--os-mono);
   overflow: hidden;
   white-space: nowrap;
 }
@@ -35,7 +35,9 @@
 .os-calc-keys button {
   border-radius: 12px;
   background: linear-gradient(#ffffff, #f1f1f1 45%, #dedede 50%, #f4f4f4);
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.35), 0 1px 1px rgba(0, 0, 0, 0.15);
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.35),
+    0 1px 1px rgba(0, 0, 0, 0.15);
   color: #111;
   font-size: 17px;
 }
@@ -47,7 +49,9 @@
 .os-calc-keys button[data-kind='op'],
 .os-calc-keys button[data-kind='eq'] {
   background: linear-gradient(#ffd9a8, #ffab4a 45%, #ff9420 50%, #ffc47a);
-  box-shadow: inset 0 0 0 1px rgba(140, 70, 0, 0.5), 0 1px 1px rgba(0, 0, 0, 0.15);
+  box-shadow:
+    inset 0 0 0 1px rgba(140, 70, 0, 0.5),
+    0 1px 1px rgba(0, 0, 0, 0.15);
   color: #fff;
   text-shadow: 0 -1px 0 rgba(120, 50, 0, 0.4);
 }

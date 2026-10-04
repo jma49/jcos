@@ -25,11 +25,26 @@
   --edge: #f0dc5a;
 }
 
-.os-stickies [data-color='blue'] { --paper: #c9e8ff; --edge: #a3d2f5; }
-.os-stickies [data-color='green'] { --paper: #d4f5c0; --edge: #b0e08f; }
-.os-stickies [data-color='pink'] { --paper: #ffd6e5; --edge: #f7b3cc; }
-.os-stickies [data-color='purple'] { --paper: #e6d8ff; --edge: #cdb8f5; }
-.os-stickies [data-color='gray'] { --paper: #f1f1ef; --edge: #d9d9d4; }
+.os-stickies [data-color='blue'] {
+  --paper: #c9e8ff;
+  --edge: #a3d2f5;
+}
+.os-stickies [data-color='green'] {
+  --paper: #d4f5c0;
+  --edge: #b0e08f;
+}
+.os-stickies [data-color='pink'] {
+  --paper: #ffd6e5;
+  --edge: #f7b3cc;
+}
+.os-stickies [data-color='purple'] {
+  --paper: #e6d8ff;
+  --edge: #cdb8f5;
+}
+.os-stickies [data-color='gray'] {
+  --paper: #f1f1ef;
+  --edge: #d9d9d4;
+}
 
 .os-sticky {
   position: relative;
@@ -39,7 +54,9 @@
   padding: 14px 14px 10px;
   background: linear-gradient(var(--paper), var(--edge));
   color: #3a3527;
-  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.12), 0 8px 18px -6px rgba(0, 0, 0, 0.35);
+  box-shadow:
+    0 1px 1px rgba(0, 0, 0, 0.12),
+    0 8px 18px -6px rgba(0, 0, 0, 0.35);
   font-family: 'Marker Felt', 'Chalkboard SE', 'Bradley Hand', 'Comic Sans MS', cursive;
   font-size: 15px;
   line-height: 1.35;
@@ -74,7 +91,12 @@
   border: 0;
   background: rgba(255, 255, 255, 0.35);
   color: inherit;
-  font: 15px/1.35 'Marker Felt', 'Chalkboard SE', 'Bradley Hand', 'Comic Sans MS', cursive;
+  font:
+    15px / 1.35 'Marker Felt',
+    'Chalkboard SE',
+    'Bradley Hand',
+    'Comic Sans MS',
+    cursive;
   outline: none;
 }
 
@@ -109,7 +131,9 @@
 }
 
 .os-sticky-colors button[aria-checked='true'] {
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.25), 0 0 0 2px #3b7fe0;
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.25),
+    0 0 0 2px #3b7fe0;
 }
 
 .os-sticky-actions {
@@ -166,7 +190,9 @@
   font-size: 14px;
   line-height: 1;
   opacity: 0;
-  transition: opacity 0.15s, background 0.15s;
+  transition:
+    opacity 0.15s,
+    background 0.15s;
 }
 
 .os-sticky:hover .os-sticky-remove,
@@ -215,4 +241,3 @@
 .os-stickies-yours-empty p {
   margin: 0;
 }
-

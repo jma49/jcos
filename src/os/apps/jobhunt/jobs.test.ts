@@ -25,12 +25,29 @@ const job = (id: string, more: Partial<JobApplication> = {}): JobApplication => 
   updated: '2026-09-10T10:00:00Z',
   ...more
 });
-const heard = (applicationId: string, kind: JobEvent['kind'], at: string): JobEvent => ({ id: `${applicationId}-${kind}-${at}`, applicationId, kind, at, subject: '', thread: null });
-const TOTALS: JobTotals = { stages: { applied: 3, assessment: 1, interviewing: 1, offer: 0, closed: 2 }, reached: { assessment: 3, interviewing: 1, offer: 0 }, updated: '2026-09-29T10:00:00Z' };
+const heard = (applicationId: string, kind: JobEvent['kind'], at: string): JobEvent => ({
+  id: `${applicationId}-${kind}-${at}`,
+  applicationId,
+  kind,
+  at,
+  subject: '',
+  thread: null
+});
+const TOTALS: JobTotals = {
+  stages: { applied: 3, assessment: 1, interviewing: 1, offer: 0, closed: 2 },
+  reached: { assessment: 3, interviewing: 1, offer: 0 },
+  updated: '2026-09-29T10:00:00Z'
+};
 
 /** A backend with Jincheng's applications, which keeps what's saved and which a test can slow down or make refuse. */
 function database(applications: JobApplication[], events: JobEvent[] = []) {
-  const answer = { applications: structuredClone(applications), events: structuredClone(events), wait: Promise.resolve(), saving: Promise.resolve(), refuse: false };
+  const answer = {
+    applications: structuredClone(applications),
+    events: structuredClone(events),
+    wait: Promise.resolve(),
+    saving: Promise.resolve(),
+    refuse: false
+  };
   const social = {
     jobTotals: vi.fn(async () => {
       await answer.wait;
@@ -200,8 +217,23 @@ describe('the store', () => {
     const { answer, social } = database([job('a')], [heard('a', 'applied', '2026-09-10T10:00:00Z')]);
     const h = await load();
     await h.readHunt(true);
-    const made = await h.addJob({ company: 'New Company', role: '', stage: 'applied', outcome: null, appliedOn: '2026-09-29', source: '', location: '', posting: '', notes: '' });
-    expect(h.huntNow().applications.map((a) => a.id).sort()).toEqual(['a', made.id].sort());
+    const made = await h.addJob({
+      company: 'New Company',
+      role: '',
+      stage: 'applied',
+      outcome: null,
+      appliedOn: '2026-09-29',
+      source: '',
+      location: '',
+      posting: '',
+      notes: ''
+    });
+    expect(
+      h
+        .huntNow()
+        .applications.map((a) => a.id)
+        .sort()
+    ).toEqual(['a', made.id].sort());
     await h.deleteJob('a');
     expect(h.huntNow().applications.map((a) => a.id)).toEqual([made.id]);
     expect(h.huntNow().events).toEqual([]);
@@ -221,6 +253,8 @@ describe('the store', () => {
     const none = await load();
     await none.readHunt(false);
     expect(none.huntNow()).toMatchObject({ applications: [], loaded: true });
-    await expect(none.addJob({ company: 'x', role: '', stage: 'applied', outcome: null, appliedOn: '2026-09-29', source: '', location: '', posting: '', notes: '' })).rejects.toThrow(/database/);
+    await expect(
+      none.addJob({ company: 'x', role: '', stage: 'applied', outcome: null, appliedOn: '2026-09-29', source: '', location: '', posting: '', notes: '' })
+    ).rejects.toThrow(/database/);
   });
 });

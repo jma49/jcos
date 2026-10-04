@@ -4,7 +4,18 @@
 
 import { loadJSON, saveJSON } from '../../core/storage';
 import { SocialError } from '../errors';
-import { fieldsOf, further, JOB_STAGES, jobChangedElsewhere, LADDER, totalsOf, type JobApplication, type JobEvent, type JobReach, type JobsSocial } from '../jobs';
+import {
+  fieldsOf,
+  further,
+  JOB_STAGES,
+  jobChangedElsewhere,
+  LADDER,
+  totalsOf,
+  type JobApplication,
+  type JobEvent,
+  type JobReach,
+  type JobsSocial
+} from '../jobs';
 import { DEV_OWNER, type LocalContext } from './context';
 
 const JOBS_KEY = 'os-dev-jobs';
@@ -15,7 +26,7 @@ interface StoredJobs {
 
 export function localJobs({ member, owner }: LocalContext): JobsSocial {
   const stored = () => loadJSON<StoredJobs>(JOBS_KEY, { applications: [], events: [] });
-  const change = <T,>(write: (jobs: StoredJobs) => T): T => {
+  const change = <T>(write: (jobs: StoredJobs) => T): T => {
     const jobs = stored();
     const result = write(jobs);
     saveJSON(JOBS_KEY, jobs);

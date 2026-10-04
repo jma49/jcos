@@ -54,7 +54,8 @@ export function lastMoved(app: JobApplication, events: JobEvent[] = []) {
 export function columns(apps: JobApplication[], by: Map<string, JobEvent[]>): Record<JobStage, JobApplication[]> {
   const cols = Object.fromEntries(JOB_STAGES.map((s) => [s, [] as JobApplication[]])) as Record<JobStage, JobApplication[]>;
   for (const app of apps) cols[app.stage].push(app);
-  for (const s of JOB_STAGES) cols[s].sort((a, b) => lastMoved(b, by.get(b.id)).localeCompare(lastMoved(a, by.get(a.id))) || a.company.localeCompare(b.company));
+  for (const s of JOB_STAGES)
+    cols[s].sort((a, b) => lastMoved(b, by.get(b.id)).localeCompare(lastMoved(a, by.get(a.id))) || a.company.localeCompare(b.company));
   return cols;
 }
 
@@ -123,7 +124,11 @@ const subscribe = (listener: () => void) => {
 
 /** Job Hunt as it is now, for a view: it renders again when it changes. */
 export function useJobHunt() {
-  useSyncExternalStore(subscribe, () => version, () => version);
+  useSyncExternalStore(
+    subscribe,
+    () => version,
+    () => version
+  );
   return hunt;
 }
 

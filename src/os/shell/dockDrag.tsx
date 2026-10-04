@@ -43,9 +43,7 @@ const dock = () => document.querySelector<HTMLElement>('.os-dock');
 
 /** The kept apps' icons in Dock order, leaving out `moving` and any on its way out. */
 const keptSlots = (moving?: AppId) =>
-  [...(dock()?.querySelectorAll<HTMLElement>('[data-dock-kept]') ?? [])].filter(
-    (el) => el.dataset.dockKept !== moving && el.dataset.leaving === undefined
-  );
+  [...(dock()?.querySelectorAll<HTMLElement>('[data-dock-kept]') ?? [])].filter((el) => el.dataset.dockKept !== moving && el.dataset.leaving === undefined);
 
 /** Where a drop at `x` would land: its place among the kept apps (0 is Finder's) and what it lands in front of. */
 function placeAt(x: number, moving?: AppId) {

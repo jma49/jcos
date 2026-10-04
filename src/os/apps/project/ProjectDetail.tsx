@@ -14,11 +14,7 @@ export default function ProjectDetail({ win }: AppProps) {
     <div className="os-app">
       <div className="os-toolbar">
         {p.demo && (
-          <button
-            type="button"
-            className="os-button os-button-primary"
-            onClick={() => launch('browser', { props: { url: p.demo! }, title: p.title })}
-          >
+          <button type="button" className="os-button os-button-primary" onClick={() => launch('browser', { props: { url: p.demo! }, title: p.title })}>
             Open demo
           </button>
         )}

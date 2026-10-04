@@ -170,13 +170,7 @@ export default function Photos({ win }: AppProps) {
           <a className="os-button" href={current.page} target="_blank" rel="noopener">
             Unsplash ↗
           </a>
-          <button
-            type="button"
-            className="os-button"
-            aria-pressed={info}
-            onClick={() => setInfo((i) => !i)}
-            title="Show or hide the Info drawer"
-          >
+          <button type="button" className="os-button" aria-pressed={info} onClick={() => setInfo((i) => !i)} title="Show or hide the Info drawer">
             ⓘ Info
           </button>
         </div>
@@ -236,14 +230,7 @@ export default function Photos({ win }: AppProps) {
         </div>
         <div className="os-photo-bar">
           <span>{photos.length} photos · by Jincheng Ma on Unsplash</span>
-          <input
-            type="range"
-            min={110}
-            max={320}
-            value={row}
-            onChange={(e) => setRow(Number(e.target.value))}
-            aria-label="Thumbnail size"
-          />
+          <input type="range" min={110} max={320} value={row} onChange={(e) => setRow(Number(e.target.value))} aria-label="Thumbnail size" />
         </div>
       </div>
     </div>

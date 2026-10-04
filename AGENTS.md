@@ -99,8 +99,9 @@ in docs/decisions/) and take it out.
   limits and claims hold under races, tabs don't overwrite each other,
   fan-out stays small, and no one's actions reach another's screen
   uninvited (docs/agents/self-audit.md, Concurrency).
-- Don't reformat whole files (there's no Prettier config); match the
-  surrounding code.
+- Biome formats the code (`biome.jsonc`): run `npm run format` before
+  committing, and CI fails on anything left unformatted. Linting stays
+  with ESLint.
 - Comments say what the code is for and why, not when or who: no dates
   ("measured 2026-09-29") and no decision stories ("Jincheng decided…").
   A rule is stated plainly ("only the owner sees companies"); the story
@@ -111,7 +112,7 @@ in docs/decisions/) and take it out.
 
 | Changed | Run |
 | --- | --- |
-| any code | `npm run check` (types), `npm run lint` (hooks, the app boundaries, storage, empty catches, the scripts), `npm test` |
+| any code | `npm run format`, `npm run check` (types), `npm run lint` (hooks, the app boundaries, storage, empty catches, the scripts), `npm test` |
 | an app, the shell or anything a visitor sees | `npm run build`, then `npm run test:smoke`; open it in a browser too (`npm run serve`) |
 | the first load, a dependency, or anything per frame | `npm run perf` (it builds the site itself): every line within budget |
 | the schema, a migration, a policy or a limit | `npm run test:db`, with a check (and a race for a limit) for the new rule; once merged, put it live as jmos-ops's HANDOFF.md (§1) says |
@@ -120,7 +121,7 @@ in docs/decisions/) and take it out.
 | a doc | `npm test` (every path cited in backticks exists: `scripts/check-doc-paths.mjs`) |
 
 CI (`.github/workflows/ci.yml`) runs `node scripts/audit.mjs`
-(`npm audit` for what ships, but for the listed exceptions), the type check (the Edge Functions' with `deno check`), the lint, the unit tests
+(`npm audit` for what ships, but for the listed exceptions), the type check (the Edge Functions' with `deno check`), the lint, the formatting (`biome ci`), the unit tests
 (with their coverage, reported but not yet held to a threshold), the build, the smoke test, the download budgets of `npm run perf` (script
 times are only reported there, since shared runners are noisy) and the
 database tests on every pull request; `pr-title.yml` checks that the

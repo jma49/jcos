@@ -4,8 +4,8 @@
 // boundaries between the OS, apps and applets (docs/agents/desktop.md),
 // that anything remembered in the browser goes through core/storage.ts,
 // that no block (a catch above all) is empty without a comment saying why,
-// and, in scripts/, ESLint's recommended rules. Formatting and style are
-// left to the surrounding code (see AGENTS.md). tests/eslint.test.ts
+// and, in scripts/, ESLint's recommended rules. Formatting is Biome's
+// (biome.jsonc, `npm run format`). tests/eslint.test.ts
 // probes each rule.
 import js from '@eslint/js';
 import reactHooks from 'eslint-plugin-react-hooks';
@@ -25,7 +25,12 @@ const noRestrictedDynamicImports = {
         properties: {
           patterns: {
             type: 'array',
-            items: { type: 'object', properties: { regex: { type: 'string' }, message: { type: 'string' } }, required: ['regex', 'message'], additionalProperties: false }
+            items: {
+              type: 'object',
+              properties: { regex: { type: 'string' }, message: { type: 'string' } },
+              required: ['regex', 'message'],
+              additionalProperties: false
+            }
           }
         },
         additionalProperties: false
@@ -79,7 +84,9 @@ const coreImports = [
   { regex: '^\\.\\./(?!catalog$)', allowTypeImports: true, message: 'core/ imports only types from the rest of the OS; move shared code into its domain.' }
 ];
 // A manifest is in the first load, so it holds data and a lazy import only.
-const manifestImports = [{ regex: '^\\.\\./(?!\\.\\./(kit/manifest|core/icons)$)', message: 'A manifest imports only kit/manifest, core/icons and its own folder.' }];
+const manifestImports = [
+  { regex: '^\\.\\./(?!\\.\\./(kit/manifest|core/icons)$)', message: 'A manifest imports only kit/manifest, core/icons and its own folder.' }
+];
 
 const storageMessage = 'Anything remembered in the browser goes through src/os/core/storage.ts.';
 const storageGlobals = ['localStorage', 'sessionStorage'];
@@ -181,7 +188,10 @@ export default [
     ignores: ['src/os/core/storage.ts', '**/*.test.ts'],
     rules: {
       'no-restricted-globals': ['error', ...storageGlobals.map((name) => ({ name, message: storageMessage }))],
-      'no-restricted-properties': ['error', ...storageGlobals.flatMap((property) => ['window', 'globalThis'].map((object) => ({ object, property, message: storageMessage })))]
+      'no-restricted-properties': [
+        'error',
+        ...storageGlobals.flatMap((property) => ['window', 'globalThis'].map((object) => ({ object, property, message: storageMessage })))
+      ]
     }
   }
 ];

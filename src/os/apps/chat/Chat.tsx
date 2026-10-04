@@ -55,7 +55,12 @@ function dayLabel(iso: string) {
   const yesterday = new Date(Date.now() - 86_400_000);
   if (d.toDateString() === today.toDateString()) return 'Today';
   if (d.toDateString() === yesterday.toDateString()) return 'Yesterday';
-  return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', ...(d.getFullYear() !== today.getFullYear() ? { year: 'numeric' } : {}) });
+  return d.toLocaleDateString('en-US', {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+    ...(d.getFullYear() !== today.getFullYear() ? { year: 'numeric' } : {})
+  });
 }
 
 const clock = (iso: string) => new Date(iso).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
@@ -398,10 +403,16 @@ export default function Chat({ win }: AppProps) {
   }, [win.id, room, peerName, current?.name]);
 
   const roomButton = (id: string, label: React.ReactNode, meta?: React.ReactNode) => (
-    <button key={id} type="button" className="os-chat-roomlink" aria-current={id === room || undefined} onClick={() => {
+    <button
+      key={id}
+      type="button"
+      className="os-chat-roomlink"
+      aria-current={id === room || undefined}
+      onClick={() => {
         setRoom(id);
         if (narrow) setSidebar(false);
-      }}>
+      }}
+    >
       <span className="os-chat-roomname">{label}</span>
       {meta}
       {/* A dot for rooms with news since the visitor last looked (never-visited rooms stay quiet). */}
@@ -437,9 +448,7 @@ export default function Chat({ win }: AppProps) {
                 : 'Private conversation'
               : [
                   current?.topic,
-                  hereNames.length || guests
-                    ? `here: ${[...hereNames, ...(guests ? [`${guests} guest${guests === 1 ? '' : 's'}`] : [])].join(', ')}`
-                    : null
+                  hereNames.length || guests ? `here: ${[...hereNames, ...(guests ? [`${guests} guest${guests === 1 ? '' : 's'}`] : [])].join(', ')}` : null
                 ]
                   .filter(Boolean)
                   .join(' · ')}
@@ -461,7 +470,11 @@ export default function Chat({ win }: AppProps) {
               return roomButton(
                 r.id,
                 <># {r.name.toLowerCase()}</>,
-                count > 0 ? <span className="os-chat-count" title={`${count} here`}>{count}</span> : null
+                count > 0 ? (
+                  <span className="os-chat-count" title={`${count} here`}>
+                    {count}
+                  </span>
+                ) : null
               );
             })}
             {account && (
@@ -500,9 +513,11 @@ export default function Chat({ win }: AppProps) {
                       list="os-chat-online"
                     />
                     <datalist id="os-chat-online">
-                      {[...online].filter((n) => n !== account.username).map((n) => (
-                        <option key={n} value={n} />
-                      ))}
+                      {[...online]
+                        .filter((n) => n !== account.username)
+                        .map((n) => (
+                          <option key={n} value={n} />
+                        ))}
                     </datalist>
                   </form>
                 )}
@@ -524,7 +539,9 @@ export default function Chat({ win }: AppProps) {
             {load.state === 'loading' && <p className="os-chat-empty">Loading…</p>}
             {load.state === 'offline' && <p className="os-chat-empty">Chat is offline right now.</p>}
             {load.state === 'ready' && !loadingRoom && messages.length === 0 && (
-              <p className="os-chat-empty">{peer ? `This is the start of your conversation with ${peerName}.` : 'Nobody’s said anything here yet. Say hello.'}</p>
+              <p className="os-chat-empty">
+                {peer ? `This is the start of your conversation with ${peerName}.` : 'Nobody’s said anything here yet. Say hello.'}
+              </p>
             )}
             {more && (
               <button type="button" className="os-button os-chat-more" onClick={earlier}>

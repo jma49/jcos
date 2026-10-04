@@ -25,7 +25,20 @@ const EVENT_COLUMNS = 'id,application_id,kind,happened_at,subject,gmail_thread';
 // hold them to the names in jobs.ts, so they're narrowed here.
 type JobRow = Pick<
   Tables<'job_applications'>,
-  'id' | 'company' | 'role' | 'stage' | 'outcome' | 'reached' | 'applied_on' | 'source' | 'location' | 'posting' | 'notes' | 'version' | 'created_at' | 'updated_at'
+  | 'id'
+  | 'company'
+  | 'role'
+  | 'stage'
+  | 'outcome'
+  | 'reached'
+  | 'applied_on'
+  | 'source'
+  | 'location'
+  | 'posting'
+  | 'notes'
+  | 'version'
+  | 'created_at'
+  | 'updated_at'
 >;
 
 type EventRow = Pick<Tables<'job_events'>, 'id' | 'application_id' | 'kind' | 'happened_at' | 'subject' | 'gmail_thread'>;
@@ -83,7 +96,13 @@ export function supabaseJobs({ client, member }: SupabaseContext): JobsSocial {
     async saveJob(draft) {
       member();
       const request = draft.id
-        ? client.from('job_applications').update(fieldsOf(draft)).eq('id', draft.id).eq('version', draft.version ?? 0).select(JOB_COLUMNS).maybeSingle()
+        ? client
+            .from('job_applications')
+            .update(fieldsOf(draft))
+            .eq('id', draft.id)
+            .eq('version', draft.version ?? 0)
+            .select(JOB_COLUMNS)
+            .maybeSingle()
         : client.from('job_applications').insert(fieldsOf(draft)).select(JOB_COLUMNS).single();
       const { data, error } = await request;
       if (error) {

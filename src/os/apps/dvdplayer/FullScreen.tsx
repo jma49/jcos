@@ -3,16 +3,7 @@ import { releaseAfterPointer } from '../../core/useKeys';
 import { useScrub } from '../../core/useScrub';
 import { chapterPictures, chapterStart, type ShelfDisc } from '../../media/discs';
 import { formatTime } from '../../media/music';
-import {
-  ChapterBackGlyph,
-  ChapterNextGlyph,
-  EjectGlyph,
-  ExitFullScreenGlyph,
-  FastForwardGlyph,
-  FullScreenGlyph,
-  RewindGlyph,
-  StopGlyph
-} from './glyphs';
+import { ChapterBackGlyph, ChapterNextGlyph, EjectGlyph, ExitFullScreenGlyph, FastForwardGlyph, FullScreenGlyph, RewindGlyph, StopGlyph } from './glyphs';
 
 // Leopard's full screen for DVD Player: the picture fills the screen, the
 // chapters come down along the top and the controls up along the bottom

@@ -63,14 +63,10 @@ const ico = (images) => {
 };
 
 const icoSizes = [16, 32, 48];
-const images = await Promise.all(
-  icoSizes.map(async (size) => ({ size, data: await png(size) }))
-);
+const images = await Promise.all(icoSizes.map(async (size) => ({ size, data: await png(size) })));
 await writeFile('public/favicon.ico', ico(images));
 
 await writeFile('public/favicon-32x32.png', await png(32));
 await writeFile('public/apple-touch-icon.png', await png(180));
 
-console.log(
-  `public/favicon.ico (${icoSizes.join(', ')}px), favicon-32x32.png, apple-touch-icon.png`
-);
+console.log(`public/favicon.ico (${icoSizes.join(', ')}px), favicon-32x32.png, apple-touch-icon.png`);

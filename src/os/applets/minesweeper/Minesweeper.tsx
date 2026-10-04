@@ -83,7 +83,7 @@ export default function Minesweeper({ win }: AppProps) {
     if (!targets.length) return;
     const safe = reveal(next, targets, cols, rows);
     setCells(next);
-    finish(next, safe ? null : targets.find((n) => next[n].mine) ?? i);
+    finish(next, safe ? null : (targets.find((n) => next[n].mine) ?? i));
     if (safe) play('click');
   };
 

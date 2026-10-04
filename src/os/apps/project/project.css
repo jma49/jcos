@@ -12,7 +12,9 @@
   aspect-ratio: 16 / 10;
   object-fit: cover;
   object-position: top;
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.25), 0 4px 12px rgba(0, 0, 0, 0.25);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.25),
+    0 4px 12px rgba(0, 0, 0, 0.25);
 }
 
 .os-project h1 {

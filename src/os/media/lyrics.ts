@@ -75,9 +75,9 @@ function candidates(song: Song): Promise<Candidate[]> {
       const usable = found.map(toCandidate).filter((c): c is Candidate => c !== null);
       if (usable.length) return usable;
       // The relay is the last resort: failing, the song has no lyrics this time.
-      const relayed = await getJson<{ duration: number; lrc: string }>(
-        `/api/lyrics?${new URLSearchParams({ title: song.title, artist: song.artist })}`
-      ).catch(() => null);
+      const relayed = await getJson<{ duration: number; lrc: string }>(`/api/lyrics?${new URLSearchParams({ title: song.title, artist: song.artist })}`).catch(
+        () => null
+      );
       const one = relayed && toCandidate({ id: 0, duration: relayed.duration, syncedLyrics: relayed.lrc });
       return one ? [one] : [];
     })();

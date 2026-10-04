@@ -75,19 +75,14 @@ export const timeValue = (minutes: number) => `${pad(Math.floor(Math.min(minutes
 
 /** A day's events as iCal lists them: all day first, then by when they start, then by title. */
 export function dayEvents(events: CalendarEvent[], day: string) {
-  return events
-    .filter((e) => e.day === day)
-    .sort((a, b) => (a.starts ?? -1) - (b.starts ?? -1) || a.title.localeCompare(b.title));
+  return events.filter((e) => e.day === day).sort((a, b) => (a.starts ?? -1) - (b.starts ?? -1) || a.title.localeCompare(b.title));
 }
 
 /** To-dos as iCal lists them: not done first, then the most urgent, the soonest due, the oldest. */
 export function todoOrder(todos: Todo[]) {
   return [...todos].sort(
     (a, b) =>
-      Number(a.done) - Number(b.done) ||
-      b.priority - a.priority ||
-      (a.due ?? '9999').localeCompare(b.due ?? '9999') ||
-      a.created.localeCompare(b.created)
+      Number(a.done) - Number(b.done) || b.priority - a.priority || (a.due ?? '9999').localeCompare(b.due ?? '9999') || a.created.localeCompare(b.created)
   );
 }
 
@@ -113,7 +108,11 @@ const subscribe = (listener: () => void) => {
 
 /** The member's calendar as it is now, for a view: it renders again when it changes. */
 export function useCalendar() {
-  useSyncExternalStore(subscribe, () => version, () => version);
+  useSyncExternalStore(
+    subscribe,
+    () => version,
+    () => version
+  );
   return mine;
 }
 

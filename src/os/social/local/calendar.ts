@@ -28,7 +28,7 @@ const checkEntry = (e: { title: string; calendar: string; starts?: number | null
 
 export function localCalendar({ account, member }: LocalContext): CalendarSocial {
   /** Changes the member's stored calendar from what's stored now; a refusal thrown by `change` stores nothing. */
-  const changeCalendar = <T,>(change: (mine: StoredCalendar) => T): T => {
+  const changeCalendar = <T>(change: (mine: StoredCalendar) => T): T => {
     const all = loadJSON<Record<string, StoredCalendar>>(CALENDAR_KEY, {});
     const mine = all[member().id] ?? { events: [], todos: [] };
     const result = change(mine);
@@ -52,7 +52,8 @@ export function localCalendar({ account, member }: LocalContext): CalendarSocial
       checkEntry(fields);
       return changeCalendar((mine) => {
         if (!id) {
-          if (mine.events.length >= LOCAL_LIMITS.events) throw new SocialError('limit', `Your calendar holds ${LOCAL_LIMITS.events} events already. Delete some first.`);
+          if (mine.events.length >= LOCAL_LIMITS.events)
+            throw new SocialError('limit', `Your calendar holds ${LOCAL_LIMITS.events} events already. Delete some first.`);
           const made: CalendarEvent = { id: crypto.randomUUID(), ...fields, version: 1 };
           mine.events.push(made);
           return made;
@@ -74,7 +75,8 @@ export function localCalendar({ account, member }: LocalContext): CalendarSocial
       return changeCalendar((mine) => {
         const now = new Date().toISOString();
         if (!id) {
-          if (mine.todos.length >= LOCAL_LIMITS.todos) throw new SocialError('limit', `You have ${LOCAL_LIMITS.todos} to-dos already. Delete some you’ve done first.`);
+          if (mine.todos.length >= LOCAL_LIMITS.todos)
+            throw new SocialError('limit', `You have ${LOCAL_LIMITS.todos} to-dos already. Delete some you’ve done first.`);
           const made: Todo = { id: crypto.randomUUID(), ...fields, doneAt: fields.done ? now : null, created: now, version: 1 };
           mine.todos.push(made);
           return made;

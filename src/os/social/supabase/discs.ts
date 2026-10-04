@@ -29,7 +29,11 @@ export function supabaseDiscs({ client, member }: SupabaseContext): DiscsSocial 
 
     async burnDisc(disc) {
       member();
-      const { data, error } = await client.from('discs').insert({ ...discRow(disc), id: disc.id, title: disc.title }).select(DISC_COLUMNS).single();
+      const { data, error } = await client
+        .from('discs')
+        .insert({ ...discRow(disc), id: disc.id, title: disc.title })
+        .select(DISC_COLUMNS)
+        .single();
       if (error) {
         if (error.code === '42501') throw notOwner();
         if (error.code === '23505') throw new SocialError('already', 'That video is already on the shelf.');

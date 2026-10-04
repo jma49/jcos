@@ -106,8 +106,26 @@ const sixWindows = () => {
   sessionStorage.setItem('perf-seeded', '1');
   localStorage.setItem('os-welcomed', '1');
   sessionStorage.setItem('os-booted', '1');
-  const apps = [['photos', 'Photos', 1000, 680], ['finder', 'Macintosh HD', 760, 480], ['ipod', 'iPod', 300, 492], ['terminal', 'Terminal', 640, 420], ['chat', 'Chat', 560, 600], ['about', 'About Me', 560, 520]];
-  const windows = apps.map(([app, title, width, height], i) => ({ id: app, app, title, x: 40 + i * 60, y: 40 + i * 30, width, height, minimized: false, maximized: false, props: app === 'finder' ? { path: '/' } : undefined }));
+  const apps = [
+    ['photos', 'Photos', 1000, 680],
+    ['finder', 'Macintosh HD', 760, 480],
+    ['ipod', 'iPod', 300, 492],
+    ['terminal', 'Terminal', 640, 420],
+    ['chat', 'Chat', 560, 600],
+    ['about', 'About Me', 560, 520]
+  ];
+  const windows = apps.map(([app, title, width, height], i) => ({
+    id: app,
+    app,
+    title,
+    x: 40 + i * 60,
+    y: 40 + i * 30,
+    width,
+    height,
+    minimized: false,
+    maximized: false,
+    props: app === 'finder' ? { path: '/' } : undefined
+  }));
   localStorage.setItem('os-windows', JSON.stringify({ windows, order: apps.map(([a]) => a) }));
 };
 

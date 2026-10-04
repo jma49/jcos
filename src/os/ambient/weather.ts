@@ -53,8 +53,7 @@ const minutesOf = (iso: string) => {
 
 /** Minutes after midnight right now in a time zone. */
 export function localMinutes(timeZone: string, date = new Date()) {
-  const parts = new Intl.DateTimeFormat('en-US', { timeZone, hour: 'numeric', minute: 'numeric', hourCycle: 'h23' })
-    .formatToParts(date);
+  const parts = new Intl.DateTimeFormat('en-US', { timeZone, hour: 'numeric', minute: 'numeric', hourCycle: 'h23' }).formatToParts(date);
   const get = (type: string) => Number(parts.find((p) => p.type === type)?.value ?? 0);
   return get('hour') * 60 + get('minute');
 }
@@ -80,22 +79,24 @@ export function getWeather(place: Place): Promise<Weather> {
       `&timezone=${encodeURIComponent(place.timeZone)}&forecast_days=6`
   )
     .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
-    .then((d): Weather => ({
-      temp: Math.round(d.current.temperature_2m),
-      unit,
-      code: d.current.weather_code,
-      condition: conditionOf(d.current.weather_code),
-      high: Math.round(d.daily.temperature_2m_max[0]),
-      low: Math.round(d.daily.temperature_2m_min[0]),
-      sunrise: minutesOf(d.daily.sunrise[0]),
-      sunset: minutesOf(d.daily.sunset[0]),
-      forecast: (d.daily.time as string[]).slice(1).map((date, i) => ({
-        date,
-        high: Math.round(d.daily.temperature_2m_max[i + 1]),
-        low: Math.round(d.daily.temperature_2m_min[i + 1]),
-        condition: conditionOf(d.daily.weather_code[i + 1])
-      }))
-    }));
+    .then(
+      (d): Weather => ({
+        temp: Math.round(d.current.temperature_2m),
+        unit,
+        code: d.current.weather_code,
+        condition: conditionOf(d.current.weather_code),
+        high: Math.round(d.daily.temperature_2m_max[0]),
+        low: Math.round(d.daily.temperature_2m_min[0]),
+        sunrise: minutesOf(d.daily.sunrise[0]),
+        sunset: minutesOf(d.daily.sunset[0]),
+        forecast: (d.daily.time as string[]).slice(1).map((date, i) => ({
+          date,
+          high: Math.round(d.daily.temperature_2m_max[i + 1]),
+          low: Math.round(d.daily.temperature_2m_min[i + 1]),
+          condition: conditionOf(d.daily.weather_code[i + 1])
+        }))
+      })
+    );
   cache.set(key, { at: Date.now(), request });
   // Let a later caller retry after a failure.
   request.catch(() => cache.delete(key));

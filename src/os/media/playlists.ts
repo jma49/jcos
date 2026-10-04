@@ -34,7 +34,12 @@ const subscribe = (listener: () => void) => {
 };
 
 /** For a view that shows ratings or playlists: it renders again when they (or On-The-Go) change. */
-export const useListening = () => useSyncExternalStore(subscribe, () => version, () => version);
+export const useListening = () =>
+  useSyncExternalStore(
+    subscribe,
+    () => version,
+    () => version
+  );
 
 /** Jincheng's rating and plays of a song. */
 export const statsOf = (id: string): SongStats => listening.stats[id] ?? { plays: 0 };

@@ -29,8 +29,7 @@ export interface Viewport {
   height: number;
 }
 
-const viewportNow = (): Viewport =>
-  typeof window === 'undefined' ? { width: 1280, height: 800 } : { width: window.innerWidth, height: window.innerHeight };
+const viewportNow = (): Viewport => (typeof window === 'undefined' ? { width: 1280, height: 800 } : { width: window.innerWidth, height: window.innerHeight });
 
 /** Where a zoomed window sits: the desktop between the menu bar and the Dock, with a small margin. */
 export const zoomedFrame = ({ width, height }: Viewport): Rect => ({
@@ -366,11 +365,9 @@ export const useWindows = create<WindowStore>((set, get) => ({
       windows: { ...s.windows, [id]: { ...s.windows[id], maximized: !s.windows[id].maximized } }
     })),
 
-  setBounds: (id, bounds) =>
-    set((s) => (s.windows[id] ? { windows: { ...s.windows, [id]: { ...s.windows[id], ...bounds } } } : s)),
+  setBounds: (id, bounds) => set((s) => (s.windows[id] ? { windows: { ...s.windows, [id]: { ...s.windows[id], ...bounds } } } : s)),
 
-  setTitle: (id, title) =>
-    set((s) => (s.windows[id] && s.windows[id].title !== title ? { windows: { ...s.windows, [id]: { ...s.windows[id], title } } } : s)),
+  setTitle: (id, title) => set((s) => (s.windows[id] && s.windows[id].title !== title ? { windows: { ...s.windows, [id]: { ...s.windows[id], title } } } : s)),
 
   setTheme: (theme) => {
     save(APPEARANCE_KEY, theme);
@@ -494,9 +491,7 @@ export type WindowSummary = Pick<WindowState, 'id' | 'app' | 'title' | 'minimize
  * updates the store every frame, doesn't re-render them.
  */
 export function useWindowList(): WindowSummary[] {
-  const keys = useWindows(
-    useShallow((s) => Object.values(s.windows).map((w) => JSON.stringify([w.id, w.app, w.title, w.minimized, w.maximized])))
-  );
+  const keys = useWindows(useShallow((s) => Object.values(s.windows).map((w) => JSON.stringify([w.id, w.app, w.title, w.minimized, w.maximized]))));
   return useMemo(
     () =>
       keys.map((key) => {

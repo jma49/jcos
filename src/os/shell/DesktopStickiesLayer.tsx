@@ -12,7 +12,11 @@ let loaded: StickiesModule | null = null;
 const load = () => import('../stickies/DesktopStickies');
 
 /** The desktop menu's New Sticky Note, where it was asked for (the code comes now if it hasn't yet). */
-export const newStickyAt = (at: { x: number; y: number }) => void load().then((m) => m.newStickyAt(at), (error) => report(error, 'stickies.load'));
+export const newStickyAt = (at: { x: number; y: number }) =>
+  void load().then(
+    (m) => m.newStickyAt(at),
+    (error) => report(error, 'stickies.load')
+  );
 
 export function DesktopStickiesLayer() {
   const account = useAccount((s) => s.account?.id ?? null);

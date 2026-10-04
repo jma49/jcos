@@ -30,7 +30,11 @@ const subscribe = (listener: () => void) => {
 
 /** The member's stickies as they are now, for a view: it renders again when they change. */
 export function useMyStickies() {
-  useSyncExternalStore(subscribe, () => version, () => version);
+  useSyncExternalStore(
+    subscribe,
+    () => version,
+    () => version
+  );
   return mine.stickies;
 }
 

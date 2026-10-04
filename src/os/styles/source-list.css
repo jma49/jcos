@@ -83,7 +83,9 @@
   place-items: center;
   overflow: hidden;
   background: #f4f4f4;
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.25), 0 3px 8px rgba(0, 0, 0, 0.25);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.25),
+    0 3px 8px rgba(0, 0, 0, 0.25);
   color: var(--os-faint);
   font-weight: 700;
 }
@@ -108,7 +110,9 @@
 }
 
 .os-finder-grid button[data-selected='true'] .os-finder-thumb {
-  box-shadow: 0 0 0 3px var(--os-focus), 0 3px 8px rgba(0, 0, 0, 0.25);
+  box-shadow:
+    0 0 0 3px var(--os-focus),
+    0 3px 8px rgba(0, 0, 0, 0.25);
 }
 
 .os-finder-grid button[data-selected='true'] .os-finder-name {

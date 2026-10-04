@@ -104,7 +104,9 @@
     border-radius: 8px;
     color: var(--os-accent);
     font-size: 15px;
-    transition: opacity 0.1s, background 0.1s;
+    transition:
+      opacity 0.1s,
+      background 0.1s;
   }
 
   .os-root .os-back:active {

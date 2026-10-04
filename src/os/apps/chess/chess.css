@@ -125,7 +125,12 @@
   bottom: 18%;
   transform: translateX(-50%) rotateX(-46deg);
   transform-origin: 50% 100%;
-  font: 400 calc(var(--board) / 8 * 0.83) / 1 'Apple Symbols', 'Segoe UI Symbol', 'Noto Sans Symbols 2', 'Arial Unicode MS', serif;
+  font:
+    400 calc(var(--board) / 8 * 0.83) / 1 'Apple Symbols',
+    'Segoe UI Symbol',
+    'Noto Sans Symbols 2',
+    'Arial Unicode MS',
+    serif;
 }
 
 .os-chess-piece[data-color='w'] b {
@@ -173,7 +178,12 @@
 .os-root .os-chess-promote-choices .os-button {
   height: 34px;
   padding: 0 10px;
-  font: 24px / 1 'Apple Symbols', 'Segoe UI Symbol', 'Noto Sans Symbols 2', 'Arial Unicode MS', serif;
+  font:
+    24px / 1 'Apple Symbols',
+    'Segoe UI Symbol',
+    'Noto Sans Symbols 2',
+    'Arial Unicode MS',
+    serif;
 }
 
 .os-chess-bar {

@@ -82,10 +82,7 @@ export function appComponent(id: AppId): ComponentType<AppProps> {
 }
 
 export const apps = Object.fromEntries(
-  catalog.map(({ window, load: _load, styles: _styles, data: _data, ...app }): [AppId, AppDefinition] => [
-    app.id,
-    { ...app, ...window }
-  ])
+  catalog.map(({ window, load: _load, styles: _styles, data: _data, ...app }): [AppId, AppDefinition] => [app.id, { ...app, ...window }])
 ) as Record<AppId, AppDefinition>;
 
 const appIds = Object.keys(apps) as AppId[];

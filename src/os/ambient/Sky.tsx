@@ -214,10 +214,13 @@ function Lightning() {
   useEffect(() => {
     let timer = 0;
     const next = () => {
-      timer = window.setTimeout(() => {
-        setFlash((n) => n + 1);
-        next();
-      }, 7000 + Math.random() * 12000);
+      timer = window.setTimeout(
+        () => {
+          setFlash((n) => n + 1);
+          next();
+        },
+        7000 + Math.random() * 12000
+      );
     };
     next();
     return () => clearTimeout(timer);

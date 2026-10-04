@@ -87,9 +87,7 @@ function Detail({ applet, onBack }: { applet: Applet; onBack: () => void }) {
         <Icon size={96} />
         <div>
           <h2>{name}</h2>
-          <p>
-            {applet.category} · by Jincheng Ma
-          </p>
+          <p>{applet.category} · by Jincheng Ma</p>
           <div className="os-store-actions">
             <GetButton app={applet.app} big />
             {installed && (

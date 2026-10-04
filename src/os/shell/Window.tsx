@@ -1,14 +1,4 @@
-import {
-  memo,
-  Suspense,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type PointerEvent as ReactPointerEvent,
-  type ReactNode
-} from 'react';
+import { memo, Suspense, useCallback, useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react';
 import { cubicBezier, m } from 'motion/react';
 import { appComponent, apps } from '../core/registry';
 import { MENU_BAR_HEIGHT, phoneFrame, useWindows, zoomedFrame } from '../core/store';
@@ -24,7 +14,12 @@ import { useReduceMotion } from '../core/system';
  * stop. For the genie's warp, which is one number: motion's own animate()
  * would bring its whole engine into the first load for it (4 KB).
  */
-function tween(from: number, to: number, { duration, delay = 0, ease }: { duration: number; delay?: number; ease: [number, number, number, number] }, draw: (value: number) => void) {
+function tween(
+  from: number,
+  to: number,
+  { duration, delay = 0, ease }: { duration: number; delay?: number; ease: [number, number, number, number] },
+  draw: (value: number) => void
+) {
   const eased = cubicBezier(...ease);
   const start = performance.now() + delay * 1000;
   let frame = requestAnimationFrame(function step(now) {
@@ -70,11 +65,7 @@ const VELOCITY_WINDOW = 90;
  * Pointer-captured drag helper: calls onMove with the offset from the start,
  * and onEnd with the pointer's velocity (px/s) as it let go.
  */
-function useDrag(
-  onMove: (dx: number, dy: number) => void,
-  onStart?: () => void,
-  onEnd?: (vx: number, vy: number) => void
-) {
+function useDrag(onMove: (dx: number, dy: number) => void, onStart?: () => void, onEnd?: (vx: number, vy: number) => void) {
   return useCallback(
     (e: ReactPointerEvent) => {
       if (e.button !== 0) return;
@@ -133,8 +124,7 @@ export const Window = memo(function Window({ win, focused, z, exposed }: Props) 
   // Right if it fits, else left, else over the window's own content (maximized or very wide windows).
   const DRAWER_ROOM = 250;
   const roomRight = typeof window === 'undefined' ? DRAWER_ROOM : window.innerWidth - (win.x + win.width);
-  const drawerSide =
-    win.maximized || (roomRight < DRAWER_ROOM && win.x < DRAWER_ROOM) ? 'inside' : roomRight >= DRAWER_ROOM ? 'right' : 'left';
+  const drawerSide = win.maximized || (roomRight < DRAWER_ROOM && win.x < DRAWER_ROOM) ? 'inside' : roomRight >= DRAWER_ROOM ? 'right' : 'left';
   const def = apps[win.app];
   // Rendered directly if its code is already here, else lazily (appComponent).
   const [App] = useState(() => appComponent(win.app));
@@ -231,15 +221,10 @@ export const Window = memo(function Window({ win, focused, z, exposed }: Props) 
   });
 
   // Where the window is: its own place, a phone's screen, or the desktop between the menu bar and the Dock.
-  const rect: Rect = !viewport
-    ? { x: win.x, y: win.y, width: win.width, height: win.height }
-    : isMobile
-      ? phoneFrame(viewport)
-      : zoomedFrame(viewport);
+  const rect: Rect = !viewport ? { x: win.x, y: win.y, width: win.width, height: win.height } : isMobile ? phoneFrame(viewport) : zoomedFrame(viewport);
 
   const dockTarget = () =>
-    document.querySelector(`[data-dock-app="${win.app}"]`)?.getBoundingClientRect() ??
-    document.querySelector('[data-dock-minimized]')?.getBoundingClientRect();
+    document.querySelector(`[data-dock-app="${win.app}"]`)?.getBoundingClientRect() ?? document.querySelector('[data-dock-minimized]')?.getBoundingClientRect();
 
   // Genie: from the moment the window minimizes until it has fully come back.
   const [genie, setGenie] = useState<{ neck: number; dx: number; dy: number } | null>(null);
@@ -320,15 +305,7 @@ export const Window = memo(function Window({ win, focused, z, exposed }: Props) 
       {genie && map && (
         <svg className="os-genie-defs" aria-hidden="true">
           {/* Bounding-box units keep the map on the window at any pixel density. */}
-          <filter
-            id={filterId}
-            x="0"
-            y="0"
-            width="1"
-            height="1"
-            primitiveUnits="objectBoundingBox"
-            colorInterpolationFilters="sRGB"
-          >
+          <filter id={filterId} x="0" y="0" width="1" height="1" primitiveUnits="objectBoundingBox" colorInterpolationFilters="sRGB">
             <feImage href={map} x="0" y="0" width="1" height="1" preserveAspectRatio="none" result="map" />
             <feDisplacementMap ref={displacement} in="SourceGraphic" in2="map" scale="0" xChannelSelector="R" yChannelSelector="G" />
           </filter>

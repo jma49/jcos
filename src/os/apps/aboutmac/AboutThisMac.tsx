@@ -16,12 +16,19 @@ function machine() {
   const cores = nav.hardwareConcurrency;
   const ua = nav.userAgent;
   const browser = /Edg\//.test(ua) ? 'Edge' : /Firefox\//.test(ua) ? 'Firefox' : /Chrome\//.test(ua) ? 'Chrome' : /Safari\//.test(ua) ? 'Safari' : 'a browser';
-  const platform = nav.userAgentData?.platform || (/Mac/.test(ua) ? 'macOS' : /Win/.test(ua) ? 'Windows' : /Android/.test(ua) ? 'Android' : /iPhone|iPad/.test(ua) ? 'iOS' : /Linux/.test(ua) ? 'Linux' : '');
+  const platform =
+    nav.userAgentData?.platform ||
+    (/Mac/.test(ua) ? 'macOS' : /Win/.test(ua) ? 'Windows' : /Android/.test(ua) ? 'Android' : /iPhone|iPad/.test(ua) ? 'iOS' : /Linux/.test(ua) ? 'Linux' : '');
   let gpu = '';
   try {
     const gl = document.createElement('canvas').getContext('webgl');
     const info = gl?.getExtension('WEBGL_debug_renderer_info');
-    gpu = (info && gl ? String(gl.getParameter(info.UNMASKED_RENDERER_WEBGL)) : '').replace(/^ANGLE \((.*)\)$/, '$1').replace(/\s*\(0x[0-9a-f]+\)/gi, '').split(',').slice(0, 2).join(',');
+    gpu = (info && gl ? String(gl.getParameter(info.UNMASKED_RENDERER_WEBGL)) : '')
+      .replace(/^ANGLE \((.*)\)$/, '$1')
+      .replace(/\s*\(0x[0-9a-f]+\)/gi, '')
+      .split(',')
+      .slice(0, 2)
+      .join(',');
   } catch {
     // WebGL off or blocked: no graphics line.
   }
@@ -93,9 +100,7 @@ export default function AboutThisMac({ win }: AppProps) {
             <dt>Uptime</dt>
             <dd>{minutes < 1 ? 'Under a minute' : `${minutes} minute${minutes === 1 ? '' : 's'}`}</dd>
             <dt>Users</dt>
-            <dd>
-              {visitors} on this desktop
-            </dd>
+            <dd>{visitors} on this desktop</dd>
           </>
         )}
       </dl>

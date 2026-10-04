@@ -265,15 +265,17 @@ export function DayFinder({
           {items.length === 0 && <p className="os-finder-empty">Nothing was here yet.</p>}
 
           <div className="os-finder-status">
-            <span className="os-tm-path">{ancestry(folder.path).map((p) => find(disk, p)?.name).join(' ▸ ')}</span>
+            <span className="os-tm-path">
+              {ancestry(folder.path)
+                .map((p) => find(disk, p)?.name)
+                .join(' ▸ ')}
+            </span>
             <span>
               {items.length} item{items.length === 1 ? '' : 's'}
             </span>
           </div>
 
-          {front && place.looking && selected && (
-            <QuickLook node={selected} onClose={() => onChange({ looking: false })} actions={restore} />
-          )}
+          {front && place.looking && selected && <QuickLook node={selected} onClose={() => onChange({ looking: false })} actions={restore} />}
         </div>
       </div>
       {locked && (

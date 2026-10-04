@@ -47,7 +47,8 @@ describe.each(backends)('stickies: $name', ({ make }) => {
     const alice = await b.signUp('alice');
     const { stickies } = (await b.social.limits())!;
     await b.given({
-      local: (store) => store.set('os-dev-stickies', JSON.stringify({ [alice.id]: Array.from({ length: stickies }, (_, i) => ({ ...row(`s${i}`), updated: '' })) })),
+      local: (store) =>
+        store.set('os-dev-stickies', JSON.stringify({ [alice.id]: Array.from({ length: stickies }, (_, i) => ({ ...row(`s${i}`), updated: '' })) })),
       supabase: (db) => db.refuse('stickies.insert', 'P0429', `You have ${stickies} stickies already. Close one first.`)
     });
     await expect(b.social.addSticky({})).rejects.toMatchObject({ reason: 'limit' });

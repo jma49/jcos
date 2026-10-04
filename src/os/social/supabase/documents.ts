@@ -57,13 +57,20 @@ export function supabaseDocuments({ client, member }: SupabaseContext): Document
     async saveDocument({ id, version, folder, name, body }) {
       member();
       const request = id
-        ? client.from('documents').update({ folder, name, body }).eq('id', id).eq('version', version ?? 0).select(DOCUMENT_COLUMNS).maybeSingle()
+        ? client
+            .from('documents')
+            .update({ folder, name, body })
+            .eq('id', id)
+            .eq('version', version ?? 0)
+            .select(DOCUMENT_COLUMNS)
+            .maybeSingle()
         : client.from('documents').insert({ folder, name, body }).select(DOCUMENT_COLUMNS).single();
       const { data, error } = await request;
       if (error) {
         if (error.code === '42501') throw notOwner('Jincheng’s documents');
         if (error.code === '23505') throw new SocialError('already', `There’s already a document called “${name}” in that folder.`);
-        if (error.code === '23514') throw new SocialError('invalid', 'A name is one line, without “/” or “:”, and a document holds 100,000 characters at most.');
+        if (error.code === '23514')
+          throw new SocialError('invalid', 'A name is one line, without “/” or “:”, and a document holds 100,000 characters at most.');
         throw refusal(error);
       }
       if (!data) throw changedElsewhere();
@@ -79,7 +86,13 @@ export function supabaseDocuments({ client, member }: SupabaseContext): Document
     async saveEntry({ id, version, day, body }) {
       member();
       const request = id
-        ? client.from('diary').update({ day, body }).eq('id', id).eq('version', version ?? 0).select(ENTRY_COLUMNS).maybeSingle()
+        ? client
+            .from('diary')
+            .update({ day, body })
+            .eq('id', id)
+            .eq('version', version ?? 0)
+            .select(ENTRY_COLUMNS)
+            .maybeSingle()
         : client.from('diary').insert({ day, body }).select(ENTRY_COLUMNS).single();
       const { data, error } = await request;
       if (error) throw error.code === '42501' ? notOwner('Jincheng’s diary') : refusal(error);

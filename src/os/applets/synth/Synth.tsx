@@ -36,10 +36,28 @@ const savedPatch = () => settings.load({ ...PRESETS.Keys, octave: 4 });
 
 /** Computer keys to semitones above the lowest C, like GarageBand's Musical Typing. */
 const KEYMAP: Record<string, number> = {
-  KeyA: 0, KeyW: 1, KeyS: 2, KeyE: 3, KeyD: 4, KeyF: 5, KeyT: 6, KeyG: 7, KeyY: 8, KeyH: 9, KeyU: 10, KeyJ: 11,
-  KeyK: 12, KeyO: 13, KeyL: 14, KeyP: 15, Semicolon: 16, Quote: 17
+  KeyA: 0,
+  KeyW: 1,
+  KeyS: 2,
+  KeyE: 3,
+  KeyD: 4,
+  KeyF: 5,
+  KeyT: 6,
+  KeyG: 7,
+  KeyY: 8,
+  KeyH: 9,
+  KeyU: 10,
+  KeyJ: 11,
+  KeyK: 12,
+  KeyO: 13,
+  KeyL: 14,
+  KeyP: 15,
+  Semicolon: 16,
+  Quote: 17
 };
-const LETTER: Record<number, string> = Object.fromEntries(Object.entries(KEYMAP).map(([code, n]) => [n, code === 'Semicolon' ? ';' : code === 'Quote' ? '’' : code.slice(3)]));
+const LETTER: Record<number, string> = Object.fromEntries(
+  Object.entries(KEYMAP).map(([code, n]) => [n, code === 'Semicolon' ? ';' : code === 'Quote' ? '’' : code.slice(3)])
+);
 
 const NAMES = ['C', 'C♯', 'D', 'D♯', 'E', 'F', 'F♯', 'G', 'G♯', 'A', 'A♯', 'B'];
 const BLACK = new Set([1, 3, 6, 8, 10]);

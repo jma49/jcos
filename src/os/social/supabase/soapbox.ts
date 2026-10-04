@@ -10,17 +10,14 @@ import { refusal, type SupabaseContext } from './context';
 export function supabaseSoapbox({ client, account, member }: SupabaseContext): SoapboxSocial {
   return {
     async listPosts() {
-      const query = (columns: string) =>
-        client.from('soapbox_posts').select(columns).order('created_at', { ascending: false }).limit(100);
+      const query = (columns: string) => client.from('soapbox_posts').select(columns).order('created_at', { ascending: false }).limit(100);
       let { data: posts, error } = await query('id, body, kind, place, weather, images, created_at');
       // A database without supabase/migrations/20260926080833_soapbox_images.sql has no images yet.
       if (error) ({ data: posts, error } = await query('id, body, kind, place, weather, created_at'));
       if (error) throw new Error(error.message);
       const rows = (posts ?? []) as unknown as (Omit<Post, 'reactions' | 'images'> & { images?: (PostImage & { message?: number })[] })[];
       const ids = rows.map((p) => p.id);
-      const { data: reactions } = ids.length
-        ? await client.from('soapbox_reactions').select('post_id, emoji').in('post_id', ids)
-        : { data: [] };
+      const { data: reactions } = ids.length ? await client.from('soapbox_reactions').select('post_id, emoji').in('post_id', ids) : { data: [] };
       const counts = new Map<string, Post['reactions']>();
       for (const r of reactions ?? []) {
         const tally = counts.get(r.post_id) ?? {};

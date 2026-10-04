@@ -116,7 +116,14 @@ export function Board({
           </h3>
           <div className="os-jh-col-cards" onPointerDown={(e) => e.target === e.currentTarget && onSelect(null)}>
             {columns[stage].map((app) => (
-              <Card key={app.id} app={app} events={by.get(app.id) ?? []} selected={selected === app.id} onSelect={() => onSelect(app.id)} onOpen={() => onOpen(app.id)} />
+              <Card
+                key={app.id}
+                app={app}
+                events={by.get(app.id) ?? []}
+                selected={selected === app.id}
+                onSelect={() => onSelect(app.id)}
+                onOpen={() => onOpen(app.id)}
+              />
             ))}
           </div>
         </section>
@@ -135,7 +142,13 @@ export function StubBoard({ totals, shown, current }: { totals: JobTotals; shown
       {shown.map((stage) => {
         const n = totals.stages[stage];
         return (
-          <section key={stage} className="os-jh-col" data-stage={stage} data-current={stage === current || undefined} aria-label={`${STAGE_NAMES[stage]}: ${n}`}>
+          <section
+            key={stage}
+            className="os-jh-col"
+            data-stage={stage}
+            data-current={stage === current || undefined}
+            aria-label={`${STAGE_NAMES[stage]}: ${n}`}
+          >
             <h3 className="os-jh-col-head">
               <i aria-hidden="true" />
               {STAGE_NAMES[stage]}

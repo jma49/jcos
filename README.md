@@ -184,6 +184,7 @@ significant change goes through.
 | `npm run check` | Type-checks the site (`astro check`). |
 | `npm run preview:capture` | Screenshots project pages into their covers, and the home page into `public/og.jpg`. A workflow runs it once a day. |
 | `bash scripts/vercel-ignore.sh <base>` | Vercel's ignored build step: says whether a deployment would be skipped (nothing the site is built from changed since `<base>`: only docs, tests, CI, the database, the Edge Functions' own folders or tooling). |
+| `npm run format` | Formats the code with Biome (`biome.jsonc`: JS, TS, JSX, JSON and CSS; Astro files and the data in `src/data/` are left as they are). `npm run format:check` is what CI runs: it fails on anything unformatted. |
 | `npm run lint` | Checks the rules of React hooks and effects' dependencies, the boundaries between the OS, apps and applets (`import()` included), that anything remembered in the browser goes through `src/os/core/storage.ts`, and ESLint's recommended rules in `scripts/` (ESLint; `tests/eslint.test.ts` probes each rule). |
 | `npm run perf` | Builds the site as production is built (placeholder Supabase settings) and measures it against the performance budgets (see `docs/agents/performance.md`). |
 | `npm run coverage` | Runs the unit tests with V8 coverage over everything that ships: a summary in the terminal, the full report in `coverage/` (not committed). CI prints the summary; there's no threshold yet. |

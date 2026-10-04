@@ -71,7 +71,9 @@ describe('an app uses the OS, never another app or an applet', () => {
   });
   test('an applet', async () => {
     expect(await lint('src/os/apps/probe/Probe.tsx', "import { table } from '../../applets/pinball/table';")).toContain('Apps don’t import applets.');
-    expect(await lint('src/os/apps/probe/Probe.tsx', "export const load = () => import('../../applets/pinball/table');")).toContain('Apps don’t import applets.');
+    expect(await lint('src/os/apps/probe/Probe.tsx', "export const load = () => import('../../applets/pinball/table');")).toContain(
+      'Apps don’t import applets.'
+    );
   });
   test('the OS and its own folder', async () => {
     const code = [
@@ -94,7 +96,9 @@ describe('an app uses the OS, never another app or an applet', () => {
     ].join('\n');
     expect(await lint('src/os/apps/probe/manifest.ts', own)).toBe('');
     expect(await lint('src/os/apps/probe/manifest.ts', "import { useWindows } from '../../core/store';")).toContain(rule);
-    expect(await lint('src/os/apps/probe/manifest.ts', "export const load = () => import('../../apps/ipod/IPod');")).toContain('An app doesn’t import another app');
+    expect(await lint('src/os/apps/probe/manifest.ts', "export const load = () => import('../../apps/ipod/IPod');")).toContain(
+      'An app doesn’t import another app'
+    );
   });
 });
 
@@ -129,7 +133,7 @@ describe('the browser’s memory goes through core/storage.ts', () => {
   });
   test('storage.ts itself, and tests', async () => {
     expect(await lint('src/os/core/storage.ts', "window.localStorage.getItem('os-probe');")).toBe('');
-    expect(await lint('src/os/apps/probe/probe.test.ts', "localStorage.clear();")).toBe('');
+    expect(await lint('src/os/apps/probe/probe.test.ts', 'localStorage.clear();')).toBe('');
   });
 });
 

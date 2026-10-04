@@ -122,9 +122,19 @@ describe('days', () => {
 
   test('a day lists all day first, then by time; to-dos the undone and most urgent first', async () => {
     const { dayEvents, todoOrder } = await load();
-    const events = [event('late', '2026-09-30', { starts: 900, ends: 960 }), event('all', '2026-09-30'), event('early', '2026-09-30', { starts: 540, ends: 600 }), event('other', '2026-10-01')];
+    const events = [
+      event('late', '2026-09-30', { starts: 900, ends: 960 }),
+      event('all', '2026-09-30'),
+      event('early', '2026-09-30', { starts: 540, ends: 600 }),
+      event('other', '2026-10-01')
+    ];
     expect(dayEvents(events, '2026-09-30').map((e) => e.id)).toEqual(['all', 'early', 'late']);
-    const todos = [todo('done', { done: true, priority: 3 }), todo('low', { priority: 1 }), todo('high-later', { priority: 3, due: '2026-10-09' }), todo('high-soon', { priority: 3, due: '2026-10-01' })];
+    const todos = [
+      todo('done', { done: true, priority: 3 }),
+      todo('low', { priority: 1 }),
+      todo('high-later', { priority: 3, due: '2026-10-09' }),
+      todo('high-soon', { priority: 3, due: '2026-10-01' })
+    ];
     expect(todoOrder(todos).map((t) => t.id)).toEqual(['high-soon', 'high-later', 'low', 'done']);
   });
 });
@@ -138,7 +148,12 @@ describe('the store', () => {
     expect(c.calendarNow().events.map((e) => e.id)).toEqual(['a']);
     expect(c.calendarNow().todos).toHaveLength(1);
     await c.readEvents('alice', '2026-11-01', '2026-12-12');
-    expect(c.calendarNow().events.map((e) => e.id).sort()).toEqual(['a', 'b']);
+    expect(
+      c
+        .calendarNow()
+        .events.map((e) => e.id)
+        .sort()
+    ).toEqual(['a', 'b']);
     void c.readEvents(null, '2026-08-30', '2026-10-10');
     expect(c.calendarNow()).toMatchObject({ events: [], todos: [] });
   });

@@ -68,14 +68,7 @@ export function OnlineStatus() {
 
   return (
     <div ref={ref} className="os-online-wrap">
-      <button
-        type="button"
-        className="os-online"
-        title={label}
-        aria-label={label}
-        aria-expanded={open}
-        onClick={() => setOpen((o) => !o)}
-      >
+      <button type="button" className="os-online" title={label} aria-label={label} aria-expanded={open} onClick={() => setOpen((o) => !o)}>
         <svg viewBox="0 0 16 12" width="15" height="11" aria-hidden="true">
           <circle cx="5.5" cy="3" r="2.6" fill="currentColor" />
           <path d="M0.5 11.5c0-3 2.2-4.8 5-4.8s5 1.8 5 4.8z" fill="currentColor" />

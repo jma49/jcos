@@ -63,7 +63,6 @@ export function MenuBar({ sky }: { sky: SkyState }) {
     (list?.querySelector<HTMLElement>('[role="menuitem"]:not(:disabled)') ?? list)?.focus();
   }, [openMenu]);
 
-
   const accounts = useAccount();
 
   // The iPod and Karaoke add a Controls menu while they're in front.
@@ -81,9 +80,7 @@ export function MenuBar({ sky }: { sky: SkyState }) {
           action: () => music.setRepeat(r)
         })),
         { divider: true, label: '' },
-        player === 'ipod'
-          ? { label: 'Open Karaoke', action: () => launch('karaoke') }
-          : { label: 'Open iPod', action: () => launch('ipod') }
+        player === 'ipod' ? { label: 'Open Karaoke', action: () => launch('karaoke') } : { label: 'Open iPod', action: () => launch('ipod') }
       ]
     : null;
   // Any app may add its own while it's in front (setMenus in store.ts).
@@ -237,12 +234,7 @@ export function MenuBar({ sky }: { sky: SkyState }) {
         <SoundToggle />
         <OnlineStatus />
         <SkyStatus sky={sky} onOpen={() => useWindows.getState().setDashboard(true)} />
-        <button
-          type="button"
-          className="os-theme-toggle"
-          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-          aria-label="Toggle appearance"
-        >
+        <button type="button" className="os-theme-toggle" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} aria-label="Toggle appearance">
           {theme === 'dark' ? '☀︎' : '☾'}
         </button>
         <button type="button" onClick={() => setSpotlight(true)} aria-label="Search">

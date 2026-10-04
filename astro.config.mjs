@@ -8,10 +8,7 @@ export default defineConfig({
   site: SITE_URL,
   // The dev toolbar sits where the JM/OS Dock is. It never ships to production.
   devToolbar: { enabled: false },
-  integrations: [
-    react(),
-    sitemap()
-  ],
+  integrations: [react(), sitemap()],
   vite: {
     // NEXT_PUBLIC_ too: the Supabase integration for Vercel names its
     // variables for Next.js (see src/os/social/social.ts).

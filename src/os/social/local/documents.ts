@@ -12,7 +12,7 @@ const HOME_KEY = 'os-dev-home';
 export function localDocuments({ account, owner }: LocalContext): DocumentsSocial {
   const home = () => loadJSON<Home>(HOME_KEY, { documents: [], diary: [] });
   /** Changes the stored home folder from what's stored now; a refusal thrown by `change` stores nothing. */
-  const changeHome = <T,>(change: (h: Home) => T): T => {
+  const changeHome = <T>(change: (h: Home) => T): T => {
     const h = home();
     const result = change(h);
     saveJSON(HOME_KEY, h);

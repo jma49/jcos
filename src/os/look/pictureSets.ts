@@ -26,9 +26,9 @@ export const setOf = (value: string | null) => [...PICTURE_SETS, TILES].find((se
  * on to, and what the Desktop Pictures screen saver shows. (Jincheng's own
  * photos stay in Photos.)
  */
-export const SCENIC: SetPicture[] = PICTURE_SETS.filter((set) =>
-  ['nature', 'landscapes', 'plants', 'nostalgia', 'black_and_white'].includes(set.id)
-).flatMap((set) => set.items);
+export const SCENIC: SetPicture[] = PICTURE_SETS.filter((set) => ['nature', 'landscapes', 'plants', 'nostalgia', 'black_and_white'].includes(set.id)).flatMap(
+  (set) => set.items
+);
 
 /**
  * The picture to show next when the desktop changes by itself: another one

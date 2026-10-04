@@ -33,11 +33,7 @@ export function listeningOf(stats: StatsRow[], playlists: PlaylistRow[]): Listen
 export function supabaseMusic({ client, member }: SupabaseContext): MusicSocial {
   return {
     async song(id) {
-      const { data, error } = await client
-        .from('songs')
-        .select(SONG_COLUMNS)
-        .eq('id', id)
-        .maybeSingle();
+      const { data, error } = await client.from('songs').select(SONG_COLUMNS).eq('id', id).maybeSingle();
       if (error) throw error;
       return data ? songOf(data) : null;
     },

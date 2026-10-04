@@ -11,17 +11,7 @@ import { releaseFocus, useWindows } from '../core/store';
 import { inertAround } from '../core/focus';
 import { useOSData } from '../core/context';
 import { describe as describeWeather, useWeather } from '../ambient/weather';
-import {
-  choosePlace,
-  clockTimeZone,
-  distanceKm,
-  HOME,
-  hoursAhead,
-  usePlace,
-  wallClock,
-  type Place,
-  type WallClock
-} from '../ambient/place';
+import { choosePlace, clockTimeZone, distanceKm, HOME, hoursAhead, usePlace, wallClock, type Place, type WallClock } from '../ambient/place';
 
 // Tiger-style Dashboard: an overlay of widgets that zoom in over a dimmed
 // desktop. The clock, calendar and weather are the visitor's; one widget
@@ -324,10 +314,12 @@ function GitHubWidget({ user }: { user: string }) {
 
   const rows =
     events && events !== 'error'
-      ? events.flatMap((e) => {
-          const text = describe(e);
-          return text ? [{ id: e.id, text, when: ago(e.created_at) }] : [];
-        }).slice(0, 5)
+      ? events
+          .flatMap((e) => {
+            const text = describe(e);
+            return text ? [{ id: e.id, text, when: ago(e.created_at) }] : [];
+          })
+          .slice(0, 5)
       : [];
 
   return (

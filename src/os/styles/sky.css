@@ -27,8 +27,7 @@
   inset: -10% -30%;
   background:
     radial-gradient(ellipse 40% 30% at 30% 60%, rgba(235, 238, 242, 0.55), transparent 70%),
-    radial-gradient(ellipse 45% 35% at 75% 40%, rgba(235, 238, 242, 0.45), transparent 70%),
-    linear-gradient(transparent, rgba(225, 228, 232, 0.4));
+    radial-gradient(ellipse 45% 35% at 75% 40%, rgba(235, 238, 242, 0.45), transparent 70%), linear-gradient(transparent, rgba(225, 228, 232, 0.4));
   animation: os-fog-drift 60s ease-in-out infinite alternate;
 }
 
@@ -51,10 +50,19 @@
 }
 
 @keyframes os-lightning {
-  0%, 100% { opacity: 0; }
-  6% { opacity: 1; }
-  14% { opacity: 0.2; }
-  22% { opacity: 0.8; }
+  0%,
+  100% {
+    opacity: 0;
+  }
+  6% {
+    opacity: 1;
+  }
+  14% {
+    opacity: 0.2;
+  }
+  22% {
+    opacity: 0.8;
+  }
 }
 
 .os-status .os-sky-status {

@@ -49,6 +49,8 @@ changed=$(git diff --name-only "$base" "$head" -- . \
   ':(exclude).mailmap' \
   ':(exclude).env.example' \
   ':(exclude)eslint.config.js' \
+  ':(exclude)biome.jsonc' \
+  ':(exclude).git-blame-ignore-revs' \
   ':(exclude)vitest.config.ts') || {
   echo "Couldn't compare with $base: building."
   exit 1

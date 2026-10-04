@@ -103,7 +103,6 @@ function Shell({ data }: { data: OSData }) {
 
   useAppearance(sky.daylight);
 
-
   const finishBoot = () => {
     saveForTab('os-booted', '1');
     setBooting(false);
@@ -231,13 +230,7 @@ function WindowLayer() {
           would reload any iframe inside a window. */}
       <AnimatePresence>
         {Object.values(windows).map((win) => (
-          <Window
-            key={win.id}
-            win={win}
-            focused={win.id === focusedId}
-            z={10 + order.indexOf(win.id)}
-            exposed={layout?.[win.id]}
-          />
+          <Window key={win.id} win={win} focused={win.id === focusedId} z={10 + order.indexOf(win.id)} exposed={layout?.[win.id]} />
         ))}
       </AnimatePresence>
     </>

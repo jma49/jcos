@@ -11,8 +11,7 @@
   overflow: hidden;
   background:
     radial-gradient(ellipse at 50% 18%, rgba(120, 150, 255, 0.35), transparent 45%),
-    radial-gradient(ellipse at 30% 60%, rgba(160, 90, 200, 0.22), transparent 50%),
-    linear-gradient(#060a1c, #0b1333 55%, #1a2350 80%, #2a3a74);
+    radial-gradient(ellipse at 30% 60%, rgba(160, 90, 200, 0.22), transparent 50%), linear-gradient(#060a1c, #0b1333 55%, #1a2350 80%, #2a3a74);
   color: #fff;
   user-select: none;
 }
@@ -182,7 +181,9 @@
   height: 3px;
   border-radius: 2px;
   background: rgba(200, 215, 255, 0.6);
-  transition: width 0.15s, background 0.15s;
+  transition:
+    width 0.15s,
+    background 0.15s;
 }
 
 .os-tm-timeline button[data-named] span,

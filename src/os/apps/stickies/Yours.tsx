@@ -29,9 +29,7 @@ export function Yours({ account, newest }: { account: string | null; newest: str
         <StickyNote key={sticky.id} sticky={sticky} autoFocus={sticky.id === newest} />
       ))}
       {stickies.length === 0 && (
-        <p className="os-stickies-empty">
-          No stickies of your own yet. New Sticky puts one up{isPhone() ? '' : ', here and on your desktop'}.
-        </p>
+        <p className="os-stickies-empty">No stickies of your own yet. New Sticky puts one up{isPhone() ? '' : ', here and on your desktop'}.</p>
       )}
     </div>
   );

@@ -30,8 +30,7 @@ export function exposeLayout(windows: WindowState[], viewport: Viewport): Record
     width: viewport.width - PAD * 2,
     height: viewport.height - MENU_BAR_HEIGHT - DOCK_CLEARANCE - PAD * 2
   };
-  const scaleIn = (rect: Rect, cellW: number, cellH: number) =>
-    Math.min(1, (cellW - GAP) / rect.width, (cellH - GAP - LABEL) / rect.height);
+  const scaleIn = (rect: Rect, cellW: number, cellH: number) => Math.min(1, (cellW - GAP) / rect.width, (cellH - GAP - LABEL) / rect.height);
 
   // Pick the column count that leaves the windows the most screen area.
   let cols = 1;

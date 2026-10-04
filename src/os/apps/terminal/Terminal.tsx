@@ -124,14 +124,7 @@ const COMMANDS: Record<string, string> = {
 const APP_TARGETS: readonly string[] = openableApps;
 
 function neofetch(data: OSData): ReactNode {
-  const art = [
-    '     ██╗███╗   ███╗',
-    '     ██║████╗ ████║',
-    '     ██║██╔████╔██║',
-    '██   ██║██║╚██╔╝██║',
-    '╚█████╔╝██║ ╚═╝ ██║',
-    ' ╚════╝ ╚═╝     ╚═╝'
-  ];
+  const art = ['     ██╗███╗   ███╗', '     ██║████╗ ████║', '     ██║██╔████╔██║', '██   ██║██║╚██╔╝██║', '╚█████╔╝██║ ╚═╝ ██║', ' ╚════╝ ╚═╝     ╚═╝'];
   const info: [string, string][] = [
     ['OS', 'JM/OS 0.1 (prototype)'],
     ['Host', data.name],
@@ -183,7 +176,14 @@ export default function Terminal({ win }: AppProps) {
   useShelfRefresh();
   useHomeRefresh(true, owner);
   const disk = useMemo(
-    () => buildDisk(data, applets, { songs, albums }, moviesFolder(shelf, owner), usersFolder(home, owner, data.projects, () => {})),
+    () =>
+      buildDisk(
+        data,
+        applets,
+        { songs, albums },
+        moviesFolder(shelf, owner),
+        usersFolder(home, owner, data.projects, () => {})
+      ),
     [data, applets, songs, albums, shelf, home, owner]
   );
   const prompt = promptFor(cwd);
@@ -266,7 +266,8 @@ export default function Terminal({ win }: AppProps) {
             content: (
               <span>
                 <b>{p.slug.padEnd(16)}</b>
-                {(p.status === 'wip' ? 'in progress' : p.when).padEnd(12)}{p.description}
+                {(p.status === 'wip' ? 'in progress' : p.when).padEnd(12)}
+                {p.description}
               </span>
             )
           }))
@@ -325,10 +326,7 @@ export default function Terminal({ win }: AppProps) {
             if (!place) return print({ kind: 'error', content: `weather: no such place: ${arg}` });
             return getWeather(place).then((w) => {
               const { icon, label } = describe(w.condition);
-              print(
-                { content: `${placeLabel(place)}` },
-                { content: `${icon}  ${w.temp}°${w.unit}, ${label.toLowerCase()} · high ${w.high}° low ${w.low}°` }
-              );
+              print({ content: `${placeLabel(place)}` }, { content: `${icon}  ${w.temp}°${w.unit}, ${label.toLowerCase()} · high ${w.high}° low ${w.low}°` });
             });
           })
           .catch(() => print({ kind: 'error', content: 'weather: the forecast service is unreachable' }));
@@ -341,10 +339,12 @@ export default function Terminal({ win }: AppProps) {
             if (!posts) return print({ kind: 'error', content: 'soapbox: offline' });
             if (!posts.length) return print({ content: 'Nothing on the Soapbox yet.' });
             print(
-              ...posts.slice(0, 3).flatMap((p) => [
-                { content: `${p.kind === 'rant' ? '🔥' : '📝'} ${new Date(p.created_at).toDateString()}${p.place ? ` · ${p.place}` : ''}` },
-                { content: `   ${p.body.split('\n')[0]}` }
-              ]),
+              ...posts
+                .slice(0, 3)
+                .flatMap((p) => [
+                  { content: `${p.kind === 'rant' ? '🔥' : '📝'} ${new Date(p.created_at).toDateString()}${p.place ? ` · ${p.place}` : ''}` },
+                  { content: `   ${p.body.split('\n')[0]}` }
+                ]),
               { content: 'Type `open soapbox` for the rest.' }
             );
           })

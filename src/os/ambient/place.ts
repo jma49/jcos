@@ -100,10 +100,9 @@ export function placeLabel(place: Place) {
 /** Cities matching a search, from Open-Meteo's geocoder (no key needed). */
 export async function searchPlaces(query: string, signal?: AbortSignal): Promise<Place[]> {
   if (!query.trim()) return [];
-  const res = await fetch(
-    `https://geocoding-api.open-meteo.com/v1/search?count=6&language=en&format=json&name=${encodeURIComponent(query.trim())}`,
-    { signal }
-  );
+  const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?count=6&language=en&format=json&name=${encodeURIComponent(query.trim())}`, {
+    signal
+  });
   if (!res.ok) throw new Error(`Geocoding failed (${res.status})`);
   const data: {
     results?: { name: string; admin1?: string; country_code?: string; latitude: number; longitude: number; timezone?: string }[];

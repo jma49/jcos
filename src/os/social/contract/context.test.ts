@@ -19,7 +19,12 @@ describe.each(backends)('one session for every domain: $name', ({ make }) => {
   test('signing in or out reaches every slice at once', async () => {
     b = make();
     await b.signUp('alice');
-    await b.given({ supabase: (db) => db.answer('stickies.insert', { data: { id: 's', body: '', color: 'yellow', x: 0, y: 0, width: 220, height: 180, collapsed: false, version: 1, updated_at: '' } }) });
+    await b.given({
+      supabase: (db) =>
+        db.answer('stickies.insert', {
+          data: { id: 's', body: '', color: 'yellow', x: 0, y: 0, width: 220, height: 180, collapsed: false, version: 1, updated_at: '' }
+        })
+    });
     await expect(b.social.addSticky({})).resolves.toMatchObject({ version: 1 });
     expect(await b.social.notesLeft()).toBeGreaterThan(0);
     await b.social.signOut();

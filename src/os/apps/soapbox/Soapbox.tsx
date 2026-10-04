@@ -170,7 +170,17 @@ function PostCard({
                 disabled={!member && Boolean(mine)}
                 onClick={() => onReact(r)}
                 aria-label={`${r} ${count}`}
-                title={member ? (mine === r ? 'Take your reaction back' : mine ? 'Change your reaction' : 'React') : mine ? 'Sign in to change your reaction' : 'React'}
+                title={
+                  member
+                    ? mine === r
+                      ? 'Take your reaction back'
+                      : mine
+                        ? 'Change your reaction'
+                        : 'React'
+                    : mine
+                      ? 'Sign in to change your reaction'
+                      : 'React'
+                }
               >
                 {r}
                 {count > 0 && <b>{count}</b>}
@@ -262,9 +272,7 @@ export default function Soapbox({ win }: AppProps) {
       update(before ?? null);
       setNotes((all) => ({
         ...all,
-        [post.id]: already
-          ? 'Someone on your network already reacted to this one. Sign in to pick your own.'
-          : 'That didn’t go through. Try again in a moment.'
+        [post.id]: already ? 'Someone on your network already reacted to this one. Sign in to pick your own.' : 'That didn’t go through. Try again in a moment.'
       }));
     }
   };

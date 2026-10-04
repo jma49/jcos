@@ -65,7 +65,11 @@ function topLevel(dir) {
 /** The paths a backticked token cites: itself, or a command's arguments. */
 export function pathsOf(token, tops) {
   if (/^[a-z]+:\/\//i.test(token.trim())) return [];
-  return token.trim().split(/\s+/).map((word) => pathOf(word, tops)).filter(Boolean);
+  return token
+    .trim()
+    .split(/\s+/)
+    .map((word) => pathOf(word, tops))
+    .filter(Boolean);
 }
 
 /** The path a word cites, or null when it isn't one. */
@@ -133,7 +137,9 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const missing = missingPaths();
   for (const { file, line, path } of missing) console.error(`${file}:${line}: \`${path}\` doesn’t exist`);
   if (missing.length) {
-    console.error(`\n${missing.length} path(s) cited in the docs don’t exist: fix the doc, or add the path to ALLOWED in ${relative(process.cwd(), fileURLToPath(import.meta.url))} with the reason.`);
+    console.error(
+      `\n${missing.length} path(s) cited in the docs don’t exist: fix the doc, or add the path to ALLOWED in ${relative(process.cwd(), fileURLToPath(import.meta.url))} with the reason.`
+    );
     process.exit(1);
   }
   console.log('Every path the docs cite exists.');

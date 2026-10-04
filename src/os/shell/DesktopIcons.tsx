@@ -16,8 +16,7 @@ interface Shortcut {
 
 export function DesktopIcons() {
   const [selected, setSelected] = useState<string | null>(null);
-  const openApp = (app: AppId, el: HTMLElement, extra: Parameters<typeof launch>[1] = {}) =>
-    launch(app, { origin: rectOf(el), ...extra });
+  const openApp = (app: AppId, el: HTMLElement, extra: Parameters<typeof launch>[1] = {}) => launch(app, { origin: rectOf(el), ...extra });
 
   // The desktop keeps a few things, as a tidy Mac's does; everything else
   // is in the Dock, Finder's Applications folder and Spotlight. A phone's

@@ -52,7 +52,10 @@ export function discCommands({ db, telegram }: Deps) {
     const [discs, most]: [Shelved[], number] = await Promise.all([db('discs?select=id,title,artist&order=added_at.desc'), limit()]);
     if (!discs.length) return say(chat, `No discs yet (room for ${most}). Burn one: /dvd <YouTube link>`);
     const latest = discs.slice(0, 15).map((d) => `• ${label(d)}`);
-    return say(chat, [`💿 ${discs.length}/${most} discs. The latest:`, ...latest, '', '/dvd <link> to burn one, /dvd remove <title> to take one off.'].join('\n'));
+    return say(
+      chat,
+      [`💿 ${discs.length}/${most} discs. The latest:`, ...latest, '', '/dvd <link> to burn one, /dvd remove <title> to take one off.'].join('\n')
+    );
   }
 
   async function burn(chat: number, rest: string) {
@@ -91,7 +94,11 @@ export function discCommands({ db, telegram }: Deps) {
         ? await db(`discs?title=ilike.${encodeURIComponent(`*${q}*`)}&select=id,title,artist&order=added_at.desc&limit=10`)
         : [];
     if (!found.length) return say(chat, words ? `No disc matches “${words}”.` : 'Which disc? /dvd remove <title or link>');
-    if (found.length > 1) return say(chat, [`${found.length} discs match. Send the link of the one to take off:`, ...found.map((d) => `• ${label(d)}: https://youtu.be/${d.id}`)].join('\n'));
+    if (found.length > 1)
+      return say(
+        chat,
+        [`${found.length} discs match. Send the link of the one to take off:`, ...found.map((d) => `• ${label(d)}: https://youtu.be/${d.id}`)].join('\n')
+      );
     const [disc] = found;
     await db(`discs?id=eq.${disc.id}`, { method: 'DELETE', headers: { prefer: 'return=minimal' } });
     return say(chat, `🗑 Off the shelf: ${label(disc)}.`);

@@ -64,12 +64,23 @@ export function EventInfo({
         />
       </label>
       <label className="os-ical-inline">
-        <input type="checkbox" checked={allDay} onChange={() => onChange(allDay ? { ...event, starts: 540, ends: 600 } : { ...event, starts: null, ends: null })} />
+        <input
+          type="checkbox"
+          checked={allDay}
+          onChange={() => onChange(allDay ? { ...event, starts: 540, ends: 600 } : { ...event, starts: null, ends: null })}
+        />
         all-day
       </label>
       <div className="os-ical-times">
         <span>day</span>
-        <input type="date" value={event.day} min="2000-01-01" max="2100-12-31" aria-label="Day" onChange={(e) => e.target.value && onChange({ ...event, day: e.target.value })} />
+        <input
+          type="date"
+          value={event.day}
+          min="2000-01-01"
+          max="2100-12-31"
+          aria-label="Day"
+          onChange={(e) => e.target.value && onChange({ ...event, day: e.target.value })}
+        />
         {!allDay && event.starts !== null && event.ends !== null && (
           <>
             <span>from</span>
@@ -138,7 +149,13 @@ export function DayInfo({
         <ul>
           {list.map((e) => (
             <li key={e.id}>
-              <button type="button" className="os-ical-event" data-calendar={e.calendar} data-all-day={e.starts === null || undefined} onClick={() => onChoose(e)}>
+              <button
+                type="button"
+                className="os-ical-event"
+                data-calendar={e.calendar}
+                data-all-day={e.starts === null || undefined}
+                onClick={() => onChoose(e)}
+              >
                 <span>
                   {e.starts !== null && `${timeName(e.starts)} `}
                   {e.title}

@@ -8,8 +8,7 @@ export default defineApp({
   applet: {
     category: 'Games',
     tagline: 'Clear the board without setting anything off.',
-    description:
-      'The classic, in Aqua blue. Three board sizes, a safe first click, flags, chording and your best time for each level.',
+    description: 'The classic, in Aqua blue. Three board sizes, a safe first click, flags, chording and your best time for each level.',
     added: '2026-09-25'
   },
   styles: () => import('./minesweeper.css?inline'),

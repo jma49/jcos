@@ -15,11 +15,21 @@
   font-size: 12px;
 }
 
-.os-jh [data-stage='applied'] { --stage: var(--applied); }
-.os-jh [data-stage='assessment'] { --stage: var(--assessment); }
-.os-jh [data-stage='interviewing'] { --stage: var(--interviewing); }
-.os-jh [data-stage='offer'] { --stage: var(--offer); }
-.os-jh [data-stage='closed'] { --stage: var(--closed); }
+.os-jh [data-stage='applied'] {
+  --stage: var(--applied);
+}
+.os-jh [data-stage='assessment'] {
+  --stage: var(--assessment);
+}
+.os-jh [data-stage='interviewing'] {
+  --stage: var(--interviewing);
+}
+.os-jh [data-stage='offer'] {
+  --stage: var(--offer);
+}
+.os-jh [data-stage='closed'] {
+  --stage: var(--closed);
+}
 
 .os-jh-frame {
   container-type: inline-size;
@@ -338,7 +348,9 @@
   place-items: center;
   border-radius: 50%;
   background: radial-gradient(circle at 50% 28%, hsl(var(--hue) 55% 74%), hsl(var(--hue) 50% 42%) 68%);
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.25), 0 1px 1px rgba(0, 0, 0, 0.18);
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.25),
+    0 1px 1px rgba(0, 0, 0, 0.18);
   color: #fff;
   font-weight: 700;
   line-height: 1;
@@ -505,11 +517,21 @@
   --closed: #8a8f98;
 }
 
-.os-jh-info [data-stage='applied'] { --stage: var(--applied); }
-.os-jh-info [data-stage='assessment'] { --stage: var(--assessment); }
-.os-jh-info [data-stage='interviewing'] { --stage: var(--interviewing); }
-.os-jh-info [data-stage='offer'] { --stage: var(--offer); }
-.os-jh-info [data-stage='closed'] { --stage: var(--closed); }
+.os-jh-info [data-stage='applied'] {
+  --stage: var(--applied);
+}
+.os-jh-info [data-stage='assessment'] {
+  --stage: var(--assessment);
+}
+.os-jh-info [data-stage='interviewing'] {
+  --stage: var(--interviewing);
+}
+.os-jh-info [data-stage='offer'] {
+  --stage: var(--offer);
+}
+.os-jh-info [data-stage='closed'] {
+  --stage: var(--closed);
+}
 
 .os-jh-info-head {
   display: flex;
@@ -663,7 +685,9 @@
   border-radius: 6px;
   overflow: hidden;
   background: linear-gradient(#d9d9d9, #f4f4f4);
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.35), 0 1px 0 rgba(255, 255, 255, 0.6);
+  box-shadow:
+    inset 0 1px 2px rgba(0, 0, 0, 0.35),
+    0 1px 0 rgba(255, 255, 255, 0.6);
 }
 
 .os-jh-bar span {

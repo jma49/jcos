@@ -29,8 +29,16 @@ class Node {
       const [, tag, classes, attrs] = m;
       if (tag && tag !== this.tag) return false;
       const own = (this.attrs.class ?? '').split(' ');
-      if (!classes.split('.').filter(Boolean).every((c) => own.includes(c))) return false;
-      return [...attrs.matchAll(/\[([\w-]+)(?:="([^"]*)")?\]/g)].every(([, name, value]) => (value === undefined ? name in this.attrs : this.attrs[name] === value));
+      if (
+        !classes
+          .split('.')
+          .filter(Boolean)
+          .every((c) => own.includes(c))
+      )
+        return false;
+      return [...attrs.matchAll(/\[([\w-]+)(?:="([^"]*)")?\]/g)].every(([, name, value]) =>
+        value === undefined ? name in this.attrs : this.attrs[name] === value
+      );
     });
   }
   closest(selector: string): Node | null {
@@ -97,7 +105,7 @@ describe('typing', () => {
 });
 
 describe('ownsKey', () => {
-  test('a key pressed on the page itself, or inside the front window, is the app\'s', () => {
+  test("a key pressed on the page itself, or inside the front window, is the app's", () => {
     expect(keys.ownsKey(press(body, 'Enter'))).toBe(true);
     expect(keys.ownsKey(press(finderItem, 'Enter'))).toBe(true);
     expect(keys.ownsKey(press(finderItem, ' '))).toBe(true);
@@ -113,7 +121,7 @@ describe('ownsKey', () => {
     expect(keys.ownsKey(press(dockItem, 'Escape'))).toBe(false);
   });
 
-  test('the window\'s own close box is the shell\'s, not the app\'s', () => {
+  test("the window's own close box is the shell's, not the app's", () => {
     expect(keys.ownsKey(press(finderClose, 'Enter'))).toBe(false);
     expect(keys.ownsKey(press(finderClose, ' '))).toBe(false);
   });

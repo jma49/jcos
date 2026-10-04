@@ -20,7 +20,9 @@ export default function Icon({ size = 64 }: { size?: number }) {
         <rect x="24" y="12" width="30" height="42" rx="3" fill="#fff" stroke="#bbb" transform="rotate(8 39 33)" />
       </g>
       <g transform="rotate(8 39 33)">
-        <text x="28" y="23" fontSize="9" fontWeight="700" fontFamily="Helvetica, Arial" fill="#111">A</text>
+        <text x="28" y="23" fontSize="9" fontWeight="700" fontFamily="Helvetica, Arial" fill="#111">
+          A
+        </text>
         <path d="M39 26c-5 5-8 7-8 10.5a3.6 3.6 0 0 0 6.4 2.2L36 44h6l-1.4-5.3A3.6 3.6 0 0 0 47 36.5C47 33 44 31 39 26z" fill="#111" />
       </g>
     </svg>

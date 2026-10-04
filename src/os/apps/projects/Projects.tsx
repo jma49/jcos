@@ -47,9 +47,7 @@ export default function Projects() {
                 onDoubleClick={(e) => openProject(p, e.currentTarget)}
                 onKeyDown={(e) => e.key === 'Enter' && openProject(p, e.currentTarget)}
               >
-                <span className="os-finder-thumb">
-                  {p.cover ? <img src={p.cover} alt="" loading="lazy" /> : <span>{p.title}</span>}
-                </span>
+                <span className="os-finder-thumb">{p.cover ? <img src={p.cover} alt="" loading="lazy" /> : <span>{p.title}</span>}</span>
                 <span className="os-finder-name">{p.title}</span>
                 <span className="os-finder-meta">{p.status === 'wip' ? 'In progress' : p.when}</span>
               </button>

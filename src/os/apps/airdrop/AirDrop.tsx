@@ -9,16 +9,7 @@ import type { AppId } from '../../core/types';
 import { flag } from '../../social/online';
 import { hue } from '../../social/chatState';
 import { useAccount } from '../../social/account';
-import {
-  labelOf,
-  PATH_MIME,
-  reachable,
-  sendAirDrop,
-  setDiscoverable,
-  useAirDrop,
-  type Discoverable,
-  type Transfer
-} from '../../social/airdrop';
+import { labelOf, PATH_MIME, reachable, sendAirDrop, setDiscoverable, useAirDrop, type Discoverable, type Transfer } from '../../social/airdrop';
 import type { Visitor } from '../../social/types';
 
 // AirDrop, as Lion's window: other members on the desktop appear around a
@@ -127,7 +118,14 @@ export default function AirDrop({ win }: AppProps) {
   const visitors = useWindows((s) => s.visitors);
   const { discoverable, sent } = useAirDrop();
   // The receiver's view of the disk has every applet; so does the sender's, to share one.
-  const disk = useMemo(() => buildDisk(data, (Object.keys(apps) as AppId[]).filter((id) => apps[id].applet)), [data]);
+  const disk = useMemo(
+    () =>
+      buildDisk(
+        data,
+        (Object.keys(apps) as AppId[]).filter((id) => apps[id].applet)
+      ),
+    [data]
+  );
   const [dismissed, setDismissed] = useState<string | null>(null);
 
   if (!accountsReady) return <div className="os-app os-airdrop" />;
@@ -174,14 +172,7 @@ export default function AirDrop({ win }: AppProps) {
           <span>{account.username}</span>
         </div>
         {people.slice(0, 14).map((v, i, all) => (
-          <Person
-            key={v.id}
-            visitor={v}
-            style={spot(v.id, i, all.length)}
-            transfer={latest(v)}
-            ready={!!item}
-            onSend={(dropped) => send(v, dropped)}
-          />
+          <Person key={v.id} visitor={v} style={spot(v.id, i, all.length)} transfer={latest(v)} ready={!!item} onSend={(dropped) => send(v, dropped)} />
         ))}
       </div>
 

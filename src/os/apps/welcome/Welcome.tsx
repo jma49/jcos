@@ -27,9 +27,7 @@ export default function Welcome({ win }: AppProps) {
         <img src="/os/icons/apple.png" alt="" width={44} height={44} />
         <div>
           <h2>Welcome to JM/OS</h2>
-          <p className="os-welcome-lead">
-            Jincheng’s portfolio, as a Mac OS X desktop you can use. Poke around; nothing here breaks.
-          </p>
+          <p className="os-welcome-lead">Jincheng’s portfolio, as a Mac OS X desktop you can use. Poke around; nothing here breaks.</p>
         </div>
       </header>
       <ul>

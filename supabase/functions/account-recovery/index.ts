@@ -93,7 +93,10 @@ async function rpc(name: string, args: Record<string, unknown>) {
 /** 32 random bytes, as the link carries them. */
 function newToken() {
   const bytes = crypto.getRandomValues(new Uint8Array(32));
-  return btoa(String.fromCharCode(...bytes)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  return btoa(String.fromCharCode(...bytes))
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/, '');
 }
 
 /** What the database keeps instead of the token. */
@@ -119,7 +122,9 @@ async function sendLink(to: string, username: string, token: string) {
 }
 
 async function request(reply: Reply, username: unknown) {
-  const name = String(username ?? '').trim().toLowerCase();
+  const name = String(username ?? '')
+    .trim()
+    .toLowerCase();
   if (!USERNAME.test(name)) return reply({ error: 'A username is 3 to 20 letters, digits or underscores.' }, 400);
   const token = newToken();
   const address: string | null = await rpc('recovery_request', { p_username: name, p_token_hash: await hashOf(token) });

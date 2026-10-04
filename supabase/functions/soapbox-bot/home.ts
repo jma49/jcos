@@ -23,7 +23,9 @@ const NAME_MOST = 60;
 /** The day `at` falls on in `timeZone`, as the diary keeps days (YYYY-MM-DD). */
 export function dayIn(timeZone: string, at: Date): string {
   const parts = (zone: string) =>
-    Object.fromEntries(new Intl.DateTimeFormat('en-US', { timeZone: zone, year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(at).map((p) => [p.type, p.value]));
+    Object.fromEntries(
+      new Intl.DateTimeFormat('en-US', { timeZone: zone, year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(at).map((p) => [p.type, p.value])
+    );
   let p: Record<string, string>;
   try {
     p = parts(timeZone);
@@ -97,7 +99,11 @@ export function homeCommands({ db, telegram, timeZone }: Deps & { timeZone: () =
   async function write(message: Sent, body: string) {
     const day = await dayOf(message);
     try {
-      await db('diary', { method: 'POST', headers: { prefer: 'return=minimal' }, body: JSON.stringify({ day, body, telegram_message_id: message.message_id }) });
+      await db('diary', {
+        method: 'POST',
+        headers: { prefer: 'return=minimal' },
+        body: JSON.stringify({ day, body, telegram_message_id: message.message_id })
+      });
     } catch (error) {
       if (again(error)) return;
       throw error;
@@ -119,7 +125,10 @@ export function homeCommands({ db, telegram, timeZone }: Deps & { timeZone: () =
     // Named the same meanwhile (two sent at once): the next free name, a few times over.
     for (let tries = 0; tries < 3; tries++) {
       const taken: { name: string }[] = await db('documents?folder=eq.documents&select=name');
-      const free = freeName(name, taken.map((d) => d.name));
+      const free = freeName(
+        name,
+        taken.map((d) => d.name)
+      );
       try {
         await db('documents', {
           method: 'POST',

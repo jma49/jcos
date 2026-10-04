@@ -12,8 +12,7 @@ const TILE = BOARD / SIZE;
 const GAP = SIZE * SIZE - 1;
 const SOLVED = Array.from({ length: SIZE * SIZE }, (_, i) => i);
 
-const neighbours = (i: number) =>
-  [i - SIZE, i + SIZE, i % SIZE ? i - 1 : -1, (i + 1) % SIZE ? i + 1 : -1].filter((n) => n >= 0 && n < SIZE * SIZE);
+const neighbours = (i: number) => [i - SIZE, i + SIZE, i % SIZE ? i - 1 : -1, (i + 1) % SIZE ? i + 1 : -1].filter((n) => n >= 0 && n < SIZE * SIZE);
 
 /** Shuffles by making random legal moves, so the board is always solvable. */
 function shuffle(): number[] {
@@ -101,13 +100,7 @@ export default function TileGame(_: AppProps) {
       }}
     >
       <div className="os-tiles-frame">
-        <div
-          className="os-tiles-board"
-          data-solved={solved || undefined}
-          role="grid"
-          aria-label="Sliding puzzle"
-          style={{ width: BOARD, height: BOARD }}
-        >
+        <div className="os-tiles-board" data-solved={solved || undefined} role="grid" aria-label="Sliding puzzle" style={{ width: BOARD, height: BOARD }}>
           {board.map((tile, position) => {
             if (tile === GAP && !solved) return null;
             const x = tile % SIZE;

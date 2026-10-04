@@ -14,8 +14,7 @@ export function localVisitors(): PresenceSocial {
       const channel = new BroadcastChannel('os-dev-presence');
       const peers = new Map<string, { seen: number; info: VisitorInfo }>();
       let me = info;
-      const report = () =>
-        onVisitors([{ id, ...me, self: true }, ...[...peers].map(([peer, { info }]) => ({ id: peer, ...info }))]);
+      const report = () => onVisitors([{ id, ...me, self: true }, ...[...peers].map(([peer, { info }]) => ({ id: peer, ...info }))]);
 
       channel.onmessage = ({ data }) => {
         if (data.type === 'signal') return onSignal({ event: data.event, from: data.id, payload: data.payload ?? {} });

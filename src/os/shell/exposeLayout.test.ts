@@ -8,11 +8,16 @@ import type { Rect, WindowState } from '../core/types';
 const win = (id: string, rect: Partial<Rect>, rest: Partial<WindowState> = {}): WindowState =>
   ({ id, app: 'about', title: id, x: 100, y: 100, width: 600, height: 400, minimized: false, maximized: false, ...rect, ...rest }) as WindowState;
 
-const windows = [win('a', { x: 100, y: 100, width: 600, height: 400 }), win('b', { x: 400, y: 200, width: 800, height: 500 }), win('c', { x: 50, y: 300, width: 300, height: 300 })];
+const windows = [
+  win('a', { x: 100, y: 100, width: 600, height: 400 }),
+  win('b', { x: 400, y: 200, width: 800, height: 500 }),
+  win('c', { x: 50, y: 300, width: 300, height: 300 })
+];
 
 /** The desktop Exposé may use: inside the padding, between the menu bar and the Dock. */
 const area = (vw: number, vh: number) => ({ left: 48, top: 22 + 48, right: vw - 48, bottom: vh - 78 - 48 });
-const inside = (r: Rect, { left, top, right, bottom }: ReturnType<typeof area>) => r.x >= left && r.y >= top && r.x + r.width <= right && r.y + r.height <= bottom;
+const inside = (r: Rect, { left, top, right, bottom }: ReturnType<typeof area>) =>
+  r.x >= left && r.y >= top && r.x + r.width <= right && r.y + r.height <= bottom;
 
 describe('exposeLayout', () => {
   test('lays the windows out inside the desktop, no larger than they are', () => {
