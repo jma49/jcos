@@ -44,7 +44,11 @@ describe('lastMove', () => {
 
 describe('targetsOf', () => {
   test('where a piece can go', () => {
-    expect(targetsOf(new Chess(), 'g1').map((t) => t.to).sort()).toEqual(['f3', 'h3']);
+    expect(
+      targetsOf(new Chess(), 'g1')
+        .map((t) => t.to)
+        .sort()
+    ).toEqual(['f3', 'h3']);
     expect(targetsOf(new Chess(), 'e1')).toEqual([]);
   });
 

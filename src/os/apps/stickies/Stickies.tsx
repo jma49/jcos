@@ -173,8 +173,7 @@ export default function Stickies({ win }: AppProps) {
             </button>
           ) : null}
           <span className="os-toolbar-meta">
-            {stickyTrouble ??
-              (account ? `${mine.length}${limits ? ` of ${limits.stickies}` : ''} · only you see these` : 'only you would see them')}
+            {stickyTrouble ?? (account ? `${mine.length}${limits ? ` of ${limits.stickies}` : ''} · only you see these` : 'only you would see them')}
           </span>
         </div>
         <Yours account={account?.id ?? null} newest={newest} />
@@ -229,25 +228,10 @@ export default function Stickies({ win }: AppProps) {
               required
             />
             <p className="os-sticky-signature">— {account?.username}</p>
-            <input
-              className="os-sticky-trap"
-              value={trap}
-              onChange={(e) => setTrap(e.target.value)}
-              tabIndex={-1}
-              autoComplete="off"
-              aria-hidden="true"
-            />
+            <input className="os-sticky-trap" value={trap} onChange={(e) => setTrap(e.target.value)} tabIndex={-1} autoComplete="off" aria-hidden="true" />
             <div className="os-sticky-colors" role="radiogroup" aria-label="Note colour">
               {NOTE_COLORS.map((c) => (
-                <button
-                  key={c}
-                  type="button"
-                  role="radio"
-                  aria-checked={c === color}
-                  aria-label={c}
-                  data-color={c}
-                  onClick={() => setColor(c)}
-                />
+                <button key={c} type="button" role="radio" aria-checked={c === color} aria-label={c} data-color={c} onClick={() => setColor(c)} />
               ))}
             </div>
             <div className="os-sticky-actions">
@@ -257,11 +241,7 @@ export default function Stickies({ win }: AppProps) {
               <button type="button" className="os-button" onClick={() => setDraft({ state: 'idle' })}>
                 Cancel
               </button>
-              <button
-                type="submit"
-                className="os-button os-button-primary"
-                disabled={draft.state === 'sending' || !body.trim() || left === 0}
-              >
+              <button type="submit" className="os-button os-button-primary" disabled={draft.state === 'sending' || !body.trim() || left === 0}>
                 {draft.state === 'sending' ? 'Posting…' : 'Post'}
               </button>
             </div>
@@ -286,9 +266,7 @@ export default function Stickies({ win }: AppProps) {
           </article>
         ))}
 
-        {load.notes.length === 0 && !writing && (
-          <p className="os-stickies-empty">No notes yet. Be the first to leave one.</p>
-        )}
+        {load.notes.length === 0 && !writing && <p className="os-stickies-empty">No notes yet. Be the first to leave one.</p>}
       </div>
     </div>
   );

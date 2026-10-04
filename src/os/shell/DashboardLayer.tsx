@@ -28,8 +28,7 @@ export function DashboardLayer() {
     // (the menu bar, when the pointer is at the top as the page loads),
     // which is nobody reaching for anything; that fetched 4.2 KB on first
     // loads.
-    const onMove = (e: PointerEvent) =>
-      (e.movementX !== 0 || e.movementY !== 0) && (e.target as Element).closest?.('.os-menubar, .os-dock') && load();
+    const onMove = (e: PointerEvent) => (e.movementX !== 0 || e.movementY !== 0) && (e.target as Element).closest?.('.os-menubar, .os-dock') && load();
     document.addEventListener('pointermove', onMove);
     const cancel = afterSettled(load);
     return () => {

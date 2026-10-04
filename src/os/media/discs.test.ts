@@ -55,10 +55,13 @@ describe('pictures', () => {
   });
 
   test('Burn offers each full size where YouTube made it, else the size every video has', async () => {
-    vi.stubGlobal('fetch', vi.fn(async (url: string, init?: RequestInit) => {
-      expect(init?.method).toBe('HEAD');
-      return new Response(null, { status: /maxres(default|2)\.jpg$/.test(url) ? 200 : 404 });
-    }));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url: string, init?: RequestInit) => {
+        expect(init?.method).toBe('HEAD');
+        return new Response(null, { status: /maxres(default|2)\.jpg$/.test(url) ? 200 : 404 });
+      })
+    );
     const { coverChoices } = await load();
     expect(await coverChoices('jWQx2f-CErU')).toEqual(['maxresdefault', 'hq1', 'maxres2', 'hq3']);
   });
@@ -164,7 +167,11 @@ describe('a DVD-R’s length', () => {
 });
 
 describe('reading a link', () => {
-  const oembed = (answer: Response) => vi.stubGlobal('fetch', vi.fn(async () => answer));
+  const oembed = (answer: Response) =>
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => answer)
+    );
 
   test('names the video as the bot’s /dvd would', async () => {
     oembed(Response.json({ title: 'Frank Ocean - White Ferrari (Official Video)', author_name: 'Frank Ocean' }));

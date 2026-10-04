@@ -47,7 +47,11 @@ beforeEach(() => {
   db.shelf = null;
   told.notices.length = 0;
   told.dismissed.length = 0;
-  vi.stubGlobal('window', { localStorage: { getItem: () => null, setItem: () => {}, removeItem: () => {} }, addEventListener: () => {}, removeEventListener: () => {} });
+  vi.stubGlobal('window', {
+    localStorage: { getItem: () => null, setItem: () => {}, removeItem: () => {} },
+    addEventListener: () => {},
+    removeEventListener: () => {}
+  });
 });
 
 describe('Realtime', () => {

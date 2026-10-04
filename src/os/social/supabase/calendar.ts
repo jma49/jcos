@@ -47,7 +47,13 @@ export function supabaseCalendar({ client, account, member, ready }: SupabaseCon
     async myEvents(from, to) {
       await ready;
       if (!account()) return [];
-      const { data, error } = await client.from('events').select(EVENT_COLUMNS).gte('day', from).lte('day', to).order('day').order('starts', { nullsFirst: true });
+      const { data, error } = await client
+        .from('events')
+        .select(EVENT_COLUMNS)
+        .gte('day', from)
+        .lte('day', to)
+        .order('day')
+        .order('starts', { nullsFirst: true });
       if (error) throw error;
       return (data ?? []).map(eventOf);
     },
@@ -63,7 +69,13 @@ export function supabaseCalendar({ client, account, member, ready }: SupabaseCon
     async saveEvent({ id, version, ...fields }) {
       member();
       const request = id
-        ? client.from('events').update(fields).eq('id', id).eq('version', version ?? 0).select(EVENT_COLUMNS).maybeSingle()
+        ? client
+            .from('events')
+            .update(fields)
+            .eq('id', id)
+            .eq('version', version ?? 0)
+            .select(EVENT_COLUMNS)
+            .maybeSingle()
         : client.from('events').insert(fields).select(EVENT_COLUMNS).single();
       const { data, error } = await request;
       if (error) throw error.code === '23514' ? badEntry() : refusal(error);
@@ -80,7 +92,13 @@ export function supabaseCalendar({ client, account, member, ready }: SupabaseCon
     async saveTodo({ id, version, ...fields }) {
       member();
       const request = id
-        ? client.from('todos').update(fields).eq('id', id).eq('version', version ?? 0).select(TODO_COLUMNS).maybeSingle()
+        ? client
+            .from('todos')
+            .update(fields)
+            .eq('id', id)
+            .eq('version', version ?? 0)
+            .select(TODO_COLUMNS)
+            .maybeSingle()
         : client.from('todos').insert(fields).select(TODO_COLUMNS).single();
       const { data, error } = await request;
       if (error) throw error.code === '23514' ? badEntry() : refusal(error);

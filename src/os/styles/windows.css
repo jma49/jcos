@@ -49,11 +49,15 @@
   padding: 8px 8px 8px 14px;
   border-radius: 0 7px 7px 0;
   background: var(--os-pinstripe), var(--os-window);
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3), 0 8px 22px rgba(0, 0, 0, 0.3);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.3),
+    0 8px 22px rgba(0, 0, 0, 0.3);
   /* Tucked under the window until opened. */
   transform: translateX(-100%);
   visibility: hidden;
-  transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1), visibility 0s linear 0.28s;
+  transition:
+    transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1),
+    visibility 0s linear 0.28s;
 }
 
 .os-drawer[data-open] {
@@ -79,7 +83,9 @@
   padding: 12px;
   border-radius: 4px;
   background: var(--os-content);
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3), inset 0 1px 2px rgba(0, 0, 0, 0.15);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.3),
+    inset 0 1px 2px rgba(0, 0, 0, 0.15);
   font-size: 12px;
   user-select: text;
 }
@@ -274,7 +280,9 @@
   padding: 0 8px;
   border-radius: 11px;
   background: #fff;
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.35), 0 1px 0 rgba(255, 255, 255, 0.6);
+  box-shadow:
+    inset 0 1px 2px rgba(0, 0, 0, 0.35),
+    0 1px 0 rgba(255, 255, 255, 0.6);
   color: #777;
 }
 
@@ -290,7 +298,9 @@
 }
 
 .os-search-field:focus-within {
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.35), 0 0 0 3px var(--os-focus);
+  box-shadow:
+    inset 0 1px 2px rgba(0, 0, 0, 0.35),
+    0 0 0 3px var(--os-focus);
 }
 
 :root[data-theme='dark'] .os-search-field {
@@ -365,7 +375,10 @@
 .os-window[data-material='metal'] .os-browser iframe,
 .os-window[data-material='metal'] .os-photo-stage {
   border-radius: 4px;
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.45), inset 0 1px 2px rgba(0, 0, 0, 0.2), 0 1px 0 rgba(255, 255, 255, 0.5);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.45),
+    inset 0 1px 2px rgba(0, 0, 0, 0.2),
+    0 1px 0 rgba(255, 255, 255, 0.5);
   overflow: hidden;
 }
 
@@ -451,7 +464,9 @@
   width: 13px;
   height: 13px;
   border-radius: 50%;
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.35), 0 1px 1px rgba(255, 255, 255, 0.6);
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.35),
+    0 1px 1px rgba(255, 255, 255, 0.6);
 }
 
 /* Specular highlight across the top of each gel. */
@@ -517,7 +532,9 @@
 .os-root .os-window[data-focused='false'] .os-button-primary {
   animation: none;
   background: linear-gradient(#ffffff, #f1f1f1 45%, #dedede 50%, #f4f4f4);
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.35), 0 1px 1px rgba(0, 0, 0, 0.15);
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.35),
+    0 1px 1px rgba(0, 0, 0, 0.15);
   color: #111;
   text-shadow: none;
 }
@@ -531,7 +548,7 @@
   inset: 0;
   display: grid;
   place-items: center;
-  font: 700 10px/1 var(--os-ui);
+  font: 700 10px / 1 var(--os-ui);
   color: rgba(60, 0, 0, 0.7);
   opacity: 0;
 }
@@ -685,7 +702,9 @@
   padding: 0 14px;
   border-radius: 11px;
   background: linear-gradient(#ffffff, #f1f1f1 45%, #dedede 50%, #f4f4f4);
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.35), 0 1px 1px rgba(0, 0, 0, 0.15);
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.35),
+    0 1px 1px rgba(0, 0, 0, 0.15);
   color: #111;
   font-size: 12px;
   text-decoration: none;
@@ -757,11 +776,14 @@
   border: 0;
   border-radius: 6px;
   background:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='7' height='11'%3E%3Cpath d='M3.5 0L7 4H0zM3.5 11L0 7h7z' fill='white'/%3E%3C/svg%3E") right 7px center / 7px 11px no-repeat,
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='7' height='11'%3E%3Cpath d='M3.5 0L7 4H0zM3.5 11L0 7h7z' fill='white'/%3E%3C/svg%3E")
+    right 7px center / 7px 11px no-repeat,
     var(--os-gel) right / 21px 100% no-repeat,
     linear-gradient(rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.2) 48%, transparent 50%),
     linear-gradient(#ffffff, #f1f1f1 45%, #dedede 50%, #f4f4f4);
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.35), 0 1px 1px rgba(0, 0, 0, 0.15);
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.35),
+    0 1px 1px rgba(0, 0, 0, 0.15);
   color: #111;
   font: inherit;
   font-size: 12px;
@@ -777,7 +799,9 @@
   margin: 1px 0 0;
   border-radius: 3px;
   background: linear-gradient(#ffffff, #f1f1f1 45%, #dcdcdc 50%, #f6f6f6);
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.4), inset 0 1px 2px rgba(0, 0, 0, 0.12);
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.4),
+    inset 0 1px 2px rgba(0, 0, 0, 0.12);
 }
 
 .os-root input[type='radio'] {
@@ -785,7 +809,10 @@
 }
 
 .os-root input[type='checkbox']:checked {
-  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12'%3E%3Cpath d='M2 6.5l2.6 2.8L10 2.5' fill='none' stroke='%23111' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 11px no-repeat, var(--os-gel);
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12'%3E%3Cpath d='M2 6.5l2.6 2.8L10 2.5' fill='none' stroke='%23111' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
+    center / 11px no-repeat,
+    var(--os-gel);
   box-shadow: inset 0 0 0 1px var(--os-accent-rim);
 }
 
@@ -822,7 +849,9 @@
   margin-top: -5px;
   border-radius: 50%;
   background: radial-gradient(circle at 50% 30%, #fff, #e4e4e4 55%, #bdbdbd);
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.35);
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.4),
+    0 1px 2px rgba(0, 0, 0, 0.35);
 }
 
 .os-root input[type='range']::-moz-range-thumb {
@@ -831,7 +860,9 @@
   border: 0;
   border-radius: 50%;
   background: radial-gradient(circle at 50% 30%, #fff, #e4e4e4 55%, #bdbdbd);
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.35);
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.4),
+    0 1px 2px rgba(0, 0, 0, 0.35);
 }
 
 .os-root input:disabled {
@@ -840,7 +871,9 @@
 
 .os-root .os-button-primary {
   background: var(--os-gel);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--os-accent-rim) 55%, transparent), 0 1px 1px rgba(0, 0, 0, 0.2);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--os-accent-rim) 55%, transparent),
+    0 1px 1px rgba(0, 0, 0, 0.2);
   /* Aqua's default buttons have black labels on the gel. */
   color: #111;
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
@@ -864,7 +897,9 @@
 .os-segmented {
   display: inline-flex;
   border-radius: 11px;
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.35), 0 1px 1px rgba(0, 0, 0, 0.15);
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.35),
+    0 1px 1px rgba(0, 0, 0, 0.15);
   background: linear-gradient(#ffffff, #f1f1f1 45%, #dedede 50%, #f4f4f4);
   overflow: hidden;
 }

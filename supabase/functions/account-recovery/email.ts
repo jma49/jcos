@@ -13,8 +13,7 @@ export interface ResetEmail {
   html: string;
 }
 
-const escape = (text: string) =>
-  text.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
+const escape = (text: string) => text.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
 
 const FONT = `'Lucida Grande', 'Lucida Sans Unicode', -apple-system, 'Helvetica Neue', Helvetica, Arial, sans-serif`;
 

@@ -27,7 +27,7 @@ const checkSticky = (s: StickyChange) => {
 
 export function localStickies({ account, member }: LocalContext): StickiesSocial {
   /** Changes the member's stored stickies from what's stored now; a refusal thrown by `change` stores nothing. */
-  const changeStickies = <T,>(change: (mine: Sticky[]) => T): T => {
+  const changeStickies = <T>(change: (mine: Sticky[]) => T): T => {
     const all = loadJSON<Record<string, Sticky[]>>(STICKIES_KEY, {});
     const mine = all[member().id] ?? [];
     const result = change(mine);

@@ -29,8 +29,7 @@ import { useFileMenu } from './useFileMenu';
 // typed; one emptied and left is taken out. Only the owner reads it.
 
 /** "Monday, September 28, 2026", for a diary day. */
-const dayName = (day: string) =>
-  new Date(`${day}T00:00:00`).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+const dayName = (day: string) => new Date(`${day}T00:00:00`).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
 interface Trouble {
   message: string;
@@ -221,7 +220,12 @@ function EntryEditor({
           retryLabel: newer ? 'Save Anyway' : 'Save Again'
         });
       } else {
-        onTrouble({ message: 'This entry couldn’t be saved.', detail: `${message} What you typed is kept in this browser until it is.`, retry: () => void saver.now(), retryLabel: 'Try Again' });
+        onTrouble({
+          message: 'This entry couldn’t be saved.',
+          detail: `${message} What you typed is kept in this browser until it is.`,
+          retry: () => void saver.now(),
+          retryLabel: 'Try Again'
+        });
       }
     }
   });

@@ -78,7 +78,10 @@ export function localAccounts(ctx: LocalContext): AccountsSocial {
       if (password.length < PASSWORD_MIN) throw new SocialError('invalid', `A password needs at least ${PASSWORD_MIN} characters.`);
       const link = liveReset(token);
       if (!link) throw new SocialError('expired', 'This link has expired or has already been used. Ask for a new one.');
-      saveJSON(RESETS_KEY, resets().map((r) => (r.username === link.username ? { ...r, used: true } : r)));
+      saveJSON(
+        RESETS_KEY,
+        resets().map((r) => (r.username === link.username ? { ...r, used: true } : r))
+      );
       saveUsers(users().map((u) => (u.username === link.username ? { ...u, password } : u)));
       return signIn(link.username, password);
     },

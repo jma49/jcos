@@ -60,14 +60,7 @@ function Cover({ album, index, pos, onPick }: { album: FlowAlbum; index: number;
   const zIndex = useTransform(pos, (p) => 100 - Math.round(Math.abs(index - p) * 10));
   const opacity = useTransform(pos, (p) => (Math.abs(index - p) > 5.5 ? 0 : 1));
   return (
-    <m.img
-      className="os-cf-cover"
-      src={album.cover}
-      alt={album.title}
-      draggable={false}
-      style={{ transform, zIndex, opacity }}
-      onClick={() => onPick(index)}
-    />
+    <m.img className="os-cf-cover" src={album.cover} alt={album.title} draggable={false} style={{ transform, zIndex, opacity }} onClick={() => onPick(index)} />
   );
 }
 
@@ -83,7 +76,10 @@ export function CoverFlow({
 }) {
   const ALBUMS = shelf();
   const LAST = ALBUMS.length - 1;
-  const first = Math.max(0, ALBUMS.findIndex((a) => a.title === start));
+  const first = Math.max(
+    0,
+    ALBUMS.findIndex((a) => a.title === start)
+  );
   const pos = useMotionValue(first);
   const [at, setAt] = useState(first);
   const [flipped, setFlipped] = useState(false);

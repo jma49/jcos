@@ -293,8 +293,7 @@ export default function Account({ win }: AppProps) {
         ? !!resetFor && password.length >= PASSWORD_MIN && password === confirm && !busy
         : USERNAME.test(name) && password.length >= PASSWORD_MIN && !(tab === 'create' && taken) && !busy;
 
-  const label =
-    tab === 'forgot' ? 'Send Link' : tab === 'reset' ? 'Change Password' : tab === 'create' ? 'Create Account' : 'Sign In';
+  const label = tab === 'forgot' ? 'Send Link' : tab === 'reset' ? 'Change Password' : tab === 'create' ? 'Create Account' : 'Sign In';
 
   return (
     <form className="os-app os-account" onSubmit={submit}>
@@ -318,8 +317,7 @@ export default function Account({ win }: AppProps) {
               <img src="/os/icons/mail.png" alt="" width={64} height={64} />
               <h3>Check Your Email</h3>
               <p>
-                If <strong>{sentFor}</strong> has a recovery email, a link to choose a new password is on its way. It works
-                once, for 30 minutes.
+                If <strong>{sentFor}</strong> has a recovery email, a link to choose a new password is on its way. It works once, for 30 minutes.
               </p>
               <small>Nothing after a few minutes? Look in your spam folder, or send it again.</small>
               <button type="button" className="os-button" disabled={busy || cooldown > 0} onClick={() => sendLink(sentFor)}>
@@ -330,8 +328,7 @@ export default function Account({ win }: AppProps) {
             <div className="os-account-intro">
               <img src="/os/icons/mail.png" alt="" width={40} height={40} />
               <p className="os-account-lead">
-                Forgot your password? Enter your username, and a link to choose a new one goes to the recovery email on your
-                account.
+                Forgot your password? Enter your username, and a link to choose a new one goes to the recovery email on your account.
               </p>
             </div>
           ))}
@@ -364,7 +361,7 @@ export default function Account({ win }: AppProps) {
               aria-invalid={taken || undefined}
             />
             {tab === 'create' && (
-              <small data-bad={(taken || (username !== '' && !USERNAME.test(name))) || undefined}>
+              <small data-bad={taken || (username !== '' && !USERNAME.test(name)) || undefined}>
                 {taken ? 'That username is taken.' : '3 to 20 letters, digits or underscores.'}
               </small>
             )}

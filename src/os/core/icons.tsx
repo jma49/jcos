@@ -6,14 +6,7 @@ export type IconComponent = ComponentType<{ size?: number }>;
 
 export function pngIcon(name: string): IconComponent {
   const Icon = ({ size = 64 }: { size?: number }) => (
-    <img
-      src={`/os/icons/${name}.png`}
-      width={size}
-      height={size}
-      alt=""
-      draggable={false}
-      className="os-icon"
-    />
+    <img src={`/os/icons/${name}.png`} width={size} height={size} alt="" draggable={false} className="os-icon" />
   );
   Icon.displayName = `Icon(${name})`;
   return Icon;
@@ -90,12 +83,7 @@ export function MusicFolderIcon({ size = 64 }: { size?: number }) {
     <span className="os-icon os-icon-stack" style={{ width: size, height: size }} aria-hidden="true">
       <FolderIcon size={size} />
       <svg viewBox="0 0 64 64" width={size} height={size}>
-        <path
-          d="M38 22v18.5a5 5 0 1 1-3-4.6V26l-10 2.4v14.6a5 5 0 1 1-3-4.6V24.6z"
-          fill="#3d6fa8"
-          opacity="0.55"
-          transform="translate(4 6)"
-        />
+        <path d="M38 22v18.5a5 5 0 1 1-3-4.6V26l-10 2.4v14.6a5 5 0 1 1-3-4.6V24.6z" fill="#3d6fa8" opacity="0.55" transform="translate(4 6)" />
       </svg>
     </span>
   );
@@ -179,17 +167,7 @@ export function SoapboxIcon({ size = 64 }: { size?: number }) {
           <circle key={`hole${x}`} cx={x} cy="18.5" r="1.3" fill="#6b6150" />
         ))}
         {rings.map((x) => (
-          <rect
-            key={`ring${x}`}
-            x={x - 1.1}
-            y="11.5"
-            width="2.2"
-            height="7.5"
-            rx="1.1"
-            fill={`url(#${id}-ring)`}
-            stroke="#5b6168"
-            strokeWidth="0.5"
-          />
+          <rect key={`ring${x}`} x={x - 1.1} y="11.5" width="2.2" height="7.5" rx="1.1" fill={`url(#${id}-ring)`} stroke="#5b6168" strokeWidth="0.5" />
         ))}
       </g>
       <g filter={`url(#${id}-shadow)`}>
@@ -263,4 +241,3 @@ export function AppletStoreIcon({ size = 64 }: { size?: number }) {
     </svg>
   );
 }
-

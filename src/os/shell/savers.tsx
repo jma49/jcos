@@ -15,10 +15,7 @@ import artworkStyles from './artwork.css?inline';
 // Preferences can show it in a small preview too.
 
 /** A canvas that fills its parent at device resolution, redrawn by `frame` every animation frame. */
-function useCanvas(
-  frame: (ctx: CanvasRenderingContext2D, w: number, h: number, dt: number) => void,
-  reset?: (w: number, h: number) => void
-) {
+function useCanvas(frame: (ctx: CanvasRenderingContext2D, w: number, h: number, dt: number) => void, reset?: (w: number, h: number) => void) {
   const canvas = useRef<HTMLCanvasElement>(null);
   const draw = useRef(frame);
   draw.current = frame;
@@ -204,13 +201,13 @@ export function SoapboxSaver() {
 
   const quotes =
     posts && posts.some((p) => p.body.trim())
-      ? posts.filter((p) => p.body.trim()).map((p) => ({
-          text: p.body,
-          kind: p.kind === 'rant' ? 'Rant' : 'Note',
-          meta: [new Date(p.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }), p.place]
-            .filter(Boolean)
-            .join(' · ')
-        }))
+      ? posts
+          .filter((p) => p.body.trim())
+          .map((p) => ({
+            text: p.body,
+            kind: p.kind === 'rant' ? 'Rant' : 'Note',
+            meta: [new Date(p.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }), p.place].filter(Boolean).join(' · ')
+          }))
       : bio.short.map((p) => ({ text: plain(p), kind: 'About', meta: name }));
   const quote = quotes[index % quotes.length];
 
@@ -259,7 +256,13 @@ function preload(src: string, ms: number): Promise<boolean | null> {
   const img = new Image();
   img.src = src;
   const timeout = new Promise<null>((done) => setTimeout(() => done(null), ms));
-  return Promise.race([img.decode().then(() => true, () => false), timeout]);
+  return Promise.race([
+    img.decode().then(
+      () => true,
+      () => false
+    ),
+    timeout
+  ]);
 }
 
 /**
@@ -315,7 +318,12 @@ export function Artwork() {
       if (live && !busy && !document.hidden) timer = window.setTimeout(turn, TURN_EVERY_MS);
     };
     const turn = async () => {
-      const next = pickTurn(tiles.map((t) => t.faces[t.turns % 2]), cols, pool, resting);
+      const next = pickTurn(
+        tiles.map((t) => t.faces[t.turns % 2]),
+        cols,
+        pool,
+        resting
+      );
       if (!next) return;
       busy = true;
       const loaded = await preload(next.cover, TURN_EVERY_MS * 4);
@@ -355,12 +363,7 @@ export function Artwork() {
     <div ref={stage} className="os-artwork" aria-hidden="true">
       {/* A new wall, or motion turned on or off, starts afresh rather than turning every tile at once. */}
       {wall && wall.tiles.length > 0 && (
-        <div
-          key={`${wall.deal}-${reduced}`}
-          className="os-artwork-wall"
-          data-still={reduced ? '' : undefined}
-          style={{ '--cols': wall.cols } as CSSProperties}
-        >
+        <div key={`${wall.deal}-${reduced}`} className="os-artwork-wall" data-still={reduced ? '' : undefined} style={{ '--cols': wall.cols } as CSSProperties}>
           {wall.tiles.map((t, i) => (
             <div
               key={i}

@@ -77,7 +77,10 @@ const ago = (days: number) => new Date(Date.now() - days * DAY).toISOString();
 
 describe('the smart playlists', () => {
   test('My Top Rated is four stars and up, the best first, then in the library’s order', async () => {
-    database({ stats: { [A]: { rating: 4, plays: 0 }, [B]: { rating: 5, plays: 0 }, [C]: { rating: 3, plays: 9 }, [D]: { rating: 4, plays: 0 } }, playlists: [] });
+    database({
+      stats: { [A]: { rating: 4, plays: 0 }, [B]: { rating: 5, plays: 0 }, [C]: { rating: 3, plays: 9 }, [D]: { rating: 4, plays: 0 } },
+      playlists: []
+    });
     const p = await load();
     await p.readListening();
     expect(p.topRated()).toEqual([1, 0, 3]);

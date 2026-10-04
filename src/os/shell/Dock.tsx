@@ -235,10 +235,13 @@ export function Dock() {
   const [drag, setDrag] = useState(dragModule);
   const withDrag = (run: (mod: DragModule) => void) => {
     if (dragModule) return run(dragModule);
-    loadDrag().then((mod) => {
-      setDrag(mod);
-      run(mod);
-    }, (error) => report(error, 'dock.drag'));
+    loadDrag().then(
+      (mod) => {
+        setDrag(mod);
+        run(mod);
+      },
+      (error) => report(error, 'dock.drag')
+    );
   };
   useEffect(() => {
     if (phone || dragModule) return;

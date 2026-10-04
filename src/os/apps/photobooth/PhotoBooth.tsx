@@ -188,12 +188,7 @@ export default function PhotoBooth(_: AppProps) {
             <a className="os-button" href={viewing} download={`Photo Booth ${new Date().toISOString().slice(0, 10)}.jpg`}>
               Download
             </a>
-            <button
-              type="button"
-              className="os-button"
-              disabled={wallpaper === viewing}
-              onClick={() => useWindows.getState().setWallpaper(viewing)}
-            >
+            <button type="button" className="os-button" disabled={wallpaper === viewing} onClick={() => useWindows.getState().setWallpaper(viewing)}>
               {wallpaper === viewing ? 'Desktop Picture ✓' : 'Set as Desktop Picture'}
             </button>
           </div>
@@ -218,7 +213,10 @@ export default function PhotoBooth(_: AppProps) {
           title={viewing ? 'Back to the camera' : 'Take a picture'}
         >
           <svg viewBox="0 0 24 18" width="26" height="20" aria-hidden="true">
-            <path d="M7 3l1.6-2.4h6.8L17 3h4.5A2.5 2.5 0 0 1 24 5.5v10a2.5 2.5 0 0 1-2.5 2.5h-19A2.5 2.5 0 0 1 0 15.5v-10A2.5 2.5 0 0 1 2.5 3z" fill="currentColor" />
+            <path
+              d="M7 3l1.6-2.4h6.8L17 3h4.5A2.5 2.5 0 0 1 24 5.5v10a2.5 2.5 0 0 1-2.5 2.5h-19A2.5 2.5 0 0 1 0 15.5v-10A2.5 2.5 0 0 1 2.5 3z"
+              fill="currentColor"
+            />
             <circle cx="12" cy="10" r="4.6" fill="none" stroke="#c9261d" strokeWidth="2" />
           </svg>
         </button>

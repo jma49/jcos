@@ -87,7 +87,10 @@ describe('what it returns', () => {
   });
 
   test('NetEase not answering is a 502 that is not cached, and is logged', async () => {
-    vi.stubGlobal('fetch', vi.fn(async () => Promise.reject(new DOMException('timed out', 'TimeoutError'))));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => Promise.reject(new DOMException('timed out', 'TimeoutError')))
+    );
     const log = vi.spyOn(console, 'error').mockImplementation(() => {});
     const res = await ask({ title: '寧夏' });
     expect(res.status).toBe(502);

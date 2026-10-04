@@ -75,9 +75,7 @@ export function Expose({ layout }: { layout: Record<string, Rect> | null }) {
 
   // Start on the window that was in front.
   const open = layout !== null;
-  const pickFrontmost = useEffectEvent(() =>
-    setPicked([...useWindows.getState().order].reverse().find((id) => layout?.[id]) ?? null)
-  );
+  const pickFrontmost = useEffectEvent(() => setPicked([...useWindows.getState().order].reverse().find((id) => layout?.[id]) ?? null));
   useEffect(() => {
     if (open) pickFrontmost();
     else setPicked(null);

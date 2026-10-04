@@ -16,8 +16,7 @@ import {
 // has them, with the words its search field finds them by. Spotlight lists
 // them too.
 
-export type PaneId =
-  'appearance' | 'desktop' | 'dock' | 'datetime' | 'displays' | 'sound' | 'accounts' | 'sharing' | 'update' | 'backup';
+export type PaneId = 'appearance' | 'desktop' | 'dock' | 'datetime' | 'displays' | 'sound' | 'accounts' | 'sharing' | 'update' | 'backup';
 
 export interface PaneInfo {
   id: PaneId;
@@ -127,7 +126,5 @@ export function searchPanes(query: string): PaneId[] {
       .split(/[^a-z0-9-]+/)
       .some((t) => t.startsWith(word));
   const found = PANES.filter((p) => words.every((w) => starts(`${p.name} ${p.keywords}`, w)));
-  return found
-    .sort((a, b) => Number(words.every((w) => starts(b.name, w))) - Number(words.every((w) => starts(a.name, w))))
-    .map((p) => p.id);
+  return found.sort((a, b) => Number(words.every((w) => starts(b.name, w))) - Number(words.every((w) => starts(a.name, w)))).map((p) => p.id);
 }

@@ -249,11 +249,13 @@ export default function Spider({ win }: AppProps) {
         <div
           className="os-spider-drag"
           // Inside the window (which may be moved by a transform), relative to it.
-          style={{
-            '--cw': `${drag.w}px`,
-            left: drag.x - drag.dx - (root.current?.getBoundingClientRect().left ?? 0),
-            top: drag.y - drag.dy - (root.current?.getBoundingClientRect().top ?? 0)
-          } as React.CSSProperties}
+          style={
+            {
+              '--cw': `${drag.w}px`,
+              left: drag.x - drag.dx - (root.current?.getBoundingClientRect().left ?? 0),
+              top: drag.y - drag.dy - (root.current?.getBoundingClientRect().top ?? 0)
+            } as React.CSSProperties
+          }
           aria-hidden="true"
         >
           {dragging.map((card) => (

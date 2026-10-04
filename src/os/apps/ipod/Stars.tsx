@@ -8,11 +8,7 @@ const Star = () => (
 );
 
 export function Stars({ rating }: { rating: number }) {
-  return (
-    <span className="os-ipod-stars">
-      {[1, 2, 3, 4, 5].map((n) => (n <= rating ? <Star key={n} /> : <i key={n} />))}
-    </span>
-  );
+  return <span className="os-ipod-stars">{[1, 2, 3, 4, 5].map((n) => (n <= rating ? <Star key={n} /> : <i key={n} />))}</span>;
 }
 
 /** How a rating reads aloud. */

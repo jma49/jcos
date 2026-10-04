@@ -9,7 +9,23 @@ import { JOB_STAGES, type JobStage } from '../../social/jobs';
 import { useOwnerAnswer } from '../../social/owner';
 import { Board, StubBoard } from './Board';
 import { Info } from './Info';
-import { addJob, allOf, changeJob, columns, deleteJob, eventsBy, inPlay, matches, shortDay, today, useHuntRefresh, useJobHunt, type JobApplication, type JobDraft, type JobTotals } from './jobs';
+import {
+  addJob,
+  allOf,
+  changeJob,
+  columns,
+  deleteJob,
+  eventsBy,
+  inPlay,
+  matches,
+  shortDay,
+  today,
+  useHuntRefresh,
+  useJobHunt,
+  type JobApplication,
+  type JobDraft,
+  type JobTotals
+} from './jobs';
 import { ListView, type ListSort } from './ListView';
 import { Capacity, Funnel, STAGE_NAMES } from './parts';
 
@@ -128,7 +144,10 @@ function Mine({ win, current, onPick }: { win: AppProps['win']; current: JobStag
 
   const by = useMemo(() => eventsBy(hunt.events), [hunt.events]);
   const sourceOf = (a: JobApplication) => a.source || 'Other';
-  const sources = useMemo(() => [...new Set(hunt.applications.map(sourceOf))].sort((a, b) => (a === 'Other' ? 1 : b === 'Other' ? -1 : a.localeCompare(b))), [hunt.applications]);
+  const sources = useMemo(
+    () => [...new Set(hunt.applications.map(sourceOf))].sort((a, b) => (a === 'Other' ? 1 : b === 'Other' ? -1 : a.localeCompare(b))),
+    [hunt.applications]
+  );
   const visible = hunt.applications.filter((a) => matches(a, query) && !offSources.includes(sourceOf(a)));
   const cols = columns(visible, by);
   const shown = JOB_STAGES.filter((s) => !hidden.includes(s));
@@ -211,7 +230,12 @@ function Mine({ win, current, onPick }: { win: AppProps['win']; current: JobStag
       const c = commands.current;
       // e.code: ⌥ changes e.key on a Mac.
       if (e.altKey && !e.metaKey && !e.ctrlKey) {
-        const act = { KeyN: () => void c.newApplication(), KeyI: () => setInfo((i) => !i), Digit1: () => c.showView('board'), Digit2: () => c.showView('list') }[e.code];
+        const act = {
+          KeyN: () => void c.newApplication(),
+          KeyI: () => setInfo((i) => !i),
+          Digit1: () => c.showView('board'),
+          Digit2: () => c.showView('list')
+        }[e.code];
         if (act) {
           e.preventDefault();
           act();
@@ -280,7 +304,11 @@ function Mine({ win, current, onPick }: { win: AppProps['win']; current: JobStag
               {JOB_STAGES.map((s) => (
                 <li key={s} data-stage={s}>
                   <label>
-                    <input type="checkbox" checked={!hidden.includes(s)} onChange={() => setHidden((h) => (h.includes(s) ? h.filter((x) => x !== s) : [...h, s]))} />
+                    <input
+                      type="checkbox"
+                      checked={!hidden.includes(s)}
+                      onChange={() => setHidden((h) => (h.includes(s) ? h.filter((x) => x !== s) : [...h, s]))}
+                    />
                     <span className="os-jh-swatch" />
                     {STAGE_NAMES[s]}
                     <span className="os-jh-count">{hunt.totals.stages[s]}</span>
@@ -295,7 +323,11 @@ function Mine({ win, current, onPick }: { win: AppProps['win']; current: JobStag
                   {sources.map((src) => (
                     <li key={src}>
                       <label>
-                        <input type="checkbox" checked={!offSources.includes(src)} onChange={() => setOffSources((o) => (o.includes(src) ? o.filter((x) => x !== src) : [...o, src]))} />
+                        <input
+                          type="checkbox"
+                          checked={!offSources.includes(src)}
+                          onChange={() => setOffSources((o) => (o.includes(src) ? o.filter((x) => x !== src) : [...o, src]))}
+                        />
                         {src}
                         <span className="os-jh-count">{hunt.applications.filter((a) => sourceOf(a) === src).length}</span>
                       </label>
@@ -319,9 +351,7 @@ function Mine({ win, current, onPick }: { win: AppProps['win']; current: JobStag
             ) : (
               <ListView apps={visible} by={by} sort={sort} onSort={setSort} selected={chosen} onSelect={choose} onOpen={open} />
             )}
-            {hunt.loaded && hunt.applications.length === 0 && (
-              <p className="os-jh-empty">Nothing here yet. Ask Claude to sync with Mail, or add one with +.</p>
-            )}
+            {hunt.loaded && hunt.applications.length === 0 && <p className="os-jh-empty">Nothing here yet. Ask Claude to sync with Mail, or add one with +.</p>}
           </section>
         </div>
         <div className="os-jh-bottom">

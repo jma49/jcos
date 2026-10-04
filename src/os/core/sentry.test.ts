@@ -41,7 +41,10 @@ describe('scrub', () => {
     expect(clean.message).toBe('at https://majincheng.com/');
     const [value] = clean.exception!.values!;
     expect(value.value).toBe('Failed to fetch https://majincheng.com/api/lyrics');
-    expect(value.stacktrace!.frames![0]).toEqual({ filename: 'https://majincheng.com/_astro/stickies.js', abs_path: 'https://majincheng.com/_astro/stickies.js' });
+    expect(value.stacktrace!.frames![0]).toEqual({
+      filename: 'https://majincheng.com/_astro/stickies.js',
+      abs_path: 'https://majincheng.com/_astro/stickies.js'
+    });
   });
 });
 

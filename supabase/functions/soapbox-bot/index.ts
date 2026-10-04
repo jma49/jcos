@@ -113,9 +113,7 @@ async function currentPlace(): Promise<Place> {
 }
 
 async function findPlace(query: string): Promise<Place | null> {
-  const res = await fetch(
-    `https://geocoding-api.open-meteo.com/v1/search?count=1&language=en&format=json&name=${encodeURIComponent(query)}`
-  );
+  const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?count=1&language=en&format=json&name=${encodeURIComponent(query)}`);
   const hit = (await res.json()).results?.[0];
   if (!hit) return null;
   return {
@@ -426,7 +424,8 @@ async function handle(message: Message, edited: boolean) {
 
   if (hasPicture && !edited) {
     // The diary and Documents are private: a photo meant for them isn't posted on the Soapbox instead.
-    if (/^\/(diary|doc)\b/i.test(text)) return reply(chat, 'The diary and Documents take text alone for now, so the photo went nowhere. Send the words by themselves.', message.message_id);
+    if (/^\/(diary|doc)\b/i.test(text))
+      return reply(chat, 'The diary and Documents take text alone for now, so the photo went nowhere. Send the words by themselves.', message.message_id);
     return postPicture(message, text);
   }
   if (!text) {
@@ -451,7 +450,12 @@ async function handle(message: Message, edited: boolean) {
   if (watch) {
     if (watch[1]) await setWatching(watch[1].toLowerCase() === 'on');
     const on = watch[1] ? watch[1].toLowerCase() === 'on' : await watching();
-    return reply(chat, on ? '👀 New Stickies notes and public chat messages come here, with a Hide button. /watch off to stop.' : 'Not sending notes and chat messages here. /watch on to start.');
+    return reply(
+      chat,
+      on
+        ? '👀 New Stickies notes and public chat messages come here, with a Hide button. /watch off to stop.'
+        : 'Not sending notes and chat messages here. /watch on to start.'
+    );
   }
 
   const at = text.match(/^\/at(?:@\w+)?\b\s*(.*)$/i);
@@ -473,9 +477,7 @@ async function handle(message: Message, edited: boolean) {
   if (/^\/delete\b/i.test(text)) {
     // The post replied to: either the original message or the bot's confirmation of it.
     const target = message.reply_to_message?.message_id;
-    const filter = target
-      ? `telegram_message_id=in.(${target},${target - 1})&order=created_at.desc&limit=1`
-      : 'hidden=eq.false&order=created_at.desc&limit=1';
+    const filter = target ? `telegram_message_id=in.(${target},${target - 1})&order=created_at.desc&limit=1` : 'hidden=eq.false&order=created_at.desc&limit=1';
     const [post] = (await db(`soapbox_posts?${filter}&select=id,body,images`)) ?? [];
     if (!post) return reply(chat, 'Nothing to delete.', message.message_id);
     await db(`soapbox_posts?id=eq.${post.id}`, { method: 'PATCH', body: JSON.stringify({ hidden: true }) });
@@ -501,11 +503,7 @@ async function handle(message: Message, edited: boolean) {
     method: 'POST',
     body: JSON.stringify({ body, kind, place: place.city, weather, telegram_message_id: message.message_id })
   });
-  await reply(
-    chat,
-    `${kind === 'rant' ? '🔥 Rant' : '📝 Note'} posted · ${place.city}${weather ? ` ${weather}` : ''}\n${SITE}`,
-    message.message_id
-  );
+  await reply(chat, `${kind === 'rant' ? '🔥 Rant' : '📝 Note'} posted · ${place.city}${weather ? ` ${weather}` : ''}\n${SITE}`, message.message_id);
 }
 
 /** A photo (or one of an album's), with its caption as the text. */

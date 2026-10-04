@@ -21,8 +21,7 @@ export function SharingPane() {
       <Group title="What others on the desktop see">
         <div className="os-prefs-radios">
           <Option checked={shareCity} onChange={(on) => set({ shareCity: on })} title="Share my city">
-            {city ? `Others see you’re in ${city}.` : 'Once you’re located, others see which city you’re in.'} Off, you’re
-            “Somewhere”.
+            {city ? `Others see you’re in ${city}.` : 'Once you’re located, others see which city you’re in.'} Off, you’re “Somewhere”.
           </Option>
           <Option checked={sharePointer} onChange={(on) => set({ sharePointer: on })} title="Share my pointer">
             Your pointer appears for people who’ve chosen to see pointers, and no one else.
@@ -33,17 +32,14 @@ export function SharingPane() {
             title="Let members find me with AirDrop"
             disabled={!account}
           >
-            {account
-              ? 'Other signed-in members can offer you files. You always get to accept or decline.'
-              : 'Sign in to use AirDrop.'}
+            {account ? 'Other signed-in members can offer you files. You always get to accept or decline.' : 'Sign in to use AirDrop.'}
           </Option>
         </div>
       </Group>
       <Group title="What I see">
         <div className="os-prefs-radios">
           <Option checked={showOthersPointers} onChange={(on) => set({ showOthersPointers: on })} title="Show other people’s pointers">
-            Off, nobody else’s pointer moves across your screen. On, you see the pointers of those who share theirs,
-            labelled with their name or city.
+            Off, nobody else’s pointer moves across your screen. On, you see the pointers of those who share theirs, labelled with their name or city.
           </Option>
         </div>
       </Group>
@@ -53,9 +49,7 @@ export function SharingPane() {
 
 const REPO = 'jma49/jmos';
 
-type Check =
-  | { state: 'idle' | 'checking' | 'current' | 'failed' | 'unknown' }
-  | { state: 'behind'; commits: { sha: string; message: string }[] };
+type Check = { state: 'idle' | 'checking' | 'current' | 'failed' | 'unknown' } | { state: 'behind'; commits: { sha: string; message: string }[] };
 
 export function SoftwareUpdatePane() {
   const build = __JMOS_BUILD__;
@@ -131,9 +125,7 @@ export function SoftwareUpdatePane() {
               </button>
             )}
           </div>
-          {check.state === 'behind' && (
-            <p className="os-prefs-note">A new version can take a minute or two to reach this site.</p>
-          )}
+          {check.state === 'behind' && <p className="os-prefs-note">A new version can take a minute or two to reach this site.</p>}
         </div>
       </div>
     </Group>
@@ -177,8 +169,8 @@ export function BackupPane() {
     <>
       <Group title="Back Up">
         <p className="os-prefs-lead">
-          Save everything JM/OS remembers in this browser (the desktop picture, appearance, installed applets, high scores, Photo
-          Booth pictures…) to a file, and bring it back here or in another browser.
+          Save everything JM/OS remembers in this browser (the desktop picture, appearance, installed applets, high scores, Photo Booth pictures…) to a file,
+          and bring it back here or in another browser.
         </p>
         <div className="os-prefs-row">
           <button type="button" className="os-button os-button-primary" onClick={backUp}>
@@ -207,9 +199,7 @@ export function BackupPane() {
         <p className="os-prefs-note">Your account and chats live on the server and aren’t in the file.</p>
       </Group>
       <Group title="Reset">
-        <p className="os-prefs-lead">
-          Put every choice made in System Preferences back to how it came. Applets, scores and pictures stay.
-        </p>
+        <p className="os-prefs-lead">Put every choice made in System Preferences back to how it came. Applets, scores and pictures stay.</p>
         <div className="os-prefs-row">
           {confirming ? (
             <>

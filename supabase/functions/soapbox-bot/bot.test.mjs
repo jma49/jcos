@@ -23,7 +23,21 @@ const JPEG = Buffer.from('FFD8FFE000104A46494600010100000100010000FFC00011080005
 /** Everything the fake services saw and hold. */
 let world;
 beforeEach(() => {
-  world = { replies: [], sent: [], uploads: [], posts: [], groups: new Map(), patches: [], bucket: true, settings: {}, moderation: null, webhook: null, answered: [], edits: [], failRpc: false };
+  world = {
+    replies: [],
+    sent: [],
+    uploads: [],
+    posts: [],
+    groups: new Map(),
+    patches: [],
+    bucket: true,
+    settings: {},
+    moderation: null,
+    webhook: null,
+    answered: [],
+    edits: [],
+    failRpc: false
+  };
   // The music library: its songs, drafts and limit, and what YouTube, Apple Music and lrclib say.
   Object.assign(world, { songs: [], music: { song_limit: 200 }, fetched: [], youtube: {}, itunes: [], lrclib: [] });
   // DVD Player's shelf, its limit, and the videos YouTube has a full-size thumbnail for.
@@ -43,7 +57,8 @@ globalThis.fetch = async (input, init = {}) => {
   if (tg) {
     const [, call] = tg;
     if (call === 'getFile') return json({ ok: true, result: { file_path: `files/${body.file_id}` } });
-    if (call === 'sendMessage' && body.chat_id === OWNER && body.reply_markup?.inline_keyboard?.[0]?.[0]?.callback_data?.startsWith('song:')) world.replies.push(body.text), world.sent.push(body);
+    if (call === 'sendMessage' && body.chat_id === OWNER && body.reply_markup?.inline_keyboard?.[0]?.[0]?.callback_data?.startsWith('song:'))
+      world.replies.push(body.text), world.sent.push(body);
     else if (call === 'sendMessage' && body.chat_id === OWNER && body.reply_markup) world.sent.push(body);
     else if (call === 'sendMessage') world.replies.push(body.text);
     if (call === 'setWebhook') world.webhook = body;
@@ -83,8 +98,10 @@ globalThis.fetch = async (input, init = {}) => {
   if (shelf) {
     const params = new URLSearchParams((shelf[1] ?? '').slice(1));
     if (method === 'POST') {
-      if (world.discs.length >= world.music.disc_limit) return json({ code: 'P0429', message: `The shelf is full (${world.music.disc_limit} discs). Remove one first.` }, 400);
-      if (world.discs.some((d) => d.id === body.id)) return json({ code: '23505', message: 'duplicate key value violates unique constraint "discs_pkey"' }, 409);
+      if (world.discs.length >= world.music.disc_limit)
+        return json({ code: 'P0429', message: `The shelf is full (${world.music.disc_limit} discs). Remove one first.` }, 400);
+      if (world.discs.some((d) => d.id === body.id))
+        return json({ code: '23505', message: 'duplicate key value violates unique constraint "discs_pkey"' }, 409);
       world.discs.push(body);
       return new Response(null, { status: 201 });
     }
@@ -148,8 +165,10 @@ globalThis.fetch = async (input, init = {}) => {
       return json(name in world.music ? [{ value: world.music[name] }] : []);
     }
     if (method === 'POST') {
-      if (world.songs.length >= world.music.song_limit) return json({ code: 'P0429', message: `The library is full (${world.music.song_limit} songs). Remove one first.` }, 400);
-      if (world.songs.some((s) => s.id === body.id)) return json({ code: '23505', message: 'duplicate key value violates unique constraint "songs_pkey"' }, 409);
+      if (world.songs.length >= world.music.song_limit)
+        return json({ code: 'P0429', message: `The library is full (${world.music.song_limit} songs). Remove one first.` }, 400);
+      if (world.songs.some((s) => s.id === body.id))
+        return json({ code: '23505', message: 'duplicate key value violates unique constraint "songs_pkey"' }, 409);
       world.songs.push(body);
       return new Response(null, { status: 201 });
     }
@@ -215,7 +234,13 @@ const photo = (id) => [
 test('text becomes a note, #rant a rant', async () => {
   await send({ message_id: 1, text: 'hello' });
   await send({ message_id: 2, text: '#rant the bus was late' });
-  assert.deepEqual(world.posts.map((p) => [p.body, p.kind]), [['hello', 'note'], ['the bus was late', 'rant']]);
+  assert.deepEqual(
+    world.posts.map((p) => [p.body, p.kind]),
+    [
+      ['hello', 'note'],
+      ['the bus was late', 'rant']
+    ]
+  );
   assert.match(world.replies[0], /Note posted/);
 });
 
@@ -310,7 +335,9 @@ test('a signed notice reaches the owner with a Hide button; a forged one does no
 });
 
 test('Hide and Show again change the row and the notice', async () => {
-  const cb = (data) => ({ callback_query: { id: 'q', from: { id: OWNER }, data, message: { chat: { id: OWNER }, message_id: 5, text: '📝 New Stickies note from bob\n\nhello' } } });
+  const cb = (data) => ({
+    callback_query: { id: 'q', from: { id: OWNER }, data, message: { chat: { id: OWNER }, message_id: 5, text: '📝 New Stickies note from bob\n\nhello' } }
+  });
   const id = '0f8a7c2e-1111-4222-8333-444455556666';
   await call(cb(`hide:note:${id}`));
   assert.deepEqual(world.patches.at(-1), { path: `notes?id=eq.${id}`, body: { approved: false } });
@@ -334,7 +361,13 @@ const addButtons = () => world.sent.at(-1).reply_markup.inline_keyboard[0].map((
 test('/add looks a video up, shows what it found, and adds it when told to', async () => {
   world.youtube[NINGXIA] = { title: '梁靜茹 Fish Leong【寧夏】Official MV', author_name: 'Rock Records' };
   world.itunes = [
-    { trackName: '寧夏', artistName: '梁靜茹', collectionName: '燕尾蝶', artworkUrl100: 'https://is1-ssl.mzstatic.com/image/thumb/x/100x100bb.jpg', trackTimeMillis: 252000 }
+    {
+      trackName: '寧夏',
+      artistName: '梁靜茹',
+      collectionName: '燕尾蝶',
+      artworkUrl100: 'https://is1-ssl.mzstatic.com/image/thumb/x/100x100bb.jpg',
+      trackTimeMillis: 252000
+    }
   ];
   world.lrclib = [{ syncedLyrics: '[00:12.00] 宁静夏天' }];
   await send({ message_id: 200, text: `/add https://youtu.be/${NINGXIA}?si=share` });
@@ -420,7 +453,10 @@ test('/songs, /remove and /offset find a song by title or id', async () => {
   assert.match(world.replies.at(-1), /within 30 seconds/);
 
   await send({ message_id: 213, text: `/remove ${NINGXIA}` });
-  assert.deepEqual(world.songs.map((s) => s.id), ['EEEEEEEEEEE']);
+  assert.deepEqual(
+    world.songs.map((s) => s.id),
+    ['EEEEEEEEEEE']
+  );
   assert.match(world.replies.at(-1), /Removed 寧夏 — 梁靜茹\. 1\/200 songs/);
   await send({ message_id: 214, text: '/remove nothing like it' });
   assert.match(world.replies.at(-1), /No song matches/);
@@ -456,7 +492,10 @@ test('two presses of Add at once add the song once, and each says what happened'
   await send({ message_id: 219, text: `/add ${NINGXIA}` });
   await Promise.all([press(`song:add:${NINGXIA}`, 'preview'), press(`song:add:${NINGXIA}`, 'preview')]);
   assert.equal(world.songs.length, 1);
-  const outcomes = world.edits.slice(-2).map((e) => e.text.split('\n').at(-1)).sort();
+  const outcomes = world.edits
+    .slice(-2)
+    .map((e) => e.text.split('\n').at(-1))
+    .sort();
   assert.equal(outcomes.filter((t) => t.startsWith('✅ Added')).length, 1);
   assert.equal(outcomes.filter((t) => /already answered/.test(t)).length, 1);
   assert.ok(!outcomes.some((t) => t.startsWith('⚠️')), 'no press reports a failure that didn’t happen');
@@ -465,7 +504,10 @@ test('two presses of Add at once add the song once, and each says what happened'
 test('a title starting with an 11-letter word is found by title', async () => {
   world.songs.push({ id: NINGXIA, title: 'Butterflies', artist: 'Someone' }, { id: 'EEEEEEEEEEE', title: 'Other', artist: 'C' });
   await send({ message_id: 220, text: '/remove Butterflies' });
-  assert.deepEqual(world.songs.map((s) => s.id), ['EEEEEEEEEEE']);
+  assert.deepEqual(
+    world.songs.map((s) => s.id),
+    ['EEEEEEEEEEE']
+  );
 });
 
 test('the last song stays', async () => {
@@ -513,17 +555,31 @@ test('when several songs match, each is a button, and pressing one does the comm
       ['夏天 — C', 'song:offset:EEEEEEEEEEE:-850']
     ]
   );
-  await call({ callback_query: { id: 'cb', from: { id: OWNER }, data: `song:offset:${NINGXIA}:-850`, message: { chat: { id: OWNER }, message_id: 901, text: 'Which one?' } } });
+  await call({
+    callback_query: {
+      id: 'cb',
+      from: { id: OWNER },
+      data: `song:offset:${NINGXIA}:-850`,
+      message: { chat: { id: OWNER }, message_id: 901, text: 'Which one?' }
+    }
+  });
   assert.equal(world.songs[0].lyrics_offset, -850);
   assert.equal(world.songs[1].lyrics_offset, undefined);
   assert.deepEqual(world.cleared, [901], 'the buttons go once one is pressed');
   assert.match(world.replies.at(-1), /寧夏: lyrics 850 ms behind/);
 
   await send({ message_id: 226, text: '/remove 夏' });
-  await call({ callback_query: { id: 'cb', from: { id: OWNER }, data: 'song:remove:EEEEEEEEEEE', message: { chat: { id: OWNER }, message_id: 902, text: 'Which one?' } } });
-  assert.deepEqual(world.songs.map((s) => s.id), [NINGXIA]);
+  await call({
+    callback_query: { id: 'cb', from: { id: OWNER }, data: 'song:remove:EEEEEEEEEEE', message: { chat: { id: OWNER }, message_id: 902, text: 'Which one?' } }
+  });
+  assert.deepEqual(
+    world.songs.map((s) => s.id),
+    [NINGXIA]
+  );
   // Pressed again from another copy of the question: it's gone already.
-  await call({ callback_query: { id: 'cb', from: { id: OWNER }, data: 'song:remove:EEEEEEEEEEE', message: { chat: { id: OWNER }, message_id: 903, text: 'Which one?' } } });
+  await call({
+    callback_query: { id: 'cb', from: { id: OWNER }, data: 'song:remove:EEEEEEEEEEE', message: { chat: { id: OWNER }, message_id: 903, text: 'Which one?' } }
+  });
   assert.match(world.replies.at(-1), /isn’t in the library any more/);
 });
 
@@ -595,7 +651,10 @@ test('/dvd lists the shelf, newest first; /dvd remove takes a disc off by title 
   await send({ message_id: 543, text: `/dvd remove https://youtu.be/${FERRARI}` });
   assert.match(world.replies.at(-1), /🗑 Off the shelf: White Ferrari — Frank Ocean\./);
   await send({ message_id: 544, text: '/dvd remove whiplash' });
-  assert.deepEqual(world.discs.map((d) => d.id), ['CCCCCCCCCCC']);
+  assert.deepEqual(
+    world.discs.map((d) => d.id),
+    ['CCCCCCCCCCC']
+  );
   await send({ message_id: 545, text: '/dvd remove nothing like it' });
   assert.match(world.replies.at(-1), /No disc matches “nothing like it”/);
 });
@@ -608,9 +667,10 @@ const at = (iso) => Math.floor(Date.parse(iso) / 1000);
 test('/diary writes an entry for the day it was sent where Jincheng is, for Jincheng alone', async () => {
   // 23:30 in San Jose (the place to start with) is already the next day in UTC.
   await send({ message_id: 300, date: at('2026-09-30T06:30:00Z'), text: '/diary Climbed after work.\nThe blue V7.' });
-  assert.deepEqual(world.diary.map(({ day, body, telegram_message_id }) => ({ day, body, telegram_message_id })), [
-    { day: '2026-09-29', body: 'Climbed after work.\nThe blue V7.', telegram_message_id: 300 }
-  ]);
+  assert.deepEqual(
+    world.diary.map(({ day, body, telegram_message_id }) => ({ day, body, telegram_message_id })),
+    [{ day: '2026-09-29', body: 'Climbed after work.\nThe blue V7.', telegram_message_id: 300 }]
+  );
   assert.match(world.replies.at(-1), /In your diary for Tuesday, September 29/);
   // Somewhere else, that place's day.
   await send({ message_id: 301, text: '/at Tokyo' });
@@ -647,7 +707,10 @@ test('/doc makes a document in Documents named after its first line, free whatev
 test('a document named the same meanwhile gets the next name', async () => {
   world.takenMeanwhile = 'Notes.txt';
   await send({ message_id: 330, text: '/doc Notes\nfrom the train' });
-  assert.deepEqual(world.documents.map((d) => d.name), ['Notes.txt', 'Notes 2.txt']);
+  assert.deepEqual(
+    world.documents.map((d) => d.name),
+    ['Notes.txt', 'Notes 2.txt']
+  );
   assert.equal(world.documents.at(-1).telegram_message_id, 330);
   assert.match(world.replies.at(-1), /“Notes 2\.txt”/);
 });
@@ -693,7 +756,10 @@ test('a full diary says so, and a photo meant for the diary goes nowhere', async
 
 test('the Soapbox’s own /note still posts a note, and /help lists the home folder', async () => {
   await send({ message_id: 370, text: '/note hello there' });
-  assert.deepEqual(world.posts.map((p) => [p.body, p.kind]), [['hello there', 'note']]);
+  assert.deepEqual(
+    world.posts.map((p) => [p.body, p.kind]),
+    [['hello there', 'note']]
+  );
   await send({ message_id: 371, text: '/help' });
   assert.match(world.replies.at(-1), /\/diary <text>[\s\S]*\/doc <text>/);
 });

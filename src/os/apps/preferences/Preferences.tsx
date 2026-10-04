@@ -109,13 +109,7 @@ export default function Preferences({ win }: AppProps) {
           <button type="button" aria-label="Back" title="Back" disabled={history.at === 0} onClick={() => step(-1)}>
             <BackGlyph />
           </button>
-          <button
-            type="button"
-            aria-label="Forward"
-            title="Forward"
-            disabled={history.at === history.views.length - 1}
-            onClick={() => step(1)}
-          >
+          <button type="button" aria-label="Forward" title="Forward" disabled={history.at === history.views.length - 1} onClick={() => step(1)}>
             <ForwardGlyph />
           </button>
         </div>

@@ -65,8 +65,7 @@ export const chapterPictures = (id: string) => ['hqdefault', 'hq1', 'hq2', 'hq3'
 export const chapterStart = (n: number, duration: number) => (duration * Math.min(CHAPTERS - 1, Math.max(0, n))) / CHAPTERS;
 
 /** The chapter (from 0) playing at `time`; the first until the video's length is known. */
-export const chapterAt = (time: number, duration: number) =>
-  duration > 0 ? Math.min(CHAPTERS - 1, Math.max(0, Math.floor((time / duration) * CHAPTERS))) : 0;
+export const chapterAt = (time: number, duration: number) => (duration > 0 ? Math.min(CHAPTERS - 1, Math.max(0, Math.floor((time / duration) * CHAPTERS))) : 0);
 
 /**
  * Whether YouTube has made a picture: asked with HEAD, so nothing is
@@ -197,7 +196,11 @@ function shelfAt(library: number, own: number): ShelfDisc[] {
 /** The shelf, for a view that shows it: it renders again when either part changes. */
 export function useShelf(): ShelfDisc[] {
   const library = useLibraryVersion();
-  const own = useSyncExternalStore(subscribe, () => mineVersion, () => mineVersion);
+  const own = useSyncExternalStore(
+    subscribe,
+    () => mineVersion,
+    () => mineVersion
+  );
   return shelfAt(library, own);
 }
 

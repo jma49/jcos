@@ -67,7 +67,9 @@
 }
 
 .os-spider-slot[data-lit] .os-spider-card {
-  box-shadow: 0 0 0 2px #ffe066, 0 1px 2px rgba(0, 0, 0, 0.4);
+  box-shadow:
+    0 0 0 2px #ffe066,
+    0 1px 2px rgba(0, 0, 0, 0.4);
 }
 
 .os-spider-card {
@@ -77,7 +79,9 @@
   height: calc(var(--cw, 60px) * 1.4);
   border-radius: calc(var(--cw, 60px) * 0.08);
   background: linear-gradient(#ffffff, #f1f1ee);
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35), 0 1px 2px rgba(0, 0, 0, 0.3);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.35),
+    0 1px 2px rgba(0, 0, 0, 0.3);
   color: #111;
   font-family: var(--os-ui);
   overflow: hidden;
@@ -91,9 +95,11 @@
 .os-spider-card[data-back] {
   background:
     repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.14) 0 3px, transparent 3px 7px),
-    repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.14) 0 3px, transparent 3px 7px),
-    linear-gradient(#5aa0e8, #1f5fb8);
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.4), inset 0 0 0 3px #fff, 0 1px 2px rgba(0, 0, 0, 0.3);
+    repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.14) 0 3px, transparent 3px 7px), linear-gradient(#5aa0e8, #1f5fb8);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.4),
+    inset 0 0 0 3px #fff,
+    0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .os-spider-corner {

@@ -7,11 +7,7 @@ export async function getProjects(): Promise<Project[]> {
   const entries = await getCollection('projects');
   return entries
     .map((entry) => ({ ...entry, slug: entry.id }))
-    .sort(
-      (a, b) =>
-        (a.data.order ?? Infinity) - (b.data.order ?? Infinity) ||
-        b.data.date.getTime() - a.data.date.getTime()
-    );
+    .sort((a, b) => (a.data.order ?? Infinity) - (b.data.order ?? Infinity) || b.data.date.getTime() - a.data.date.getTime());
 }
 
 export function projectHref(slug: string): string {

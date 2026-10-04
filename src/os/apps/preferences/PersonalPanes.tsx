@@ -164,9 +164,7 @@ export function DesktopPane() {
               ))}
             </ul>
             <div className="os-prefs-preview">
-              <div className="os-prefs-screen">
-                {saver.style === 'photos' ? <img src={SCENIC[0].thumb} alt="" /> : SAVER_VIEWS[saver.style]?.()}
-              </div>
+              <div className="os-prefs-screen">{saver.style === 'photos' ? <img src={SCENIC[0].thumb} alt="" /> : SAVER_VIEWS[saver.style]?.()}</div>
               <p>{blurb}</p>
               <div className="os-prefs-row">
                 <label htmlFor="os-saver-idle">Start after</label>
@@ -281,11 +279,7 @@ export function AppearancePane() {
                 {a.value === 'sun' && appearance === 'sun' && guessing && (
                   <small className="os-prefs-hint">
                     We don’t know where you are yet, so this follows the sun in {HOME.city}.{' '}
-                    <button
-                      type="button"
-                      className="os-link"
-                      onClick={() => launch('preferences', { props: { pane: 'datetime' } })}
-                    >
+                    <button type="button" className="os-link" onClick={() => launch('preferences', { props: { pane: 'datetime' } })}>
                       Pick a city…
                     </button>
                   </small>
@@ -462,8 +456,8 @@ export function DockPane() {
         </div>
       </Group>
       <p className="os-prefs-note">
-        Drag an app out of the Dock to remove it, along it to move it, or in from Finder’s Applications to keep it; a
-        running app’s icon can be dragged left to stay. Other apps join the Dock while they’re open.
+        Drag an app out of the Dock to remove it, along it to move it, or in from Finder’s Applications to keep it; a running app’s icon can be dragged left to
+        stay. Other apps join the Dock while they’re open.
       </p>
       <p className="os-prefs-note">
         <button type="button" className="os-button" disabled={isDefault} onClick={resetDock}>

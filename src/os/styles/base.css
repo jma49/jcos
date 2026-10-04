@@ -45,8 +45,18 @@
   --os-select: var(--os-accent);
   --os-select-grad: linear-gradient(color-mix(in srgb, var(--os-accent) 70%, white), var(--os-accent));
   /* Aqua gel (default buttons, pressed segments, selected cells), all from the accent. */
-  --os-gel: linear-gradient(color-mix(in srgb, var(--os-accent) 30%, white), color-mix(in srgb, var(--os-accent) 75%, white) 45%, color-mix(in srgb, var(--os-accent) 100%, white) 50%, color-mix(in srgb, var(--os-accent) 55%, white));
-  --os-gel-pressed: linear-gradient(color-mix(in srgb, var(--os-accent) 25%, white), color-mix(in srgb, var(--os-accent) 48%, white) 50%, color-mix(in srgb, var(--os-accent) 62%, white) 50%, color-mix(in srgb, var(--os-accent) 33%, white));
+  --os-gel: linear-gradient(
+    color-mix(in srgb, var(--os-accent) 30%, white),
+    color-mix(in srgb, var(--os-accent) 75%, white) 45%,
+    color-mix(in srgb, var(--os-accent) 100%, white) 50%,
+    color-mix(in srgb, var(--os-accent) 55%, white)
+  );
+  --os-gel-pressed: linear-gradient(
+    color-mix(in srgb, var(--os-accent) 25%, white),
+    color-mix(in srgb, var(--os-accent) 48%, white) 50%,
+    color-mix(in srgb, var(--os-accent) 62%, white) 50%,
+    color-mix(in srgb, var(--os-accent) 33%, white)
+  );
   --os-accent-rim: color-mix(in srgb, var(--os-accent) 55%, black);
   --os-accent-shadow: color-mix(in srgb, color-mix(in srgb, var(--os-accent) 45%, black) 45%, transparent);
   --os-focus: color-mix(in srgb, var(--os-accent) 55%, transparent);

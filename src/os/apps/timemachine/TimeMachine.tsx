@@ -112,7 +112,10 @@ export default function TimeMachine({ win }: AppProps) {
       let disk = made.get(day);
       if (!disk) {
         const came = cameBy(day);
-        const movies = moviesFolder(shelf.filter((d) => came(d.added)), false);
+        const movies = moviesFolder(
+          shelf.filter((d) => came(d.added)),
+          false
+        );
         const users = usersFolder(
           { documents: home.documents.filter((d) => came(d.created)), diary: home.diary.filter((e) => came(e.created)) },
           owner,

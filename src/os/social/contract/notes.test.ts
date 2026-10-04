@@ -78,7 +78,10 @@ describe.each(backends)('notes: $name', ({ make }) => {
     // Row-level security lets bob's delete reach no row, without an error.
     await b.social.deleteNote(mine?.id ?? 'alices-note');
     await b.given({
-      supabase: (db) => db.answer('notes.select', { data: [{ id: 'alices-note', body: 'alice’s', name: 'alice', color: 'yellow', user_id: 'a', created_at: '2026-10-02T10:00:00Z' }] })
+      supabase: (db) =>
+        db.answer('notes.select', {
+          data: [{ id: 'alices-note', body: 'alice’s', name: 'alice', color: 'yellow', user_id: 'a', created_at: '2026-10-02T10:00:00Z' }]
+        })
     });
     expect((await b.social.listNotes()).map((n) => n.body)).toEqual(['alice’s']);
   });

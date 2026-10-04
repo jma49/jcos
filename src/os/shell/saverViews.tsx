@@ -266,11 +266,7 @@ function DriftingClock() {
 
   return (
     <div className="os-saver-clock-stage">
-      <m.div
-        className="os-saver-clock"
-        animate={{ left: `${spot.x}%`, top: `${spot.y}%` }}
-        transition={{ duration: 2.4, ease: 'easeInOut' }}
-      >
+      <m.div className="os-saver-clock" animate={{ left: `${spot.x}%`, top: `${spot.y}%` }} transition={{ duration: 2.4, ease: 'easeInOut' }}>
         <strong>{time}</strong>
         <span>{date}</span>
         {place && (

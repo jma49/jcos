@@ -34,7 +34,10 @@ describe.each(backends)('music: $name', ({ make }) => {
       }
     });
     await expect(b.social.rateSong('x', 5)).rejects.toMatchObject({ reason: 'failed', message: 'Only Jincheng can change the ratings everyone sees.' });
-    await expect(b.social.savePlaylist('Road', ['x'])).rejects.toMatchObject({ reason: 'failed', message: 'Only Jincheng can change the playlists everyone sees.' });
+    await expect(b.social.savePlaylist('Road', ['x'])).rejects.toMatchObject({
+      reason: 'failed',
+      message: 'Only Jincheng can change the playlists everyone sees.'
+    });
     await expect(b.social.burnDisc(disc)).rejects.toMatchObject({ reason: 'failed', message: 'Only Jincheng can change the discs everyone sees.' });
   });
 

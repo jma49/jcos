@@ -25,13 +25,15 @@ export function restoreWindows(): boolean {
   // applets that are still installed, and nothing half-formed.
   const { applets, restore, fitToViewport } = useWindows.getState();
   const windows = (saved?.windows ?? []).filter(
-    (w) =>
-      w && typeof w.id === 'string' && Object.hasOwn(apps, w.app) && (!apps[w.app].applet || applets.includes(w.app))
+    (w) => w && typeof w.id === 'string' && Object.hasOwn(apps, w.app) && (!apps[w.app].applet || applets.includes(w.app))
   );
   if (!windows.length || !saved) return false;
   // Where they were, but not where they opened from; then brought back on
   // screen if the browser is smaller now (phones get the full-screen place).
-  restore(windows.map(({ origin: _drop, ...w }) => w), saved.order);
+  restore(
+    windows.map(({ origin: _drop, ...w }) => w),
+    saved.order
+  );
   fitToViewport();
   return true;
 }

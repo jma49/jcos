@@ -37,7 +37,10 @@ export function localDiscs({ member }: LocalContext): DiscsSocial {
     },
     async removeDisc(id) {
       if (member().username !== DEV_OWNER) throw new SocialError('failed', 'Only Jincheng can change the discs everyone sees.');
-      saveJSON(DISCS_KEY, loadJSON<Disc[]>(DISCS_KEY, []).filter((d) => d.id !== id));
+      saveJSON(
+        DISCS_KEY,
+        loadJSON<Disc[]>(DISCS_KEY, []).filter((d) => d.id !== id)
+      );
       discChannel?.postMessage({ type: 'remove', id } satisfies DiscChange);
     },
     watchDiscs({ onDisc, onRemove }) {

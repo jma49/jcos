@@ -25,7 +25,14 @@ export function audio() {
 function tone(
   ctx: AudioContext,
   out: AudioNode,
-  { from, to = from, at = 0, length, type = 'sine', gain = 0.3 }: { from: number; to?: number; at?: number; length: number; type?: OscillatorType; gain?: number }
+  {
+    from,
+    to = from,
+    at = 0,
+    length,
+    type = 'sine',
+    gain = 0.3
+  }: { from: number; to?: number; at?: number; length: number; type?: OscillatorType; gain?: number }
 ) {
   const start = ctx.currentTime + at;
   const osc = ctx.createOscillator();

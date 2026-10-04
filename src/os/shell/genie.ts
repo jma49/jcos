@@ -12,8 +12,7 @@ const NECK = 0.08;
 const MAP_SIZE = 96;
 
 /** Safari doesn't apply SVG filters to HTML elements reliably. */
-export const genieSupported =
-  typeof navigator !== 'undefined' && !/^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+export const genieSupported = typeof navigator !== 'undefined' && !/^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
 const smoothstep = (t: number) => t * t * (3 - 2 * t);
 

@@ -259,9 +259,23 @@ export default function DVDPlayer({ win }: AppProps) {
     const count = screen === 'menu' ? MENU.length : CHAPTERS + 1;
     const across = screen === 'scenes' && choice < CHAPTERS;
     const delta =
-      dir === 'up' ? (screen === 'scenes' ? (choice === CHAPTERS ? -1 : 0) : -1)
-      : dir === 'down' ? (screen === 'scenes' ? (across ? CHAPTERS - choice : 0) : 1)
-      : across ? (dir === 'left' ? -1 : 1) : 0;
+      dir === 'up'
+        ? screen === 'scenes'
+          ? choice === CHAPTERS
+            ? -1
+            : 0
+          : -1
+        : dir === 'down'
+          ? screen === 'scenes'
+            ? across
+              ? CHAPTERS - choice
+              : 0
+            : 1
+          : across
+            ? dir === 'left'
+              ? -1
+              : 1
+            : 0;
     setChoice((c) => Math.min(count - 1, Math.max(0, c + delta)));
   };
 
@@ -502,7 +516,13 @@ function Scenes({ disc, choice, onHover, onChoose }: { disc: ShelfDisc; choice: 
           </li>
         ))}
       </ul>
-      <button type="button" className="os-dvd-back" aria-current={choice === CHAPTERS || undefined} onPointerEnter={() => onHover(CHAPTERS)} onClick={() => onChoose(CHAPTERS)}>
+      <button
+        type="button"
+        className="os-dvd-back"
+        aria-current={choice === CHAPTERS || undefined}
+        onPointerEnter={() => onHover(CHAPTERS)}
+        onClick={() => onChoose(CHAPTERS)}
+      >
         Main Menu
       </button>
     </div>

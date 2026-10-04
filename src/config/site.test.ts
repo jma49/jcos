@@ -51,7 +51,11 @@ describe('the site config', () => {
       // The Browser opens the archive in a frame.
       // (A policy without frame-src or default-src doesn't restrict frames.)
       const frames = directives['frame-src'] ?? directives['default-src'];
-      if (frames) expect(frames.some((s) => s === 'https:' || s === new URL(ARCHIVE_URL).origin), `${key} frames the archive`).toBe(true);
+      if (frames)
+        expect(
+          frames.some((s) => s === 'https:' || s === new URL(ARCHIVE_URL).origin),
+          `${key} frames the archive`
+        ).toBe(true);
       // The site frames itself (api/framing.ts asks pages to allow SITE_URL; this is the same rule at home).
       expect(directives['frame-ancestors'] ?? [], key).toContain("'self'");
     }

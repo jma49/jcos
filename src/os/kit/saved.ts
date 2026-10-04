@@ -15,8 +15,7 @@ export interface Saved<T> {
   watch(callback: () => void): () => void;
 }
 
-const isRecord = (value: unknown): value is object =>
-  typeof value === 'object' && value !== null && !Array.isArray(value);
+const isRecord = (value: unknown): value is object => typeof value === 'object' && value !== null && !Array.isArray(value);
 
 /**
  * Something an applet remembers in this browser, under its own key:

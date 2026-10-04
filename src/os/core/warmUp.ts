@@ -14,7 +14,12 @@ export function afterSettled(load: () => unknown): () => void {
   const timer = window.setTimeout(() => {
     const whenIdle = window.requestIdleCallback ?? ((run: () => void) => window.setTimeout(run, 0));
     // Only a head start: if it fails (offline), the real load tries again when it's needed.
-    idle = whenIdle(() => void Promise.resolve().then(load).catch(() => {}));
+    idle = whenIdle(
+      () =>
+        void Promise.resolve()
+          .then(load)
+          .catch(() => {})
+    );
   }, SETTLE_MS);
   return () => {
     clearTimeout(timer);

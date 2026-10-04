@@ -126,9 +126,7 @@ export function startAirDrop(data: OSData) {
       id: `airdrop:${id}`,
       title: 'AirDrop',
       body: `${who} would like to share “${node.name}”.`,
-      icon: node.thumb
-        ? createElement('img', { src: node.thumb, alt: '', className: 'os-notice-thumb' })
-        : createElement(node.Icon, { size: 36 }),
+      icon: node.thumb ? createElement('img', { src: node.thumb, alt: '', className: 'os-notice-thumb' }) : createElement(node.Icon, { size: 36 }),
       actions: [
         { label: 'Decline', run: () => answer(false) },
         {

@@ -100,7 +100,8 @@ function checked(found) {
       if (outcome !== null && !OUTCOMES.includes(outcome)) throw new Error(`${where}.outcome is ${outcome}`);
       const reached = a.reached ?? (stage === 'closed' ? 'applied' : stage);
       if (!REACHED.includes(reached)) throw new Error(`${where}.reached is ${reached}`);
-      if (!/^\d{4}-\d{2}-\d{2}$/.test(a.applied_on ?? '') || Number.isNaN(Date.parse(a.applied_on))) throw new Error(`${where}.applied_on isn't a day (YYYY-MM-DD)`);
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(a.applied_on ?? '') || Number.isNaN(Date.parse(a.applied_on)))
+        throw new Error(`${where}.applied_on isn't a day (YYYY-MM-DD)`);
       const posting = line(a.posting, 500, `${where}.posting`);
       if (posting && !/^https?:\/\/\S+$/.test(posting)) throw new Error(`${where}.posting isn't a web address`);
       const events = (a.events ?? []).map((e, j) => {
@@ -117,7 +118,11 @@ function checked(found) {
         const subject = typeof e.subject === 'string' ? e.subject.replace(CONTROL_RUN, ' ').replace(/\s+/g, ' ').trim().slice(0, 300) : '';
         return { kind: e.kind, at: new Date(e.at).toISOString(), subject, thread: e.thread ?? null, message: e.message ?? null };
       });
-      for (const [key, value] of [['company', company], ['role', role]]) if (CONTROL.test(value)) throw new Error(`${where}.${key} has control characters`);
+      for (const [key, value] of [
+        ['company', company],
+        ['role', role]
+      ])
+        if (CONTROL.test(value)) throw new Error(`${where}.${key} has control characters`);
       return {
         company,
         role,

@@ -155,7 +155,9 @@ export function FloatingController({ below, z, ...props }: ControllerProps & { b
     x: Math.min(Math.max(0, window.innerWidth - WIDTH), Math.max(0, x)),
     y: Math.min(Math.max(MENU_BAR_HEIGHT, window.innerHeight - height), Math.max(MENU_BAR_HEIGHT, y))
   });
-  const at = dragging ?? (place ? fit(place.x * window.innerWidth, place.y * window.innerHeight) : fit(below.x + (below.width - WIDTH) / 2, below.y + below.height + 12));
+  const at =
+    dragging ??
+    (place ? fit(place.x * window.innerWidth, place.y * window.innerHeight) : fit(below.x + (below.width - WIDTH) / 2, below.y + below.height + 12));
 
   // Dragged by its metal, not by its buttons.
   const drag = (e: ReactPointerEvent<HTMLDivElement>) => {

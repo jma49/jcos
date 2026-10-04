@@ -7,7 +7,7 @@ import { flip, H, newGame, plunge, pull, step, W, type State } from './table';
 
 /** A small seeded random number generator, so a failure repeats. */
 function seeded(seed: number) {
-  return () => ((seed = (seed * 1664525 + 1013904223) % 4294967296) / 4294967296);
+  return () => (seed = (seed * 1664525 + 1013904223) % 4294967296) / 4294967296;
 }
 
 interface Result {

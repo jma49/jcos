@@ -79,10 +79,7 @@ export function SavePlaylist({
         }}
       />
       <p role={problem ? 'alert' : undefined} data-problem={problem ? true : undefined}>
-        {problem ??
-          (saving
-            ? 'Saving…'
-            : `${count} ${count === 1 ? 'song' : 'songs'}, for everyone to see. A playlist’s name adds them to it.`)}
+        {problem ?? (saving ? 'Saving…' : `${count} ${count === 1 ? 'song' : 'songs'}, for everyone to see. A playlist’s name adds them to it.`)}
       </p>
     </form>
   );

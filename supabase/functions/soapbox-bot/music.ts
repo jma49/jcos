@@ -59,7 +59,11 @@ interface ITunesTrack {
   trackTimeMillis?: number;
 }
 
-const plain = (s: string) => s.toLowerCase().replace(/[(（\[【].*?[)）\]】]/g, '').replace(/[\s\p{P}\p{S}]/gu, '');
+const plain = (s: string) =>
+  s
+    .toLowerCase()
+    .replace(/[(（\[【].*?[)）\]】]/g, '')
+    .replace(/[\s\p{P}\p{S}]/gu, '');
 const related = (a: string, b: string) => !!a && !!b && (a.includes(b) || b.includes(a));
 
 /** The search result that is this song (title, then artist), or null. */
@@ -103,10 +107,9 @@ export async function lookUp(id: string, hint?: { title: string; artist: string 
   const country = hasChinese(term) ? 'TW' : 'US';
   let track: ITunesTrack | null = null;
   try {
-    const search = await fetch(
-      `https://itunes.apple.com/search?${new URLSearchParams({ term, media: 'music', entity: 'song', limit: '10', country })}`,
-      { signal: AbortSignal.timeout(TIMEOUT) }
-    );
+    const search = await fetch(`https://itunes.apple.com/search?${new URLSearchParams({ term, media: 'music', entity: 'song', limit: '10', country })}`, {
+      signal: AbortSignal.timeout(TIMEOUT)
+    });
     if (search.ok) track = pickTrack(((await search.json()) as { results?: ITunesTrack[] }).results ?? [], guess.title, guess.artist);
   } catch {
     // Without Apple Music the video's own title and thumbnail do.
@@ -147,10 +150,7 @@ export async function lengthFromLyrics(song: { title: string; artist: string }):
     // Only a hit that is this song (title and artist), not the search's first.
     const hits = (await res.json()) as { trackName?: string; artistName?: string; duration?: number }[];
     const seconds = hits.find(
-      (h) =>
-        typeof h.duration === 'number' &&
-        related(plain(h.trackName ?? ''), plain(song.title)) &&
-        related(plain(h.artistName ?? ''), plain(song.artist))
+      (h) => typeof h.duration === 'number' && related(plain(h.trackName ?? ''), plain(song.title)) && related(plain(h.artistName ?? ''), plain(song.artist))
     )?.duration;
     return seconds && seconds >= 1 && seconds <= 3600 ? Math.round(seconds * 1000) : null;
   } catch {
@@ -179,7 +179,11 @@ export function parseAdd(rest: string): { id: string | null; hint?: { title: str
 }
 
 /** Words for PostgREST's ilike, with anything that has meaning there taken out. */
-export const searchable = (words: string) => words.replace(/[*%_,()"\\:.]/g, ' ').trim().slice(0, 100);
+export const searchable = (words: string) =>
+  words
+    .replace(/[*%_,()"\\:.]/g, ' ')
+    .trim()
+    .slice(0, 100);
 
 export function musicCommands({ db, telegram }: Deps) {
   const say = (chat: number, text: string, extra: Record<string, unknown> = {}) =>
@@ -219,7 +223,11 @@ export function musicCommands({ db, telegram }: Deps) {
     if (!songs.length) await say(chat, `No song matches “${words}”.`);
     else
       await say(chat, 'Which one?', {
-        reply_markup: { inline_keyboard: songs.map((s) => [{ text: `${s.title} — ${s.artist}`.slice(0, 64), callback_data: `song:${then}:${s.id}${arg === undefined ? '' : `:${arg}`}` }]) }
+        reply_markup: {
+          inline_keyboard: songs.map((s) => [
+            { text: `${s.title} — ${s.artist}`.slice(0, 64), callback_data: `song:${then}:${s.id}${arg === undefined ? '' : `:${arg}`}` }
+          ])
+        }
       });
     return null;
   };
@@ -252,7 +260,14 @@ export function musicCommands({ db, telegram }: Deps) {
       `Library: ${total}/${most} songs`
     ];
     return say(chat, lines.join('\n'), {
-      reply_markup: { inline_keyboard: [[{ text: '✅ Add', callback_data: `song:add:${id}` }, { text: '✖︎ Cancel', callback_data: `song:cancel:${id}` }]] }
+      reply_markup: {
+        inline_keyboard: [
+          [
+            { text: '✅ Add', callback_data: `song:add:${id}` },
+            { text: '✖︎ Cancel', callback_data: `song:cancel:${id}` }
+          ]
+        ]
+      }
     });
   }
 
@@ -346,7 +361,7 @@ export function musicCommands({ db, telegram }: Deps) {
         await telegram('editMessageReplyMarkup', { chat_id: chat, message_id: cb.message.message_id, reply_markup: { inline_keyboard: [] } });
         try {
           const [song]: Found[] = await db(`songs?id=eq.${id}&select=id,title,artist,duration_ms`);
-          if (!song) return (await say(chat, 'That song isn’t in the library any more.'), true);
+          if (!song) return await say(chat, 'That song isn’t in the library any more.'), true;
           if (action === 'remove') await removeSong(chat, song);
           else if (action === 'play') await playSong(chat, song);
           else if (Number.isInteger(Number(arg)) && Math.abs(Number(arg)) <= 30000) await setOffset(chat, song, Number(arg));

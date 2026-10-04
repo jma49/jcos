@@ -178,7 +178,9 @@
   height: 54px;
   border-radius: 50%;
   background: linear-gradient(hsl(var(--hue) 70% 70%), hsl(var(--hue) 60% 45%));
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3), inset 0 0 0 2px #fff;
+  box-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.3),
+    inset 0 0 0 2px #fff;
   color: #fff;
   font-size: 23px;
   font-weight: 700;
@@ -192,7 +194,10 @@
 }
 
 .os-airdrop-person:not([aria-disabled]):hover .os-airdrop-avatar {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35), inset 0 0 0 2px #fff, 0 0 0 3px var(--os-accent);
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.35),
+    inset 0 0 0 2px #fff,
+    0 0 0 3px var(--os-accent);
 }
 
 .os-airdrop-person[data-state='waiting'] .os-airdrop-avatar {
@@ -201,10 +206,16 @@
 
 @keyframes os-airdrop-wait {
   from {
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3), inset 0 0 0 2px #fff, 0 0 0 2px color-mix(in srgb, var(--os-accent) 60%, transparent);
+    box-shadow:
+      0 2px 6px rgba(0, 0, 0, 0.3),
+      inset 0 0 0 2px #fff,
+      0 0 0 2px color-mix(in srgb, var(--os-accent) 60%, transparent);
   }
   to {
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3), inset 0 0 0 2px #fff, 0 0 0 6px color-mix(in srgb, var(--os-accent) 25%, transparent);
+    box-shadow:
+      0 2px 6px rgba(0, 0, 0, 0.3),
+      inset 0 0 0 2px #fff,
+      0 0 0 6px color-mix(in srgb, var(--os-accent) 25%, transparent);
   }
 }
 

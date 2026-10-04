@@ -159,7 +159,11 @@ export function StickyNote({
     follow(e, (dx, dy) => clampSize(from.width + dx, from.height + dy));
   };
 
-  const firstLine = text.split('\n').find((line) => line.trim())?.trim() ?? '';
+  const firstLine =
+    text
+      .split('\n')
+      .find((line) => line.trim())
+      ?.trim() ?? '';
   const menuItems: ContextMenuItem[] = [
     ...NOTE_COLORS.map((color) => ({ label: COLOR_NAMES[color], checked: color === sticky.color, action: () => place({ color }) })),
     { divider: true, label: '' },
@@ -182,10 +186,21 @@ export function StickyNote({
         setMenu({ x: e.clientX, y: e.clientY });
       }}
     >
-      <div className="os-own-sticky-strip" data-dragging={dragging || undefined} onPointerDown={moveBy} onDoubleClick={(e) => !(e.target as HTMLElement).closest('button') && rollUp()}>
+      <div
+        className="os-own-sticky-strip"
+        data-dragging={dragging || undefined}
+        onPointerDown={moveBy}
+        onDoubleClick={(e) => !(e.target as HTMLElement).closest('button') && rollUp()}
+      >
         <button type="button" aria-label="Close note" title="Close" onClick={close} />
         {sticky.collapsed && <span className="os-own-sticky-title">{firstLine || 'Empty note'}</span>}
-        <button type="button" className="os-own-sticky-shade" aria-label={sticky.collapsed ? 'Unroll note' : 'Roll up note'} title={sticky.collapsed ? 'Unroll' : 'Roll up'} onClick={rollUp} />
+        <button
+          type="button"
+          className="os-own-sticky-shade"
+          aria-label={sticky.collapsed ? 'Unroll note' : 'Roll up note'}
+          title={sticky.collapsed ? 'Unroll' : 'Roll up'}
+          onClick={rollUp}
+        />
       </div>
       {!sticky.collapsed && (
         <>

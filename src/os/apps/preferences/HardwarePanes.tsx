@@ -53,14 +53,7 @@ export function DisplaysPane() {
       <Group title="Motion">
         <div className="os-prefs-radios" role="radiogroup" aria-label="Motion">
           {MOTION.map((m) => (
-            <Option
-              key={m.value}
-              type="radio"
-              name="motion"
-              checked={motion === m.value}
-              onChange={() => set({ motion: m.value })}
-              title={m.name}
-            >
+            <Option key={m.value} type="radio" name="motion" checked={motion === m.value} onChange={() => set({ motion: m.value })} title={m.name}>
               {m.blurb}
             </Option>
           ))}
@@ -78,8 +71,8 @@ export function SoundPane() {
   return (
     <Group title="Sound">
       <p className="os-prefs-lead">
-        One switch for everything that makes a sound: windows whoosh, menus click and mistakes thud (synthesized in your browser),
-        and the music in the iPod and Karaoke.
+        One switch for everything that makes a sound: windows whoosh, menus click and mistakes thud (synthesized in your browser), and the music in the iPod and
+        Karaoke.
       </p>
       <div className="os-prefs-radios">
         <Option
@@ -129,11 +122,7 @@ export function AccountsPane() {
       <Group title={account ? 'My Account' : 'Accounts'}>
         {account ? (
           <div className="os-prefs-account">
-            <span
-              className="os-prefs-avatar"
-              style={{ '--hue': hue(account.username) } as React.CSSProperties}
-              aria-hidden="true"
-            >
+            <span className="os-prefs-avatar" style={{ '--hue': hue(account.username) } as React.CSSProperties} aria-hidden="true">
               {account.username[0]?.toUpperCase()}
             </span>
             <div>

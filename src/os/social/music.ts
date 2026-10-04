@@ -50,10 +50,7 @@ export interface MusicSocial {
    * watch starts or resumes after the connection dropped (changes made
    * meanwhile aren't sent again); returns a function that stops watching.
    */
-  watchNowPlaying: (
-    onChange: (now: Pick<NowPlaying, 'songId' | 'remainingMs'> | null) => void,
-    onConnected?: () => void
-  ) => () => void;
+  watchNowPlaying: (onChange: (now: Pick<NowPlaying, 'songId' | 'remainingMs'> | null) => void, onConnected?: () => void) => () => void;
 
   /** Jincheng's ratings, plays and playlists, as the database has them now. */
   listening: () => Promise<Listening>;

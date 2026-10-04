@@ -5,8 +5,7 @@ import { find, type FileNode } from './disk';
 // file's picture, with the badge on a folder this visitor may not open,
 // and the helpers for dates and paths.
 
-export const formatDate = (iso?: string) =>
-  iso ? new Date(iso).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '--';
+export const formatDate = (iso?: string) => (iso ? new Date(iso).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '--');
 
 export const parentOf = (path: string) => path.split('/').slice(0, -1).join('/') || '/';
 

@@ -104,7 +104,12 @@ const subscribe = (listener: () => void) => {
 };
 
 /** For a component that shows the library: it renders again when the library changes during the visit. */
-export const useLibraryVersion = () => useSyncExternalStore(subscribe, () => version, () => version);
+export const useLibraryVersion = () =>
+  useSyncExternalStore(
+    subscribe,
+    () => version,
+    () => version
+  );
 
 const VIDEO_ID = /^[A-Za-z0-9_-]{11}$/;
 

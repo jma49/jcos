@@ -48,7 +48,11 @@ export const gmailLink = (thread: string) => `https://mail.google.com/mail/u/0/#
 /** A company's first letter on a gel, in a colour of its own. */
 export function Monogram({ company, size = 18 }: { company: string; size?: number }) {
   return (
-    <span className="os-jh-mono" style={{ width: size, height: size, fontSize: Math.round(size * 0.55), '--hue': hueOf(company) } as React.CSSProperties} aria-hidden="true">
+    <span
+      className="os-jh-mono"
+      style={{ width: size, height: size, fontSize: Math.round(size * 0.55), '--hue': hueOf(company) } as React.CSSProperties}
+      aria-hidden="true"
+    >
       {company.trim().charAt(0).toUpperCase() || '?'}
     </span>
   );

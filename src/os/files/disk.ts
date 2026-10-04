@@ -3,16 +3,7 @@
 
 import type { ComponentType } from 'react';
 import { applicationApps, apps, launch, rectOf } from '../core/registry';
-import {
-  ApplicationsFolderIcon,
-  AppletsFolderIcon,
-  DocumentIcon,
-  DocumentsFolderIcon,
-  FolderIcon,
-  IPodIcon,
-  MusicFolderIcon,
-  PhotosIcon
-} from '../core/icons';
+import { ApplicationsFolderIcon, AppletsFolderIcon, DocumentIcon, DocumentsFolderIcon, FolderIcon, IPodIcon, MusicFolderIcon, PhotosIcon } from '../core/icons';
 import type { AppId, OSData } from '../core/types';
 import { ALBUMS, SONGS, coverOf, tracksIn, type Album, type Song } from '../media/library';
 import { useMusic } from '../media/music';
@@ -46,7 +37,6 @@ export interface FileNode {
   /** A folder this visitor may not open (Jincheng's, but for Public and Sites): badged, and opening it says so. */
   locked?: true;
 }
-
 
 const appFile = (dir: string, app: AppId, kind = 'Application'): FileNode => ({
   path: `${dir}/${apps[app].name}`,
@@ -97,8 +87,7 @@ export function buildDisk(
     Icon: apps.project.Icon,
     thumb: p.cover,
     look: { image: p.cover, lines: [p.description, p.stack.join(' · ')] },
-    open: (el) =>
-      launch('project', { key: `project:${p.slug}`, title: p.title, origin: rectOf(el), props: { slug: p.slug } })
+    open: (el) => launch('project', { key: `project:${p.slug}`, title: p.title, origin: rectOf(el), props: { slug: p.slug } })
   }));
 
   const song = (dir: string, index: number, queue: number[]): FileNode => {
@@ -153,7 +142,14 @@ export function buildDisk(
     Icon: FolderIcon,
     children: [
       folder('Applications', ApplicationsFolderIcon, applicationApps.map((a) => appFile('/Applications', a)).sort(byName)),
-      folder('Applets', AppletsFolderIcon, applets.filter((a) => a in apps).map((a) => appFile('/Applets', a, 'Applet')).sort(byName)),
+      folder(
+        'Applets',
+        AppletsFolderIcon,
+        applets
+          .filter((a) => a in apps)
+          .map((a) => appFile('/Applets', a, 'Applet'))
+          .sort(byName)
+      ),
       folder('Documents', DocumentsFolderIcon, documents),
       ...(movies ? [movies] : []),
       folder('Music', MusicFolderIcon, music),

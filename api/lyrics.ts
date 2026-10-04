@@ -26,9 +26,7 @@ const HEADERS = {
 const SearchResult = v.object({
   result: v.nullish(
     v.object({
-      songs: v.nullish(
-        v.array(v.object({ id: v.number(), name: v.string(), duration: v.number(), artists: v.array(v.object({ name: v.string() })) }))
-      )
+      songs: v.nullish(v.array(v.object({ id: v.number(), name: v.string(), duration: v.number(), artists: v.array(v.object({ name: v.string() })) })))
     })
   )
 });
@@ -61,10 +59,7 @@ export async function GET(request: Request) {
   if (!title) return Response.json({ error: 'A title is required.' }, { status: 400 });
   // Song titles and artists are short; anything longer isn't a lookup this site makes.
   if (title.length > 200 || artist.length > 200 || duration < 0 || duration > 7200) {
-    return Response.json(
-      { error: 'The title, artist or duration is out of range.' },
-      { status: 400, headers: { 'cache-control': 'public, s-maxage=86400' } }
-    );
+    return Response.json({ error: 'The title, artist or duration is out of range.' }, { status: 400, headers: { 'cache-control': 'public, s-maxage=86400' } });
   }
 
   try {
@@ -81,7 +76,11 @@ async function lookUp(title: string, artist: string, duration: number) {
   const songs = search?.result?.songs ?? [];
   // The same song (title, then artist), then the closest length. Titles are
   // compared without brackets, spaces or case, in Traditional characters.
-  const plain = (s: string) => toTraditional(s).toLowerCase().replace(/[(（[【].*?[)）\]】]/g, '').replace(/[\s&＆]/g, '');
+  const plain = (s: string) =>
+    toTraditional(s)
+      .toLowerCase()
+      .replace(/[(（[【].*?[)）\]】]/g, '')
+      .replace(/[\s&＆]/g, '');
   const related = (a: string, b: string) => !!a && !!b && (a.includes(b) || b.includes(a));
   const pool = songs
     .filter((s) => related(plain(s.name), plain(title)))

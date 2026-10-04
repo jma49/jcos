@@ -100,11 +100,7 @@ async function pixelDiff(page, a, b) {
       const [pa, pb] = [pixels(ia), pixels(ib)];
       let changed = 0;
       for (let i = 0; i < pa.length; i += 4) {
-        const delta = Math.max(
-          Math.abs(pa[i] - pb[i]),
-          Math.abs(pa[i + 1] - pb[i + 1]),
-          Math.abs(pa[i + 2] - pb[i + 2])
-        );
+        const delta = Math.max(Math.abs(pa[i] - pb[i]), Math.abs(pa[i + 1] - pb[i + 1]), Math.abs(pa[i + 2] - pb[i + 2]));
         if (delta > 24) changed++;
       }
       return changed / (pa.length / 4);
@@ -136,7 +132,13 @@ try {
   const scratch = await browser.newPage();
   await scratch.setContent('<body style="margin:0;background:#f6f5f3"></body>');
   for (const [out, { placeholder }] of targets) {
-    if (placeholder && (await access(out).then(() => false, () => true))) {
+    if (
+      placeholder &&
+      (await access(out).then(
+        () => false,
+        () => true
+      ))
+    ) {
       await scratch.screenshot({ path: out, type: 'jpeg', quality: 85 });
     }
   }
@@ -173,13 +175,8 @@ try {
     // Wait for fonts and for images visible in the viewport. Hidden or
     // below-the-fold lazy images never load, so skip them, and cap the wait.
     await page.evaluate(async () => {
-      const visible = [...document.images].filter(
-        (img) => img.checkVisibility() && img.getBoundingClientRect().top < innerHeight
-      );
-      const ready = Promise.all([
-        document.fonts.ready,
-        ...visible.map((img) => img.decode().catch(() => {}))
-      ]);
+      const visible = [...document.images].filter((img) => img.checkVisibility() && img.getBoundingClientRect().top < innerHeight);
+      const ready = Promise.all([document.fonts.ready, ...visible.map((img) => img.decode().catch(() => {}))]);
       await Promise.race([ready, new Promise((r) => setTimeout(r, 10_000))]);
     });
     // JPEG keeps each committed image small.

@@ -82,7 +82,10 @@ export function CoverFlowView({
   children: ReactNode;
 }) {
   const last = Math.max(0, items.length - 1);
-  const chosen = Math.max(0, items.findIndex((n) => n.path === selected));
+  const chosen = Math.max(
+    0,
+    items.findIndex((n) => n.path === selected)
+  );
   const pos = useMotionValue(chosen);
   const [at, setAt] = useState(chosen);
   const reduced = useReduceMotion();

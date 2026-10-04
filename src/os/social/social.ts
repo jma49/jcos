@@ -25,9 +25,7 @@ export const CURSOR_INTERVAL = 100;
 // Written out in full so Vite inlines each value on its own.
 const SUPABASE_URL = import.meta.env.PUBLIC_SUPABASE_URL ?? import.meta.env.NEXT_PUBLIC_SUPABASE_URL;
 const SUPABASE_KEY =
-  import.meta.env.PUBLIC_SUPABASE_ANON_KEY ??
-  import.meta.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ??
-  import.meta.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? import.meta.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? import.meta.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 const SUPABASE = !!(SUPABASE_URL && SUPABASE_KEY);
 
 /** Where supabase-js keeps the session in this browser (its `storageKey`, supabase/index.ts). */

@@ -19,8 +19,7 @@ export interface Cell {
 
 export type Status = 'ready' | 'playing' | 'won' | 'lost';
 
-export const blank = (cols: number, rows: number): Cell[] =>
-  Array.from({ length: cols * rows }, () => ({ mine: false, open: false, flag: false, count: 0 }));
+export const blank = (cols: number, rows: number): Cell[] => Array.from({ length: cols * rows }, () => ({ mine: false, open: false, flag: false, count: 0 }));
 
 export function neighbours(i: number, cols: number, rows: number) {
   const x = i % cols;

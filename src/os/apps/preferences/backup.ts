@@ -11,17 +11,7 @@ export function backedUp(key: string) {
 }
 
 /** What Reset puts back to its default: the choices System Preferences makes, and nothing else. */
-export const PREFERENCE_KEYS = [
-  'theme',
-  'os-accent',
-  'os-glass',
-  'os-wallpaper',
-  'os-wallpaper-rotate',
-  'os-screensaver',
-  'os-sound',
-  'os-place',
-  'os-system'
-];
+export const PREFERENCE_KEYS = ['theme', 'os-accent', 'os-glass', 'os-wallpaper', 'os-wallpaper-rotate', 'os-screensaver', 'os-sound', 'os-place', 'os-system'];
 
 export const BACKUP_FORMAT = 'jmos-backup';
 

@@ -12,7 +12,17 @@ afterEach(() => {
 
 const lunch: EventDraft = { title: 'Lunch', calendar: 'home', day: '2026-10-05', starts: 720, ends: 780, notes: '' };
 const milk: TodoDraft = { title: 'Milk', calendar: 'home', priority: 0, due: null, done: false };
-const eventRow = (id: string, version = 1, more = {}) => ({ id, title: 'Lunch', calendar: 'home', day: '2026-10-05', starts: 720, ends: 780, notes: '', version, ...more });
+const eventRow = (id: string, version = 1, more = {}) => ({
+  id,
+  title: 'Lunch',
+  calendar: 'home',
+  day: '2026-10-05',
+  starts: 720,
+  ends: 780,
+  notes: '',
+  version,
+  ...more
+});
 const todoRow = (id: string, version = 1, more = {}) => ({
   id,
   title: 'Milk',
@@ -76,10 +86,11 @@ describe.each(backends)('calendar: $name', ({ make }) => {
     await b.given({ supabase: (db) => db.answer('events.update', { data: eventRow(made.id, 2, { title: 'Long lunch' }) }) });
     const saved = await b.social.saveEvent({ ...lunch, title: 'Long lunch', id: made.id, version: 1 });
     expect([saved.title, saved.version]).toEqual(['Long lunch', 2]);
-    if (b.db) expect(b.db.last('events')?.filters).toEqual([
-      ['eq', 'id', made.id],
-      ['eq', 'version', 1]
-    ]);
+    if (b.db)
+      expect(b.db.last('events')?.filters).toEqual([
+        ['eq', 'id', made.id],
+        ['eq', 'version', 1]
+      ]);
     await expect(b.social.saveEvent({ ...lunch, title: 'Stale', id: made.id, version: 1 })).rejects.toMatchObject({ reason: 'conflict' });
 
     await b.given({ supabase: (db) => db.answer('todos.insert', { data: todoRow('t') }) });

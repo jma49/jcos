@@ -70,13 +70,7 @@ interface Item {
   remove?: () => void;
 }
 
-type Screen =
-  | { kind: 'menu'; id: string; title: string }
-  | { kind: 'now' }
-  | { kind: 'coverflow' }
-  | { kind: 'brick' }
-  | { kind: 'quiz' }
-  | { kind: 'save' };
+type Screen = { kind: 'menu'; id: string; title: string } | { kind: 'now' } | { kind: 'coverflow' } | { kind: 'brick' } | { kind: 'quiz' } | { kind: 'save' };
 
 interface Frame {
   screen: Screen;
@@ -126,9 +120,7 @@ const IPOD_PLAYLIST_ROWS = 4;
 const EMPTY: Partial<Record<string, (owner: boolean) => string>> = {
   otg: () => 'Hold the centre button on a song, an album or an artist to add it here.',
   toprated: (owner) =>
-    owner
-      ? 'Press the centre button on Now Playing to rate the song. Four stars and up show here.'
-      : 'Songs Jincheng rates four stars and up show here.',
+    owner ? 'Press the centre button on Now Playing to rate the song. Four stars and up show here.' : 'Songs Jincheng rates four stars and up show here.',
   recent: (owner) => `Songs ${owner ? 'you play' : 'Jincheng plays'} to the end show here for two weeks.`,
   mostplayed: (owner) => `The songs ${owner ? 'you play' : 'Jincheng plays'} most show here.`,
   playlist: () => 'No songs.'
@@ -224,13 +216,10 @@ export default function IPod({ win }: AppProps) {
     });
 
   /** Plays a song, with `queue` (an album, an artist, everything) to follow it. */
-  const playSong = useCallback(
-    (index: number, queue: number[]) => {
-      useMusic.getState().play('ipod', index, queue);
-      setStack((s) => [...s, { screen: { kind: 'now' }, selected: 0 }]);
-    },
-    []
-  );
+  const playSong = useCallback((index: number, queue: number[]) => {
+    useMusic.getState().play('ipod', index, queue);
+    setStack((s) => [...s, { screen: { kind: 'now' }, selected: 0 }]);
+  }, []);
 
   /** Rows for songs, playing `list` from the one chosen; `remove` is what holding the centre button does, where it takes a song out. */
   const songsOf = (list: number[], remove?: (i: number) => () => void): Item[] =>

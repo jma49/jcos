@@ -48,7 +48,12 @@ function database(home: Home) {
       await answer.wait;
       return owner ? read : { documents: read.documents.filter((d) => d.folder === 'public'), diary: [] };
     }),
-    saveDocument: vi.fn(async (draft: HomeDocument) => ({ ...draft, id: draft.id ?? 'new', version: (draft.version ?? 0) + 1, updated: new Date().toISOString() })),
+    saveDocument: vi.fn(async (draft: HomeDocument) => ({
+      ...draft,
+      id: draft.id ?? 'new',
+      version: (draft.version ?? 0) + 1,
+      updated: new Date().toISOString()
+    })),
     saveEntry: vi.fn(async (draft: DiaryEntry) => ({ ...draft, id: draft.id ?? 'new-entry', version: 1, created: 'now', updated: 'now' })),
     deleteDocument: vi.fn(async () => {}),
     deleteEntry: vi.fn(async () => {})

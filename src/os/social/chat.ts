@@ -27,7 +27,11 @@ export const dmRoom = (a: string, b: string) => `dm:${[a, b].sort().join(':')}`;
 export const isDM = (room: string) => room.startsWith('dm:');
 
 /** The other member in a private conversation. */
-export const dmPeer = (room: string, me: string) => room.split(':').slice(1).find((id) => id !== me) ?? me;
+export const dmPeer = (room: string, me: string) =>
+  room
+    .split(':')
+    .slice(1)
+    .find((id) => id !== me) ?? me;
 
 export interface ChatMessage {
   id: string;

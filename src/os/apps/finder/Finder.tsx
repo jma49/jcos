@@ -310,11 +310,7 @@ export default function Finder({ win }: AppProps) {
 
   // The sidebar's places: the home first, as on a Mac, then the disk's folders (Users is reached through the home).
   const homePlace = find(disk, HOME);
-  const [disk0, ...folders] = [
-    { ...disk, Icon: DiskIcon },
-    ...(homePlace ? [homePlace] : []),
-    ...(disk.children ?? []).filter((n) => n.path !== '/Users')
-  ];
+  const [disk0, ...folders] = [{ ...disk, Icon: DiskIcon }, ...(homePlace ? [homePlace] : []), ...(disk.children ?? []).filter((n) => n.path !== '/Users')];
 
   const viewItems: ContextMenuItem[] = [
     { label: 'as Icons', shortcut: '⌥1', checked: view === 'icons', action: () => update({ view: 'icons' }) },
@@ -337,8 +333,18 @@ export default function Finder({ win }: AppProps) {
           { label: `Quick Look “${node.name}”`, shortcut: 'Space', action: () => (choose(node), setLooking(true)) },
           { label: 'Get Info', shortcut: '⌥I', action: () => (choose(node), setInfo(true)) },
           ...(searching ? [{ label: 'Show in Enclosing Folder', action: () => go(parentOf(node.path), { select: node.path }) }] : []),
-          ...(node.share === false ? [] : [{ label: '', divider: true }, { label: 'Share with AirDrop…', action: () => shareViaAirDrop(node.path) }]),
-          ...(node.trash ? [{ label: '', divider: true }, { label: 'Move to Trash', shortcut: '⌘⌫', action: node.trash }] : [])
+          ...(node.share === false
+            ? []
+            : [
+                { label: '', divider: true },
+                { label: 'Share with AirDrop…', action: () => shareViaAirDrop(node.path) }
+              ]),
+          ...(node.trash
+            ? [
+                { label: '', divider: true },
+                { label: 'Move to Trash', shortcut: '⌘⌫', action: node.trash }
+              ]
+            : [])
         ]
       : [
           ...viewItems,
@@ -355,7 +361,13 @@ export default function Finder({ win }: AppProps) {
     { label: 'Share with AirDrop…', disabled: !selectedNode || selectedNode.share === false, action: () => selectedNode && shareViaAirDrop(selectedNode.path) },
     ...(selectedNode?.trash ? [{ label: 'Move to Trash', shortcut: '⌘⌫', action: selectedNode.trash }] : []),
     ...(searching
-      ? [{ label: 'Show in Enclosing Folder', disabled: !selectedNode, action: () => selectedNode && go(parentOf(selectedNode.path), { select: selectedNode.path }) }]
+      ? [
+          {
+            label: 'Show in Enclosing Folder',
+            disabled: !selectedNode,
+            action: () => selectedNode && go(parentOf(selectedNode.path), { select: selectedNode.path })
+          }
+        ]
       : []),
     { label: '', divider: true },
     ...arrangeItems,
@@ -487,7 +499,13 @@ export default function Finder({ win }: AppProps) {
               <path d="M1 1h3.3v12H1zM5.35 1h3.3v12h-3.3zM9.7 1H13v12H9.7z" fill="currentColor" />
             </svg>
           </button>
-          <button type="button" aria-pressed={view === 'coverflow'} onClick={() => update({ view: 'coverflow' })} aria-label="Cover Flow" title="As Cover Flow (⌥4)">
+          <button
+            type="button"
+            aria-pressed={view === 'coverflow'}
+            onClick={() => update({ view: 'coverflow' })}
+            aria-label="Cover Flow"
+            title="As Cover Flow (⌥4)"
+          >
             <svg viewBox="0 0 16 14" width="14" height="12" aria-hidden="true">
               <path d="M5 2h6v8H5zM1 3.5l3 1.2v4.6l-3 1.2zM15 3.5l-3 1.2v4.6l3 1.2zM5 11.5h6v1H5z" fill="currentColor" />
             </svg>
@@ -495,7 +513,10 @@ export default function Finder({ win }: AppProps) {
           {atMovies && (
             <button type="button" aria-pressed={view === 'shelf'} onClick={() => update({ view: 'shelf' })} aria-label="Shelf" title="As Shelf (⌥5)">
               <svg viewBox="0 0 16 14" width="14" height="12" aria-hidden="true">
-                <path d="M2 1h2.4v4.6H2zM5 1h2.4v4.6H5zM8 1.6h2.4v4H8zM1 6.2h14v1.2H1zM3 8h2.4v4.4H3zM6 8.4h2.4v4H6zM9.4 8h2.4v4.4H9.4zM1 12.6h14v1.2H1z" fill="currentColor" />
+                <path
+                  d="M2 1h2.4v4.6H2zM5 1h2.4v4.6H5zM8 1.6h2.4v4H8zM1 6.2h14v1.2H1zM3 8h2.4v4.4H3zM6 8.4h2.4v4H6zM9.4 8h2.4v4.4H9.4zM1 12.6h14v1.2H1z"
+                  fill="currentColor"
+                />
               </svg>
             </button>
           )}

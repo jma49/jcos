@@ -11,7 +11,5 @@ export function NightShift({ sky }: { sky: SkyState }) {
   const warmth = useSystem((s) => s.warmth);
   const on = mode === 'on' || (mode === 'sunset' && !sky.daylight);
   if (!on) return null;
-  return (
-    <div className="os-night-shift" aria-hidden="true" style={{ '--warmth': 0.12 + warmth * 0.28 } as React.CSSProperties} />
-  );
+  return <div className="os-night-shift" aria-hidden="true" style={{ '--warmth': 0.12 + warmth * 0.28 } as React.CSSProperties} />;
 }

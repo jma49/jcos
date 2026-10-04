@@ -30,7 +30,11 @@ const subscribe = (listener: () => void) => {
 
 /** The home folder as it is now, for a view: it renders again when it changes. */
 export function useHome() {
-  useSyncExternalStore(subscribe, () => version, () => version);
+  useSyncExternalStore(
+    subscribe,
+    () => version,
+    () => version
+  );
   return home;
 }
 

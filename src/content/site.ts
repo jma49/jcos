@@ -16,16 +16,14 @@ export const profile = {
 export const content = {
   meta: {
     title: 'Jincheng Ma — Software Engineer',
-    description:
-      'Jincheng Ma is a software engineer in the Bay Area who builds developer tooling and brings AI agents into code review, testing and release.'
+    description: 'Jincheng Ma is a software engineer in the Bay Area who builds developer tooling and brings AI agents into code review, testing and release.'
   },
   ui: {
     theme: 'Toggle color theme',
     details: 'Details',
     copy: 'Copy',
     copied: 'Copied',
-    illustrationAlt:
-      'An illustration of the Golden Gate Bridge with the San Francisco skyline behind it and a sailboat on the bay.',
+    illustrationAlt: 'An illustration of the Golden Gate Bridge with the San Francisco skyline behind it and a sailboat on the bay.',
     illustrationCredit: 'Illustration redrawn with AI from a photo I took.'
   },
   role: 'Software Engineer',
@@ -64,8 +62,7 @@ export const content = {
       role: 'Software Engineer in Test, Developer Tools & Agent Infrastructure',
       location: 'San Jose, CA',
       period: 'Jul 2025 – Sep 2026',
-      summary:
-        'Brought AI agents into code review and test design, and built the CI gates and developer tooling around them for 30+ repositories.',
+      summary: 'Brought AI agents into code review and test design, and built the CI gates and developer tooling around them for 30+ repositories.',
       bullets: [
         'Built a multi-agent code review system that runs in CI on every merge request across 30+ internal repositories. A coordinator runs 7 specialist reviewers in parallel (security, performance, code quality, docs, release, internal standards), merges and de-duplicates their findings, and blocks the merge on critical issues. Review turnaround dropped by about 50%, and it has caught 100+ issues rated P2 or higher.',
         'Kept it cheap and reliable enough to run on every merge request: the number of reviewers and the model tier scale with diff size and sensitive paths, reviewers share one cached context instead of each getting a copy (token spend down 30%+), and each run has per-model fallbacks, timeouts, and input sanitization against prompt injection. Per-review token and cost tracking made it possible to compare models on quality, latency and cost.',
@@ -118,7 +115,7 @@ export const content = {
       {
         name: 'Infrastructure',
         items: ['Docker', 'Kubernetes', 'AWS', 'GCP', 'GitHub Actions', 'GitLab CI']
-      },
+      }
     ]
   },
   education: {

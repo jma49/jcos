@@ -21,8 +21,7 @@ const STALE_MS = 30_000;
  * someone does: no one's pointer crosses another screen uninvited, and a
  * desktop where nobody watches sends none at all.
  */
-export const anyoneWatching = (visitors: Pick<Visitor, 'self' | 'watching'>[] | null) =>
-  !!visitors?.some((v) => !v.self && v.watching);
+export const anyoneWatching = (visitors: Pick<Visitor, 'self' | 'watching'>[] | null) => !!visitors?.some((v) => !v.self && v.watching);
 
 interface Cursor {
   x: number;
@@ -62,8 +61,7 @@ function infoFor(color: string, place: Place | null, account: Account | null, ro
   return info;
 }
 
-const currentInfo = (color: string) =>
-  infoFor(color, useWindows.getState().place, useAccount.getState().account, useChatState.getState().room);
+const currentInfo = (color: string) => infoFor(color, useWindows.getState().place, useAccount.getState().account, useChatState.getState().room);
 
 /**
  * Joins the desktop's presence channel: lists who's here, and from where,

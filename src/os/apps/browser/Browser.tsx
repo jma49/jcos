@@ -42,9 +42,7 @@ const sameOrigin = (url: string) => {
  */
 export default function Browser({ win }: AppProps) {
   const data = useOSData();
-  const [history, setHistory] = useState<History>(() =>
-    start(win.props?.url ? { url: win.props.url, year: yearOf(win.props.year) } : HOME)
-  );
+  const [history, setHistory] = useState<History>(() => start(win.props?.url ? { url: win.props.url, year: yearOf(win.props.year) } : HOME));
   const here = history.visits[history.at];
   const [draft, setDraft] = useState(here.url);
   const [loaded, setLoaded] = useState(false);
@@ -52,10 +50,7 @@ export default function Browser({ win }: AppProps) {
   const [framing, setFraming] = useState<Framing>('unknown');
   const years = useMemo(() => pastYears(), []);
 
-  const bookmarks = useMemo<Bookmark[]>(
-    () => data.projects.flatMap((p) => (p.demo ? [{ name: p.title, url: p.demo, year: null }] : [])),
-    [data.projects]
-  );
+  const bookmarks = useMemo<Bookmark[]>(() => data.projects.flatMap((p) => (p.demo ? [{ name: p.title, url: p.demo, year: null }] : [])), [data.projects]);
 
   const go = (next: Visit) => setHistory((h) => visit(h, next));
 
@@ -109,13 +104,7 @@ export default function Browser({ win }: AppProps) {
           <button type="button" disabled={history.at === 0} onClick={() => setHistory(back)} aria-label="Back" title="Back">
             <BackGlyph />
           </button>
-          <button
-            type="button"
-            disabled={history.at >= history.visits.length - 1}
-            onClick={() => setHistory(forward)}
-            aria-label="Forward"
-            title="Forward"
-          >
+          <button type="button" disabled={history.at >= history.visits.length - 1} onClick={() => setHistory(forward)} aria-label="Forward" title="Forward">
             <ForwardGlyph />
           </button>
         </div>
