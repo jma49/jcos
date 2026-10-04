@@ -462,7 +462,10 @@ guarded from its first file; `tests/eslint.test.ts` probes each rule.
   X's red "no access" badge (drawn in `Thumb`, so every view has it) and
   opening it, from any view, the sidebar or a path, brings up Finder's
   alert ("The folder … could not be opened because you do not have
-  sufficient access privileges."). Signed in as the owner, they open and
+  sufficient access privileges."). A Finder window that comes back or
+  opens at such a place, or goes Back to one, shows the folder above it
+  with the same alert (`lockedOn` in `parts.tsx`), once it's known
+  whether this is the owner. Signed in as the owner, they open and
   hold Jincheng's documents, and Documents holds the diary, a year to a
   document ("Diary 2026.rtf"). Public holds what Jincheng lets everyone
   read; Sites, the projects' live sites as Internet locations that open

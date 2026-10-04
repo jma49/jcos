@@ -1,5 +1,5 @@
 import { useId } from 'react';
-import type { FileNode } from '../core/files';
+import { find, type FileNode } from '../core/files';
 
 // Pieces of Macintosh HD's views that Finder and Time Machine share: a
 // file's picture, with the badge on a folder this visitor may not open,
@@ -18,6 +18,12 @@ export const ancestry = (path: string) => [
     .filter(Boolean)
     .map((_, i, parts) => `/${parts.slice(0, i + 1).join('/')}`)
 ];
+
+/** The first folder on the way to `path` (or `path` itself) that this visitor may not open; null if there's none. */
+export const lockedOn = (disk: FileNode, path: string): FileNode | null =>
+  ancestry(path)
+    .map((p) => find(disk, p))
+    .find((n) => n?.locked) ?? null;
 
 export function Thumb({ node, size }: { node: FileNode; size: number }) {
   const { Icon } = node;
