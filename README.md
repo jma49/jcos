@@ -134,8 +134,9 @@ issues; [ROADMAP.md](ROADMAP.md) is what comes next, in order.
   the owner's review workflow in Open-CR-Agent at `main`: Google Cloud
   issues its keyless login to that ref only (HANDOFF.md).
 
-To report a security problem, please email the address on the résumé
-rather than opening an issue.
+To report a security problem, use GitHub's private vulnerability
+reporting rather than an issue; [SECURITY.md](SECURITY.md) has how,
+what's in scope and what to expect.
 
 ## Performance
 
