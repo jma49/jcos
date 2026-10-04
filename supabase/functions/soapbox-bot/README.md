@@ -27,11 +27,13 @@ asks for the token (without echoing it) and your user ID, and does steps
 
    `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are provided to Edge
    Functions automatically. `SOAPBOX_SITE_URL` is optional.
-5. **Deploy.** Telegram can't send a Supabase JWT, so turn JWT
-   verification off; the webhook secret does that job instead:
+5. **Deploy**, from the repository's root. Telegram can't send a
+   Supabase JWT, so JWT verification is off (`verify_jwt = false` in
+   `supabase/config.toml`, which the CLI reads); the webhook secret does
+   that job instead:
 
    ```sh
-   supabase functions deploy soapbox-bot --no-verify-jwt --project-ref <project-ref>
+   supabase functions deploy soapbox-bot --project-ref <project-ref>
    ```
 
 6. **Point Telegram at it.**

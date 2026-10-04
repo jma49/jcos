@@ -61,9 +61,12 @@ again.
   limit scanned every message ever sent.
 - Supabase Auth needs "Confirm email" off, or sign-up returns no
   session.
-- The publishable key isn't a JWT. Edge Functions the browser calls
-  before sign-in are deployed with `--no-verify-jwt` and check their
-  input themselves.
+- The publishable key isn't a JWT. Edge Functions called without a
+  Supabase login (the reset page, Telegram) run without JWT verification
+  and check their input themselves. That lived in a `--no-verify-jwt`
+  flag repeated in several places and was forgotten once (87d8bb3); it's
+  `verify_jwt = false` per function in `supabase/config.toml` now, which
+  `supabase functions deploy` reads from the repository's root.
 - The Vercel integration names the variables
   `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`.
   `social.ts` reads those as well as `PUBLIC_SUPABASE_*`.

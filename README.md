@@ -90,7 +90,10 @@ Function secrets:
    Accounts are usernames, with addresses made from them.
 3. A project set up from an older schema instead runs the files in
    `supabase/migrations/`, in the order of their timestamped names.
-4. Deploy the Edge Functions. Each has its own README:
+4. Deploy the Edge Functions, from the repository's root, where
+   `supabase/config.toml` turns JWT verification off for both (Telegram
+   and the reset page call them without a Supabase login). Each has its
+   own README:
    - `supabase/functions/soapbox-bot`: Telegram → Soapbox posts, plus
      moderation notices.
    - `supabase/functions/account-recovery`: password reset by email,
@@ -106,7 +109,7 @@ src/content/       the site's copy (site.ts), the projects (Markdown) and their 
 src/data/          songs, desktop pictures, the photo snapshot
 api/               Vercel Functions: geo, lyrics, songs, framing (docs/agents/api.md)
 tests/             the Vercel Functions' unit tests (api/; not in api/, or Vercel would deploy them) and the lint's probes
-supabase/          schema, migrations, Edge Functions, database tests
+supabase/          schema, migrations, Edge Functions (deployed as config.toml says), database tests
 scripts/           preview capture, photo refresh, favicon and portrait builders, bot setup
 public/os/         icons, fonts and desktop pictures (from ryOS, see NOTICE)
 docs/agents/       guidance for coding agents, by part (AGENTS.md is the entry point)

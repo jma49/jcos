@@ -32,11 +32,13 @@ calls this function; it emails through [Resend](https://resend.com).
    the real keys; the site's own origins are always allowed, others get no
    CORS headers). `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are
    provided automatically.
-4. **Deploy.** The function checks everything itself and is called before
-   anyone is signed in, so JWT verification is off:
+4. **Deploy**, from the repository's root. The function checks everything
+   itself and is called before anyone is signed in, so JWT verification is
+   off: `supabase/config.toml` says so (`verify_jwt = false`), and the CLI
+   reads it there.
 
    ```sh
-   supabase functions deploy account-recovery --no-verify-jwt
+   supabase functions deploy account-recovery
    ```
 
 ## The email

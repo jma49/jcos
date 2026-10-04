@@ -47,7 +47,8 @@ printf 'TELEGRAM_BOT_TOKEN=%s\nTELEGRAM_OWNER_ID=%s\nTELEGRAM_WEBHOOK_SECRET=%s\
 supabase secrets set --project-ref "$PROJECT_REF" --env-file "$ENV_FILE" >/dev/null
 echo "✓ Secrets stored in Supabase"
 
-supabase functions deploy soapbox-bot --project-ref "$PROJECT_REF" --no-verify-jwt --use-api >/dev/null
+# Without JWT verification, as supabase/config.toml says (Telegram sends none).
+supabase functions deploy soapbox-bot --project-ref "$PROJECT_REF" --use-api >/dev/null
 echo "✓ Function deployed"
 
 curl -fsS "https://api.telegram.org/bot${TOKEN}/setWebhook" \
