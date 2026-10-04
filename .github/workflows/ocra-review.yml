@@ -32,16 +32,13 @@ jobs:
       contents: read
       id-token: write
       pull-requests: write
-    # At main, unlike every other action here (#235): Google Cloud issues the
-    # credential only to ocra-dogfood.yml at refs/heads/main (the OIDC
-    # token's job_workflow_ref), and a commit SHA or a tag here would change
-    # that claim to "...ocra-dogfood.yml@<sha>" or "@refs/tags/<tag>" and
-    # lose the login. Pinning needs the workload identity provider's
-    # attribute condition changed first, on Google Cloud, to accept the
-    # pinned commit (job_workflow_sha) instead of the branch; then this line
-    # becomes "@<sha> # <tag or branch>". The budget comes from this
-    # repository's variables.
-    uses: jma49/Open-CR-Agent/.github/workflows/ocra-dogfood.yml@main
+    # Pinned to a commit like every other action here. Google Cloud's
+    # workload identity condition accepts ocra-dogfood.yml at
+    # refs/heads/main or at a 40-character commit SHA (the OIDC token's
+    # job_workflow_ref), so a pinned reviewer still logs in, and a push to
+    # Open-CR-Agent's main reaches this repository only through a bump of
+    # this line. The budget comes from this repository's variables.
+    uses: jma49/Open-CR-Agent/.github/workflows/ocra-dogfood.yml@8594dbba861c752f601bc394023a994ae7ccf87a # main
     secrets:
       GCP_WIF_PROVIDER: ${{ secrets.GCP_WIF_PROVIDER }}
       GCP_SERVICE_ACCOUNT: ${{ secrets.GCP_SERVICE_ACCOUNT }}
