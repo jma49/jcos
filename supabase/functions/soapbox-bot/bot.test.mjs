@@ -349,6 +349,8 @@ test('/add looks a video up, shows what it found, and adds it when told to', asy
     { id: NINGXIA, title: '寧夏', artist: '梁靜茹', album: '燕尾蝶', cover: 'https://is1-ssl.mzstatic.com/image/thumb/x/600x600bb.jpg', duration_ms: 252000 }
   ]);
   assert.match(world.edits.at(-1).text, /✅ Added\. 1\/200 songs/);
+  // /api/songs is fresh at the edge for 30 s and stale for 30 more.
+  assert.match(world.edits.at(-1).text, /within a minute\.$/);
   assert.equal(world.music[`draft:${NINGXIA}`], undefined, 'the draft is gone');
 
   await press(`song:add:${NINGXIA}`);

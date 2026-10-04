@@ -395,7 +395,8 @@ export function musicCommands({ db, telegram }: Deps) {
         await done(`⚠️ ${why}`, 'Not added');
         return true;
       }
-      await done(`✅ Added. ${await tally()}. It shows up on the site within five minutes.`, 'Added');
+      // /api/songs is fresh at the edge for 30 s and served stale for 30 more.
+      await done(`✅ Added. ${await tally()}. It shows up on the site within a minute.`, 'Added');
       return true;
     }
   };
