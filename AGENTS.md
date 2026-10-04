@@ -127,8 +127,8 @@ pull request and starts CI on it itself.
   and `applets/pinball/table.ts` are).
 - `npm run test:db` applies every migration in order to an empty local
   Postgres, as a new project gets them, fails if the generated
-  `supabase/schema.sql` isn't what they make (`npm run db:generate`
-  rewrites it), reruns every migration from `20260926071227` on over the
+  `supabase/schema.sql` or `src/lib/database.types.ts` isn't what they
+  make (`npm run db:generate` rewrites both), reruns every migration from `20260926071227` on over the
   result (so a new migration is rerun-tested without being listed
   anywhere) and fails if that changes anything, checks the database's rules
   (`supabase/tests/rules.sql`), then races the per-member limits with

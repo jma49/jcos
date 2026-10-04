@@ -54,8 +54,8 @@ page at `/projects/<slug>/`.
 npm install
 npm run dev        # http://localhost:4321
 npm test           # unit tests (Vitest)
-npm run test:db    # database rules against a local Postgres (needs psql)
-npm run db:generate # supabase/schema.sql from the migrations (needs psql)
+npm run test:db    # database rules against a local Postgres (needs psql and the Supabase CLI)
+npm run db:generate # supabase/schema.sql and src/lib/database.types.ts from the migrations
 npm run build      # -> dist/
 npm run serve      # the build and the api/ functions on http://localhost:4321 (after a build)
 npm run test:smoke # opens every app in the build, fails on any error (after a build)
@@ -97,7 +97,8 @@ Function secrets:
    Accounts are usernames, with addresses made from them.
 3. A new migration is made with `supabase migration new <what_it_does>`
    (a local file; `npm run test:db` then checks it, and fails until
-   `npm run db:generate` has updated `schema.sql`).
+   `npm run db:generate` has updated `schema.sql` and the TypeScript
+   types, `src/lib/database.types.ts`).
 4. Deploy the Edge Functions, from the repository's root, where
    `supabase/config.toml` turns JWT verification off for both (Telegram
    and the reset page call them without a Supabase login). Each has its
