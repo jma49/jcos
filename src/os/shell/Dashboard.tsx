@@ -1,10 +1,11 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { PlaceSearch } from '../ambient/PlaceSearch';
 import { getSocial, type Post } from '../social/social';
 import { flag } from '../social/online';
 import { launch } from '../core/registry';
 import { AnimatePresence, m } from 'motion/react';
-import { useWindows } from '../core/store';
+import { releaseFocus, useWindows } from '../core/store';
+import { inertAround } from '../core/focus';
 import { useOSData } from '../core/context';
 import { describe as describeWeather, useWeather } from '../ambient/weather';
 import {
@@ -422,6 +423,7 @@ export function Dashboard() {
   const setDashboard = useWindows((s) => s.setDashboard);
   const data = useOSData();
   const githubUser = new URL(data.links.github).pathname.slice(1);
+  const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!open) return;
@@ -429,6 +431,20 @@ export function Dashboard() {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [open, setDashboard]);
+
+  // It covers the desktop, so it's modal: what's under it is out of reach
+  // of the keyboard and a screen reader while it's up (as under a
+  // full-screen app), focus moves into it, and comes back as it closes.
+  useEffect(() => {
+    const layer = ref.current;
+    if (!open || !layer) return;
+    const undo = inertAround(layer);
+    layer.focus({ preventScroll: true });
+    return () => {
+      undo();
+      releaseFocus('dashboard', layer);
+    };
+  }, [open]);
 
   const widgets = [
     { key: 'clock', node: <ClockWidget /> },
@@ -461,8 +477,11 @@ export function Dashboard() {
           exit={{ opacity: 0 }}
           transition={{ duration: 0.25 }}
           onPointerDown={(e) => e.target === e.currentTarget && setDashboard(false)}
+          ref={ref}
           role="dialog"
+          aria-modal="true"
           aria-label="Dashboard"
+          tabIndex={-1}
         >
           <div className="os-dashboard-board" onPointerDown={(e) => e.target === e.currentTarget && setDashboard(false)}>
             {widgets.map((w, i) => (

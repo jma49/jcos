@@ -10,6 +10,11 @@
   overflow: auto;
 }
 
+/* Focus rests on the Dashboard itself as it opens; Tab goes on to its widgets. */
+.os-root .os-dashboard:focus-visible {
+  outline: none;
+}
+
 .os-dashboard-board {
   position: relative;
   width: min(940px, 100%);

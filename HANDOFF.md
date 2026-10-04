@@ -187,7 +187,9 @@ ryOS (AGPL-3.0).
   simply don't see presence, chat or listening along (the desktop works
   without them).
 - **Windows have no focus trap** (decided 2026-09-26): they aren't
-  modal, so Tab moves on to the rest of the desktop.
+  modal, so Tab moves on to the rest of the desktop. The Dashboard and
+  a full-screen app (Time Machine) cover the desktop, so they are: the
+  rest of the page is `inert` under them (#194).
 - **No full script CSP** (decided 2026-09-26): Astro's inline hydration
   and the YouTube player would need it loosened too far to help. The
   other security headers are in `vercel.json`.

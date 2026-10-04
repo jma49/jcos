@@ -281,6 +281,11 @@ guarded from its first file; `tests/eslint.test.ts` probes each rule.
   minimized with focus in it (its close box, ⌥W, File › Close Window)
   hands focus to the next one in front the same way (`close` and
   `minimize` in the store).
+- `src/os/shell/Dashboard.tsx`: the Dashboard covers the desktop, so
+  unlike a window it's modal (`aria-modal`): what's under it, and the
+  page around the desktop, is `inert` while it's up, focus moves onto it
+  as it opens (Tab goes on to its widgets) and comes back as it closes
+  (`core/focus.ts`). Escape or a click on the dimmed desktop closes it.
 - `src/os/shell/drawer.tsx`: Tiger-style drawers. Each window has a slot
   along its edge (right, left if there's no room, or over the content
   when neither side fits); an app renders `<Drawer open>` anywhere and it
