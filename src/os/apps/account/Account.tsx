@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { AppProps } from '../../core/registry';
 import { launch } from '../../core/registry';
+import { report } from '../../core/report';
 import { play } from '../../core/sound';
 import { useWindows } from '../../core/store';
 import type { AppId } from '../../core/types';
@@ -148,7 +149,11 @@ export default function Account({ win }: AppProps) {
     let live = true;
     const t = setTimeout(async () => {
       const social = await getSocial();
-      const free = await social?.usernameAvailable(name).catch(() => true);
+      const free = await social?.usernameAvailable(name).catch((error) => {
+        // Taken as free: making the account checks again.
+        report(error, 'account.usernameAvailable');
+        return true;
+      });
       if (live) setTaken(free === false);
     }, 350);
     return () => {

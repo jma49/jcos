@@ -12,6 +12,7 @@
 
 import { useSyncExternalStore } from 'react';
 import { DEFAULT_LIMIT, type Album, type Disc, type Library, type Song } from '../../lib/library';
+import { report } from '../core/report';
 import { getSocial } from '../social/social';
 
 export type { Album, Disc, Song };
@@ -41,6 +42,7 @@ function changed() {
  */
 export function loadLibrary(): Promise<void> {
   loading ??= (async () => {
+    // No /api/songs (astro dev, offline): the snapshot, as above.
     const library = (await fromApi().catch(() => null)) ?? ((await import('../../data/songs.json')).default as Library);
     ALBUMS = library.albums;
     SONGS = library.songs;
@@ -117,7 +119,10 @@ export async function findSong(id: string): Promise<number> {
   const known = SONGS.findIndex((s) => s.id === id);
   if (known >= 0 || !VIDEO_ID.test(id)) return known;
   const social = await getSocial();
-  const song = await social?.song(id).catch(() => null);
+  const song = await social?.song(id).catch((error) => {
+    report(error, 'library.song');
+    return null;
+  });
   if (!song) return -1;
   // Asked twice at once (a play and an AirDrop offer), it's added once.
   const meanwhile = SONGS.findIndex((s) => s.id === id);

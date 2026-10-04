@@ -23,6 +23,7 @@ export function supabaseAccounts(ctx: SupabaseContext): AccountsSocial {
     const { data, error } = await client.functions.invoke('account-recovery', { body });
     if (!error) return data as Record<string, unknown>;
     const response = (error as { context?: unknown }).context;
+    // A body that isn't JSON (a gateway's error page) gets the general message below.
     const answer = response instanceof Response ? await response.json().catch(() => null) : null;
     const message = typeof answer?.error === 'string' ? answer.error : 'Couldn’t reach the server. Try again in a moment.';
     throw new SocialError(response instanceof Response && response.status === 410 ? 'expired' : 'failed', message);

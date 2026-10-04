@@ -223,7 +223,9 @@ export function BackupPane() {
                 onClick={() => {
                   try {
                     resetPreferences(wholeStorage());
-                  } catch {}
+                  } catch {
+                    // Storage blocked: nothing kept to reset, and the reload follows.
+                  }
                   reset();
                   window.location.reload();
                 }}

@@ -146,11 +146,13 @@ async function ipPlace(): Promise<Place | null> {
 async function locate(): Promise<Place> {
   const query = new URLSearchParams(window.location.search).get('place');
   if (query) {
+    // The geocoder down or unreachable: the visitor's own place instead.
     const [match] = await searchPlaces(query).catch(() => []);
     if (match) return { ...match, source: 'url' };
   }
   const saved = savedPlace();
   if (saved) return saved;
+  // No IP location (blocked, offline, the service down): San Jose.
   return (await ipPlace().catch(() => null)) ?? HOME;
 }
 
@@ -171,6 +173,7 @@ export function choosePlace(place: Place | null) {
     return;
   }
   ipPlace()
+    // No IP location (blocked, offline, the service down): San Jose.
     .catch(() => null)
     .then((found) => useWindows.getState().setPlace(found ?? HOME));
 }

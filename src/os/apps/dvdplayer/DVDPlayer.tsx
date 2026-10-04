@@ -161,6 +161,7 @@ export default function DVDPlayer({ win }: AppProps) {
     document.addEventListener('fullscreenchange', onChange);
     return () => document.removeEventListener('fullscreenchange', onChange);
   }, []);
+  // Full screen can be refused (not allowed in a frame, no click): the window stays as it is.
   const toggleFull = () => {
     if (document.fullscreenElement) void document.exitFullscreen().catch(() => {});
     else if (canFullScreen && disc) void screenEl.current?.requestFullscreen().catch(() => {});
@@ -266,6 +267,7 @@ export default function DVDPlayer({ win }: AppProps) {
 
   const eject = () => {
     player.pause();
+    // Leaving can be refused (the page in the background): the disc ejects all the same.
     if (document.fullscreenElement) void document.exitFullscreen().catch(() => {});
     ejectDisc();
   };

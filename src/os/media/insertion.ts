@@ -79,6 +79,7 @@ export async function slideIn(disc: ShelfDisc, from?: Rect): Promise<Rect> {
     ],
     { duration: 1150, fill: 'forwards' }
   );
+  // An animation cancelled (the disc ejected meanwhile) rejects: it's over either way.
   await move.finished.catch(() => {});
   await fade.finished.catch(() => {});
   flight.remove();
@@ -104,6 +105,7 @@ export async function slideOut(disc: ShelfDisc) {
     ],
     { duration: 900, fill: 'forwards' }
   );
+  // Cancelled, it's over either way.
   await move.finished.catch(() => {});
   flight.remove();
   slot.remove();

@@ -76,6 +76,7 @@ Copy `.env.example` to `.env`. Every value is optional.
 | --- | --- |
 | `PUBLIC_SUPABASE_URL`, `PUBLIC_SUPABASE_ANON_KEY` | accounts, Chat, Stickies, presence, Soapbox |
 | `UNSPLASH_ACCESS_KEY` | fetching the latest photos at build time |
+| `PUBLIC_SENTRY_DSN` | sending handled errors and crashes to Sentry (`src/os/core/report.ts`: a sample of one in five, nothing personal). Without it nothing is sent and the SDK never loads. Once it's set, add the DSN's ingest origin (`https://` and the host after the `@`, such as `https://o123456.ingest.us.sentry.io`) to `connect-src` in both `Content-Security-Policy` and `Content-Security-Policy-Report-Only` in `vercel.json`. |
 | `SUPABASE_PROJECT_REF` | the Supabase project the scripts that use the Supabase CLI act on (`setup-soapbox.sh`, `job-hunt-import.mjs`); without it they use the project `supabase link` linked, and stop if there's none. Not secret, but no script has a project written in. |
 
 Set the same variables in Vercel, for Production (only `main` deploys, so

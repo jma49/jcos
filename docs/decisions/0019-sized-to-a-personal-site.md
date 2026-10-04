@@ -14,7 +14,9 @@ Left out, for a personal site:
 - Crash reports from visitors' browsers: a table, a public write path
   with abuse limits and a bot change aren't worth it. Each window's error
   boundary keeps a crash to that window, and crashes show only in the
-  visitor's console.
+  visitor's console. (Replaced on 2026-10-03 by
+  [0022](0022-handled-errors-are-reported.md): reported to Sentry, which
+  needs none of those.)
 - A review step for Stickies: posting is for members only, with a daily
   limit, and every new note reaches Jincheng on Telegram with Hide and
   Show again.

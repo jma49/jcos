@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { report } from './report';
 
 /** How long typing rests before it's saved. */
 export const SAVE_AFTER_MS = 1000;
@@ -24,7 +25,8 @@ export function useAutosave(save: () => Promise<void>) {
     const now = () => {
       clearTimeout(timer);
       waiting = false;
-      chain = chain.then(() => latest.current()).catch(() => {});
+      // Callers handle a save that fails; what still escapes is a fault.
+      chain = chain.then(() => latest.current()).catch((error) => report(error, 'autosave'));
       return chain;
     };
     return {

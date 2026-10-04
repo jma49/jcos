@@ -25,7 +25,9 @@ export function save(key: string, value: string | null) {
   try {
     if (value === null) store()?.removeItem(key);
     else store()?.setItem(key, value);
-  } catch {}
+  } catch {
+    // Storage full or blocked (a private window): remembered for this page only.
+  }
 }
 
 /** A stored JSON value, or `fallback` when it's missing, unreadable or not JSON. */
@@ -103,5 +105,7 @@ export function loadForTab(key: string): string | null {
 export function saveForTab(key: string, value: string) {
   try {
     tabStore()?.setItem(key, value);
-  } catch {}
+  } catch {
+    // Storage full or blocked: this tab goes without.
+  }
 }

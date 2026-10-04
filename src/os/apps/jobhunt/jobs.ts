@@ -5,6 +5,7 @@
 // else gets only the totals, which name no company.
 
 import { useEffect, useSyncExternalStore } from 'react';
+import { report } from '../../core/report';
 import { getSocial } from '../../social/social';
 import { EMPTY_TOTALS, JOB_STAGES, type JobApplication, type JobDraft, type JobEvent, type JobReach, type JobStage, type JobTotals } from '../../social/jobs';
 
@@ -181,7 +182,7 @@ export function readHunt(owner: boolean, { now = false } = {}): Promise<void> {
       hunt = next;
       changed();
     })
-    .catch(() => {})
+    .catch((error) => report(error, 'jobhunt.read'))
     .finally(() => {
       if (reading?.done === done) reading = null;
       readMissed();
@@ -292,6 +293,7 @@ export function changeJob(app: JobApplication, change: Partial<JobDraft>): Promi
   begin();
   put(applied(shown, change));
   const tail = line.tail
+    // The save before failed for its own caller, who was told; this one goes on.
     .catch(() => {})
     .then(async () => {
       const now = hunt.applications.find((a) => a.id === id);

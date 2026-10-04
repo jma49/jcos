@@ -5,9 +5,9 @@ import { describe, expect, test } from 'vitest';
 // The lint's own rules (eslint.config.js), each probed with a snippet that
 // fails without it: the boundaries between the OS, apps and applets
 // (docs/agents/desktop.md), for import declarations and import() alike,
-// and that anything remembered in the browser goes through
-// core/storage.ts. The snippets name files that don't exist: ESLint needs
-// only the path to choose the rules.
+// that anything remembered in the browser goes through core/storage.ts,
+// and that no catch is empty without a comment. The snippets name files
+// that don't exist: ESLint needs only the path to choose the rules.
 
 const root = fileURLToPath(new URL('..', import.meta.url));
 const eslint = new ESLint({ cwd: root });
@@ -130,6 +130,17 @@ describe('the browser’s memory goes through core/storage.ts', () => {
   test('storage.ts itself, and tests', async () => {
     expect(await lint('src/os/core/storage.ts', "window.localStorage.getItem('os-probe');")).toBe('');
     expect(await lint('src/os/apps/probe/probe.test.ts', "localStorage.clear();")).toBe('');
+  });
+});
+
+describe('a catch is never silently empty', () => {
+  const rule = 'Empty block statement.';
+  test('an empty catch, in the site or an API function', async () => {
+    expect(await lint('src/os/probe/probe.ts', 'try {\n  run();\n} catch {}')).toContain(rule);
+    expect(await lint('api/probe.ts', 'try {\n  run();\n} catch {}')).toContain(rule);
+  });
+  test('one that says why it’s expected', async () => {
+    expect(await lint('src/os/probe/probe.ts', 'try {\n  run();\n} catch {\n  // Storage blocked: nothing to keep.\n}')).toBe('');
   });
 });
 

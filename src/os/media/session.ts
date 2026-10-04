@@ -28,7 +28,9 @@ export function watchMediaSession() {
   for (const [action, handler] of handlers) {
     try {
       session.setActionHandler(action, handler);
-    } catch {}
+    } catch {
+      // An action this browser doesn't have: its key does nothing.
+    }
   }
   const show = (s: MusicStore) => {
     const song = s.owner ? SONGS[s.index] : undefined;

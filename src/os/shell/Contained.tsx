@@ -1,4 +1,6 @@
 import { Component, type ReactNode } from 'react';
+import { report } from '../core/report';
+import { isChunkError } from './AppBoundary';
 
 // Parts of the desktop outside the windows (the menu bar's Now Playing,
 // notifications, other visitors' pointers, the Dashboard, the screen
@@ -21,6 +23,8 @@ export class Contained extends Component<Props, { failed: boolean }> {
 
   componentDidCatch(error: unknown) {
     console.error(`[JM/OS] ${this.props.name} stopped`, error);
+    // A download that failed is a deploy since or the connection, not a fault.
+    if (!isChunkError(error)) report(error, `crash.${this.props.name}`);
   }
 
   render() {

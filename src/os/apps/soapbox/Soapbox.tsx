@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { BackGlyph, ForwardGlyph } from '../../core/glyphs';
+import { report } from '../../core/report';
 import { getSocial, REACTIONS, SocialError, type Post, type PostImage, type Reaction, type Social } from '../../social/social';
 import { useAccount } from '../../social/account';
 import { loadJSON, updateJSON } from '../../core/storage';
@@ -216,7 +217,7 @@ export default function Soapbox({ win }: AppProps) {
   useEffect(() => {
     if (!social) return;
     if (!account) return setReacted(readReacted());
-    social.myReactions().then(setReacted, () => {});
+    social.myReactions().then(setReacted, (error) => report(error, 'soapbox.reactions'));
   }, [social, account]);
 
   /** Adds `by` to a post's count of `reaction` on screen. */
