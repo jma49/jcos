@@ -30,8 +30,10 @@ jobs:
           node-version-file: package.json
           cache: npm
       - run: npm ci
-      # Known high or critical advisories in what ships (dev tools excluded).
-      - run: npm audit --omit=dev --audit-level=high
+      # Known high or critical advisories in what ships (dev tools excluded),
+      # but for the exceptions scripts/audit.mjs lists, each with its reason
+      # and a date to look again.
+      - run: node scripts/audit.mjs
       - run: npm run check
       - run: npm run lint
       - run: npm test
