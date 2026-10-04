@@ -77,3 +77,5 @@ The code is under the GNU Affero General Public License v3.0 or later
 ([LICENSE](LICENSE)), and your contribution will be too. Jincheng's
 personal content (the copy, the project write-ups, the photos) is not;
 the README's License section lists it.
+
+The repository-wide formatting commit is listed in `.git-blame-ignore-revs`, which GitHub's blame reads; for local blame, run `git config blame.ignoreRevsFile .git-blame-ignore-revs` once.
