@@ -1,4 +1,4 @@
--- Just enough of a Supabase project for schema.sql to load into a plain
+-- Just enough of a Supabase project for the migrations to load into a plain
 -- Postgres: the API's roles, auth.users and auth.uid() (read from the
 -- request.jwt.claim.sub setting, which the tests set to act as someone),
 -- a storage.buckets table and a pg_net stand-in that records its calls.

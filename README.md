@@ -55,6 +55,7 @@ npm install
 npm run dev        # http://localhost:4321
 npm test           # unit tests (Vitest)
 npm run test:db    # database rules against a local Postgres (needs psql)
+npm run db:generate # supabase/schema.sql from the migrations (needs psql)
 npm run build      # -> dist/
 npm run serve      # the build and the api/ functions on http://localhost:4321 (after a build)
 npm run test:smoke # opens every app in the build, fails on any error (after a build)
@@ -85,12 +86,18 @@ Function secrets:
 
 ### Backend
 
-1. Create a Supabase project and run `supabase/schema.sql` in its SQL
-   editor.
+1. Create a Supabase project and apply the migrations with the
+   [Supabase CLI](https://supabase.com/docs/guides/local-development/cli/getting-started),
+   from the repository's root: `supabase link --project-ref <ref>`, then
+   `supabase db push`. The first, `…_baseline.sql`, makes the first
+   tables, and each later file changes the database in the order of
+   their names. `supabase/schema.sql` is the result, generated for
+   reading (`npm run db:generate`), not for running.
 2. Turn off Authentication › Providers › Email › "Confirm email".
    Accounts are usernames, with addresses made from them.
-3. A project set up from an older schema instead runs the files in
-   `supabase/migrations/`, in the order of their timestamped names.
+3. A new migration is made with `supabase migration new <what_it_does>`
+   (a local file; `npm run test:db` then checks it, and fails until
+   `npm run db:generate` has updated `schema.sql`).
 4. Deploy the Edge Functions, from the repository's root, where
    `supabase/config.toml` turns JWT verification off for both (Telegram
    and the reset page call them without a Supabase login). Each has its
@@ -110,7 +117,7 @@ src/content/       the site's copy (site.ts), the projects (Markdown) and their 
 src/data/          songs, desktop pictures, the photo snapshot
 api/               Vercel Functions: geo, lyrics, songs, framing (docs/agents/api.md)
 tests/             the Vercel Functions' unit tests (api/; not in api/, or Vercel would deploy them), the lint's probes and the docs' paths
-supabase/          schema, migrations, Edge Functions (deployed as config.toml says), database tests
+supabase/          migrations, the schema generated from them, Edge Functions (deployed as config.toml says), database tests
 scripts/           preview capture, photo refresh, favicon and portrait builders, bot setup
 public/os/         icons, fonts and desktop pictures (from ryOS, see NOTICE)
 docs/agents/       guidance for coding agents, by part (AGENTS.md is the entry point)

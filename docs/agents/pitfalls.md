@@ -25,8 +25,8 @@ again.
   Grant the key with the columns; `rules.sql` checks every published
   table.
 - Migrations are named `<UTC timestamp>_<what it does>.sql`, with the
-  time they're written as `YYYYMMDDHHMMSS`, the way `supabase migration
-  new` names them. They used to be named by date, and the date was
+  time they're written as `YYYYMMDDHHMMSS`: make each with `supabase
+  migration new <what_it_does>`, which names it so. They used to be named by date, and the date was
   bumped for each new file: nine migrations written over two days ran
   up to "20261003". They were renamed to their real commit times. Since
   2026-09-29 the project applies them with `supabase db push`, which
@@ -51,7 +51,7 @@ again.
   - `on conflict` for seed rows.
 
   `run.sh` reruns every migration from `20260926071227` on over the
-  schema to prove it: it loops over the folder, so a new file is covered
+  migrated database to prove it: it loops over the folder, so a new file is covered
   without being listed (it used to name them by hand, and seven of forty
   commits edited the list).
 - Counting rows before an insert is not a limit under concurrency. Six

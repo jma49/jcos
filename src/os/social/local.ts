@@ -108,7 +108,7 @@ const SAMPLE_POSTS: Omit<Post, 'reactions'>[] = [
     images: []
   }
 ];
-/** The rooms a real project seeds (supabase/schema.sql). */
+/** The rooms a real project seeds (supabase/migrations/20260926071227_chat_rooms.sql). */
 const ROOMS: ChatRoom[] = [
   LOBBY,
   { id: 'music', name: 'Music', topic: 'What’s on your iPod' },
