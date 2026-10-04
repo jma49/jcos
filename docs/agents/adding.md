@@ -124,7 +124,8 @@ be overwritten.
 The JM/OS Projects app, the pages at `/projects/<slug>/`, the sitemap and
 `llms.txt` all update automatically.
 
-Put a client-side tool that needs no backend under `src/pages/tools/`
-and hydrate its React component only on that page. Deploy a tool that
+Put a client-side tool that needs no backend in a page of its own under
+`src/pages/` (a new `tools/` folder there; there's none yet) and
+hydrate its React component only on that page. Deploy a tool that
 needs a server or API keys as its own project on a subdomain, and link
 to it from `demo`.

@@ -108,7 +108,7 @@ src/pages/         the home page, project pages, robots.txt, llms.txt
 src/content/       the site's copy (site.ts), the projects (Markdown) and their covers
 src/data/          songs, desktop pictures, the photo snapshot
 api/               Vercel Functions: geo, lyrics, songs, framing (docs/agents/api.md)
-tests/             the Vercel Functions' unit tests (api/; not in api/, or Vercel would deploy them) and the lint's probes
+tests/             the Vercel Functions' unit tests (api/; not in api/, or Vercel would deploy them), the lint's probes and the docs' paths
 supabase/          schema, migrations, Edge Functions (deployed as config.toml says), database tests
 scripts/           preview capture, photo refresh, favicon and portrait builders, bot setup
 public/os/         icons, fonts and desktop pictures (from ryOS, see NOTICE)
@@ -174,6 +174,7 @@ significant change goes through.
 | `bash scripts/vercel-ignore.sh <base>` | Vercel's ignored build step: says whether a deployment would be skipped (nothing the site is built from changed since `<base>`: only docs, tests, CI, the database, the Edge Functions' own folders or tooling). |
 | `npm run lint` | Checks the rules of React hooks and effects' dependencies, the boundaries between the OS, apps and applets (`import()` included), and that anything remembered in the browser goes through `src/os/core/storage.ts` (ESLint; `tests/eslint.test.ts` probes each rule). |
 | `npm run perf` | Measures a production build against the performance budgets (see `docs/agents/performance.md`). |
+| `node scripts/check-doc-paths.mjs` | Lists every repository path the docs cite in backticks that doesn't exist (`npm test` runs it too). |
 | `npm run photos:update` | Refreshes `src/data/photos.json` from Unsplash. |
 | `npm run songs:snapshot` | Saves the music library from Supabase to `src/data/songs.json`, the fallback. |
 | `node scripts/build-favicon.mjs` | Regenerates the favicons from one vector mark. |

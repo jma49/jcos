@@ -108,6 +108,7 @@ in docs/decisions/) and take it out.
 | the schema, a migration, a policy or a limit | `npm run test:db`, with a check (and a race for a limit) for the new rule; once merged, put it live as jmos-ops's HANDOFF.md (§1) says |
 | an Edge Function | `npm test` (its `*.test.mjs`) and `deno check supabase/functions/*/index.ts` (its types) |
 | a project's cover or the home page's look | `npm run preview:capture` |
+| a doc | `npm test` (every path cited in backticks exists: `scripts/check-doc-paths.mjs`) |
 
 CI (`.github/workflows/ci.yml`) runs `node scripts/audit.mjs`
 (`npm audit` for what ships, but for the listed exceptions), the type check (the Edge Functions' with `deno check`), the lint, the unit tests, the
