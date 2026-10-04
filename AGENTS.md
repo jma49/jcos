@@ -119,9 +119,9 @@ commit SHA with the version in a comment; Dependabot updates both. The
 `Update project previews` workflow never pushes to `main`: it opens a
 pull request and starts CI on it itself.
 
-- Unit tests (Vitest) are `*.test.ts` next to the code in `src/`; the
-  Vercel Functions' are in `tests/api/`, since Vercel deploys every file
-  under `api/`; each Edge Function has its `*.test.mjs`. Keep logic worth
+- Unit tests (Vitest) are `*.test.ts` (or `.tsx`) next to the code in
+  `src/`; the Vercel Functions' are in `tests/api/`, since Vercel deploys
+  every file under `api/`; each Edge Function has its `*.test.mjs`. Keep logic worth
   testing in plain modules without React (as `applets/spider/rules.ts`
   and `applets/pinball/table.ts` are).
 - `npm run test:db` loads the schema into a local Postgres, reruns every
