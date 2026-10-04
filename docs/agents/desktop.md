@@ -162,8 +162,11 @@ guarded from its first file; `tests/eslint.test.ts` probes each rule.
   Added, a disc from when it was burned, Jincheng's documents and diary
   entries from when they were first written, and the Applets, Movies and
   Users folders from the days the Applet Store, DVD Player and TextEdit
-  came. Nothing keeps how a thing was changed or what was thrown away,
-  so a past day shows what's here now, as far back as each thing goes;
+  came; what's inside Movies and Users counts from its folder's day at
+  the earliest (`notBefore`), so a document dated before /Users existed
+  adds no day on which nothing shows. Nothing keeps how a thing was
+  changed or what was thrown away, so a past day shows what's here now,
+  as far back as each thing goes;
   Pictures and Projects have no dates and aren't shown. Days are where
   this device is. The front window is a read-only Finder
   (`Browser.tsx`): the places, back and forward, icons or a list, and
