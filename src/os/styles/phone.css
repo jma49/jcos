@@ -159,28 +159,6 @@
   .os-sidebar {
     display: none;
   }
-
-  /* Dashboard widgets stack in a scrolling column. */
-  .os-dashboard {
-    place-items: start center;
-    padding: 40px 0;
-  }
-
-  .os-dashboard-board {
-    height: auto;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 24px;
-  }
-
-  .os-dashboard-slot {
-    position: static;
-  }
-
-  .os-widget-github {
-    width: min(330px, 92vw);
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {

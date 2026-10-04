@@ -4,7 +4,7 @@
   meaning what's requested in the first seven seconds, before the
   desktop settles and fetches ahead:
   - at most 160 KB of JavaScript, gzipped (152 today; react-dom alone
-    is 67), and 20 KB of CSS (16 today);
+    is 67), and 20 KB of CSS (12 today);
   - at most 1.1 MB of images and 250 KB of fonts;
   - nothing downloaded twice.
 
@@ -33,7 +33,10 @@
     savers' names and blurbs for System Preferences moved there too
     (2026-09-29, 0.5 KB off the first load: only that pane shows them),
     and a view's own stylesheet comes as text with it
-    (`shell/artwork.css`), as an app's does.
+    (`shell/artwork.css`), as an app's does. The Dashboard's and the
+    screen savers' stylesheets left `styles/` for the same reason
+    (2026-10-03, #218: the first load's CSS went from 12.0 to 10.1 KB
+    gzipped); where CSS goes is in [adding.md](adding.md).
   - What isn't on the first screen and waits on the Supabase client
     anyway starts once the desktop has settled (`Desktop.tsx`): Presence
     (other people's pointers, the channel, its signals), chat's watch

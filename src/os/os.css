@@ -1,13 +1,23 @@
 /* JM/OS — a Mac OS X Aqua–style shell, scoped under .os-root. Fonts,
    icons and wallpaper come from ryOS; see NOTICE. */
 
-/* The theme is split by part of the desktop, in cascade order: later files
-   build on earlier ones, so keep the order when adding one. Each app's own
-   stylesheet lives in its folder and arrives with its code, after all of
-   these: so an app's rules, not these files, have the last word on its
-   own classes (phone and reduced-motion variants included), and anything
-   more than one app or the OS uses belongs here (components.css,
-   source-list.css), not in an app. */
+/* What the first paint needs, split by part of the desktop into styles/
+   and imported here in cascade order: later files build on earlier ones,
+   so keep the order when adding one. This is the page's own stylesheet,
+   so all of it is in every first load.
+
+   CSS that only lazily loaded code uses doesn't belong here: it sits
+   beside that code and arrives with it (core/appStyles.ts). An app's
+   stylesheet is in its folder, imported as text by its manifest; a lazy
+   part of the shell imports its own with `?inline` and adopts it as it
+   loads (shell/dashboard.css, shell/screensaver.css, shell/artwork.css,
+   media/discArt.css, stickies/own-stickies.css, ambient/place-search.css);
+   a sheet several apps share is imported by theirs (shell/alert.css,
+   files/files.css). Adopted sheets come after all of these, so their
+   rules have the last word on their own classes, phone and
+   reduced-motion variants included: those go in the same sheet, not in
+   phone.css. What more than one app or the first screen uses stays here
+   (components.css, source-list.css). */
 @import './styles/base.css';
 @import './styles/wallpaper.css';
 @import './styles/sky.css';
@@ -22,11 +32,8 @@
 @import './styles/spotlight.css';
 @import './styles/boot.css';
 @import './styles/switcher.css';
-@import './styles/saver-previews.css';
-@import './styles/dashboard.css';
 @import './styles/desktop-menu.css';
 @import './styles/expose.css';
-@import './styles/screensaver.css';
 @import './styles/fullscreen.css';
 @import './styles/presence.css';
 @import './styles/notices.css';

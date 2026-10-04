@@ -6,10 +6,15 @@ import { describe, useWeather } from '../ambient/weather';
 import { SCENIC } from '../look/pictureSets';
 import { Artwork, Bounce, Flurry, SoapboxSaver } from './savers';
 import { useReduceMotion } from '../core/system';
+import { adoptStyles } from '../core/appStyles';
+import styles from './screensaver.css?inline';
 
 // What the screen savers draw. Loaded only when one first starts (or
 // System Preferences shows a preview), so none of it weighs on the
-// desktop's first load; Screensaver.tsx decides when.
+// desktop's first load; Screensaver.tsx decides when. Their stylesheet
+// comes with them, adopted before anything here renders.
+
+adoptStyles('screensaver', styles);
 
 /** The screen savers, as System Preferences lists them. */
 export const SAVER_STYLES: { style: SaverStyle; name: string; blurb: string }[] = [

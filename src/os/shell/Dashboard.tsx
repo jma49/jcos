@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { PlaceSearch } from '../ambient/PlaceSearch';
+import { adoptStyles } from '../core/appStyles';
+import styles from './dashboard.css?inline';
 import { getSocial, type Post } from '../social/social';
 import { flag } from '../social/online';
 import { launch } from '../core/registry';
@@ -22,7 +24,10 @@ import {
 
 // Tiger-style Dashboard: an overlay of widgets that zoom in over a dimmed
 // desktop. The clock, calendar and weather are the visitor's; one widget
-// shows what time it is where Jincheng is.
+// shows what time it is where Jincheng is. Its stylesheet comes with this
+// module (DashboardLayer.tsx loads it), adopted before it first renders.
+
+adoptStyles('dashboard', styles);
 
 function useNow(intervalMs: number) {
   const [now, setNow] = useState(() => new Date());
