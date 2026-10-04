@@ -106,11 +106,11 @@ in docs/decisions/) and take it out.
 | an app, the shell or anything a visitor sees | `npm run build`, then `npm run test:smoke`; open it in a browser too (`npm run serve`) |
 | the first load, a dependency, or anything per frame | `npm run build`, then `npm run perf`: every line within budget |
 | the schema, a migration, a policy or a limit | `npm run test:db`, with a check (and a race for a limit) for the new rule; once merged, `supabase db push` and `supabase db advisors` (jmos-ops's HANDOFF.md, §1) |
-| an Edge Function | `npm test` (its `*.test.mjs`) |
+| an Edge Function | `npm test` (its `*.test.mjs`) and `deno check supabase/functions/*/index.ts` (its types) |
 | a project's cover or the home page's look | `npm run preview:capture` |
 
 CI (`.github/workflows/ci.yml`) runs `node scripts/audit.mjs`
-(`npm audit` for what ships, but for the listed exceptions), the type check, the lint, the unit tests, the
+(`npm audit` for what ships, but for the listed exceptions), the type check (the Edge Functions' with `deno check`), the lint, the unit tests, the
 build, the smoke test, the download budgets of `npm run perf` (script
 times are only reported there, since shared runners are noisy) and the
 database tests on every pull request; `pr-title.yml` checks that the
