@@ -13,6 +13,7 @@ import { localJobs } from './jobs';
 import {
   CHAT_MAX,
   LOBBY,
+  cleanCursor,
   cleanInfo,
   dmPeer,
   isDM,
@@ -672,7 +673,8 @@ export function localSocial(): Social {
           onLeave(data.id);
         } else {
           peers.set(data.id, { seen: Date.now(), info: cleanInfo(data.info ?? peers.get(data.id)?.info ?? { color: data.color }, data.color) });
-          if (data.type === 'cursor') onCursor(data.id, data.x, data.y, data.color);
+          const cursor = data.type === 'cursor' && cleanCursor(data, (peer) => peers.has(peer));
+          if (cursor) onCursor(cursor);
         }
         report();
       };

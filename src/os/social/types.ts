@@ -74,6 +74,33 @@ export function cleanInfo(raw: unknown, fallbackColor: string): VisitorInfo {
   };
 }
 
+/** Colours for visitors' cursors; a pointer in any other is refused. */
+export const CURSOR_COLORS = ['#e5484d', '#f76b15', '#ffc53d', '#30a46c', '#0090ff', '#8e4ec6', '#d6409f'];
+
+/** Another visitor's pointer, as fractions of their viewport; (-1, -1) means it left the page. */
+export interface CursorMove {
+  id: string;
+  x: number;
+  y: number;
+  color: string;
+}
+
+const fraction = (n: unknown): n is number => typeof n === 'number' && n >= 0 && n <= 1;
+
+/**
+ * A pointer someone sent, or null unless it's from someone on the desktop
+ * now (`present`), within their viewport or leaving it, in one of our
+ * colours. Anyone with the public key can send one.
+ */
+export function cleanCursor(raw: unknown, present: (id: string) => boolean): CursorMove | null {
+  const { id, x, y, color } = (raw && typeof raw === 'object' ? raw : {}) as Record<string, unknown>;
+  if (typeof id !== 'string' || !present(id)) return null;
+  if (typeof color !== 'string' || !CURSOR_COLORS.includes(color)) return null;
+  const leaving = x === -1 && y === -1;
+  if (!leaving && !(fraction(x) && fraction(y))) return null;
+  return { id, x: x as number, y: y as number, color };
+}
+
 /** Someone on the desktop. */
 export interface Visitor extends VisitorInfo {
   id: string;
@@ -96,8 +123,8 @@ export interface Signal {
 interface PresenceHandlers {
   /** Everyone on the desktop, this visitor included. */
   onVisitors: (visitors: Visitor[]) => void;
-  /** Another visitor's pointer, as fractions of their viewport; x < 0 means it left the page. */
-  onCursor: (id: string, x: number, y: number, color: string) => void;
+  /** Another visitor's pointer, checked with cleanCursor. */
+  onCursor: (cursor: CursorMove) => void;
   onLeave: (id: string) => void;
   onSignal: (signal: Signal) => void;
 }

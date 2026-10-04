@@ -3,13 +3,14 @@
 // security, presence and live chat through Realtime.
 
 import { createClient, type PostgrestError, type User } from '@supabase/supabase-js';
-import { CURSOR_COLORS } from './social';
 import { discOf, SONG_COLUMNS, songOf, type Disc } from '../../lib/library';
 import { playlistNameProblem } from './playlistNames';
 import { supabaseJobs } from './jobs';
 import {
   LOBBY,
   NOTES_PER_DAY,
+  CURSOR_COLORS,
+  cleanCursor,
   cleanInfo,
   isDM,
   PASSWORD_MIN,
@@ -843,7 +844,10 @@ export function supabaseSocial(url: string, key: string): Social {
       channel
         .on('presence', { event: 'sync' }, () => onVisitors(visitors()))
         .on('presence', { event: 'leave' }, ({ key }) => onLeave(key))
-        .on('broadcast', { event: 'cursor' }, ({ payload }) => onCursor(payload.id, payload.x, payload.y, payload.color))
+        .on('broadcast', { event: 'cursor' }, ({ payload }) => {
+          const cursor = cleanCursor(payload, (key) => key !== id && Object.hasOwn(channel.presenceState(), key));
+          if (cursor) onCursor(cursor);
+        })
         .on('broadcast', { event: 'signal' }, ({ payload }) => {
           if (typeof payload?.event !== 'string' || typeof payload?.from !== 'string') return;
           onSignal({ event: payload.event, from: payload.from, payload: payload.payload ?? {} });

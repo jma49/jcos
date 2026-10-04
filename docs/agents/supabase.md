@@ -201,7 +201,10 @@ The code that isn't in the browser (each endpoint's parameters, answers and conv
   open chat room, whether AirDrop can reach them), their cursors, and
   signals: short-lived messages such as typing, nudges and AirDrop
   offers. Anyone can send anything there, so receivers check what
-  arrives (`cleanInfo()` for presence). Pointers are drawn only for a
+  arrives (`cleanInfo()` for presence; `cleanCursor()` keeps a pointer
+  only from someone in the channel's presence, inside their viewport, in
+  one of `CURSOR_COLORS`, and `Presence.tsx` keeps at most
+  `MAX_CURSORS`, 50). Pointers are drawn only for a
   visitor who has turned on "Show other people's pointers" (off by
   default, `showOthersPointers`), who says so in their presence
   (`watching`); a pointer is sent only while someone else watches

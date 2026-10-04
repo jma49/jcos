@@ -12,9 +12,6 @@ import type { Social } from './types';
 
 export * from './types';
 
-/** Colours for visitors' cursors. */
-export const CURSOR_COLORS = ['#e5484d', '#f76b15', '#ffc53d', '#30a46c', '#0090ff', '#8e4ec6', '#d6409f'];
-
 /** How often a moving cursor is sent to others, at most. */
 export const CURSOR_INTERVAL = 100;
 
