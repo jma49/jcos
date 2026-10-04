@@ -1,7 +1,8 @@
 import { Suspense, useEffect, useRef, useState } from 'react';
 import { AnimatePresence, m } from 'motion/react';
 import { appComponent, apps } from '../core/registry';
-import { useWindows } from '../core/store';
+import { releaseFocus, useWindows } from '../core/store';
+import { inertAround } from '../core/focus';
 import type { AppId, WindowState } from '../core/types';
 import { AppBoundary } from './AppBoundary';
 
@@ -51,17 +52,16 @@ function FullScreenApp({ app, props }: { app: AppId; props?: Record<string, stri
   }));
   const anchor = useRef<HTMLSpanElement>(null);
 
-  // What's under it can't be reached meanwhile; the focus comes back where it was.
+  // What's under it can't be reached meanwhile; the focus comes back where
+  // it was. What had it is noted by openFullScreen, not here: once the
+  // app's code is cached, the app focuses itself before this effect runs.
   useEffect(() => {
     const layer = anchor.current?.parentElement;
-    const root = layer?.parentElement;
-    if (!layer || !root) return;
-    const was = document.activeElement;
-    const under = [...root.children].filter((el): el is HTMLElement => el !== layer && el instanceof HTMLElement && !el.inert);
-    under.forEach((el) => (el.inert = true));
+    if (!layer) return;
+    const undo = inertAround(layer);
     return () => {
-      under.forEach((el) => (el.inert = false));
-      if (was instanceof HTMLElement && was.isConnected) was.focus({ preventScroll: true });
+      undo();
+      releaseFocus('fullScreen', layer);
     };
   }, []);
 

@@ -139,6 +139,15 @@ again.
   in a field (#187). Listen while `useFocusedId() === win.id`, ask
   `ownsKey(e)` (`core/useKeys.ts`) before taking a key, and prefer
   `useKeys`, which asks it for you.
+- What had focus can't be read in an effect of the thing that takes it.
+  `FullScreenLayer.tsx` noted `document.activeElement` in its effect to
+  give it back when Time Machine closed; the first time, the app's code
+  was still loading, so the Dock icon was noted, but once the code was
+  cached the app rendered in the same pass and its own effect, which
+  runs first (children before parents), had focused its sidebar: the
+  layer noted that, and focus fell to the page on close (#193). Note it
+  where the opening starts (the store's action, `core/focus.ts`), or
+  while rendering, before any effect of the commit runs.
 - Release pointer capture on `pointerup` and `pointercancel`. Pinball's
   flippers stuck otherwise.
 - Anything kept in window `props` is saved in `os-windows` and survives

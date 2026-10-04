@@ -292,6 +292,9 @@ export const Window = memo(function Window({ win, focused, z, exposed }: Props) 
     <m.section
       role="dialog"
       aria-label={win.title}
+      // Focus can be put on the window itself (core/focus.ts): a closed window hands it to the next.
+      tabIndex={-1}
+      data-id={win.id}
       data-focused={focused}
       data-material={def.material}
       data-exposed={exposed ? true : undefined}
