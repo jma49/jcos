@@ -14,6 +14,9 @@ import { useKeys } from '../../core/useKeys';
 // in) pick a reaction and can change it or take it back (click it again);
 // anyone else gets one per post, told apart by IP address. Posts can carry
 // photos; clicking one shows it large.
+// The bot takes text, photos with captions, albums (one post) and images
+// sent as files, and copies photos into the public `soapbox` storage bucket
+// (its README has the setup).
 
 /** Which reaction this browser gave each post while signed out, so the buttons can show it. */
 const REACTED_KEY = 'os-soapbox-reacted';

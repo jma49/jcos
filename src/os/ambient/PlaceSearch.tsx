@@ -1,5 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
+import { adoptStyles } from '../core/appStyles';
 import { placeLabel, searchPlaces, type Place } from './place';
+import styles from './place-search.css?inline';
+
+// Only the Dashboard and System Preferences, both loaded later, show it,
+// so its stylesheet comes with it rather than in the first load.
+adoptStyles('place-search', styles);
 
 /** A city search box with a list of matches; used by the Weather widget and System Preferences. */
 export function PlaceSearch({ id, onPick, onCancel }: { id: string; onPick: (place: Place) => void; onCancel?: () => void }) {

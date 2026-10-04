@@ -17,6 +17,14 @@ import { onMovesStored, storedMoves, storeMoves } from './saved';
 // this browser (saved.ts) and every tab shows the same one: the reply is
 // played only if the game hasn't moved on in another tab meanwhile, so
 // two tabs thinking at once still make one move.
+//
+// It's in Applications, not kept in the Dock. The board lies in perspective
+// in CSS 3D (chess.css): the squares a piece can go to are tinted, ringed
+// where it takes, and the squares alone take clicks, as the board lies in
+// their plane. Rules, check, mate, stalemate, draws and promotion are
+// chess.js's (BSD-2-Clause, rules.ts). The game kept in os-chess is its
+// moves, so a reload goes on. New Game is in the Game menu and in the
+// status bar (phones have no app menus).
 
 const FILES = 'abcdefgh';
 /** The solid glyphs for both sides, coloured in CSS; U+FE0E keeps the pawn from turning into an emoji. */

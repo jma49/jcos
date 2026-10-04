@@ -222,8 +222,10 @@ again.
   in Account's, the segmented control's disabled state in Finder's, the
   sidebar in Projects', and `@keyframes os-spin`, which spins every
   window's loading indicator, in the Applet Store's. Once app styles
-  load with their apps, anything outside the app that uses a class or
-  keyframes has to live in `src/os/styles/`.
+  load with their apps, a class or keyframes used outside the app has to
+  arrive with everything that uses it: in `src/os/styles/` for the first
+  screen, or beside the lazily loaded code that's its only user
+  ([adding.md](adding.md)).
 
 - A function in `api/` imports local TypeScript by its compiled name
   (`../src/lib/library.js`). Vercel's builder (`@vercel/node`) compiles

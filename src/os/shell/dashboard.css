@@ -1,3 +1,8 @@
+/* The Dashboard and its widgets. Dashboard.tsx loads after the desktop has
+   settled or on first use, and adopts this sheet as it loads, so the first
+   load doesn't carry it (os.css). Its phone layout is at the end, since an
+   adopted sheet comes after phone.css. */
+
 /* ---------- Dashboard ---------- */
 
 .os-dashboard {
@@ -259,33 +264,9 @@
   color: #111;
 }
 
-.os-place-search ul {
-  min-height: 20px;
-  margin: 6px 0 0;
-  padding: 0;
-  list-style: none;
-}
-
-.os-place-search li button {
-  width: 100%;
-  padding: 3px 6px;
-  border: 0;
-  border-radius: 4px;
-  background: none;
-  color: inherit;
-  font: inherit;
-  text-align: left;
-  cursor: pointer;
-}
-
 .os-weather-back .os-place-search li button:hover,
 .os-weather-back .os-place-search li button:focus-visible {
   background: rgba(255, 255, 255, 0.22);
-}
-
-.os-place-note {
-  padding: 3px 6px;
-  opacity: 0.7;
 }
 
 .os-weather-actions {
@@ -501,4 +482,28 @@
 .os-widget-visitors b {
   opacity: 0.75;
   font-variant-numeric: tabular-nums;
+}
+
+/* On a phone the widgets stack in a scrolling column. */
+@media (max-width: 767px), (max-height: 500px) and (pointer: coarse) {
+  .os-dashboard {
+    place-items: start center;
+    padding: 40px 0;
+  }
+
+  .os-dashboard-board {
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+  }
+
+  .os-dashboard-slot {
+    position: static;
+  }
+
+  .os-widget-github {
+    width: min(330px, 92vw);
+  }
 }

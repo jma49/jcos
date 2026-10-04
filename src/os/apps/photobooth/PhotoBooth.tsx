@@ -8,6 +8,8 @@ import { loadJSON, updateJSON } from '../../core/storage';
 // look through, a 3-2-1 countdown with a white flash, and a strip of the
 // pictures taken. Pictures stay in this browser; one can be downloaded or
 // made the desktop picture. The camera is only on while the window is open.
+// It takes one picture or four, and keeps them in os-photobooth: the last
+// eight, as small JPEGs.
 
 interface Effect {
   name: string;

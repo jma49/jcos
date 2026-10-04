@@ -7,6 +7,8 @@ import { useWindows } from '../../core/store';
 // the "hardware", which here is the visitor's own browser and screen.
 // More Info… opens a System Profiler–style list; Software Update… shows the
 // commit this build came from.
+// That commit is `__JMOS_BUILD__`, the build's short hash, defined in
+// astro.config.mjs from Vercel's VERCEL_GIT_COMMIT_SHA.
 
 /** What the browser will say about the machine it runs on. */
 function machine() {

@@ -19,6 +19,10 @@
         { "key": "X-Frame-Options", "value": "SAMEORIGIN" },
         { "key": "Content-Security-Policy", "value": "frame-ancestors 'self'; base-uri 'self'; object-src 'none'; form-action 'self'" },
         {
+          "key": "Content-Security-Policy-Report-Only",
+          "value": "default-src 'self'; script-src 'self' 'report-sample' 'sha256-7+7AWq7XfGD2rwhSmmyfxI/cWjETO1iSmENMs3kgPng=' 'sha256-eIXWvAmxkr251LJZkjniEK5LcPF3NkapbJepohwYRIc=' 'sha256-Ya0pUYrC7nM5Cn/056TyVuEiz6dFGrzmkWzgON0pF0U=' 'sha256-lwENjRPXFmLKH7VsjDBluZuZw4pi5nY4CPIy8WkbGzA=' https://www.youtube.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self'; connect-src 'self' https://hszogpoyyqgwjuznbegd.supabase.co wss://hszogpoyyqgwjuznbegd.supabase.co https://lrclib.net https://api.open-meteo.com https://geocoding-api.open-meteo.com https://api.github.com https://www.youtube.com https://i.ytimg.com; media-src 'self' blob:; frame-src https:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'self'; form-action 'self'"
+        },
+        {
           "key": "Permissions-Policy",
           "value": "camera=(self), microphone=(), geolocation=(), payment=(), usb=(), serial=(), hid=(), bluetooth=()"
         },

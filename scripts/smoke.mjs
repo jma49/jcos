@@ -5,10 +5,13 @@
 // The unit tests check logic and the build checks that everything compiles,
 // but neither runs the apps. This loads /?open=<app> for each app in the
 // catalog (and a project, the Dashboard and the screen saver) in a fresh
-// page and fails on an uncaught error, a console error, or an app showing
-// AppBoundary's crash panel. Errors logged by third-party frames (the
-// YouTube player) don't count. Network failures are ignored: dist/ is served
-// without the /api functions or Supabase, and third parties can be slow.
+// page and fails on an uncaught error, a console error, an app showing
+// AppBoundary's crash panel, or anything the Content Security Policy
+// (vercel.json, which serve-dist.mjs sends) refuses or would refuse: the
+// Report-Only policy counts, though the site doesn't enforce it yet.
+// Errors logged by third-party frames (the YouTube player) don't count.
+// Network failures are ignored: dist/ is served without the /api functions
+// or Supabase, and third parties can be slow.
 
 import { readFile, readdir } from 'node:fs/promises';
 import { join } from 'node:path';
@@ -53,6 +56,13 @@ async function check(target) {
   await context.addInitScript((installed) => {
     sessionStorage.setItem('os-booted', '1');
     localStorage.setItem('os-applets', JSON.stringify(installed));
+    // An inline script the policy has no hash for (after an Astro upgrade
+    // or a change to one, put its new hash in vercel.json), or an origin it
+    // doesn't list.
+    window.__cspViolations = [];
+    document.addEventListener('securitypolicyviolation', (e) =>
+      window.__cspViolations.push(`${e.effectiveDirective} ${e.blockedURI}${e.sample ? ` "${e.sample}"` : ''} (${e.disposition})`)
+    );
   }, applets);
   const page = await context.newPage();
   const problems = [];
@@ -70,6 +80,7 @@ async function check(target) {
     await page.goto(`${base}/?open=${target}`, { waitUntil: 'load' });
     await page.waitForTimeout(SETTLE);
     if (await page.locator('.os-crash').count()) problems.push('showed the crash panel');
+    for (const v of await page.evaluate(() => window.__cspViolations)) problems.push(`content security policy: ${v}`);
     // A window, or the whole screen for a full-screen app (Time Machine).
     const opened = ['dashboard', 'screensaver'].includes(target) || (await page.locator('.os-window, .os-fullscreen').count()) > 0;
     if (!opened) problems.push('opened no window');

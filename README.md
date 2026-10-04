@@ -102,7 +102,7 @@ Function secrets:
 ## Layout
 
 ```
-src/os/            the desktop: core/ shell/ files/ home/ stickies/ apps/ applets/ kit/ ambient/ look/ media/ social/ styles/
+src/os/            the desktop, one React island (its folders: docs/agents/desktop.md)
 src/lib/           what the pages, the desktop and api/ share: the media library's shape, photos, projects
 src/pages/         the home page, project pages, robots.txt, llms.txt
 src/content/       the site's copy (site.ts), the projects (Markdown) and their covers
@@ -133,8 +133,12 @@ are, and [ROADMAP.md](ROADMAP.md) is what comes next, in order.
   schema the API can't reach. Only a hash of each reset link is kept.
 - Service-role keys and third-party tokens exist only inside Edge
   Functions.
-- Responses carry security headers (`vercel.json`), and Dependabot
-  proposes dependency updates weekly. CI fails on a high or critical
+- Responses carry security headers (`vercel.json`), with a full Content
+  Security Policy in Report-Only for now: scripts only from the site,
+  the hashes of its inline scripts and YouTube, and `npm run test:smoke`
+  fails on anything it would refuse
+  ([decision 0007](docs/decisions/0007-no-script-content-security-policy.md)).
+  Dependabot proposes dependency updates weekly. CI fails on a high or critical
   advisory in a production dependency, and the workflows pin every
   action to a commit SHA with read-only permissions by default.
   The one exception is the ocra review of pull requests, which calls
@@ -147,28 +151,28 @@ what's in scope and what to expect.
 
 ## Performance
 
-A first visit downloads about 149 KB of JavaScript (gzipped), one
-desktop picture and two subset fonts. Everything else loads when it's
-first used, or once the desktop has settled: each app, the Supabase
-client, Presence, Spotlight, the Dashboard and the screen savers.
-Dragging a window re-renders only that window. `npm run perf` checks
-these budgets:
+A first visit downloads the desktop's own script and styles, one desktop
+picture and two subset fonts. Everything else loads when it's first
+used, or once the desktop has settled: each app, the Supabase client,
+Presence, Spotlight, the Dashboard and the screen savers. Dragging a
+window re-renders only that window. `npm run perf` checks budgets for:
 - what a first visit downloads;
 - the script time of a drag with six apps open;
 - the script time of an idle desktop.
 
-[docs/agents/performance.md](docs/agents/performance.md) has the rules,
-and [docs/agents/self-audit.md](docs/agents/self-audit.md) the audit every
+[docs/agents/performance.md](docs/agents/performance.md) has the budgets,
+today's readings and the rules, and
+[docs/agents/self-audit.md](docs/agents/self-audit.md) the audit every
 significant change goes through.
 
 ## Scripts
 
 | Command | Does |
 | --- | --- |
-| `npm run check` | Type-checks the site (`astro check`). CI runs it on every pull request. |
+| `npm run check` | Type-checks the site (`astro check`). |
 | `npm run preview:capture` | Screenshots project pages into their covers, and the home page into `public/og.jpg`. A workflow runs it once a day. |
 | `bash scripts/vercel-ignore.sh <base>` | Vercel's ignored build step: says whether a deployment would be skipped (nothing the site is built from changed since `<base>`: only docs, tests, CI, the database, the Edge Functions' own folders or tooling). |
-| `npm run lint` | Checks the rules of React hooks and effects' dependencies, the boundaries between the OS, apps and applets (`import()` included), and that anything remembered in the browser goes through `src/os/core/storage.ts` (ESLint; `tests/eslint.test.ts` probes each rule). CI runs it on every pull request. |
+| `npm run lint` | Checks the rules of React hooks and effects' dependencies, the boundaries between the OS, apps and applets (`import()` included), and that anything remembered in the browser goes through `src/os/core/storage.ts` (ESLint; `tests/eslint.test.ts` probes each rule). |
 | `npm run perf` | Measures a production build against the performance budgets (see `docs/agents/performance.md`). |
 | `npm run photos:update` | Refreshes `src/data/photos.json` from Unsplash. |
 | `npm run songs:snapshot` | Saves the music library from Supabase to `src/data/songs.json`, the fallback. |

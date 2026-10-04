@@ -19,6 +19,24 @@ import { Capacity, Funnel, STAGE_NAMES } from './parts';
 // Jincheng moves them along, adds one by hand, notes and deletes. Anyone
 // else sees only how many are at each stage, on blank cards, and how far
 // they got: Jincheng decided the companies stay Jincheng's.
+//
+// It's in Applications, with Bento's icon. The board has a column to a
+// stage (Applied, Assessment, Interviewing, Offer, Closed) and a card to an
+// application, the one that moved last on top; a card still Applied after
+// 14 days with no word says how long it has waited. A card is dragged to
+// another column when something happens that Mail didn't say. The stages
+// and sources on the left show and hide columns and filter, with how far
+// they got under them, and iTunes' capacity bar runs along the bottom. The
+// list (⌥2) sorts by a header.
+//
+// The info drawer (⌥I, or a double-click) renames, moves, dates and notes
+// one, and lists what Mail said about it, each message a link back to
+// Gmail; ⌥N adds one by hand, Delete deletes one, asked first. Saves to one
+// application go one after another, each from the version the last one got,
+// so a note left by clicking the stage menu doesn't meet a refusal of its
+// own. Anyone else's numbers come from `job_hunt_totals()` (decision 0018).
+// Narrow (a phone), it shows one stage at a time, picked at the top, and
+// the drawer's contents in the window.
 
 const VIEW_KEY = 'os-jobhunt-view';
 type View = 'board' | 'list';

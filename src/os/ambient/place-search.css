@@ -1,0 +1,27 @@
+/* PlaceSearch's list of matches, for the Weather widget and System
+   Preferences, each of which styles the field and the hover its own way.
+   Adopted by PlaceSearch.tsx, which only lazily loaded code uses. */
+
+.os-place-search ul {
+  min-height: 20px;
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.os-place-search li button {
+  width: 100%;
+  padding: 3px 6px;
+  border: 0;
+  border-radius: 4px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.os-place-note {
+  padding: 3px 6px;
+  opacity: 0.7;
+}

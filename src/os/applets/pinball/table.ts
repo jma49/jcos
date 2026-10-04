@@ -6,6 +6,9 @@
 // lane on the right, three pop bumpers, two slingshots, a bank of drop
 // targets, three top lanes, and a wormhole. Completing things raises your
 // rank, from Cadet to Fleet Admiral.
+//
+// Keep it free of anything from Microsoft's Space Cadet: the table, its art
+// and its rules are this one's own (decision 0002).
 
 export const W = 400;
 export const H = 700;

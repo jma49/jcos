@@ -19,7 +19,7 @@ replaces; don't delete the old one.
 | [0004](0004-the-music-library-lives-in-supabase.md) | The music library lives in Supabase | 2026-09-26 |
 | [0005](0005-concurrency-and-opt-in-sharing.md) | Concurrency in every design; sharing is opt-in | 2026-09-26 |
 | [0006](0006-windows-have-no-focus-trap.md) | Windows have no focus trap | 2026-09-26 |
-| [0007](0007-no-script-content-security-policy.md) | No script Content Security Policy | 2026-09-26 |
+| [0007](0007-no-script-content-security-policy.md) | A full Content Security Policy, Report-Only first (amended) | 2026-10-03 |
 | [0008](0008-keep-the-secondary-greys.md) | Keep the secondary greys | 2026-09-27 |
 | [0009](0009-what-waits-for-the-desktop-to-settle.md) | What waits for the desktop to settle | 2026-09-27 |
 | [0010](0010-chinese-on-hold.md) | Chinese on hold, and no Chinese retro web | 2026-09-28 |

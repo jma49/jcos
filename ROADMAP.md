@@ -20,9 +20,10 @@ One pull request each; all but one are in, and what's left is:
 1. **A stack in the Dock**: things Jincheng sends the bot (screenshots,
    tickets, links) kept in a Dock stack that fans out as Leopard's did,
    private or public per item. Jincheng's note: the interaction and the
-   UI have to be done well. The Dock is on the first screen: the first
-   load is 150 of its 160 KB (room was made for this on 2026-09-29), so
-   what the stack adds to it is measured as it's built.
+   UI have to be done well. The Dock is on the first screen, and the
+   first load is close to its budget (room was made for this on
+   2026-09-29; [performance.md](docs/agents/performance.md) has the
+   readings), so what the stack adds to it is measured as it's built.
 
 **Done when** each is in the site, checked in a browser with motion on
 and off, and its locked parts are proved locked by `test:db`.

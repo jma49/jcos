@@ -1,8 +1,10 @@
 # The desktop
 
-How JM/OS is put together, part by part. Read this before changing
-anything under `src/os/`. Music and lyrics are in [media.md](media.md);
-accounts, chat and presence in [supabase.md](supabase.md).
+How JM/OS is put together: the map, the boundaries, where things go and
+the shell every app shares. Read this before changing anything under
+`src/os/`. Each app's own behaviour is in its component's header comment;
+music and lyrics are in [media.md](media.md); accounts, chat and
+presence in [supabase.md](supabase.md).
 
 The home page (`src/pages/index.astro`) is JM/OS, a Mac OS X–style
 desktop rendered by one client-only React island in `src/os/`. The page
@@ -56,7 +58,31 @@ guarded from its first file; `tests/eslint.test.ts` probes each rule.
 | `apps/` | the built-in apps, one folder each | `<id>/manifest.ts` |
 | `applets/` | the Applet Store's games and tools | `<id>/manifest.ts` |
 | `kit/` | everything applets may use | `index.ts` |
-| `styles/` | the Aqua theme, by part of the desktop | `os.css` imports them |
+| `styles/` | the Aqua theme the first paint needs, by part of the desktop | `os.css` imports them |
+
+## Naming
+
+- A file that exports one React component is named after it, in
+  PascalCase: `Window.tsx`, `DayFinder.tsx`. Its name says what it is
+  across the whole desktop, not only in its folder: Time Machine's
+  read-only Finder is `DayFinder.tsx`, not `Browser.tsx`, since the
+  Browser is an app.
+- Logic, hooks and a set of small components are camelCase: `store.ts`,
+  `useKeys.ts`, `dockDrag.tsx`, `parts.tsx`. A test sits beside what it
+  tests as `<name>.test.ts` (or `.tsx`), a Web Worker as
+  `<name>.worker.ts`.
+- Folders are lowercase; an app's or applet's is its id
+  (`apps/timemachine/`, `applets/tilegame/`).
+- Stylesheets are kebab-case (`source-list.css`, `own-stickies.css`),
+  except one that belongs to a single module, which takes its name
+  (`media/discArt.css`). A new app's stylesheet is `<id>.css`; some older
+  ones use the display name (`about-mac.css`, `applet-store.css`,
+  `photo-booth.css`, `tile-game.css`, the iPod's `styles.css`) and stay.
+- Every class is prefixed `os-` and then the part or app it belongs to
+  (`os-dock-label`, `os-finder-cf-item`), so nothing collides with the
+  rest of the site, another app or a third party. Keys remembered in the
+  browser start with `os-` too (`core/storage.ts`), but for `theme`,
+  which the classic site shared.
 
 ## Apps and applets
 
@@ -111,109 +137,11 @@ guarded from its first file; `tests/eslint.test.ts` probes each rule.
   preferences. An app whose code has arrived renders directly rather than
   through `lazy` (`readyApp()` in the registry), so it opens at once. To
   add one, see [adding.md](adding.md).
-- Pinball's table, physics and rules are in `applets/pinball/table.ts`
-  (table units, 400 × 700); keep it free of anything from Microsoft's
-  Space Cadet.
-- `src/os/applets/synth/`: an applet synthesizer on the shared
-  AudioContext (`audio()` from the kit); it follows the sound switch
-  and volume, and a note turns sound on. Settings in `os-synth`.
-- The Terminal (`apps/terminal/`) has a working folder on Macintosh
-  HD (`cd`, `pwd`, `ls`, `cat`, `open <path>`): the disk Finder shows,
-  Movies and Users included, whose locked folders answer "Permission
-  denied". It splits a line as zsh does, with quotes and backslash
-  escapes (`paths.ts`, with tests).
-- `src/os/apps/photobooth/`: the camera with CSS-filter effects, a
-  countdown and one or four pictures, kept in `os-photobooth` (the last
-  eight, as small JPEGs). The camera is only on while the window is open.
-- `src/os/apps/aboutmac/`: the Apple menu's About This Mac.
-  `__JMOS_BUILD__` (defined in `astro.config.mjs` from Vercel's
-  `VERCEL_GIT_COMMIT_SHA`) is the build's short commit hash.
-- `src/os/apps/chess/`: Tiger's Chess, in Applications (not kept in the
-  Dock). The visitor plays White against the computer on a wooden board
-  in perspective (CSS 3D, `chess.css`): click a piece, then one of the
-  squares it can go to (tinted, ringed where it takes; the squares
-  alone take clicks, as the board lies in their plane). Rules, check,
-  mate, stalemate, draws and promotion are chess.js's (BSD-2-Clause,
-  `rules.ts`). The computer (`engine.ts`, with tests) is a small
-  alpha-beta search, three moves deep then captures until quiet, scored
-  by material and piece-square tables; below its own move it plays
-  through chess.js's internal move list (`_moves`, `_makeMove`,
-  `_undoMove`, as chess.js's `perft` does), since the public `move()`
-  writes out notation and positions and makes a search about ten times
-  slower. It thinks in a Web Worker (`engine.worker.ts`, 1.5 s at most,
-  or two moves deep), or on the page if the worker can't start. The game
-  is kept in `os-chess` (its moves), so a reload goes on; every tab of a
-  visitor shows the same game, and when two tabs think at once the
-  first answer is played and the other tab takes it. New Game is in the
-  Game menu and in the status bar (phones have no app menus).
-- `src/os/apps/timemachine/`: Leopard's Time Machine, in the Dock and
-  Applications. It's a full-screen app (the manifest's `fullScreen`,
-  drawn by `shell/FullScreenLayer.tsx`): no window; it covers the
-  windows, the menu bar and the Dock, which are `inert` under it (the
-  page around the desktop too: `inertAround` in `core/focus.ts`), and
-  the desktop's shortcuts, the ⌥Tab switcher and Exposé's corner stay
-  quiet (`useFocusedId()` is null meanwhile, so no window has the keys).
-  Leaving gives focus back to what had it, as noted by `openFullScreen`
-  (below, focus).
-  Space is a canvas of seeded stars over a CSS nebula, with a Finder
-  window for each day going back into it (300px apart, seen from 50%
-  6%, as the prototype had them); the timeline down the right, the
-  arrows (Page Up and Down) and a click on a window behind go through
-  the days, and Cancel or Escape leaves. What a day held is `past.ts`:
-  each thing from the day it came, an app from its manifest's `added`
-  (an applet from its listing's), a song or an album from its Date
-  Added, a disc from when it was burned, Jincheng's documents and diary
-  entries from when they were first written, and the Applets, Movies and
-  Users folders from the days the Applet Store, DVD Player and TextEdit
-  came; what's inside Movies and Users counts from its folder's day at
-  the earliest (`notBefore`), so a document dated before /Users existed
-  adds no day on which nothing shows. Nothing keeps how a thing was
-  changed or what was thrown away, so a past day shows what's here now,
-  as far back as each thing goes;
-  Pictures and Projects have no dates and aren't shown. Days are where
-  this device is. The front window is a read-only Finder
-  (`Browser.tsx`): the places, back and forward, icons or a list, and
-  Quick Look; the folder, the selection and the view stay as the days
-  change, and a day without the folder shows the nearest one it had.
-  Restore brings what's chosen (or the folder shown) back to now: an
-  app opens, a song plays, a disc goes into the drive, a document opens
-  in TextEdit, a folder opens in Finder. The home folder is read as
-  Finder reads it, so anyone else sees only Public and Sites.
-- `src/os/apps/dvdplayer/`: Tiger's DVD Player, in Applications (not
-  kept in the Dock), for the discs on Finder's Movies shelf (see
-  [media.md](media.md)). A window named after the disc in the drive
-  (`media/drive.ts`) shows its menu (Play Movie, Scene Selection, Loop)
-  and then the picture, always 16:9 with black around it; its own
-  YouTube player (`useDiscPlayer.ts`) takes no pointer, so YouTube's
-  hover controls never come up (its middle button after a play or a seek
-  does, and DVD Player masks it: [media.md](media.md)). The Controller is a floating panel, as on a
-  Mac: drawn by the app into `.os-root` just above the windows, shown
-  only while DVD Player is the window in front (not in Exposé or
-  minimized), dragged by its metal and left where it was put
-  (`os-dvd`). Full screen (⌘F, a double-click on the picture, the
-  Controls menu) is Leopard's (`FullScreen.tsx`): the browser's full
-  screen on the picture itself, since the player can't move without
-  reloading, with the chapters along the top and the controls along the
-  bottom, which rest out of sight (and the pointer with them) 2.5 s after
-  the pointer stops while the disc plays. Its position slider
-  (`core/useScrub.ts`) stays where it's put: dragged, it seeks within
-  what's loaded as it goes and properly where it's let go, and the clock
-  doesn't move it back meanwhile. What DVD Player says for a moment
-  ("Chapter 2", "▶ Play") shows in the corner once the chapters have
-  gone, not under them. A slider used with the pointer (volume,
-  position) gives the keys back when it's let go
-  (`releaseAfterPointer` in `core/useKeys.ts`), so Space and the arrows
-  stay DVD Player's; tabbed to, it keeps them. The Controller's buttons
-  leave them to DVD Player too, as a panel of its own (`data-panel`,
-  `ownsKey` in `core/useKeys.ts`). A phone, which DVD Player fills
-  anyway, always has that look instead of the Controller. The Controls
-  menu and the keys (Space, ←/→ for chapters, ↑/↓ and Return in menus,
-  Escape, ⌘F, ⌘E) do what its buttons do. A disc slides into the slot in the
-  screen's right edge on its way in and out (`media/insertion.ts`, Web
-  Animations, skipped with motion reduced), and DVD Player's icon
-  bounces in the Dock as it opens. The disc never goes on the desktop:
-  Jincheng wants no icons added there (2026-09-29), so the Controller and
-  ⌘E are the ways to eject it.
+- Each app's own behaviour (what it shows, its keys, what it keeps in
+  the browser, Jincheng's decisions about it) is in the header comment of
+  its component (`apps/<id>/<Name>.tsx`, `applets/<id>/<Name>.tsx`) and
+  of the modules beside it, not here: read it before changing the app,
+  and keep it current there. This file has only what apps share.
 
 ## Windows and the shell
 
@@ -253,7 +181,7 @@ guarded from its first file; `tests/eslint.test.ts` probes each rule.
 - `src/os/shell/AppSwitcher.tsx`: ⌥Tab steps through open windows, most
   recent first; releasing ⌥ focuses the chosen one.
 - `src/os/core/useKeys.ts`: whose a key is. A handler on `window`
-  (`useKeys`; Finder's, the iPod's centre key, Time Machine's browser,
+  (`useKeys`; Finder's, the iPod's centre key, Time Machine's Finder,
   Job Hunt's, iCal's, TextEdit's, Stickies', an alert's, the Burn
   sheet's) listens only while its window is in front
   (`useFocusedId() === win.id`) and takes a key only when `ownsKey(e)`
@@ -292,6 +220,12 @@ guarded from its first file; `tests/eslint.test.ts` probes each rule.
   page around the desktop, is `inert` while it's up, focus moves onto it
   as it opens (Tab goes on to its widgets) and comes back as it closes
   (`core/focus.ts`). Escape or a click on the dimmed desktop closes it.
+- A full-screen app (the manifest's `fullScreen`: Time Machine) has no
+  window: `shell/FullScreenLayer.tsx` draws it over the windows, the
+  menu bar and the Dock, which are `inert` under it (the page around the
+  desktop too: `inertAround` in `core/focus.ts`), and the desktop's
+  shortcuts, the ⌥Tab switcher and Exposé's corner stay quiet
+  (`useFocusedId()` is null meanwhile, so no window has the keys).
 - `src/os/shell/drawer.tsx`: Tiger-style drawers. Each window has a slot
   along its edge (right, left if there's no room, or over the content
   when neither side fits); an app renders `<Drawer open>` anywhere and it
@@ -351,20 +285,9 @@ guarded from its first file; `tests/eslint.test.ts` probes each rule.
 
 ## System Preferences, sound and settings
 
-- `src/os/apps/preferences/`: System Preferences, as Leopard's: a Show
-  All grid of panes in three rows (`panes.ts`, which also gives the words
-  its search field and Spotlight find them by), back and forward, and a
-  window titled after the pane. It opens from the Apple menu only
-  (`menuOnly` in the registry): no Dock icon, not in Applications or on a
-  phone's home screen. Panes: Appearance (light, dark, automatic, or
-  follow the sun where the visitor is), Desktop & Screen Saver, Dock
-  (size, magnification), Date & Time (place, 24-hour clock), Displays
-  (Night Shift, motion), Sound, Accounts, Sharing (city, pointer, AirDrop),
-  Software Update (compares the build with `main` on GitHub) and Backup &
-  Restore (`backup.ts`: every `os-*` setting to a file and back, and a
-  reset). Choices live in `localStorage` (`os-wallpaper`,
-  `os-wallpaper-rotate`, `os-screensaver`, `theme`, `os-place`, and
-  `os-system` for the rest, in `src/os/core/system.ts`). Animations ask
+- Settings are chosen in System Preferences (`apps/preferences/`, which
+  lists the keys each pane keeps) and live in the browser, most in
+  `os-system` (`src/os/core/system.ts`). Animations ask
   `useReduceMotion()` there rather than motion's `useReducedMotion()`, so
   the Displays pane's choice wins over the device's.
 - `src/os/core/sound.ts`: interface sounds synthesized with Web Audio (no
@@ -411,45 +334,18 @@ guarded from its first file; `tests/eslint.test.ts` probes each rule.
   Dashboard's clock and calendar use the place's time zone; a Dashboard
   widget shows Jincheng's time in San Jose next to it.
 
-## Finder, files and sharing
+## Files and sharing
 
-- `src/os/apps/browser/`: the Browser. A history (◀ ▶ step through the
-  addresses opened in it; links followed inside a page can't be read
-  from another site's frame), Home, a Bookmarks Bar (the projects'
-  demos, then classic sites in their early years) and a year menu that
-  shows the page as the Internet Archive kept it
-  (`web.archive.org/web/<year>0701if_/<address>`, which the archive
-  redirects to its nearest copy; no server of ours in between). A page
-  that forbids framing gets a notice with "Open in a New Tab" instead of
-  a blank window, from `/api/framing`.
-- `src/os/core/files.ts`, `files/` and `apps/finder/`: Macintosh HD, a read-only
-  file system built from the content (Applications, Applets, Documents,
-  Movies, Music, Pictures, Projects), browsed in Finder with icon, list,
-  column and Cover Flow views (⌥1–⌥4), Quick Look (Space), keyboard
-  navigation and a right-click menu. Cover Flow (`CoverFlowView.tsx`) is
-  Leopard's: the folder's items in a row over their reflections (a disc
-  as its case, a photo as its picture, anything else as its icon, sized
-  to the row's height) above the list, dragged, scrolled with the dark
-  scroller or the arrow keys, a cover clicked to the front; only the
-  covers near the middle are drawn. Its classes are `os-finder-cf-*`,
-  apart from the iPod's `os-cf-*`. The Movies folder has a fifth view,
-  the wooden shelf (`ShelfView.tsx`, ⌥5): the cases standing face out on
-  wooden boards, as Delicious Library kept a collection. It's the one
-  thing on the desktop that isn't Apple's look, kept on purpose; its
-  button shows only in Movies, and anywhere else the choice shows icons. A file's `look` is what Quick Look shows (a picture,
-  or a `View` of its own), `openLabel` its button ("Play DVD"), `trash`
-  what Move to Trash (⌘⌫) does and `share: false` keeps it from AirDrop.
-  Movies is DVD Player's shelf: Finder builds it (`files/movies.tsx`
-  from `media/discs.ts`) and hands it to `buildDisk`, so the desktop's
-  own copy of the disk (AirDrop's, in the first load) has no Movies and
-  none of its code. In Movies the toolbar has Burn (`BurnSheet.tsx`) and
-  the list shows Date Added, Length and Kind. The Burn sheet and Finder's
-  alerts are modal: while one is up, Finder's own keys are off, and the
-  sheet takes Escape (stop, or close) and Return (Burn) wherever in the
-  window the focus is (a control outside it, a Dock icon, keeps its own:
-  `ownsKey`). On a phone the toolbar's buttons keep their size and what
-  doesn't fit goes to a second row, where the search field takes the
-  rest of the width.
+- `src/os/core/files.ts`: Macintosh HD, a read-only file system built
+  from the content (Applications, Applets, Documents, Movies, Music,
+  Pictures, Projects), which Finder (`apps/finder/`), Time Machine and
+  the Terminal browse. A file's `look` is what Quick Look shows (a
+  picture, or a `View` of its own), `openLabel` its button ("Play DVD"),
+  `trash` what Move to Trash (⌘⌫) does and `share: false` keeps it from
+  AirDrop. Movies is DVD Player's shelf: Finder builds it
+  (`files/movies.tsx` from `media/discs.ts`) and hands it to
+  `buildDisk`, so the desktop's own copy of the disk (AirDrop's, in the
+  first load) has no Movies and none of its code.
 - What Time Machine shows as well lives in `files/`: a file's picture
   with the locked badge, the date and path helpers (`parts.tsx`), Quick
   Look, the Movies and Users folders, and their styles (`files.css`,
@@ -478,28 +374,6 @@ guarded from its first file; `tests/eslint.test.ts` probes each rule.
   the home reads again the next time it does). Move to Trash on one of
   the owner's documents asks first ("will be deleted immediately"),
   since there's no Trash to take it back from.
-- `src/os/apps/textedit/`: TextEdit, in Applications. A white page for
-  one of Jincheng's documents (`DocumentPage.tsx`), or a year of the
-  diary (`DiaryPage.tsx`): the days newest first under their dates in
-  grey, each entry a paragraph that grows as it's typed, and this year's
-  with today at the top and a line to write a new entry on. The owner
-  writes; anyone else can only read a document in Public. What's typed
-  is saved once the typing rests for a second, at once with ⌘S, and when
-  the window closes (`useAutosave.ts`), and kept as a draft in the
-  browser until it is, so a closed tab loses nothing: a draft found as a
-  page opens (a document's, a new document's, a diary entry's) is saved
-  again then, as a sticky's is (#190). A save names the version it was
-  typed over, so one from an older copy, a restored draft's included, is
-  refused and the alert offers Revert or Save Anyway. File › New (⌥N; the browser
-  keeps ⌘N) starts a document that goes into Documents as "Untitled.txt"
-  once something is typed; Save As (⇧⌘S, `SaveAsSheet.tsx`) renames it
-  or moves it to another folder, Public included. An emptied diary entry
-  is taken out when it's left. A save or a delete in one of the owner's
-  tabs reaches the pages open in the others at once (`os-home`, above);
-  a page with unsaved typing keeps it, and its next save meets the
-  conflict alert. Entries and documents also come from Telegram (the
-  bot's `/diary` and `/doc`); they show on the next read of the home
-  folder (at most 30 s, or when the tab comes back).
 - `src/os/shell/Alert.tsx` (with `alert.css`, which an app's stylesheet
   imports): an app's alert as Tiger drew one, the app's icon beside the
   message, with OK, Cancel and a third choice, Return and Escape. It
@@ -534,27 +408,6 @@ guarded from its first file; `tests/eslint.test.ts` probes each rule.
   moves, to-dos whole; the member's other tabs read again on every
   change. Narrow (a phone), it shows the month or To Do, chosen at the
   top.
-- `src/os/apps/jobhunt/`: Job Hunt, in Applications, with Bento's icon:
-  every company Jincheng has applied to (`jobs.ts`; the tables in
-  [supabase.md](supabase.md)). Jincheng sees a board in iCal's brushed
-  metal, a column to a stage (Applied, Assessment, Interviewing, Offer,
-  Closed), a card to an application, the one that moved last on top;
-  a card still Applied after 14 days with no word says how long it has
-  waited. Drag a card to another column when something happens that Mail
-  didn't say. The stages and sources on the left show and hide columns
-  and filter, with how far they got under them; iTunes' capacity bar
-  along the bottom. Or the list (⌥2), sorted by a header. The info drawer
-  (⌥I, or a double-click) renames, moves, dates and notes one, and lists
-  what Mail said about it, each message a link back to Gmail; ⌥N adds
-  one by hand, Delete deletes one, asked first. Saves to one application
-  go one after another, each from the version the last one got, so a
-  note left by clicking the stage menu doesn't meet a refusal of its
-  own. Anyone else sees only the numbers (Jincheng decided on
-  2026-09-29): how many at each stage on blank cards, how far they got
-  and the capacity bar, from `job_hunt_totals()`. What Mail said comes in
-  through Claude and `scripts/job-hunt-import.mjs`
-  ([decision 0018](../decisions/0018-job-hunt-public-only-as-totals.md)). Narrow (a phone), one stage at a time, picked at the top, and the
-  drawer's contents in the window.
 - `src/os/stickies/`: a member's own stickies (`mine.ts`, the table in
   [supabase.md](supabase.md)). Signed in, a member's notes sit on their
   own desktop (`DesktopStickies.tsx`, drawn by `shell/DesktopStickiesLayer.tsx`,
@@ -581,20 +434,16 @@ guarded from its first file; `tests/eslint.test.ts` probes each rule.
   System Preferences › Sharing, other visitors' pointers labelled with
   it) on Supabase. Other people's pointers are off by default: nobody's
   pointer crosses another screen uninvited. See [supabase.md](supabase.md).
-- `src/os/apps/soapbox/`: Jincheng's own notes and rants, with
-  photos. Posts come from a Telegram bot, `supabase/functions/soapbox-bot`
-  (setup in its README): text, photos with captions, albums (one post)
-  and images sent as files; photos are copied into the public `soapbox`
-  storage bucket. Visitors read them and leave one emoji reaction per
-  post.
 
 ## Styles and assets
 
-- `src/os/os.css`: the Aqua theme, split by part of the desktop into
-  `src/os/styles/` and imported in cascade order: the shell, and what
-  several apps share (`components.css`, `source-list.css` for the
-  Finder-style sidebar). Each app's own stylesheet lives in its folder and
-  arrives with its code (see [adding.md](adding.md)), after all of these.
+- `src/os/os.css`: the Aqua theme the first paint needs, split by part
+  of the desktop into `src/os/styles/` and imported in cascade order: the
+  shell, and what several apps share (`components.css`,
+  `source-list.css` for the Finder-style sidebar). CSS that only lazily
+  loaded code uses sits beside that code and arrives with it, after all
+  of these: an app's in its folder, the Dashboard's and the screen
+  saver's in `shell/` (where it goes: [adding.md](adding.md)).
 - Icons, fonts and the wallpaper under `public/os/` and `src/assets/os/`
   come from ryOS; see `NOTICE`. They stay
   ([decision 0001](../decisions/0001-keep-the-retro-assets.md)); icons

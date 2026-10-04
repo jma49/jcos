@@ -6,7 +6,7 @@ import { defineConfig } from 'vitest/config';
 // separately, against Postgres (supabase/tests).
 export default defineConfig({
   test: {
-    include: ['src/**/*.test.ts', 'tests/**/*.test.ts', 'supabase/functions/**/*.test.mjs'],
+    include: ['src/**/*.test.{ts,tsx}', 'tests/**/*.test.{ts,tsx}', 'supabase/functions/**/*.test.mjs'],
     environment: 'node'
   }
 });

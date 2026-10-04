@@ -26,10 +26,25 @@ Store. In it:
   `styles: () => import('./app.css?inline')`: it's fetched with the code
   and adopted before the app renders (`core/appStyles.ts`), never in the
   first load. Don't `import './app.css'` from the component: Astro would
-  hoist it into the page. Rules for the app's own classes, phone and
-  reduced-motion variants included, stay in this file; anything another
-  app or the OS uses goes in `src/os/styles/` (`components.css`,
-  `source-list.css`).
+  hoist it into the page. Name it `<id>.css` (some older apps' names
+  differ; leave those). Rules for the app's own classes, phone and
+  reduced-motion variants included, stay in this file.
+
+Where CSS goes follows when it's needed (`src/os/os.css` says the same):
+- `src/os/styles/`, imported by `os.css`, is the page's stylesheet: what
+  the first paint needs, and what the first screen and several apps
+  share (`components.css`, `source-list.css`). All of it is in every
+  first load, so nothing goes there that only lazily loaded code uses.
+- CSS only lazily loaded code uses sits beside that code and arrives
+  with it: an app's in its folder, as above; a lazy part of the shell
+  imports its own with `?inline` and adopts it with `adoptStyles()` as
+  its module loads, before it renders (`shell/dashboard.css`,
+  `shell/screensaver.css`, `stickies/own-stickies.css`); a sheet a few
+  apps share sits beside the code they share and their stylesheets
+  `@import` it (`shell/alert.css`, `files/files.css`).
+- An adopted sheet comes after all of `styles/`, so it has the last word
+  on its classes: keep its phone and reduced-motion rules in it, not in
+  `styles/phone.css`, or they lose.
 
 Then add one line for it to `src/os/catalog.ts`. `AppId`, the Dock,
 Finder, Spotlight, the Terminal, `?open=`, the Applet Store and the
