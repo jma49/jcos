@@ -45,6 +45,7 @@ changed=$(git diff --name-only "$base" "$head" -- . \
   ':(exclude)LICENSE' \
   ':(exclude)NOTICE' \
   ':(exclude).gitignore' \
+  ':(exclude).mailmap' \
   ':(exclude).env.example' \
   ':(exclude)eslint.config.js' \
   ':(exclude)vitest.config.ts') || {

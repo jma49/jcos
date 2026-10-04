@@ -9,11 +9,17 @@
 // The script builds the site and captures site paths from that build, so
 // the preview always matches the code being committed. A cover that does
 // not exist yet gets a blank placeholder first, since the build needs it.
-// Screenshots are 1920x1200 (1440x900 at 4/3 scale), light theme, with
-// motion reduced. The home page is also captured into public/og.png at
-// 1200x630 for link previews. An existing cover is only replaced when more than 0.1%
-// of its pixels change, so re-running on an unchanged site is a no-op, and
-// never when the page answers with an HTTP error.
+// Covers are 1440x900 JPEGs (the pages show them at most 1200 wide), light
+// theme, with motion reduced. The home page is also captured into
+// public/og.jpg at 1200x630 for link previews.
+//
+// Every image is kept in git for good, so a capture is only written when
+// the page changed visibly: more than 0.1% of its pixels, compared with the
+// image already there. What the page shows is pinned for the same reason:
+// the clock and time zone (San Jose, 9:41 in the morning) and the weather
+// in the menu bar (a fixed forecast instead of Open-Meteo's live one), so
+// an unchanged site captures the same wherever and whenever it runs. A page
+// that answers with an HTTP error keeps its old image.
 
 import { spawnSync } from 'node:child_process';
 import { access, readdir, readFile, writeFile } from 'node:fs/promises';
@@ -27,12 +33,31 @@ const PROJECTS = join(ROOT, 'src/content/projects');
 const ASTRO_PACKAGE = join(ROOT, 'node_modules/astro/package.json');
 const ASTRO = join(dirname(ASTRO_PACKAGE), JSON.parse(await readFile(ASTRO_PACKAGE, 'utf8')).bin.astro);
 
-const COVER = { width: 1440, height: 900, scale: 4 / 3 };
-const OG = { width: 1200, height: 630, scale: 1 };
+// JPEG quality: link previews must stay under ~150 KB (they're fetched by
+// every chat app a link is pasted into); covers are re-encoded by Astro.
+const COVER = { width: 1440, height: 900, quality: 82, placeholder: true };
+const OG = { width: 1200, height: 630, quality: 72, placeholder: false, maxBytes: 150_000 };
+
+// The moment every capture shows, where Jincheng is.
+const TIME_ZONE = 'America/Los_Angeles';
+const NOW = new Date('2026-09-25T09:41:00-07:00');
+
+/** A fixed Open-Meteo answer: clear and 68°F, so the menu bar and sky don't follow today's weather. */
+const FORECAST = {
+  current: { temperature_2m: 68, weather_code: 0 },
+  daily: {
+    time: ['2026-09-25', '2026-09-26', '2026-09-27', '2026-09-28', '2026-09-29', '2026-09-30'],
+    weather_code: [0, 1, 2, 0, 0, 1],
+    temperature_2m_max: [75, 74, 72, 76, 77, 75],
+    temperature_2m_min: [56, 55, 54, 56, 57, 56],
+    sunrise: Array(6).fill('2026-09-25T06:59'),
+    sunset: Array(6).fill('2026-09-25T18:58')
+  }
+};
 
 /** Every project Markdown file that sets both `cover` and `capture`, plus the OG image. */
 async function findTargets() {
-  const targets = new Map([[join(ROOT, 'public/og.png'), { url: '/', ...OG }]]);
+  const targets = new Map([[join(ROOT, 'public/og.jpg'), { url: '/', ...OG }]]);
   for (const entry of await readdir(PROJECTS, { recursive: true })) {
     if (!entry.endsWith('.md')) continue;
     const file = join(PROJECTS, entry);
@@ -111,8 +136,8 @@ try {
   // Blank page for placeholders and for comparing images.
   const scratch = await browser.newPage();
   await scratch.setContent('<body style="margin:0;background:#f6f5f3"></body>');
-  for (const out of targets.keys()) {
-    if (out.endsWith('.jpg') && (await access(out).then(() => false, () => true))) {
+  for (const [out, { placeholder }] of targets) {
+    if (placeholder && (await access(out).then(() => false, () => true))) {
       await scratch.screenshot({ path: out, type: 'jpeg', quality: 85 });
     }
   }
@@ -123,18 +148,21 @@ try {
   // Site paths are captured from the build, served in this process.
   if ([...targets.values()].some(({ url }) => url.startsWith('/'))) server = await serveDist();
 
-  for (const [out, { url: target, width, height, scale }] of targets) {
+  for (const [out, { url: target, width, height, quality, maxBytes }] of targets) {
     const url = target.startsWith('/') ? new URL(target, server.url).href : target;
     // Reduced motion also skips the JM/OS boot screen.
     const context = await browser.newContext({
       viewport: { width, height },
-      deviceScaleFactor: scale,
       colorScheme: 'light',
-      reducedMotion: 'reduce'
+      reducedMotion: 'reduce',
+      timezoneId: TIME_ZONE
     });
+    await context.route(/^https:\/\/api\.open-meteo\.com\/v1\/forecast\?/, (route) =>
+      route.fulfill({ json: FORECAST, headers: { 'access-control-allow-origin': '*' } })
+    );
     const page = await context.newPage();
     // Freeze time so the JM/OS menu-bar clock doesn't change every capture.
-    await page.clock.setFixedTime(new Date('2026-09-25T09:41:00'));
+    await page.clock.setFixedTime(NOW);
     // Keep the current cover when the page is down; an error page is not a
     // preview. `::warning::` surfaces the skip in the GitHub Actions summary.
     const response = await page.goto(url, { waitUntil: 'networkidle' });
@@ -155,9 +183,8 @@ try {
       ]);
       await Promise.race([ready, new Promise((r) => setTimeout(r, 10_000))]);
     });
-    // JPEG keeps each committed preview small; Astro re-encodes it anyway.
-    const jpeg = /\.jpe?g$/i.test(out);
-    const shot = await page.screenshot(jpeg ? { type: 'jpeg', quality: 85 } : {});
+    // JPEG keeps each committed image small.
+    const shot = await page.screenshot({ type: 'jpeg', quality });
     const previous = await readFile(out).catch(() => null);
     const diff = previous ? await pixelDiff(scratch, previous, shot) : 1;
     await context.close();
@@ -166,6 +193,9 @@ try {
       continue;
     }
     await writeFile(out, shot);
+    if (maxBytes && shot.length > maxBytes) {
+      console.log(`::warning::${relative(ROOT, out)} is ${Math.round(shot.length / 1000)} KB, over ${maxBytes / 1000} KB: lower its quality`);
+    }
     console.log(`${url} -> ${relative(ROOT, out)} (${(diff * 100).toFixed(2)}% of pixels changed)`);
   }
 } finally {

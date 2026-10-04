@@ -10,6 +10,10 @@ on:
   pull_request:
   push:
     branches: [main]
+  # For pull requests the previews workflow opens: one opened with a
+  # job's token starts no workflows, so that job starts this one on its
+  # branch.
+  workflow_dispatch:
 
 permissions:
   contents: read

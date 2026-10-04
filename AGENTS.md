@@ -99,8 +99,11 @@ CI (`.github/workflows/ci.yml`) runs `node scripts/audit.mjs`
 (`npm audit` for what ships, but for the listed exceptions), the type check, the lint, the unit tests, the
 build, the smoke test, the download budgets of `npm run perf` (script
 times are only reported there, since shared runners are noisy) and the
-database tests on every pull request. Actions are pinned to a commit
-SHA with the version in a comment; Dependabot updates both.
+database tests on every pull request; `pr-title.yml` checks that the
+pull request's title is a Conventional Commit. Actions are pinned to a
+commit SHA with the version in a comment; Dependabot updates both. The
+`Update project previews` workflow never pushes to `main`: it opens a
+pull request and starts CI on it itself (HANDOFF.md).
 
 - Unit tests (Vitest) are `*.test.ts` next to the code in `src/`; the
   Vercel Functions' are in `tests/api/`, since Vercel deploys every file
@@ -119,7 +122,17 @@ SHA with the version in a comment; Dependabot updates both.
 ## Pull requests
 
 - Branch from an up-to-date `main`, one logical change per pull request.
-  Merge when CI passes, then delete the branch. Only `main` deploys
+  `main` takes changes only through pull requests, and only once CI
+  passes (a ruleset requires both). Merge when CI passes, then delete
+  the branch.
+- Merges are squash merges, the only kind the repository allows: the
+  pull request becomes one commit on `main`, whose subject is the pull
+  request's title and whose body is the branch's commit messages (so
+  their `Co-Authored-By` trailers carry over). The title follows the
+  commit rules below (the "PR title" check enforces the format). Stacked
+  pull requests merge from the bottom up, each rebased on `main` after
+  the one below lands.
+- Only `main` deploys
   (`git.deploymentEnabled` in `vercel.json`): branches get no preview,
   since CI already builds the site, opens every app and checks the
   budgets, and each preview spent one of the Hobby plan's few daily
@@ -145,7 +158,7 @@ later delete does not undo a commit.
 - Images are most of the repository's weight. Add one at the format
   and size [docs/agents/adding.md](docs/agents/adding.md) gives, don't
   commit a second copy of a picture already in the repo, and don't
-  commit recaptured covers or `public/og.png` unless the page they show
+  commit recaptured covers or `public/og.jpg` unless the page they show
   actually changed.
 - When a new tool or script writes files into the repo, add its output
   to `.gitignore` in the same change.
@@ -164,9 +177,17 @@ script, or a changed command.
 
 Follow [Conventional Commits](https://www.conventionalcommits.org/):
 
-- Subject: `<type>: <summary>` in the imperative mood, lowercase after
-  the colon, no trailing period, at most 72 characters. Common types are
-  `feat`, `fix`, `docs`, `style`, `refactor`, `chore`.
+- Subject: `<type>: <summary>` or `<type>(<scope>): <summary>` in the
+  imperative mood, lowercase after the colon unless it starts with a
+  name, no trailing period, at most 72 characters. The types are
+  `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`,
+  `ci`, `chore` and `revert`.
 - Leave a blank line after the subject, then write a body wrapped at 72
   characters that explains what changed and why.
 - Keep each commit to one logical change.
+- Commits are authored as the owner (Git's own identity); `.mailmap`
+  folds the older identities into one. Credit AI help with a trailer at
+  the end of the body, never as the author, such as
+  `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`.
+- A pull request's title is its squash commit's subject, so the same
+  rules apply to it.
