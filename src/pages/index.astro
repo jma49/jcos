@@ -7,21 +7,21 @@ import { getImage } from 'astro:assets';
 import Layout from '../layouts/Layout.astro';
 import Desktop from '../os/Desktop';
 import wallpaperSource from '../assets/os/stones.jpg';
-import { content, profile } from '../i18n/content';
+import { content, profile } from '../content/site';
 import { formatMonth, getProjects, projectHref } from '../lib/projects';
 import { getPhotos } from '../lib/photos';
 import type { OSData } from '../os/core/types';
 
-const t = content.en;
+const t = content;
 const wallpaper = await getImage({ src: wallpaperSource, width: 2560, format: 'webp', quality: 75 });
-const entries = await getProjects('en');
+const entries = await getProjects();
 
 const projects = await Promise.all(
   entries.map(async (p) => ({
     slug: p.slug,
     title: p.data.title,
     description: p.data.description,
-    when: formatMonth('en', p.data.date),
+    when: formatMonth(p.data.date),
     status: p.data.status,
     stack: p.data.stack,
     repo: p.data.repo,
@@ -32,9 +32,9 @@ const projects = await Promise.all(
 );
 
 const data: OSData = {
-  name: profile.name.en,
+  name: profile.name,
   role: t.role,
-  location: profile.location.en,
+  location: profile.location,
   email: profile.email,
   links: {
     github: profile.github,
@@ -53,7 +53,7 @@ const data: OSData = {
 const unlink = (text: string) => text.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1');
 ---
 
-<Layout lang="en" tabTitle="Jincheng">
+<Layout tabTitle="Jincheng">
   <Desktop client:only="react" data={data} />
 
   <noscript>
@@ -102,14 +102,14 @@ const unlink = (text: string) => text.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1');
   {/* The content as plain text: for screen readers and crawlers, and shown
       to visitors without JavaScript (the <noscript> above). */}
   <article class="sr-only os-text-copy">
-    <h1>{profile.name.en} — {t.role}</h1>
+    <h1>{profile.name} — {t.role}</h1>
     {t.bio.shortParagraphs.map((p) => <p>{unlink(p)}</p>)}
     <h2>Projects</h2>
     <ul>
       {
         entries.map((p) => (
           <li>
-            <a href={projectHref('en', p.slug)}>{p.data.title}</a>: {p.data.description}
+            <a href={projectHref(p.slug)}>{p.data.title}</a>: {p.data.description}
           </li>
         ))
       }

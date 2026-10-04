@@ -1,21 +1,16 @@
 ---
-import { content, profile, type Lang } from '../i18n/content';
+import { content, profile } from '../content/site';
 
-interface Props {
-  lang: Lang;
-}
-
-const { lang } = Astro.props;
-const t = content[lang];
+const t = content;
 const year = new Date().getFullYear();
 ---
 
-<footer class="meta mt-16 flex gap-4 border-t border-line pt-4">
-  <span>© {year} {profile.name[lang]}</span>
+<footer class="meta site-footer">
+  <span>© {year} {profile.name}</span>
   <a
     href="https://github.com/jma49/jmos"
     target="_blank"
     rel="noopener"
-    class="transition-colors hover:text-ink">{t.footer.source}</a
+    class="nav-link">{t.footer.source}</a
   >
 </footer>

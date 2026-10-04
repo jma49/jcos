@@ -102,8 +102,7 @@ Function secrets:
 src/os/            the desktop: core/ shell/ files/ home/ stickies/ apps/ applets/ kit/ ambient/ look/ media/ social/ styles/
 src/lib/           what the pages, the desktop and api/ share: the media library's shape, photos, projects
 src/pages/         the home page, project pages, robots.txt, llms.txt
-src/content/       projects (Markdown, one file per language) and their covers
-src/i18n/          the site's copy (English; the Chinese copy is kept for later)
+src/content/       the site's copy (site.ts), the projects (Markdown) and their covers
 src/data/          songs, desktop pictures, the photo snapshot
 api/               Vercel Functions: geo, lyrics, songs, framing (docs/agents/api.md)
 tests/             the Vercel Functions' unit tests (api/; not in api/, or Vercel would deploy them) and the lint's probes
@@ -192,7 +191,7 @@ you must offer them its source under the same license.
 
 Jincheng's personal content is not covered by that license. All rights
 reserved. This means:
-- the bio, experience and other copy in `src/i18n/content.ts`;
+- the bio, experience and other copy in `src/content/site.ts`;
 - the project write-ups in `src/content/projects/`;
 - the photos (`public/portrait.jpg` and those listed in
   `src/data/photos.json`);

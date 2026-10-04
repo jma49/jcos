@@ -69,8 +69,8 @@ pictures.
 
 ## A project
 
-Projects are Markdown files in `src/content/projects/<lang>/<slug>.md`,
-one per language with the same `<slug>`. The frontmatter schema lives in
+Projects are Markdown files in `src/content/projects/<slug>.md`. The
+frontmatter schema lives in
 `src/content.config.ts`:
 
 ```yaml
@@ -83,16 +83,15 @@ order: 1               # optional list position, lowest first; unset sorts after
 stack: [Go, TypeScript]
 repo: https://github.com/jma49/...   # optional
 demo: https://...                    # optional, a URL or a site path
-cover: ../covers/<slug>.jpg          # optional preview image, 16:10
+cover: ./covers/<slug>.jpg           # optional preview image, 16:10
 capture: /                           # optional page to screenshot into cover
 ---
 ```
 
-Preview images live in `src/content/projects/covers/`, shared by both
-languages; Astro converts them to AVIF/WebP at the sizes each layout
+Preview images live in `src/content/projects/covers/`; Astro converts them to AVIF/WebP at the sizes each layout
 needs. Projects without a cover show their title on a plain tile.
 
-Set `capture` (in one language's file) to have the cover generated: a
+Set `capture` to have the cover generated: a
 site path like `/` is captured from the local build, a full URL from the
 live site. Run `npm run preview:capture` to update covers locally; it
 also captures the home page into `public/og.jpg` (1200×630, JPEG, under

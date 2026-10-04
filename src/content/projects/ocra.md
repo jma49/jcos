@@ -7,7 +7,7 @@ order: 1
 stack: [TypeScript, Node.js, OpenCode, LLM APIs]
 repo: https://github.com/jma49/Open-CR-Agent
 demo: https://ocra.majincheng.com/
-cover: ../covers/ocra.jpg
+cover: ./covers/ocra.jpg
 capture: https://ocra.majincheng.com/
 ---
 

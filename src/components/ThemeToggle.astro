@@ -1,12 +1,7 @@
 ---
-import { content, type Lang } from '../i18n/content';
+import { content } from '../content/site';
 
-interface Props {
-  lang: Lang;
-}
-
-const { lang } = Astro.props;
-const t = content[lang];
+const t = content;
 ---
 
   <button
@@ -14,11 +9,11 @@ const t = content[lang];
     data-theme-toggle
     aria-label={t.ui.theme}
     title={t.ui.theme}
-    class="-m-1 grid size-7 cursor-pointer place-items-center rounded-full transition-colors hover:text-ink"
+    class="nav-link toggle"
   >
     <!-- Sun in dark mode, moon in light mode: the icon shows where you'd go. -->
     <svg
-      class="size-4 dark-only"
+      class="dark-only"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -32,7 +27,7 @@ const t = content[lang];
       ></path>
     </svg>
     <svg
-      class="size-4 light-only"
+      class="light-only"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -46,6 +41,21 @@ const t = content[lang];
   </button>
 
 <style>
+  .toggle {
+    display: grid;
+    place-items: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    margin: -0.25rem;
+    border-radius: 50%;
+    cursor: pointer;
+  }
+
+  svg {
+    width: 1rem;
+    height: 1rem;
+  }
+
   .dark-only {
     display: none;
   }

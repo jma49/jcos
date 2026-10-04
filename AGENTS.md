@@ -12,11 +12,11 @@ Write everything in English: commit messages, pull request titles and
 descriptions, issues, code comments, documentation, and file names.
 
 The only exceptions are content that is Chinese by nature:
-- the Chinese copy of the site: the `zh` entries in
-  `src/i18n/content.ts` and `src/content/projects/zh/`;
 - proper names in data, such as song titles and artists in
-  `src/data/songs.json` and the music library's seed in `supabase/`
-  (`schema.sql` and its migration), which may also be quoted in the docs;
+  `src/data/songs.json`, the music library's seed in `supabase/`
+  (`schema.sql` and its migration) and Jincheng's name in Chinese
+  (`alternateName` in `src/content/site.ts`), which may also be quoted
+  in the docs;
 - patterns that have to match Chinese text, such as the lyric credits in
   `api/lyrics.ts`.
 
