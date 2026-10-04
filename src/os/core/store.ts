@@ -6,6 +6,7 @@ import type { Place } from '../ambient/place';
 import type { Visitor } from '../social/social';
 import type { AccentChoice } from '../look/accent';
 import { load, loadJSON, loadSettings, onStored, save, saveJSON } from './storage';
+import { frontOf, giveBack, hold, type Held } from './focus';
 
 export const MENU_BAR_HEIGHT = 22;
 export const DOCK_CLEARANCE = 78;
@@ -176,7 +177,12 @@ interface WindowStore {
   setDashboard: (open: boolean) => void;
   setExpose: (open: boolean) => void;
   setScreensaver: (on: boolean) => void;
-  /** Opens a full-screen app over everything, closing Spotlight, Exposé and the Dashboard. */
+  /**
+   * Opens a full-screen app over everything, closing Spotlight, Exposé and
+   * the Dashboard. Spotlight, the Dashboard and a full-screen app note what
+   * had focus as they open and give it back as they close (focus.ts):
+   * their layers call releaseFocus().
+   */
   openFullScreen: (app: AppId, props?: Record<string, string>) => void;
   closeFullScreen: () => void;
   setVisitors: (visitors: Visitor[] | null) => void;
@@ -210,6 +216,33 @@ const DEFAULT_APPLETS: AppId[] = ['minesweeper'];
 function savedApplets(): AppId[] {
   const saved = loadJSON<unknown>(APPLETS_KEY, null);
   return Array.isArray(saved) ? saved : DEFAULT_APPLETS;
+}
+
+/**
+ * What had focus before Spotlight, the Dashboard or a full-screen app
+ * took it, noted by the store's action that opens it, before anything of
+ * it mounts (a full-screen app's code, once cached, focuses itself in the
+ * same render as its layer mounts).
+ */
+type Overlay = 'spotlight' | 'dashboard' | 'fullScreen';
+const held = new Map<Overlay, Held>();
+
+/**
+ * Gives focus back to what had it before `overlay` opened, or to the
+ * window in front (focus.ts); `from` is the overlay's element. Its layer
+ * calls this as it closes, once what's under it can take focus again.
+ */
+export function releaseFocus(overlay: Overlay, from?: Element | null) {
+  const was = held.get(overlay);
+  held.delete(overlay);
+  giveBack(was, () => frontOf(useWindows.getState()), from);
+}
+
+/** A window that closed or went to the Dock hands focus to the one in front (if it had it). */
+function leaveWindow(id: string) {
+  if (typeof document === 'undefined') return;
+  const el = [...document.querySelectorAll('.os-window')].find((w) => (w as HTMLElement).dataset.id === id);
+  giveBack({ el: null, front: id }, () => frontOf(useWindows.getState()), el);
 }
 
 const savedSaver = () => loadSettings<SaverPrefs>(SAVER_KEY, { style: 'photos', idle: 2 });
@@ -301,11 +334,13 @@ export const useWindows = create<WindowStore>((set, get) => ({
       return { viewport, phone, windows: moved ? Object.fromEntries(fitted.map((w) => [w.id, w])) : s.windows };
     }),
 
-  close: (id) =>
+  close: (id) => {
     set((s) => {
       const { [id]: _removed, ...windows } = s.windows;
       return { windows, order: s.order.filter((w) => w !== id) };
-    }),
+    });
+    leaveWindow(id);
+  },
 
   focus: (id) =>
     set((s) => {
@@ -317,12 +352,14 @@ export const useWindows = create<WindowStore>((set, get) => ({
       };
     }),
 
-  minimize: (id) =>
+  minimize: (id) => {
     set((s) => ({
       windows: { ...s.windows, [id]: { ...s.windows[id], minimized: true } },
       // Send it to the back so the next window up takes focus.
       order: [id, ...s.order.filter((w) => w !== id)]
-    })),
+    }));
+    leaveWindow(id);
+  },
 
   toggleMaximize: (id) =>
     set((s) => ({
@@ -375,9 +412,25 @@ export const useWindows = create<WindowStore>((set, get) => ({
     saveJSON(SAVER_KEY, next);
     set({ saver: next });
   },
-  setSpotlight: (spotlightOpen) => set({ spotlightOpen }),
-  setDashboard: (dashboardOpen) => set({ dashboardOpen }),
-  openFullScreen: (app, props) => set({ fullScreen: { app, props }, spotlightOpen: false, exposeOpen: false, dashboardOpen: false }),
+  setSpotlight: (spotlightOpen) => {
+    if (spotlightOpen && !get().spotlightOpen) held.set('spotlight', hold(frontOf(get())));
+    set({ spotlightOpen });
+  },
+  setDashboard: (dashboardOpen) => {
+    if (dashboardOpen && !get().dashboardOpen) held.set('dashboard', hold(frontOf(get())));
+    set({ dashboardOpen });
+  },
+  openFullScreen: (app, props) => {
+    const s = get();
+    if (!s.fullScreen) {
+      // Opened from Spotlight or the Dashboard, which close: what had focus before them.
+      const before = (s.spotlightOpen && held.get('spotlight')) || (s.dashboardOpen && held.get('dashboard'));
+      held.set('fullScreen', before || hold(frontOf(s)));
+      held.delete('spotlight');
+      held.delete('dashboard');
+    }
+    set({ fullScreen: { app, props }, spotlightOpen: false, exposeOpen: false, dashboardOpen: false });
+  },
   closeFullScreen: () => set({ fullScreen: null }),
   setExpose: (exposeOpen) => set({ exposeOpen }),
   setScreensaver: (screensaverOn) => set({ screensaverOn }),
@@ -455,13 +508,6 @@ export function useWindowList(): WindowSummary[] {
 }
 
 export function useFocusedId() {
-  return useWindows((s) => {
-    // A full-screen app covers every window: none has the keys meanwhile.
-    if (s.fullScreen) return null;
-    for (let i = s.order.length - 1; i >= 0; i--) {
-      const id = s.order[i];
-      if (!s.windows[id]?.minimized) return id;
-    }
-    return null;
-  });
+  // A full-screen app covers every window: none has the keys meanwhile.
+  return useWindows((s) => (s.fullScreen ? null : frontOf(s)));
 }

@@ -2,8 +2,13 @@ import { useEffect } from 'react';
 import { launch } from '../core/registry';
 import { isPhone, useWindows } from '../core/store';
 import { typing } from '../core/useKeys';
+import { isMenuKey, openContextMenu } from './menuKeys';
 
-/** The desktop's keys: F9 Exposé; ⌘K search; ⌥W / ⌥M / ⌥T for windows (the browser keeps ⌘W/⌘T). */
+/**
+ * The desktop's keys: F9 Exposé; ⌘K search; ⌥W / ⌥M / ⌥T for windows (the
+ * browser keeps ⌘W/⌘T); Shift+F10 or the context-menu key for the focused
+ * thing's context menu.
+ */
 export function useShortcuts() {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -29,6 +34,8 @@ export function useShortcuts() {
       } else if (alt && e.code === 'KeyT') {
         e.preventDefault();
         launch('terminal', { key: `terminal-${Date.now()}` });
+      } else if (isMenuKey(e) && !e.defaultPrevented && openContextMenu(e, !!top)) {
+        e.preventDefault();
       }
     };
     window.addEventListener('keydown', onKey);

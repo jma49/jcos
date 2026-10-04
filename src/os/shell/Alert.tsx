@@ -1,7 +1,8 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { IconComponent } from '../core/icons';
 import { useWindows } from '../core/store';
 import { ownsKey } from '../core/useKeys';
+import { frontOf, giveBack, hold } from '../core/focus';
 
 // An app's alert, as Tiger drew one: the app's icon on the left, what
 // happened beside it, and OK (with Cancel, and perhaps a third choice,
@@ -31,6 +32,10 @@ export function Alert({
   other?: { label: string; action: () => void };
 }) {
   const ok = useRef<HTMLButtonElement>(null);
+  const layer = useRef<HTMLDivElement>(null);
+  // What had focus as it came up, noted while rendering, before it takes
+  // the focus itself; given back as it goes (or to the window in front).
+  const [held] = useState(() => hold(frontOf(useWindows.getState())));
   const latest = useRef({ onConfirm, onCancel });
   latest.current = { onConfirm, onCancel };
 
@@ -52,11 +57,15 @@ export function Alert({
     };
     // Before Finder's own keys, which would open or look at what's selected.
     window.addEventListener('keydown', onKey, true);
-    return () => window.removeEventListener('keydown', onKey, true);
-  }, []);
+    const from = layer.current;
+    return () => {
+      window.removeEventListener('keydown', onKey, true);
+      giveBack(held, () => frontOf(useWindows.getState()), from);
+    };
+  }, [held]);
 
   return (
-    <div className="os-alert-layer">
+    <div ref={layer} className="os-alert-layer">
       <div className="os-alert" role="alertdialog" aria-modal="true" aria-label={message}>
         <Icon size={64} />
         <div>
