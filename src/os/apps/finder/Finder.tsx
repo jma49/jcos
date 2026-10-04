@@ -11,7 +11,7 @@ import { ALBUMS, SONGS, useLibraryVersion } from '../../media/library';
 import { useLibraryRefresh } from '../../media/refresh';
 import { useShelf, useShelfRefresh } from '../../media/discs';
 import { formatTime } from '../../media/music';
-import { useIsOwner } from '../../social/owner';
+import { useOwnerAnswer } from '../../social/owner';
 import { AirDropIcon, DiskIcon, FinderIcon } from '../../core/icons';
 import { Drawer } from '../../shell/drawer';
 import { ContextMenu, type ContextMenuItem } from '../../shell/ContextMenu';
@@ -19,7 +19,7 @@ import { load, loadSettings, updateJSON } from '../../core/storage';
 import { PATH_MIME, shareViaAirDrop } from '../../social/airdrop';
 import { APP_MIME } from '../../core/dock';
 import { ActionMenu, ARRANGERS, everything, FileInfo, type Arrange, type View } from './parts';
-import { ancestry, formatDate, parentOf, Thumb } from '../../files/parts';
+import { ancestry, formatDate, lockedOn, parentOf, Thumb } from '../../files/parts';
 import { ColumnView } from './ColumnView';
 import { CoverFlowView } from './CoverFlowView';
 import { ShelfView } from './ShelfView';
@@ -70,7 +70,7 @@ export default function Finder({ win }: AppProps) {
   const albums = ALBUMS;
   // The Movies folder follows the shelf, and lets the owner throw the owner's discs away.
   const shelf = useShelf();
-  const owner = useIsOwner();
+  const { owner, known: ownerKnown } = useOwnerAnswer();
   const movies = useMemo(() => moviesFolder(shelf, owner), [shelf, owner]);
   // Jincheng's home: what this visitor may see of it, and the owner's documents to throw away (after asking).
   const home = useHome();
@@ -123,11 +123,24 @@ export default function Finder({ win }: AppProps) {
     if (asked) goAsked(asked);
   }, [asked]);
 
+  // A place this visitor may not open, reached without go() (the window
+  // restored or opened there, Back to where the owner was before signing
+  // out), goes to the folder above the locked one, with the alert opening
+  // it brings up. Only once it's known whether this is the owner, so the
+  // owner is never sent away.
+  const shutHere = ownerKnown ? lockedOn(disk, path) : null;
+  const leaveShut = useEffectEvent((shut: FileNode) => {
+    setHistory((h) => h.map((p, i) => (i === at ? parentOf(shut.path) : p)));
+    setSelected(null);
+    setLocked(shut);
+  });
+  useEffect(() => {
+    if (shutHere) leaveShut(shutHere);
+  }, [shutHere]);
+
   /** Shows a folder; `replace` doesn't add a step to Back (column view's clicks). A locked one, or one inside it, says so instead. */
   const go = (next: string, { replace = false, select = null as string | null } = {}) => {
-    const shut = ancestry(next)
-      .map((p) => find(disk, p))
-      .find((n) => n?.locked);
+    const shut = lockedOn(disk, next);
     if (shut) return setLocked(shut);
     setQuery('');
     setSelected(select);

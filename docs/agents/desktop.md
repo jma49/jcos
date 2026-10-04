@@ -118,7 +118,10 @@ guarded from its first file; `tests/eslint.test.ts` probes each rule.
   AudioContext (`audio()` from the kit); it follows the sound switch
   and volume, and a note turns sound on. Settings in `os-synth`.
 - The Terminal (`apps/terminal/`) has a working folder on Macintosh
-  HD (`cd`, `pwd`, `ls`, `cat`, `open <path>`).
+  HD (`cd`, `pwd`, `ls`, `cat`, `open <path>`): the disk Finder shows,
+  Movies and Users included, whose locked folders answer "Permission
+  denied". It splits a line as zsh does, with quotes and backslash
+  escapes (`paths.ts`, with tests).
 - `src/os/apps/photobooth/`: the camera with CSS-filter effects, a
   countdown and one or four pictures, kept in `os-photobooth` (the last
   eight, as small JPEGs). The camera is only on while the window is open.
@@ -162,8 +165,11 @@ guarded from its first file; `tests/eslint.test.ts` probes each rule.
   Added, a disc from when it was burned, Jincheng's documents and diary
   entries from when they were first written, and the Applets, Movies and
   Users folders from the days the Applet Store, DVD Player and TextEdit
-  came. Nothing keeps how a thing was changed or what was thrown away,
-  so a past day shows what's here now, as far back as each thing goes;
+  came; what's inside Movies and Users counts from its folder's day at
+  the earliest (`notBefore`), so a document dated before /Users existed
+  adds no day on which nothing shows. Nothing keeps how a thing was
+  changed or what was thrown away, so a past day shows what's here now,
+  as far back as each thing goes;
   Pictures and Projects have no dates and aren't shown. Days are where
   this device is. The front window is a read-only Finder
   (`Browser.tsx`): the places, back and forward, icons or a list, and
@@ -389,7 +395,10 @@ guarded from its first file; `tests/eslint.test.ts` probes each rule.
 - `src/os/look/accent.ts`: the accent colour. By default it's sampled from
   the desktop picture (the most prominent colourful hue, at a readable
   lightness); System Preferences can fix it instead. Everything blue in
-  `os.css` derives from `--os-accent` via `color-mix()`.
+  `os.css` derives from `--os-accent` via `color-mix()`. The sampled
+  accent and the top's brightness (the menu bar's text) are cached for
+  the last dozen pictures (`os-accent-cache`, `os-brightness-cache`), a
+  Photo Booth picture's data URL by its hash rather than as itself.
 - `src/os/ambient/place.ts`: where the visitor is. `api/geo.ts` (a Vercel
   Function) returns the city, coordinates and time zone Vercel derives
   from their IP address; the Weather widget's flip side lets them pick a
@@ -453,7 +462,10 @@ guarded from its first file; `tests/eslint.test.ts` probes each rule.
   X's red "no access" badge (drawn in `Thumb`, so every view has it) and
   opening it, from any view, the sidebar or a path, brings up Finder's
   alert ("The folder … could not be opened because you do not have
-  sufficient access privileges."). Signed in as the owner, they open and
+  sufficient access privileges."). A Finder window that comes back or
+  opens at such a place, or goes Back to one, shows the folder above it
+  with the same alert (`lockedOn` in `parts.tsx`), once it's known
+  whether this is the owner. Signed in as the owner, they open and
   hold Jincheng's documents, and Documents holds the diary, a year to a
   document ("Diary 2026.rtf"). Public holds what Jincheng lets everyone
   read; Sites, the projects' live sites as Internet locations that open
@@ -562,7 +574,8 @@ guarded from its first file; `tests/eslint.test.ts` probes each rule.
   moment. New Sticky Note on the desktop's right-click menu puts one
   where it was clicked; Stickies › Yours lists them as cards, with File ›
   New Sticky (⌥N), and is where they live on a phone, which has no
-  desktop for them. Font: Marker Felt, where the device has it.
+  desktop for them. From either, the new note takes the caret once it's
+  on screen. Font: Marker Felt, where the device has it.
 - `src/os/social/social.ts`: Stickies (a guestbook) and presence (who's
   online and from which city, and, for a visitor who turns them on in
   System Preferences › Sharing, other visitors' pointers labelled with

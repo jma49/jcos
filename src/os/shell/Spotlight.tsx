@@ -4,11 +4,10 @@ import { apps, launch, launcherApps, openableApps } from '../core/registry';
 import { APPLETS, useInstalledApplets } from '../core/applets';
 import { releaseFocus, useWindows } from '../core/store';
 import { useOSData } from '../core/context';
+import { spotlightFinds, type Searchable } from './spotlightSearch';
 
-interface Result {
+interface Result extends Searchable {
   id: string;
-  label: string;
-  hint: string;
   Icon: ComponentType<{ size?: number }>;
   run: () => void;
 }
@@ -51,6 +50,7 @@ export function Spotlight() {
           id: `${id}:${s.id}`,
           label: s.name,
           hint: apps[id].name,
+          keywords: s.keywords,
           Icon: s.Icon,
           run: () => launch(id, { props: s.props })
         }))
@@ -66,8 +66,7 @@ export function Spotlight() {
     [data, installed]
   );
 
-  const q = query.trim().toLowerCase();
-  const results = q ? all.filter((r) => `${r.label} ${r.hint}`.toLowerCase().includes(q)) : all.slice(0, 6);
+  const results = query.trim() ? all.filter((r) => spotlightFinds(r, query)) : all.slice(0, 6);
 
   useEffect(() => {
     if (!open) return;

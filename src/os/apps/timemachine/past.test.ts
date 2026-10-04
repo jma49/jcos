@@ -3,7 +3,7 @@ import { apps } from '../../core/registry';
 import { APPLETS } from '../../core/applets';
 import type { FileNode } from '../../core/files';
 import type { AppId } from '../../core/types';
-import { backupDays, cameBy, dayName, dayOf, diskOn, namedTicks, tickName } from './past';
+import { backupDays, cameBy, dayName, dayOf, diskOn, folderCame, namedTicks, notBefore, tickName } from './past';
 
 // Time Machine's past (past.ts): the days it has, what a day's disk held,
 // and how the days are named.
@@ -72,6 +72,19 @@ describe('days', () => {
     expect(cameBy('2026-09-26')('2026-09-26')).toBe(true);
     expect(cameBy('2026-09-26')('2026-09-27')).toBe(false);
     expect(cameBy('2026-09-26')(undefined)).toBe(true);
+  });
+
+  test('what lives in a folder counts from the day the folder came at the earliest', () => {
+    // A document written (or restored) before /Users existed shows first on the day /Users came.
+    const users = folderCame('/Users', arrivals);
+    expect(users).toBe('2026-09-29');
+    const inUsers = notBefore(users);
+    const written = [new Date(2026, 8, 20, 12).toISOString(), '2026-09-18', '2026-09-30', undefined];
+    expect(written.map(inUsers)).toEqual(['2026-09-29', '2026-09-29', '2026-09-30', undefined]);
+    expect(backupDays(written.map(inUsers), '2026-10-01')).toEqual(['2026-10-01', '2026-09-30', '2026-09-29']);
+    expect(folderCame('/Movies', arrivals)).toBe('2026-09-29');
+    expect(folderCame('/Music', arrivals)).toBeUndefined();
+    expect(notBefore(undefined)('2026-09-18')).toBe('2026-09-18');
   });
 });
 

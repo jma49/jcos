@@ -27,6 +27,8 @@ export interface AppShortcut {
   Icon: ComponentType<{ size?: number }>;
   /** What the app is opened with to show it. */
   props: Record<string, string>;
+  /** Other words Spotlight finds it by, as the app's own search does. */
+  keywords?: string;
 }
 
 export interface AppManifest<Id extends string = string> {

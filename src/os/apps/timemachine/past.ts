@@ -56,6 +56,24 @@ export interface Arrivals {
  */
 const FOLDER_APPS: Record<string, AppId> = { '/Applets': 'appstore', '/Movies': 'dvdplayer', '/Users': 'textedit' };
 
+/** The day a folder that came with an app came, as `arrivals` says; undefined for a folder that was always there. */
+export function folderCame(path: string, arrivals: Arrivals): string | undefined {
+  const app = FOLDER_APPS[path];
+  return app ? arrivals.app(app) : undefined;
+}
+
+/**
+ * A date of something inside a folder that came on `floor`, as Time Machine
+ * counts it: never before the folder. A document dated before /Users
+ * existed (restored from a backup, imported) would otherwise make a day
+ * on which nothing that day's disk shows came.
+ */
+export const notBefore = (floor: string | undefined) => (date: string | undefined) => {
+  const on = dayOf(date);
+  const from = dayOf(floor);
+  return on && from && on < from ? from : date;
+};
+
 /** The last part of a path, as the name it was made from. */
 const leaf = (path: string) => decodeURIComponent(path.slice(path.lastIndexOf('/') + 1));
 

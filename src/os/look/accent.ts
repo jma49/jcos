@@ -101,13 +101,35 @@ export function accentFromPixels(data: Uint8ClampedArray): string {
 const CACHE_KEY = 'os-accent-cache';
 const BRIGHTNESS_KEY = 'os-brightness-cache';
 
-function cached<T>(url: string, key = CACHE_KEY): T | null {
-  return loadSettings<Record<string, T>>(key, {})[url] ?? null;
+/** A 53-bit hash of a string (cyrb53), as base 36. */
+function hash(text: string) {
+  let h1 = 0xdeadbeef;
+  let h2 = 0x41c6ce57;
+  for (let i = 0; i < text.length; i++) {
+    const c = text.charCodeAt(i);
+    h1 = Math.imul(h1 ^ c, 2654435761);
+    h2 = Math.imul(h2 ^ c, 1597334677);
+  }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36);
 }
 
-function remember(url: string, value: string | number, key = CACHE_KEY) {
+// A Photo Booth picture is a data URL of several kilobytes: as a key it
+// would be stored twice over and parsed on every lookup, so it's kept by
+// its hash. Keys longer than this are such entries from before.
+const LONGEST_KEY = 2048;
+const keyOf = (url: string) => (url.startsWith('data:') ? `data:${url.length}:${hash(url)}` : url);
+
+function cached<T>(url: string, key = CACHE_KEY): T | null {
+  return loadSettings<Record<string, T>>(key, {})[keyOf(url)] ?? null;
+}
+
+/** Notes a picture's sampled value; exported for its test. */
+export function remember(url: string, value: string | number, key = CACHE_KEY) {
   // Keep the cache small: the last dozen pictures.
-  const entries = Object.entries({ ...loadSettings(key, {}), [url]: value }).slice(-12);
+  const kept = Object.entries(loadSettings<Record<string, string | number>>(key, {})).filter(([k]) => k.length <= LONGEST_KEY);
+  const entries = Object.entries({ ...Object.fromEntries(kept), [keyOf(url)]: value }).slice(-12);
   saveJSON(key, Object.fromEntries(entries));
 }
 

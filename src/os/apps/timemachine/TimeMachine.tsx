@@ -13,7 +13,7 @@ import { useShelf, useShelfRefresh } from '../../media/discs';
 import { ALBUMS, SONGS, useLibraryVersion } from '../../media/library';
 import { useIsOwner } from '../../social/owner';
 import { Browser, folderOn, type Place } from './Browser';
-import { backupDays, cameBy, dayName, diskOn, localDay, namedTicks, type Arrivals } from './past';
+import { backupDays, cameBy, dayName, diskOn, folderCame, localDay, namedTicks, notBefore, type Arrivals } from './past';
 
 // Time Machine, as Leopard had it: the desktop gives way to space, and a
 // Finder window stands in front of the same window on each day before,
@@ -50,21 +50,24 @@ export default function TimeMachine({ win }: AppProps) {
     return { app: arrivalOf, song: (id) => songDays.get(id), album: (title) => albumDays.get(title) };
   }, [songs, albums]);
 
-  // The days: today, and each day before it that something came.
+  // The days: today, and each day before it that something came. What's
+  // in Movies and Users counts from the day its folder came at the earliest.
   const days = useMemo(() => {
     const shown = new Set<AppId>([...APPLET_IDS, 'about', 'resume', ...(Object.keys(apps) as AppId[]).filter((id) => apps[id].inApplications)]);
+    const inMovies = notBefore(folderCame('/Movies', arrivals));
+    const inUsers = notBefore(folderCame('/Users', arrivals));
     return backupDays(
       [
         ...[...shown].map(arrivalOf),
         ...songs.map((s) => s.added),
         ...albums.map((a) => a.added),
-        ...shelf.map((d) => d.added),
-        ...home.documents.map((d) => d.created),
-        ...home.diary.map((e) => e.created)
+        ...shelf.map((d) => inMovies(d.added)),
+        ...home.documents.map((d) => inUsers(d.created)),
+        ...home.diary.map((e) => inUsers(e.created))
       ],
       today
     );
-  }, [songs, albums, shelf, home, today]);
+  }, [songs, albums, shelf, home, today, arrivals]);
 
   // Each day's disk, made once and kept while nothing changes.
   const diskFor = useMemo(() => {
