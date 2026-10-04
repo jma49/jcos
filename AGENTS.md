@@ -145,7 +145,7 @@ later delete does not undo a commit.
 - Images are most of the repository's weight. Add one at the format
   and size [docs/agents/adding.md](docs/agents/adding.md) gives, don't
   commit a second copy of a picture already in the repo, and don't
-  commit recaptured covers or `public/og.png` unless the page they show
+  commit recaptured covers or `public/og.jpg` unless the page they show
   actually changed.
 - When a new tool or script writes files into the repo, add its output
   to `.gitignore` in the same change.

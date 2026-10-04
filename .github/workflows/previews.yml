@@ -52,12 +52,12 @@ jobs:
 
       - name: Commit changed previews
         run: |
-          if [ -z "$(git status --porcelain -- src/content/projects/covers public/og.png src/data/photos.json)" ]; then
+          if [ -z "$(git status --porcelain -- src/content/projects/covers public/og.jpg src/data/photos.json)" ]; then
             echo "Previews are up to date."
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
-          git add src/content/projects/covers public/og.png src/data/photos.json
+          git add src/content/projects/covers public/og.jpg src/data/photos.json
           git commit -m "chore: update project previews"
           git push
