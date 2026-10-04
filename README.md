@@ -5,7 +5,7 @@
 [![The JM/OS desktop: a Mac OS X menu bar, Dock and desktop icons over a wallpaper of river stones, with the Welcome window open.](public/og.jpg)](https://www.majincheng.com)
 
 Jincheng Ma's own place on the web, a Mac OS X Aqua desktop in the
-browser: a hideout rather than a portfolio (HANDOFF.md, decisions).
+browser: a hideout rather than a portfolio.
 
 Projects, the résumé, photos and posts open as windows on the desktop.
 Around them sits a small working system:
@@ -73,6 +73,7 @@ Copy `.env.example` to `.env`. Every value is optional.
 | --- | --- |
 | `PUBLIC_SUPABASE_URL`, `PUBLIC_SUPABASE_ANON_KEY` | accounts, Chat, Stickies, presence, Soapbox |
 | `UNSPLASH_ACCESS_KEY` | fetching the latest photos at build time |
+| `SUPABASE_PROJECT_REF` | the Supabase project the scripts that use the Supabase CLI act on (`setup-soapbox.sh`, `job-hunt-import.mjs`); without it they use the project `supabase link` linked, and stop if there's none. Not secret, but no script has a project written in. |
 
 Set the same variables in Vercel, for Production (only `main` deploys, so
 there are no previews: `git.deploymentEnabled` in `vercel.json`).
@@ -110,13 +111,14 @@ supabase/          schema, migrations, Edge Functions, database tests
 scripts/           preview capture, photo refresh, favicon and portrait builders, bot setup
 public/os/         icons, fonts and desktop pictures (from ryOS, see NOTICE)
 docs/agents/       guidance for coding agents, by part (AGENTS.md is the entry point)
+docs/decisions/    decision records: what was chosen, what was turned down and why
 ```
 
 [AGENTS.md](AGENTS.md) has the conventions and the checks for each kind of
 change; [docs/agents/](docs/agents/) maps every part of the desktop and
 how to add an app, a project, a song or a desktop picture.
-[HANDOFF.md](HANDOFF.md) is the running state of the project and its open
-issues; [ROADMAP.md](ROADMAP.md) is what comes next, in order.
+[docs/decisions/](docs/decisions/) records why things are the way they
+are, and [ROADMAP.md](ROADMAP.md) is what comes next, in order.
 
 ## Security
 
@@ -135,7 +137,7 @@ issues; [ROADMAP.md](ROADMAP.md) is what comes next, in order.
   action to a commit SHA with read-only permissions by default.
   The one exception is the ocra review of pull requests, which calls
   the owner's review workflow in Open-CR-Agent at `main`: Google Cloud
-  issues its keyless login to that ref only (HANDOFF.md).
+  issues its keyless login to that ref only.
 
 To report a security problem, use GitHub's private vulnerability
 reporting rather than an issue; [SECURITY.md](SECURITY.md) has how,

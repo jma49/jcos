@@ -2,7 +2,8 @@
 # this repository's pull requests on the owner's Vertex AI credit, as a trial.
 # The called workflow keeps the budget, the keyless credential and the
 # ledger, and checks the switch, forks and Dependabot again. Off unless the
-# repository variable OCRA_REVIEW is "on"; HANDOFF.md says how to stop it.
+# repository variable OCRA_REVIEW is "on"; setting it to anything else
+# stops it.
 name: ocra review
 
 on:

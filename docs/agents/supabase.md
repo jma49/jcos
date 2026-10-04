@@ -115,7 +115,9 @@ The code that isn't in the browser (each endpoint's parameters, answers and conv
   of the batch is malformed. `scripts/job-hunt-import.mjs` checks a batch
   and sends it through the Supabase CLI (`--dry-run` only checks it,
   `--db-url` sends it to a local database to try); only Claude runs it,
-  under the permission rule Jincheng added for it (HANDOFF.md, Job Hunt).
+  under a permission rule Jincheng added for it (how a sync goes is in
+  the private operating notes, `../jmos-ops/HANDOFF.md`). It sends to
+  `SUPABASE_PROJECT_REF` or the linked project, and stops without one.
 - **Soapbox reactions**: members react as themselves and can change or take
   back a reaction; everyone else gets one per post, by salted IP hash.
 - **The music library** (`public.songs`, `public.albums`; migration
@@ -223,8 +225,9 @@ Vercel uses, `NEXT_PUBLIC_SUPABASE_URL` and
 `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, work as well. A project set up from
 an older schema needs the files in `supabase/migrations/`, run in the
 order of their timestamped names: `supabase db push` runs the ones the
-project's migration history hasn't recorded (HANDOFF.md §1 has the
-commands for this project). Test a migration against the live project inside `begin; …
+project's migration history hasn't recorded (the commands for the live
+project are in the private operating notes, `../jmos-ops/HANDOFF.md`
+§1). Test a migration against the live project inside `begin; …
 rollback;` first (`supabase db query --linked -f`). A migration must run
 twice without harm ([pitfalls.md](pitfalls.md)): `npm run test:db` reruns
 every one from `20260926071227` on over the full schema

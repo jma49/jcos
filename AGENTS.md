@@ -34,25 +34,39 @@ characters over `git ls-files`.
 | the Vercel Functions in `api/`, the Edge Functions, or what the site calls | [docs/agents/api.md](docs/agents/api.md) |
 | anything on the first load, or that runs per frame | [docs/agents/performance.md](docs/agents/performance.md) |
 | adding an app, applet, song, desktop picture or project | [docs/agents/adding.md](docs/agents/adding.md) |
+| why something is the way it is, before proposing to change it | [docs/decisions/](docs/decisions/) |
 | anything at all | [docs/agents/pitfalls.md](docs/agents/pitfalls.md): mistakes already made once |
 
-Keep [HANDOFF.md](HANDOFF.md) current without being asked: when a piece
-of work is done (merged, deployed, or stopped partway), update what
-production runs, what's merged but not deployed, what the owner still
-has to do and any decision made, in the same pull request or one right
-after. A new session starts from it.
+## State and decisions
+
+The operating state and procedures (what production runs and where, how
+migrations and Edge Functions go live, what's merged but not live, what
+the owner still has to do, open issues) are in `HANDOFF.md` in the
+private repository `jma49/jmos-ops`, cloned next to this checkout as
+`../jmos-ops/HANDOFF.md`. A new session starts from it. Keep it current
+without being asked: when a piece of work is done (merged, deployed, or
+stopped partway), update it, then commit and push in jmos-ops, which
+has no pull requests (commit to its `main`). Never copy it, or anything
+from it, into this repository: this one is public, and every commit
+stays in its history. Without access to jmos-ops (a contributor), leave
+it to the owner.
+
+Decisions worth keeping (what was chosen, what was turned down and why)
+go in [docs/decisions/](docs/decisions/) as a new numbered record, in
+the pull request that makes the change; operational details stay in
+jmos-ops.
 
 Migrations and Edge Functions are the agent's to put live, once their
 pull request has merged, from an up-to-date `main`, with the Supabase
-CLI: how is in HANDOFF.md (§1). Tell the owner what ran.
+CLI: how is in jmos-ops's HANDOFF.md (§1). Tell the owner what ran.
 
 Before opening a pull request for a significant change (a feature, a
 migration, a dependency, anything touching accounts, data, Realtime,
 the window manager or the first load), go through
 [docs/agents/self-audit.md](docs/agents/self-audit.md).
-[HANDOFF.md](HANDOFF.md) is the project's current state and open
-issues; [ROADMAP.md](ROADMAP.md) is the plan: take the next item from
-it, and when one is done, record it in HANDOFF.md and take it out.
+[ROADMAP.md](ROADMAP.md) is the plan: take the next item from it, and
+when one is done, record it in jmos-ops's HANDOFF.md (and any decision
+in docs/decisions/) and take it out.
 
 ## Rules that always hold
 
@@ -91,7 +105,7 @@ it, and when one is done, record it in HANDOFF.md and take it out.
 | any code | `npm run check` (types), `npm run lint` (hooks, the app boundaries, storage), `npm test` |
 | an app, the shell or anything a visitor sees | `npm run build`, then `npm run test:smoke`; open it in a browser too (`npm run serve`) |
 | the first load, a dependency, or anything per frame | `npm run build`, then `npm run perf`: every line within budget |
-| the schema, a migration, a policy or a limit | `npm run test:db`, with a check (and a race for a limit) for the new rule; once merged, `supabase db push` and `supabase db advisors` (HANDOFF.md §1) |
+| the schema, a migration, a policy or a limit | `npm run test:db`, with a check (and a race for a limit) for the new rule; once merged, `supabase db push` and `supabase db advisors` (jmos-ops's HANDOFF.md, §1) |
 | an Edge Function | `npm test` (its `*.test.mjs`) |
 | a project's cover or the home page's look | `npm run preview:capture` |
 
@@ -103,7 +117,7 @@ database tests on every pull request; `pr-title.yml` checks that the
 pull request's title is a Conventional Commit. Actions are pinned to a
 commit SHA with the version in a comment; Dependabot updates both. The
 `Update project previews` workflow never pushes to `main`: it opens a
-pull request and starts CI on it itself (HANDOFF.md).
+pull request and starts CI on it itself.
 
 - Unit tests (Vitest) are `*.test.ts` next to the code in `src/`; the
   Vercel Functions' are in `tests/api/`, since Vercel deploys every file
@@ -137,7 +151,8 @@ pull request and starts CI on it itself (HANDOFF.md).
   since CI already builds the site, opens every app and checks the
   budgets, and each preview spent one of the Hobby plan's few daily
   deployments. A deployment of `main` that says "Deployment rate
-  limited" is that cap: redeploy `main` once it resets (HANDOFF.md).
+  limited" is that cap: redeploy `main` once it resets (jmos-ops's
+  HANDOFF.md has how).
 - Check `git status` and `git diff --cached` before committing.
 - When a file, script or asset is no longer used, delete it in the same
   change, and update the README and these docs.

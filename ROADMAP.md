@@ -1,8 +1,9 @@
 # Roadmap: majincheng.com (JM/OS)
 
-What to build next and in what order, as of 2026-09-29. HANDOFF.md is the state
-of things; this file is the plan. When an item is done, move what matters
-to HANDOFF.md and take it out of here.
+What to build next and in what order, as of 2026-09-29. This file is the
+plan; why things are the way they are is in
+[docs/decisions/](docs/decisions/). When an item is done, record any
+decision it made there and take the item out of here.
 
 Each item says why it's worth doing, what it has to respect (the rules
 in [AGENTS.md](AGENTS.md)), and how we'll know it's done.
@@ -11,10 +12,10 @@ in [AGENTS.md](AGENTS.md)), and how we'll know it's done.
 
 **Why.** Decided 2026-09-29: JM/OS is Jincheng's own hideout, not a job
 portfolio. Jincheng chose seven things from prototypes staged in the
-real site (HANDOFF.md section 3): each existed in Tiger or Leopard, and
-each uses the same Aqua styles and the ryOS icon set (new icons from it
-go in `public/os/icons` and NOTICE). One pull request each; all but
-one are in (HANDOFF.md section 3), and what's left is:
+real site ([decision 0013](docs/decisions/0013-a-hideout-not-a-portfolio.md)):
+each existed in Tiger or Leopard, and each uses the same Aqua styles and
+the ryOS icon set (new icons from it go in `public/os/icons` and NOTICE).
+One pull request each; all but one are in, and what's left is:
 
 1. **A stack in the Dock**: things Jincheng sends the bot (screenshots,
    tickets, links) kept in a Dock stack that fans out as Leopard's did,
@@ -86,7 +87,8 @@ library, and two requests at once from one member make one.
   bot change aren't worth it; each window's error boundary already
   keeps a crash to its own window.
 
-Decided, with the reasons in HANDOFF.md section 3: commercial games or
+Decided, with the reasons in [docs/decisions/](docs/decisions/) where
+they were recorded: commercial games or
 their ROMs (build originals, as Pinball is); Jincheng's photos anywhere
 but Photos; a focus trap in windows; a script CSP; darker secondary
 greys; replacing the retro Mac OS X assets with original ones
