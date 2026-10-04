@@ -133,8 +133,12 @@ are, and [ROADMAP.md](ROADMAP.md) is what comes next, in order.
   schema the API can't reach. Only a hash of each reset link is kept.
 - Service-role keys and third-party tokens exist only inside Edge
   Functions.
-- Responses carry security headers (`vercel.json`), and Dependabot
-  proposes dependency updates weekly. CI fails on a high or critical
+- Responses carry security headers (`vercel.json`), with a full Content
+  Security Policy in Report-Only for now: scripts only from the site,
+  the hashes of its inline scripts and YouTube, and `npm run test:smoke`
+  fails on anything it would refuse
+  ([decision 0007](docs/decisions/0007-no-script-content-security-policy.md)).
+  Dependabot proposes dependency updates weekly. CI fails on a high or critical
   advisory in a production dependency, and the workflows pin every
   action to a commit SHA with read-only permissions by default.
   The one exception is the ocra review of pull requests, which calls

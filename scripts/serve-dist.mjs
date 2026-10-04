@@ -2,14 +2,24 @@
 // scripts that open it in a browser (test:smoke, perf, preview:capture)
 // and for `npm run serve`. Unlike `astro preview`, it runs in this process
 // and stops with it. With `api`, the functions in api/ answer too, run
-// from source in this process (serve.mjs sets that up).
+// from source in this process (serve.mjs sets that up). Every file comes
+// with the headers vercel.json gives every path, the Content Security
+// Policy among them, so what runs here meets the same rules as the site.
 
 import { createServer } from 'node:http';
+import { readFileSync } from 'node:fs';
 import { readFile, stat } from 'node:fs/promises';
 import { extname, join, normalize } from 'node:path';
 
 const ROOT = new URL('..', import.meta.url).pathname;
 const DIST = join(ROOT, 'dist');
+
+/** The headers vercel.json sets on every path ("/(.*)"). */
+const HEADERS = Object.fromEntries(
+  JSON.parse(readFileSync(join(ROOT, 'vercel.json'), 'utf8'))
+    .headers.filter((rule) => rule.source === '/(.*)')
+    .flatMap((rule) => rule.headers.map(({ key, value }) => [key, value]))
+);
 
 const TYPES = {
   '.html': 'text/html; charset=utf-8',
@@ -49,7 +59,7 @@ export function serveDist({ port = 0, host = '127.0.0.1', api = false } = {}) {
       let file = join(DIST, normalize(decodeURIComponent(url.pathname)));
       if ((await stat(file)).isDirectory()) file = join(file, 'index.html');
       const body = await readFile(file);
-      res.writeHead(200, { 'Content-Type': TYPES[extname(file)] ?? 'application/octet-stream' });
+      res.writeHead(200, { ...HEADERS, 'Content-Type': TYPES[extname(file)] ?? 'application/octet-stream' });
       res.end(body);
     } catch (e) {
       if (api && url.pathname.startsWith('/api/')) console.error(url.pathname, e.message);
