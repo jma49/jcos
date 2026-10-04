@@ -46,6 +46,8 @@ jobs:
           deno-version: v2.x
       - run: deno check supabase/functions/*/index.ts
       - run: npm run lint
+      # Formatting (biome.jsonc); with Biome's linter off, only that.
+      - run: npm run format:check
       # The unit tests (npm test), with how much of the code they run: the
       # summary is printed here, reported but not yet held to a threshold.
       - run: npm run coverage

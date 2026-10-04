@@ -41,14 +41,14 @@ and the backend, and [AGENTS.md](AGENTS.md) with
    has the full table). For most changes:
 
    ```bash
-   npm run check && npm run lint && npm test
+   npm run format && npm run check && npm run lint && npm test
    npm run build && npm run test:smoke   # anything a visitor sees
    ```
 
    CI runs these on every pull request, with more (AGENTS.md says
    what).
-3. Write everything in English, and follow the code around you; there
-   is no formatter to do it for you.
+3. Write everything in English, and follow the code around you; Biome
+   formats it (`npm run format`), and CI checks that it did.
 4. Open a pull request with the template filled in.
 
 ## Commits and pull request titles

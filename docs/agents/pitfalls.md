@@ -331,8 +331,9 @@ again.
   `localStorage` and `sessionStorage` outside `storage.ts` now; the one
   per-tab value (the boot screen's `os-booted`) has `loadForTab` and
   `saveForTab` there.
-- There's no Prettier config. Don't reformat whole files; it buries the
-  change in the diff.
+- Format with `npm run format` (Biome) before committing, not by hand:
+  CI fails on anything left unformatted, and a separate formatting pass
+  later buries the change in the diff.
 - Wrapping a big JSX tree reindents all of it. Wrap through a small
   outer component instead, as `Desktop` wraps `Shell` in `MotionConfig`.
 

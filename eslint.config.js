@@ -4,8 +4,8 @@
 // boundaries between the OS, apps and applets (docs/agents/desktop.md),
 // that anything remembered in the browser goes through core/storage.ts,
 // that no block (a catch above all) is empty without a comment saying why,
-// and, in scripts/, ESLint's recommended rules. Formatting and style are
-// left to the surrounding code (see AGENTS.md). tests/eslint.test.ts
+// and, in scripts/, ESLint's recommended rules. Formatting is Biome's
+// (biome.jsonc, `npm run format`). tests/eslint.test.ts
 // probes each rule.
 import js from '@eslint/js';
 import reactHooks from 'eslint-plugin-react-hooks';
