@@ -59,7 +59,7 @@ describe('revealAfterButton', () => {
 });
 
 // DVD Player keeps its picture and masks only the middle, while YouTube's
-// middle controls may be up (measured 2026-09-29).
+// middle controls may be up (as measured, see `middleControls`).
 describe('middleControls', () => {
   test('a start brings them up, and they go once it has played long enough', () => {
     const up = vi.fn();

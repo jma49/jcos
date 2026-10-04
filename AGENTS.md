@@ -97,6 +97,11 @@ in docs/decisions/) and take it out.
   uninvited (docs/agents/self-audit.md, Concurrency).
 - Don't reformat whole files (there's no Prettier config); match the
   surrounding code.
+- Comments say what the code is for and why, not when or who: no dates
+  ("measured 2026-09-29") and no decision stories ("Jincheng decided…").
+  A rule is stated plainly ("only the owner sees companies"); the story
+  goes in the commit, and a decision that holds goes in
+  [docs/decisions/](docs/decisions/), which a comment may point to.
 
 ## Checking a change
 

@@ -58,7 +58,7 @@ import { useDiscPlayer } from './useDiscPlayer';
 // A disc slides into the slot in the screen's right edge on its way in and
 // out (media/insertion.ts, Web Animations, skipped with motion reduced),
 // and DVD Player's icon bounces in the Dock as it opens. The disc never
-// goes on the desktop: Jincheng wants no icons added there (2026-09-29), so
+// goes on the desktop, where nothing is added (docs/decisions/0021), so
 // the Controller and ⌘E are the ways to eject it.
 
 type Screen = 'menu' | 'scenes' | 'movie';

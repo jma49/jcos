@@ -18,7 +18,7 @@ import { Capacity, Funnel, STAGE_NAMES } from './parts';
 // Mail said comes in through Claude (scripts/job-hunt-import.mjs); here
 // Jincheng moves them along, adds one by hand, notes and deletes. Anyone
 // else sees only how many are at each stage, on blank cards, and how far
-// they got: Jincheng decided the companies stay Jincheng's.
+// they got: the companies stay Jincheng's (docs/decisions/0018).
 //
 // It's in Applications, with Bento's icon. The board has a column to a
 // stage (Applied, Assessment, Interviewing, Offer, Closed) and a card to an

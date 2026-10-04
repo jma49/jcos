@@ -1,8 +1,7 @@
 -- Stickies of one's own: each member's own sticky notes, on their own
 -- desktop (and under Stickies › Yours on a phone), which only they read
 -- and write. The Stickies wall (public.notes) stays everyone's guestbook.
--- Planned as Jincheng's alone; Jincheng decided (2026-09-29) that every
--- account keeps its own instead.
+-- Every account keeps its own (docs/decisions/0015).
 --
 -- - body: what's written, 4,000 characters at most; color: one of
 --   Tiger's six; x, y, width, height, collapsed: where it sits.
