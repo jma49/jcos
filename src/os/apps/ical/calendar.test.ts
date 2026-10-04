@@ -72,7 +72,8 @@ function database(events: CalendarEvent[], todos: Todo[] = []) {
       if (answer.refuse) throw new Error('refused');
       return saved(answer.todos, draft, () => todo('new'));
     }),
-    removeTodo: vi.fn(async () => {})
+    removeTodo: vi.fn(async () => {}),
+    limits: vi.fn(async () => ({ notesPerDay: 3, stickies: 50, events: 5000, todos: 1000 }))
   };
   backend.social = social as never;
   return { social, answer };

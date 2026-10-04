@@ -78,8 +78,9 @@ export function localSoapbox({ account, member }: LocalContext): SoapboxSocial {
       const all = loadJSON<StoredReactions>(REACTIONS_KEY, {});
       const who = current?.id ?? 'browser';
       const by = { ...(all[postId] ?? {}) };
-      if (!current && by[who]) throw new SocialError('already', 'Someone on your network already reacted to this one.');
+      // Taking one back is a member's (as the database has it), asked first.
       if (reaction === null) delete by[member().id];
+      else if (!current && by[who]) throw new SocialError('already', 'Someone on your network already reacted to this one.');
       else by[who] = reaction;
       saveJSON(REACTIONS_KEY, { ...all, [postId]: by });
     }

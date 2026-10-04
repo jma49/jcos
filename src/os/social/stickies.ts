@@ -25,8 +25,7 @@ export interface Sticky {
 /** What a sticky is put up with, or changed by. */
 export type StickyChange = Partial<Pick<Sticky, 'body' | 'color' | 'x' | 'y' | 'width' | 'height' | 'collapsed'>>;
 
-/** How many stickies a member may keep, and how much each holds (the database's sticky_limit and check). */
-export const STICKY_MOST = 50;
+/** How much a sticky holds: the table's check (how many a member may keep is the database's: limits.ts). */
 export const STICKY_MAX = 4000;
 
 export interface StickiesSocial {

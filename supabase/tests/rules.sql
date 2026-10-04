@@ -95,7 +95,17 @@ insert into public.notes (body) values ('carol three');
 select pg_temp.check(public.notes_left() = 0 and pg_temp.refused($$insert into public.notes (body) values ('carol four')$$), 'and what''s left is what the limit lets through');
 select pg_temp.act_as('anon');
 select pg_temp.check(pg_temp.refused($$select public.notes_left()$$), 'visitors don''t ask how many notes they have left');
+-- The limits the site shows and checks first are the database's (member_limits()).
+select pg_temp.check((select (notes_per_day, stickies, events, todos) = (3, 50, 5000, 1000) from public.member_limits()), 'visitors read the limits a member is held to, and nothing else of the settings');
 reset role;
+-- The notes' limit is that setting: raised, a fourth note goes up, and what's left follows it.
+update public.music_settings set value = '4' where name = 'note_limit';
+select pg_temp.act_as('authenticated', '33333333-3333-3333-3333-333333333333');
+select pg_temp.check((select notes_per_day from public.member_limits()) = 4 and public.notes_left() = 1, 'what''s left follows note_limit');
+insert into public.notes (body) values ('carol four');
+select pg_temp.check(public.notes_left() = 0 and pg_temp.refused($$insert into public.notes (body) values ('carol five')$$), 'and so does the limit');
+reset role;
+update public.music_settings set value = '3' where name = 'note_limit';
 
 -- Chat ------------------------------------------------------------------
 
@@ -336,12 +346,12 @@ select pg_temp.check((
   select coalesce(string_agg(p.oid::regprocedure::text, ' ' order by p.oid::regprocedure::text), '')
   from pg_proc p join pg_namespace n on n.oid = p.pronamespace
   where n.nspname = 'public' and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')
-) = 'is_owner() job_hunt_totals() song_limit()', 'visitors may call only the security definer functions kept on purpose');
+) = 'is_owner() job_hunt_totals() member_limits() song_limit()', 'visitors may call only the security definer functions kept on purpose');
 select pg_temp.check((
   select coalesce(string_agg(p.oid::regprocedure::text, ' ' order by p.oid::regprocedure::text), '')
   from pg_proc p join pg_namespace n on n.oid = p.pronamespace
   where n.nspname = 'public' and p.prosecdef and has_function_privilege('authenticated', p.oid, 'execute')
-) = 'chat_can_write(text) is_owner() job_hunt_totals() my_reactions() my_recovery_email() notes_left() set_recovery_email(text) song_limit() song_played(text)', 'members may call only the security definer functions kept on purpose');
+) = 'chat_can_write(text) is_owner() job_hunt_totals() member_limits() my_reactions() my_recovery_email() notes_left() set_recovery_email(text) song_limit() song_played(text)', 'members may call only the security definer functions kept on purpose');
 select pg_temp.check(not has_function_privilege('anon', 'public.my_reactions()', 'execute'), 'visitors can''t ask for members'' reactions');
 select pg_temp.act_as('anon');
 select pg_temp.check(public.username_available('someone_new') and not public.username_available('alice'), 'visitors can still check a username');

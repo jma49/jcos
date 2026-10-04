@@ -10,10 +10,11 @@ import type { Social } from '../types';
 import { supabaseAccounts } from './accounts';
 import { supabaseCalendar } from './calendar';
 import { supabaseChat } from './chat';
-import { supabaseContext } from './context';
+import { supabaseContext, type Client } from './context';
 import { supabaseDiscs } from './discs';
 import { supabaseDocuments } from './documents';
 import { supabaseJobs } from './jobs';
+import { supabaseLimits } from './limits';
 import { supabaseMusic } from './music';
 import { supabaseNotes } from './notes';
 import { supabaseSoapbox } from './soapbox';
@@ -21,10 +22,16 @@ import { supabaseStickies } from './stickies';
 import { supabaseVisitors } from './visitors';
 
 export function supabaseSocial(url: string, key: string): Social {
-  const client = createClient<Database>(url, key, {
-    // The session stays in this browser, so members stay signed in.
-    auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false, storageKey: 'os-auth' }
-  });
+  return socialOver(
+    createClient<Database>(url, key, {
+      // The session stays in this browser, so members stay signed in.
+      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false, storageKey: 'os-auth' }
+    })
+  );
+}
+
+/** The backend over a client: the project's, or the contract tests' stand-in for one (social/contract/). */
+export function socialOver(client: Client): Social {
   const ctx = supabaseContext(client);
   return {
     ...supabaseAccounts(ctx),
@@ -37,6 +44,7 @@ export function supabaseSocial(url: string, key: string): Social {
     ...supabaseDocuments(ctx),
     ...supabaseStickies(ctx),
     ...supabaseCalendar(ctx),
-    ...supabaseJobs(ctx)
+    ...supabaseJobs(ctx),
+    ...supabaseLimits(ctx)
   };
 }

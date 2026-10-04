@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState, type CSSProperties, type SubmitEvent } from 'react';
-import { getSocial, NOTE_COLORS, NOTE_MAX, NOTES_PER_DAY, SocialError, type Note, type NoteColor, type Social } from '../../social/social';
-import { STICKY_MOST } from '../../social/types';
+import { getSocial, NOTE_COLORS, NOTE_MAX, SocialError, type Limits, type Note, type NoteColor, type Social } from '../../social/social';
 import { useAccount } from '../../social/account';
 import type { AppProps } from '../../core/registry';
 import { launch } from '../../core/registry';
@@ -20,13 +19,17 @@ function tilt(id: string) {
   return ((hash % 7) - 3) * 0.6;
 }
 
+/** A small count in words, as the rest of the copy has them ("three a day"). */
+const say = (n: number) => ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'][n] ?? String(n);
+
 /** Everyone's notes (the wall), or the member's own (stickies/mine.ts). */
 type View = 'everyone' | 'yours';
 
 /**
  * Mac OS X Stickies, twice over. Everyone's: a guestbook, everyone's notes
- * on a wall, where members (signed in) can put up three a day, signed with
- * their username, and take their own down. Yours: each member's own
+ * on a wall, where members (signed in) can put up three a day (the
+ * database's limit, which it tells: member_limits()), signed with their
+ * username, and take their own down. Yours: each member's own
  * stickies, which only they see, on their own desktop and here. File ›
  * New Sticky (⌥N; the browser keeps ⌘N) puts one up.
  */
@@ -82,6 +85,8 @@ export default function Stickies({ win }: AppProps) {
   const [draft, setDraft] = useState<Draft>({ state: 'idle' });
   /** How many more notes the member can put up today; null until known. */
   const [left, setLeft] = useState<number | null>(null);
+  /** The database's limits (notes a day, stickies); null until known, or if it can't say. */
+  const [limits, setLimits] = useState<Limits | null>(null);
   const [body, setBody] = useState('');
   const [color, setColor] = useState<NoteColor>('yellow');
   // A field people never see; bots that fill every input give themselves away.
@@ -92,8 +97,11 @@ export default function Stickies({ win }: AppProps) {
     getSocial()
       .then(async (social) => {
         if (!social) return setLoad({ state: 'offline' });
-        const notes = await social.listNotes();
-        if (!cancelled) setLoad({ state: 'ready', social, notes });
+        // Together, so the wall's count of what's left shows with it.
+        const [notes, known] = await Promise.all([social.listNotes(), social.limits()]);
+        if (cancelled) return;
+        setLimits(known);
+        setLoad({ state: 'ready', social, notes });
       })
       .catch((error) => {
         console.warn(`[stickies] ${error}`);
@@ -160,12 +168,13 @@ export default function Stickies({ win }: AppProps) {
         <div className="os-toolbar">
           {whose}
           {account ? (
-            <button type="button" className="os-button" onClick={() => void newSticky.current()} disabled={mine.length >= STICKY_MOST}>
+            <button type="button" className="os-button" onClick={() => void newSticky.current()} disabled={limits !== null && mine.length >= limits.stickies}>
               New Sticky
             </button>
           ) : null}
           <span className="os-toolbar-meta">
-            {stickyTrouble ?? (account ? `${mine.length} of ${STICKY_MOST} · only you see these` : 'only you would see them')}
+            {stickyTrouble ??
+              (account ? `${mine.length}${limits ? ` of ${limits.stickies}` : ''} · only you see these` : 'only you would see them')}
           </span>
         </div>
         <Yours account={account?.id ?? null} newest={newest} />
@@ -201,9 +210,9 @@ export default function Stickies({ win }: AppProps) {
           {load.notes.length} note{load.notes.length === 1 ? '' : 's'}
           {account && left !== null
             ? left > 0
-              ? ` · ${left} of ${NOTES_PER_DAY} left today`
-              : ' · that’s your three for today'
-            : ' · members can leave three a day'}
+              ? ` · ${left}${limits ? ` of ${limits.notesPerDay}` : ''} left today`
+              : ` · that’s your ${limits ? say(limits.notesPerDay) : 'notes'} for today`
+            : ` · members can leave ${limits ? say(limits.notesPerDay) : 'a few'} a day`}
         </span>
       </div>
 

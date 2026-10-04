@@ -111,8 +111,8 @@ in docs/decisions/) and take it out.
 | a doc | `npm test` (every path cited in backticks exists: `scripts/check-doc-paths.mjs`) |
 
 CI (`.github/workflows/ci.yml`) runs `node scripts/audit.mjs`
-(`npm audit` for what ships, but for the listed exceptions), the type check (the Edge Functions' with `deno check`), the lint, the unit tests, the
-build, the smoke test, the download budgets of `npm run perf` (script
+(`npm audit` for what ships, but for the listed exceptions), the type check (the Edge Functions' with `deno check`), the lint, the unit tests
+(with their coverage, reported but not yet held to a threshold), the build, the smoke test, the download budgets of `npm run perf` (script
 times are only reported there, since shared runners are noisy) and the
 database tests on every pull request; `pr-title.yml` checks that the
 pull request's title is a Conventional Commit. Actions are pinned to a
@@ -125,6 +125,9 @@ pull request and starts CI on it itself.
   every file under `api/`; each Edge Function has its `*.test.mjs`. Keep logic worth
   testing in plain modules without React (as `applets/spider/rules.ts`
   and `applets/pinball/table.ts` are).
+- `src/os/social/contract/` holds both social backends (the Supabase
+  slices over a fake client, and the `astro dev` stand-in) to the same
+  rules, a file per domain: a rule a slice adds gets a case there.
 - `npm run test:db` applies every migration in order to an empty local
   Postgres, as a new project gets them, fails if the generated
   `supabase/schema.sql` or `src/lib/database.types.ts` isn't what they

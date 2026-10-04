@@ -1,13 +1,12 @@
-// Stickies, the guestbook: notes members put up for everyone, three in any
-// 24 hours. The Supabase side is supabase/notes.ts, the stand-in's
-// local/notes.ts.
+// Stickies, the guestbook: notes members put up for everyone, a few in any
+// 24 hours (how many is the database's: limits.ts). The Supabase side is
+// supabase/notes.ts, the stand-in's local/notes.ts.
 
 export const NOTE_COLORS = ['yellow', 'blue', 'green', 'pink', 'purple', 'gray'] as const;
 export type NoteColor = (typeof NOTE_COLORS)[number];
 
+/** A note's length at most: the table's check (why it's a constant: limits.ts). */
 export const NOTE_MAX = 280;
-/** Notes a member may put up in any 24 hours. */
-export const NOTES_PER_DAY = 3;
 
 export interface Note {
   id: string;

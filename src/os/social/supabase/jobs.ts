@@ -15,7 +15,7 @@ import {
   type JobsSocial,
   type JobStage
 } from '../jobs';
-import { refusal, type SupabaseContext } from './context';
+import { notOwner, refusal, type SupabaseContext } from './context';
 
 const JOB_COLUMNS = 'id,company,role,stage,outcome,reached,applied_on,source,location,posting,notes,version,created_at,updated_at';
 const EVENT_COLUMNS = 'id,application_id,kind,happened_at,subject,gmail_thread';
@@ -87,6 +87,7 @@ export function supabaseJobs({ client, member }: SupabaseContext): JobsSocial {
         : client.from('job_applications').insert(fieldsOf(draft)).select(JOB_COLUMNS).single();
       const { data, error } = await request;
       if (error) {
+        if (error.code === '42501') throw notOwner('Job Hunt');
         if (error.code === '23505') throw new SocialError('already', `There’s already “${draft.company}” for that role.`);
         throw refusal(error);
       }
@@ -97,7 +98,7 @@ export function supabaseJobs({ client, member }: SupabaseContext): JobsSocial {
     async removeJob(id) {
       member();
       const { error } = await client.from('job_applications').delete().eq('id', id);
-      if (error) throw refusal(error);
+      if (error) throw error.code === '42501' ? notOwner('Job Hunt') : refusal(error);
     }
   };
 }

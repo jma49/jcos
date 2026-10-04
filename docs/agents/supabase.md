@@ -14,14 +14,14 @@ advisory lock (Security, below).
 | Data | Read by | Written by | Limit |
 | --- | --- | --- | --- |
 | `profiles` | everyone (id, username) | the sign-up trigger | |
-| `notes` (Stickies) | everyone, approved notes | members; each can delete their own | 3 per member in 24 hours |
+| `notes` (Stickies) | everyone, approved notes | members; each can delete their own | `music_settings.note_limit` per member in 24 hours (3) |
 | `chat_rooms` | everyone | Jincheng, in the Table editor | |
 | `chat_messages` | everyone in rooms; only the two members in a `dm:` room | members; each can delete their own | 8 per member in 30 s, 120 a minute in all |
 | `soapbox_posts` | everyone, visible posts | the bot | |
 | `soapbox_reactions` | everyone | anyone; members can change or take back theirs | one per post per visitor (members by account, others by salted IP hash) |
 | `soapbox_settings` | the bot only | the bot | |
 | `songs`, `albums` | everyone | the bot | `music_settings.song_limit` songs (200) |
-| `music_settings` | the bot; visitors only through `song_limit()` | Jincheng, in the Table editor | |
+| `music_settings` | the bot; visitors only through `song_limit()` and `member_limits()` | Jincheng, in the Table editor | |
 | `now_playing` | everyone, while the song plays | the bot, through `music_play()` and `music_stop()` | one song |
 | `discs` (DVD Player's shelf) | everyone | Jincheng: the bot's `/dvd`, or the site signed in as the owner | `music_settings.disc_limit` discs (200) |
 | `song_stats` (the iPod's ratings and plays) | everyone | Jincheng, signed in: ratings through `rate_song()`, plays only through `song_played()` | a row per song in the library |
@@ -74,8 +74,35 @@ without settings, the stand-in. Both are made of one slice per domain:
 The domain files hold no backend code: they're in the first load (the
 menu bar and Chat's alerts use their constants), and anything a slice
 put there would load with them. A new feature is a domain file, a slice
-in each backend, a line in each composer and its interface in `Social`
-(`types.ts`).
+in each backend, a line in each composer, its interface in `Social`
+(`types.ts`) and its cases in the contract tests.
+
+The contract tests (`src/os/social/contract/`, a file per domain) run
+every case on both backends with `describe.each`: what's refused and
+why (signed out, a limit, the owner's alone, a name taken, a check), a
+save from an older version, whose things a member sees. The stand-in
+runs its own rules on a storage of its own; the Supabase slices run
+over a fake client (`social/contract/fakeSupabase.ts`) that answers
+each call as the database would, primed by the case (a row, none, or a
+refusal's code), and records what was asked (that a save filters on
+its version). The rules themselves are the database's, checked against
+Postgres by `npm run test:db`; these check that both backends meet them
+alike, and that a slice reads the database's answers right. Running the
+slices against the local Postgres was turned down: it would need a
+PostgREST and Auth in front of it, the CI job that runs the unit tests
+has no database, and `rules.sql` already asserts the rules there.
+`context.test.ts` pins what the slices share.
+
+The limits a member is held to (notes a day, stickies, events, to-dos)
+are defined once, in `music_settings`, read by the triggers and by
+`member_limits()`, which the site asks through `limits()`
+(`social/limits.ts`) rather than keeping its own numbers. The lengths
+(`NOTE_MAX`, `STICKY_MAX`, `CHAT_MAX`), the username's shape and the
+minimum password stay constants: they're the tables' checks (or Auth's
+setting), which only a migration changes, an input needs them as it
+renders, and the database refuses what gets past a stale one. The
+stand-in keeps its own copy of the limits (`social/local/limits.ts`),
+since it plays the database.
 
 ## In detail
 
@@ -99,12 +126,13 @@ in each backend, a line in each composer and its interface in `Social`
   shared data on the owner's behalf check it too. `social/owner.ts` asks
   it once per sign-in, only to decide what to show. The `astro dev`
   stand-in treats a member named `jincheng` as the owner.
-- **Stickies**: members only, three notes in any 24 hours, signed with the
-  username; members can take their own down. Hide a note by setting
-  `approved` to false in the Table editor. A hidden note still counts
-  toward the three; `notes_left()` (security definer, since the member
-  can't read hidden notes) tells Stickies what's left the way the limit
-  counts it.
+- **Stickies**: members only, `music_settings.note_limit` notes (three)
+  in any 24 hours, signed with the username; members can take their own
+  down. Hide a note by setting `approved` to false in the Table editor.
+  A hidden note still counts toward the limit; `notes_left()` (security
+  definer, since the member can't read hidden notes) tells Stickies
+  what's left the way the limit counts it, and `member_limits()` (migration
+  `20261004025117_member_limits.sql`) how many there are.
 - **Stickies of one's own** (`public.stickies`; migration
   `20260929194437_stickies_of_their_own.sql`): each member's own notes,
   on their own desktop, which row-level security gives that member alone,
@@ -328,7 +356,8 @@ browser.
   --type security`); the findings left on purpose
   are listed in `supabase/migrations/20260926100511_advisor.sql`,
   `20260929100000_owner.sql`, `20260929140000_playlists.sql`,
-  `20260930062024_job_hunt.sql` and `20261004015011_notes_left.sql`
+  `20260930062024_job_hunt.sql`, `20261004015011_notes_left.sql` and
+  `20261004025117_member_limits.sql`
   (`rules.sql` checks that the definer functions visitors and members
   may call are exactly those).
 - A limit that counts rows before inserting ("three a day") takes a

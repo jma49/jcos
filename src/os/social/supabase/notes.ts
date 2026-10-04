@@ -1,8 +1,8 @@
 // The guestbook's notes in public.notes: members put them up, row-level
 // security shows the approved ones, and the database holds each member to
-// three a day.
+// note_limit a day (three).
 
-import { NOTES_PER_DAY, type Note, type NoteColor, type NotesSocial } from '../notes';
+import type { Note, NoteColor, NotesSocial } from '../notes';
 import { refusal, type SupabaseContext } from './context';
 
 export function supabaseNotes({ client, account, member }: SupabaseContext): NotesSocial {
@@ -36,7 +36,7 @@ export function supabaseNotes({ client, account, member }: SupabaseContext): Not
       if (!account()) return 0;
       const { data, error } = await client.rpc('notes_left');
       if (error) throw refusal(error);
-      return typeof data === 'number' ? Math.max(0, Math.min(NOTES_PER_DAY, data)) : 0;
+      return typeof data === 'number' ? Math.max(0, data) : 0;
     }
   };
 }

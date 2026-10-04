@@ -38,7 +38,8 @@ function database(byAccount: Record<string, Sticky[]>) {
       if (answer.refuse) throw new Error('refused');
       return sticky(id, change.body ?? 'from the database', change);
     }),
-    removeSticky: vi.fn(async () => {})
+    removeSticky: vi.fn(async () => {}),
+    limits: vi.fn(async () => ({ notesPerDay: 3, stickies: 50, events: 5000, todos: 1000 }))
   };
   backend.social = social as never;
   return { social, answer };
@@ -138,6 +139,10 @@ describe('changing', () => {
     answer.byAccount.alice = Array.from({ length: 50 }, (_, i) => sticky(`s${i}`));
     await m.readMine('alice', { now: true });
     await expect(m.addSticky()).rejects.toThrow(/50 stickies/);
+    // The limit is the database's: raised there, a 51st goes up.
+    social.limits.mockResolvedValue({ notesPerDay: 3, stickies: 80, events: 5000, todos: 1000 });
+    await m.addSticky();
+    expect(social.addSticky).toHaveBeenCalledTimes(3);
   });
 
   test('without a database there’s nothing, and nothing breaks', async () => {

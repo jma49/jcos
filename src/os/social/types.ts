@@ -5,7 +5,8 @@
 // interface), its types and its constants: accounts.ts, notes.ts (the
 // guestbook), visitors.ts (presence), soapbox.ts, chat.ts, music.ts,
 // discs.ts, documents.ts (Jincheng's home folder), stickies.ts (a
-// member's own), calendar.ts (iCal) and jobs.ts (Job Hunt). Each backend
+// member's own), calendar.ts (iCal), jobs.ts (Job Hunt) and limits.ts
+// (what a member is held to). Each backend
 // has a slice per domain (supabase/<domain>.ts, local/<domain>.ts) and a
 // composer that joins them (supabase/index.ts, local/index.ts). This file
 // re-exports them all and joins their interfaces into Social, so callers
@@ -17,6 +18,7 @@ import type { ChatSocial } from './chat';
 import type { DiscsSocial } from './discs';
 import type { DocumentsSocial } from './documents';
 import type { JobsSocial } from './jobs';
+import type { LimitsSocial } from './limits';
 import type { MusicSocial } from './music';
 import type { NotesSocial } from './notes';
 import type { SoapboxSocial } from './soapbox';
@@ -33,6 +35,7 @@ export * from './music';
 export * from './documents';
 export * from './stickies';
 export * from './calendar';
+export * from './limits';
 export type { DiscsSocial } from './discs';
 
 /** Everything the site asks of the backend: every domain's part. */
@@ -47,4 +50,5 @@ export interface Social
     DocumentsSocial,
     StickiesSocial,
     CalendarSocial,
-    JobsSocial {}
+    JobsSocial,
+    LimitsSocial {}

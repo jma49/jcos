@@ -11,7 +11,7 @@
 
 import { useEffect, useSyncExternalStore } from 'react';
 import { getSocial } from '../../social/social';
-import { EVENT_MOST, SocialError, TODO_MOST, type CalendarEvent, type EventDraft, type Todo, type TodoDraft } from '../../social/types';
+import { SocialError, type CalendarEvent, type EventDraft, type Todo, type TodoDraft } from '../../social/types';
 
 export type { CalendarEvent, EventDraft, Todo, TodoDraft };
 
@@ -281,7 +281,9 @@ const withTodo = (todo: Todo) => (mine = { ...mine, todos: [...mine.todos.filter
 
 /** Adds an event of the member's own. */
 export async function addEvent(draft: Omit<EventDraft, 'id'>): Promise<CalendarEvent> {
-  if (mine.events.length >= EVENT_MOST) throw new Error(`Your calendar holds ${EVENT_MOST} events already. Delete some first.`);
+  // The database's limit (asked once a page); it refuses past it anyway.
+  const most = (await (await database()).limits())?.events;
+  if (most !== undefined && mine.events.length >= most) throw new Error(`Your calendar holds ${most} events already. Delete some first.`);
   const made = await writing(async () => (await database()).saveEvent(draft));
   withEvent(made);
   changed();
@@ -320,7 +322,8 @@ export async function removeEvent(id: string): Promise<void> {
 
 /** Adds a to-do of the member's own. */
 export async function addTodo(draft: Omit<TodoDraft, 'id'>): Promise<Todo> {
-  if (mine.todos.length >= TODO_MOST) throw new Error(`You have ${TODO_MOST} to-dos already. Delete some you’ve done first.`);
+  const most = (await (await database()).limits())?.todos;
+  if (most !== undefined && mine.todos.length >= most) throw new Error(`You have ${most} to-dos already. Delete some you’ve done first.`);
   const made = await writing(async () => (await database()).saveTodo(draft));
   withTodo(made);
   changed();

@@ -45,10 +45,6 @@ export interface Todo {
 /** A new to-do (no `id`), or a change to one made from `version`. */
 export type TodoDraft = Pick<Todo, 'title' | 'calendar' | 'priority' | 'due' | 'done'> & { id?: string; version?: number };
 
-/** How many events and to-dos a member may keep (the database's event_limit and todo_limit). */
-export const EVENT_MOST = 5000;
-export const TODO_MOST = 1000;
-
 export interface CalendarSocial {
   /** The signed-in member's own events on the days `from` to `to` (YYYY-MM-DD, both kept); none signed out. */
   myEvents: (from: string, to: string) => Promise<CalendarEvent[]>;

@@ -11,7 +11,7 @@ import { useEffect, useSyncExternalStore } from 'react';
 import { loadJSON, saveJSON } from '../core/storage';
 import { MENU_BAR_HEIGHT, type Viewport } from '../core/store';
 import { getSocial } from '../social/social';
-import { STICKY_MOST, type Sticky, type StickyChange } from '../social/types';
+import type { Sticky, StickyChange } from '../social/types';
 
 export type { Sticky, StickyChange };
 
@@ -143,7 +143,9 @@ export function onScreen(x: number, y: number, width: number, { width: vw, heigh
 
 /** Puts up a new sticky of the member's own, empty, where the next one goes. */
 export async function addSticky(change: StickyChange = {}): Promise<Sticky> {
-  if (mine.stickies.length >= STICKY_MOST) throw new Error(`You have ${STICKY_MOST} stickies already. Close one first.`);
+  // The database's limit (asked once a page); it refuses past it anyway.
+  const most = (await (await database()).limits())?.stickies;
+  if (most !== undefined && mine.stickies.length >= most) throw new Error(`You have ${most} stickies already. Close one first.`);
   const made = await writing(async () => (await database()).addSticky({ ...nextPlace(mine.stickies.length), ...change }));
   mine = { ...mine, stickies: [...mine.stickies.filter((s) => s.id !== made.id), made] };
   changed();

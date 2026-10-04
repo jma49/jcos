@@ -19,6 +19,7 @@ import { localContext } from './context';
 import { localDiscs } from './discs';
 import { localDocuments } from './documents';
 import { localJobs } from './jobs';
+import { localLimits } from './limits';
 import { localMusic } from './music';
 import { localNotes } from './notes';
 import { localSoapbox } from './soapbox';
@@ -38,6 +39,7 @@ export function localSocial(): Social {
     ...localDocuments(ctx),
     ...localStickies(ctx),
     ...localCalendar(ctx),
-    ...localJobs(ctx)
+    ...localJobs(ctx),
+    ...localLimits()
   };
 }

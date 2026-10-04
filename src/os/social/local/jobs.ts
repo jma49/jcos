@@ -1,10 +1,11 @@
 // Job Hunt in this browser, with the database's rules: only the owner (the
-// stand-in's Jincheng) reads or writes, anyone gets the totals.
+// stand-in's Jincheng) reads or writes (anyone else reads nothing), and
+// anyone gets the totals.
 
 import { loadJSON, saveJSON } from '../../core/storage';
 import { SocialError } from '../errors';
 import { fieldsOf, further, JOB_STAGES, jobChangedElsewhere, LADDER, totalsOf, type JobApplication, type JobEvent, type JobReach, type JobsSocial } from '../jobs';
-import type { LocalContext } from './context';
+import { DEV_OWNER, type LocalContext } from './context';
 
 const JOBS_KEY = 'os-dev-jobs';
 interface StoredJobs {
@@ -12,7 +13,7 @@ interface StoredJobs {
   events: JobEvent[];
 }
 
-export function localJobs({ owner }: LocalContext): JobsSocial {
+export function localJobs({ member, owner }: LocalContext): JobsSocial {
   const stored = () => loadJSON<StoredJobs>(JOBS_KEY, { applications: [], events: [] });
   const change = <T,>(write: (jobs: StoredJobs) => T): T => {
     const jobs = stored();
@@ -31,8 +32,9 @@ export function localJobs({ owner }: LocalContext): JobsSocial {
       });
     },
 
+    // As row-level security reads: a member who isn't the owner gets nothing.
     async myJobs() {
-      owner('Job Hunt');
+      if (member().username !== DEV_OWNER) return { applications: [], events: [] };
       return stored();
     },
 

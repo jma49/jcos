@@ -54,6 +54,7 @@ page at `/projects/<slug>/`.
 npm install
 npm run dev        # http://localhost:4321
 npm test           # unit tests (Vitest)
+npm run coverage   # the same, with how much of the code they run (in coverage/)
 npm run test:db    # database rules against a local Postgres (needs psql and the Supabase CLI)
 npm run db:generate # supabase/schema.sql and src/lib/database.types.ts from the migrations
 npm run build      # -> dist/
@@ -183,6 +184,7 @@ significant change goes through.
 | `bash scripts/vercel-ignore.sh <base>` | Vercel's ignored build step: says whether a deployment would be skipped (nothing the site is built from changed since `<base>`: only docs, tests, CI, the database, the Edge Functions' own folders or tooling). |
 | `npm run lint` | Checks the rules of React hooks and effects' dependencies, the boundaries between the OS, apps and applets (`import()` included), that anything remembered in the browser goes through `src/os/core/storage.ts`, and ESLint's recommended rules in `scripts/` (ESLint; `tests/eslint.test.ts` probes each rule). |
 | `npm run perf` | Measures a production build against the performance budgets (see `docs/agents/performance.md`). |
+| `npm run coverage` | Runs the unit tests with V8 coverage over everything that ships: a summary in the terminal, the full report in `coverage/` (not committed). CI prints the summary; there's no threshold yet. |
 | `node scripts/check-doc-paths.mjs` | Lists every repository path the docs cite in backticks that doesn't exist (`npm test` runs it too). |
 | `node scripts/check-public-sizes.mjs` | Lists every file in `public/` over its size budget: 1 MB for a desktop picture, 200 KB for anything else, each exception listed with its reason (`npm test` runs it too). |
 | `npm run photos:update` | Refreshes `src/data/photos.json` from Unsplash. |

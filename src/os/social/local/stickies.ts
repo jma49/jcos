@@ -5,8 +5,9 @@
 import { loadJSON, saveJSON } from '../../core/storage';
 import { changedElsewhere, SocialError } from '../errors';
 import { NOTE_COLORS } from '../notes';
-import { STICKY_MAX, STICKY_MOST, type StickiesSocial, type Sticky, type StickyChange } from '../stickies';
+import { STICKY_MAX, type StickiesSocial, type Sticky, type StickyChange } from '../stickies';
 import type { LocalContext } from './context';
+import { LOCAL_LIMITS } from './limits';
 
 /** Every member's own stickies, by account id. */
 const STICKIES_KEY = 'os-dev-stickies';
@@ -43,7 +44,7 @@ export function localStickies({ account, member }: LocalContext): StickiesSocial
     async addSticky(sticky) {
       checkSticky(sticky);
       return changeStickies((mine) => {
-        if (mine.length >= STICKY_MOST) throw new SocialError('limit', `You have ${STICKY_MOST} stickies already. Close one first.`);
+        if (mine.length >= LOCAL_LIMITS.stickies) throw new SocialError('limit', `You have ${LOCAL_LIMITS.stickies} stickies already. Close one first.`);
         const made: Sticky = {
           id: crypto.randomUUID(),
           body: '',

@@ -4,6 +4,7 @@
 
 import type { Account } from './accounts';
 
+/** A message's length at most: the table's check (why it's a constant: limits.ts). */
 export const CHAT_MAX = 500;
 
 /** A public room, set up by hand in the database. */

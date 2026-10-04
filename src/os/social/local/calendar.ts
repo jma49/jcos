@@ -4,9 +4,10 @@
 // versions count as version 1.
 
 import { loadJSON, saveJSON } from '../../core/storage';
-import { CALENDARS, EVENT_MOST, TODO_MOST, type CalendarEvent, type CalendarSocial, type Todo } from '../calendar';
+import { CALENDARS, type CalendarEvent, type CalendarSocial, type Todo } from '../calendar';
 import { changedElsewhere, SocialError } from '../errors';
 import type { LocalContext } from './context';
+import { LOCAL_LIMITS } from './limits';
 
 /** Every member's own calendar, by account id. */
 const CALENDAR_KEY = 'os-dev-calendar';
@@ -51,7 +52,7 @@ export function localCalendar({ account, member }: LocalContext): CalendarSocial
       checkEntry(fields);
       return changeCalendar((mine) => {
         if (!id) {
-          if (mine.events.length >= EVENT_MOST) throw new SocialError('limit', `Your calendar holds ${EVENT_MOST} events already. Delete some first.`);
+          if (mine.events.length >= LOCAL_LIMITS.events) throw new SocialError('limit', `Your calendar holds ${LOCAL_LIMITS.events} events already. Delete some first.`);
           const made: CalendarEvent = { id: crypto.randomUUID(), ...fields, version: 1 };
           mine.events.push(made);
           return made;
@@ -73,7 +74,7 @@ export function localCalendar({ account, member }: LocalContext): CalendarSocial
       return changeCalendar((mine) => {
         const now = new Date().toISOString();
         if (!id) {
-          if (mine.todos.length >= TODO_MOST) throw new SocialError('limit', `You have ${TODO_MOST} to-dos already. Delete some you’ve done first.`);
+          if (mine.todos.length >= LOCAL_LIMITS.todos) throw new SocialError('limit', `You have ${LOCAL_LIMITS.todos} to-dos already. Delete some you’ve done first.`);
           const made: Todo = { id: crypto.randomUUID(), ...fields, doneAt: fields.done ? now : null, created: now, version: 1 };
           mine.todos.push(made);
           return made;

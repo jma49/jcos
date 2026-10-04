@@ -755,6 +755,15 @@ export type Database = {
       chat_can_write: { Args: { target: string }; Returns: boolean };
       is_owner: { Args: Record<PropertyKey, never>; Returns: boolean };
       job_hunt_totals: { Args: Record<PropertyKey, never>; Returns: Json };
+      member_limits: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          events: number;
+          notes_per_day: number;
+          stickies: number;
+          todos: number;
+        }[];
+      };
       moderation_check: { Args: { p_secret: string }; Returns: boolean };
       moderation_register: { Args: { p_url: string }; Returns: undefined };
       music_play: {
