@@ -92,9 +92,15 @@ The code that isn't in the browser (each endpoint's parameters, answers and conv
   that day where the member is, and notes. A to-do has a title, a
   calendar, a priority from 0 (none) to 3 (high), perhaps a day it's due,
   and whether it's done; when it was done is the database's (a trigger
-  sets and clears `done_at`). The limits are counted under an advisory
-  lock per member. iCal uses them through `apps/ical/calendar.ts`, which
-  reads events a few weeks at a time.
+  sets and clears `done_at`). Every save names the `version` it was made
+  from, as documents' do (migration `20261004014420_ical_versions.sql`):
+  the trigger counts saves, so one from an older copy (another device or
+  tab) reaches no row and iCal says so and reads the item again
+  (`race.sh`: four saves of an event from one copy at once, one lands).
+  The limits are counted under an advisory lock per member. iCal uses
+  them through `apps/ical/calendar.ts`, which reads events a few weeks at
+  a time and saves each item's changes one after another, each naming
+  the version the one before it made.
 - **Job Hunt** (`public.job_applications`, `public.job_events`; migration
   `20260930062024_job_hunt.sql`): every company Jincheng has applied to,
   one row to a company and role whatever their case, with its stage,

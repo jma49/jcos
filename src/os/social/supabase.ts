@@ -146,8 +146,8 @@ const stickyOf = (row: StickyRow): Sticky => ({
 });
 
 /** The columns of a member's events and to-dos, as they read them. */
-const EVENT_COLUMNS = 'id,title,calendar,day,starts,ends,notes';
-const TODO_COLUMNS = 'id,title,calendar,priority,due,done,done_at,created_at';
+const EVENT_COLUMNS = 'id,title,calendar,day,starts,ends,notes,version';
+const TODO_COLUMNS = 'id,title,calendar,priority,due,done,done_at,created_at,version';
 
 type EventRow = CalendarEvent;
 interface TodoRow extends Omit<Todo, 'doneAt' | 'created'> {
@@ -162,7 +162,8 @@ const eventOf = (row: EventRow): CalendarEvent => ({
   day: row.day,
   starts: row.starts,
   ends: row.ends,
-  notes: row.notes
+  notes: row.notes,
+  version: row.version
 });
 
 const todoOf = (row: TodoRow): Todo => ({
@@ -173,7 +174,8 @@ const todoOf = (row: TodoRow): Todo => ({
   due: row.due,
   done: row.done,
   doneAt: row.done_at,
-  created: row.created_at
+  created: row.created_at,
+  version: row.version
 });
 
 /** An event or a to-do the database's checks refuse. */
@@ -766,10 +768,11 @@ export function supabaseSocial(url: string, key: string): Social {
       return (data ?? []).map(todoOf);
     },
 
-    async saveEvent({ id, ...fields }) {
+    // A change names the version it was made from, as a document's does.
+    async saveEvent({ id, version, ...fields }) {
       member();
       const request = id
-        ? client.from('events').update(fields).eq('id', id).select(EVENT_COLUMNS).maybeSingle()
+        ? client.from('events').update(fields).eq('id', id).eq('version', version ?? 0).select(EVENT_COLUMNS).maybeSingle()
         : client.from('events').insert(fields).select(EVENT_COLUMNS).single();
       const { data, error } = await request;
       if (error) throw error.code === '23514' ? badEntry() : refusal(error);
@@ -783,10 +786,10 @@ export function supabaseSocial(url: string, key: string): Social {
       if (error) throw refusal(error);
     },
 
-    async saveTodo({ id, ...fields }) {
+    async saveTodo({ id, version, ...fields }) {
       member();
       const request = id
-        ? client.from('todos').update(fields).eq('id', id).select(TODO_COLUMNS).maybeSingle()
+        ? client.from('todos').update(fields).eq('id', id).eq('version', version ?? 0).select(TODO_COLUMNS).maybeSingle()
         : client.from('todos').insert(fields).select(TODO_COLUMNS).single();
       const { data, error } = await request;
       if (error) throw error.code === '23514' ? badEntry() : refusal(error);

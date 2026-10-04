@@ -253,6 +253,17 @@ update public.todos set title = 'Called the bank' where title = 'Call the bank';
 update public.todos set done = false where title = 'Called the bank';
 select pg_temp.check((select done_at is null from public.todos where title = 'Called the bank'), 'and forgets when it''s not done any more');
 select pg_temp.check(pg_temp.refused($$update public.todos set done_at = now() - interval '1 year'$$), 'when a to-do was done is the database''s');
+-- Every save counts, as documents' do: a save names the version it was made from, so one from an older copy (another device) reaches no row.
+select pg_temp.check((select bool_and(version = 1) from public.events) and (select version = 1 from public.todos where title = 'Book the tent'), 'an event or a to-do starts at version 1');
+update public.events set title = 'Mum''s 60th' where title = 'Mum''s birthday' and version = 1;
+update public.events set title = 'From an older copy' where title like 'Mum''s%' and version = 1;
+select pg_temp.check((select title = 'Mum''s 60th' and version = 2 and updated_at >= created_at from public.events where title like 'Mum''s%'), 'an event saved from an older copy changes nothing');
+select pg_temp.check((select version = 4 from public.todos where title = 'Called the bank'), 'every save of a to-do counts, ticking it included');
+update public.todos set priority = 1 where title = 'Called the bank' and version = 3;
+select pg_temp.check((select priority = 0 and version = 4 from public.todos where title = 'Called the bank'), 'a to-do saved from an older copy changes nothing');
+select pg_temp.check(pg_temp.refused($$update public.events set version = 9 where title = 'Standup'$$)
+  and pg_temp.refused($$update public.todos set version = 9 where title = 'Book the tent'$$)
+  and pg_temp.refused($$insert into public.todos (title, version) values ('x', 9)$$), 'no one sets a version');
 select pg_temp.check(pg_temp.refused($$select user_id from public.events$$), 'whose an event is isn''t asked for');
 select pg_temp.check(pg_temp.refused($$insert into public.events (title, day, starts) values ('x', '2026-10-01', 600)$$)
   and pg_temp.refused($$insert into public.events (title, day, starts, ends) values ('x', '2026-10-01', 600, 540)$$)

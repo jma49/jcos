@@ -610,23 +610,26 @@ export function localSocial(): Social {
 
     // A member's own calendar, in this browser, each account's apart, with the database's rules.
     async myEvents(from, to) {
-      return (calendarOf()?.events ?? []).filter((e) => e.day >= from && e.day <= to);
+      return (calendarOf()?.events ?? []).filter((e) => e.day >= from && e.day <= to).map((e) => ({ ...e, version: e.version ?? 1 }));
     },
     async myTodos() {
-      return calendarOf()?.todos ?? [];
+      return (calendarOf()?.todos ?? []).map((t) => ({ ...t, version: t.version ?? 1 }));
     },
-    async saveEvent({ id, ...fields }) {
+    // A change names the version it was made from, as the database checks.
+    // Events and to-dos kept before there were versions count as version 1.
+    async saveEvent({ id, version, ...fields }) {
       checkEntry(fields);
       return changeCalendar((mine) => {
         if (!id) {
           if (mine.events.length >= EVENT_MOST) throw new SocialError('limit', `Your calendar holds ${EVENT_MOST} events already. Delete some first.`);
-          const made: CalendarEvent = { id: crypto.randomUUID(), ...fields };
+          const made: CalendarEvent = { id: crypto.randomUUID(), ...fields, version: 1 };
           mine.events.push(made);
           return made;
         }
         const at = mine.events.findIndex((e) => e.id === id);
-        if (at < 0) throw changedElsewhere();
-        mine.events[at] = { ...mine.events[at], ...fields };
+        const was = mine.events[at];
+        if (at < 0 || (was.version ?? 1) !== version) throw changedElsewhere();
+        mine.events[at] = { ...was, ...fields, version: (was.version ?? 1) + 1 };
         return mine.events[at];
       });
     },
@@ -635,20 +638,20 @@ export function localSocial(): Social {
         mine.events = mine.events.filter((e) => e.id !== id);
       });
     },
-    async saveTodo({ id, ...fields }) {
+    async saveTodo({ id, version, ...fields }) {
       checkEntry(fields);
       return changeCalendar((mine) => {
         const now = new Date().toISOString();
         if (!id) {
           if (mine.todos.length >= TODO_MOST) throw new SocialError('limit', `You have ${TODO_MOST} to-dos already. Delete some you’ve done first.`);
-          const made: Todo = { id: crypto.randomUUID(), ...fields, doneAt: fields.done ? now : null, created: now };
+          const made: Todo = { id: crypto.randomUUID(), ...fields, doneAt: fields.done ? now : null, created: now, version: 1 };
           mine.todos.push(made);
           return made;
         }
         const at = mine.todos.findIndex((t) => t.id === id);
-        if (at < 0) throw changedElsewhere();
         const was = mine.todos[at];
-        mine.todos[at] = { ...was, ...fields, doneAt: !fields.done ? null : was.done ? was.doneAt : now };
+        if (at < 0 || (was.version ?? 1) !== version) throw changedElsewhere();
+        mine.todos[at] = { ...was, ...fields, doneAt: !fields.done ? null : was.done ? was.doneAt : now, version: (was.version ?? 1) + 1 };
         return mine.todos[at];
       });
     },

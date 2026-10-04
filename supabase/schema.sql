@@ -1880,7 +1880,8 @@ notify pgrst, 'reload schema';
 
 -- ---------------------------------------------------------------------
 -- iCal of one's own (the same as
--- supabase/migrations/20260929202730_ical_of_their_own.sql, whose header explains it).
+-- supabase/migrations/20260929202730_ical_of_their_own.sql, whose header explains it,
+-- with the versions of 20261004014420_ical_versions.sql).
 
 create table if not exists public.events (
   id uuid primary key default gen_random_uuid(),
@@ -1893,6 +1894,8 @@ create table if not exists public.events (
   notes text not null default '' check (char_length(notes) <= 4000),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
+  -- Counts saves: a save names the version it was made from (20261004014420_ical_versions.sql).
+  version int not null default 1,
   -- All day (no times), or a start and an end after it.
   constraint events_times check ((starts is null and ends is null) or (starts is not null and ends is not null and ends > starts))
 );
@@ -1908,7 +1911,8 @@ create table if not exists public.todos (
   done boolean not null default false,
   done_at timestamptz,
   created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
+  updated_at timestamptz not null default now(),
+  version int not null default 1
 );
 create index if not exists todos_member on public.todos (user_id, created_at);
 
@@ -1923,11 +1927,11 @@ create policy "A member's to-dos are theirs alone" on public.todos for all to au
   using (user_id = (select auth.uid())) with check (user_id = (select auth.uid()));
 
 revoke all on public.events, public.todos from anon, authenticated;
-grant select (id, title, calendar, day, starts, ends, notes, created_at, updated_at) on public.events to authenticated;
+grant select (id, title, calendar, day, starts, ends, notes, created_at, updated_at, version) on public.events to authenticated;
 grant insert (title, calendar, day, starts, ends, notes) on public.events to authenticated;
 grant update (title, calendar, day, starts, ends, notes) on public.events to authenticated;
 grant delete on public.events to authenticated;
-grant select (id, title, calendar, priority, due, done, done_at, created_at, updated_at) on public.todos to authenticated;
+grant select (id, title, calendar, priority, due, done, done_at, created_at, updated_at, version) on public.todos to authenticated;
 grant insert (title, calendar, priority, due, done) on public.todos to authenticated;
 grant update (title, calendar, priority, due, done) on public.todos to authenticated;
 grant delete on public.todos to authenticated;
@@ -1940,6 +1944,7 @@ set search_path = public
 as $$
 begin
   if tg_op = 'UPDATE' then
+    new.version := old.version + 1;
     new.updated_at := now();
   end if;
   if tg_table_name = 'todos' then

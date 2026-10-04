@@ -382,7 +382,11 @@ export interface Social extends JobsSocial {
   myEvents: (from: string, to: string) => Promise<CalendarEvent[]>;
   /** The signed-in member's own to-dos; none signed out. */
   myTodos: () => Promise<Todo[]>;
-  /** Adds one of the member's events (no `id`), or changes it; refused ('conflict') if it was deleted elsewhere. */
+  /**
+   * Adds one of the member's events (no `id`), or changes it from
+   * `version`; refused ('conflict') if it was saved or deleted elsewhere
+   * since.
+   */
   saveEvent: (event: EventDraft) => Promise<CalendarEvent>;
   removeEvent: (id: string) => Promise<void>;
   /** Adds one of the member's to-dos (no `id`), or changes it, as saveEvent does an event. */
@@ -406,9 +410,12 @@ export interface CalendarEvent {
   starts: number | null;
   ends: number | null;
   notes: string;
+  /** Counts saves (the database's): a change names the version it was made from. */
+  version: number;
 }
 
-export type EventDraft = Omit<CalendarEvent, 'id'> & { id?: string };
+/** A new event (no `id`), or a change to one made from `version`. */
+export type EventDraft = Omit<CalendarEvent, 'id' | 'version'> & { id?: string; version?: number };
 
 /** One of a member's own to-dos. */
 export interface Todo {
@@ -423,9 +430,12 @@ export interface Todo {
   /** When it was done (the database's), or null. */
   doneAt: string | null;
   created: string;
+  /** Counts saves (the database's), as an event's does. */
+  version: number;
 }
 
-export type TodoDraft = Pick<Todo, 'title' | 'calendar' | 'priority' | 'due' | 'done'> & { id?: string };
+/** A new to-do (no `id`), or a change to one made from `version`. */
+export type TodoDraft = Pick<Todo, 'title' | 'calendar' | 'priority' | 'due' | 'done'> & { id?: string; version?: number };
 
 /** How many events and to-dos a member may keep (the database's event_limit and todo_limit). */
 export const EVENT_MOST = 5000;

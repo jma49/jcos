@@ -4,11 +4,14 @@
 // moves; to-dos are read whole. Changed here as the member adds, edits or
 // deletes one, so iCal shows it at once, and the member's other tabs read
 // again on every change. Signing out, or in as someone else, takes them
-// away at once.
+// away at once. Each save names the version it was made from, so one from
+// an older copy (another device) is refused as a conflict rather than
+// losing what was saved there; an item's saves on this page go one after
+// another, each naming the version the one before it made.
 
 import { useEffect, useSyncExternalStore } from 'react';
 import { getSocial } from '../../social/social';
-import { EVENT_MOST, TODO_MOST, type CalendarEvent, type EventDraft, type Todo, type TodoDraft } from '../../social/types';
+import { EVENT_MOST, SocialError, TODO_MOST, type CalendarEvent, type EventDraft, type Todo, type TodoDraft } from '../../social/types';
 
 export type { CalendarEvent, EventDraft, Todo, TodoDraft };
 
@@ -134,6 +137,7 @@ function belongTo(account: string | null) {
   if (mine.account === account) return;
   mine = { account, events: [], todos: [] };
   freshAt.clear();
+  moved.clear();
   changed();
 }
 
@@ -231,6 +235,47 @@ async function writing<T>(write: () => Promise<T>): Promise<T> {
   }
 }
 
+// ---------- Saving in turn ----------
+
+/** Each item's latest save on this page: a change made while one is saving waits for it. */
+const turns = new Map<string, Promise<unknown>>();
+/** The version each of this page's saves moved an item to, by `id@version` it was made from. */
+const moved = new Map<string, number>();
+
+/** The version a change made over `version` of an item names: past this page's own saves since. */
+function baseOf(id: string, version: number) {
+  let base = version;
+  for (let next = moved.get(`${id}@${base}`); next !== undefined; next = moved.get(`${id}@${base}`)) base = next;
+  return base;
+}
+
+/** Saves an item after its saves already going, naming the version it was made from. */
+function inTurn<T extends { version: number }>(id: string, version: number, save: (version: number) => Promise<T>): Promise<T> {
+  const turn = (turns.get(id) ?? Promise.resolve())
+    .catch(() => {})
+    .then(async () => {
+      const base = baseOf(id, version);
+      const saved = await save(base);
+      moved.set(`${id}@${base}`, saved.version);
+      return saved;
+    });
+  turns.set(id, turn);
+  void turn.catch(() => {}).finally(() => turns.get(id) === turn && turns.delete(id));
+  return turn;
+}
+
+/** Whether `turn` is still the item's latest save: no change made since waits behind it. */
+const latestTurn = (id: string, turn: Promise<unknown>) => (turns.get(id) ?? turn) === turn;
+
+const isConflict = (error: unknown) => error instanceof SocialError && error.reason === 'conflict';
+
+/** After a conflict: what was saved elsewhere, read now, here and in iCal's open views. */
+function readAgain(day: string | null) {
+  const account = mine.account;
+  otherTabs.forEach((read) => read());
+  return day ? readEvents(account, day, day, { now: true }) : readTodos(account, { now: true });
+}
+
 const withEvent = (event: CalendarEvent) => (mine = { ...mine, events: [...mine.events.filter((e) => e.id !== event.id), event] });
 const withTodo = (todo: Todo) => (mine = { ...mine, todos: [...mine.todos.filter((t) => t.id !== todo.id), todo] });
 
@@ -243,17 +288,26 @@ export async function addEvent(draft: Omit<EventDraft, 'id'>): Promise<CalendarE
   return made;
 }
 
-/** Changes an event: shown at once, saved after; refused, it goes back to what the database has. */
+/**
+ * Changes an event: shown at once, saved after; refused, it goes back to
+ * what the database has (read again when it was saved elsewhere since:
+ * a 'conflict').
+ */
 export async function changeEvent(event: CalendarEvent): Promise<void> {
   const was = mine.events.find((e) => e.id === event.id);
   withEvent(event);
   changed();
+  const turn = inTurn(event.id, event.version, (version) => writing(async () => (await database()).saveEvent({ ...event, version })));
   try {
-    withEvent(await writing(async () => (await database()).saveEvent(event)));
+    const saved = await turn;
+    // A change made since shows already, and saves next.
+    if (!latestTurn(event.id, turn)) return;
+    withEvent(saved);
     changed();
   } catch (error) {
     if (was) withEvent(was);
     changed();
+    if (isConflict(error)) await readAgain(was?.day ?? event.day);
     throw error;
   }
 }
@@ -273,18 +327,22 @@ export async function addTodo(draft: Omit<TodoDraft, 'id'>): Promise<Todo> {
   return made;
 }
 
-/** Changes a to-do (ticked, renamed, its priority or when it's due): shown at once, saved after; refused, it goes back. */
+/** Changes a to-do (ticked, renamed, its priority or when it's due), as changeEvent does an event. */
 export async function changeTodo(todo: Todo): Promise<void> {
   const was = mine.todos.find((t) => t.id === todo.id);
   withTodo(todo);
   changed();
+  const { id, title, calendar, priority, due, done } = todo;
+  const turn = inTurn(id, todo.version, (version) => writing(async () => (await database()).saveTodo({ id, version, title, calendar, priority, due, done })));
   try {
-    const { id, title, calendar, priority, due, done } = todo;
-    withTodo(await writing(async () => (await database()).saveTodo({ id, title, calendar, priority, due, done })));
+    const saved = await turn;
+    if (!latestTurn(id, turn)) return;
+    withTodo(saved);
     changed();
   } catch (error) {
     if (was) withTodo(was);
     changed();
+    if (isConflict(error)) await readAgain(null);
     throw error;
   }
 }
