@@ -78,8 +78,9 @@ cover, and tuning its lyrics' offset. At most 200 songs.
 ## A desktop picture
 
 Photos go in `public/os/wallpapers/` as WebP, at most 2560px wide and
-quality about 75, listed in `src/data/wallpapers.json`. Solid colours
-and patterns are `SOLID_COLORS` and `PATTERNS` in
+quality about 75, at most 1 MB (anything else in `public/` at most
+200 KB; `npm test` checks both, `scripts/check-public-sizes.mjs`),
+listed in `src/data/wallpapers.json`. Solid colours and patterns are `SOLID_COLORS` and `PATTERNS` in
 `src/os/look/wallpapers.ts`. Jincheng's own photos are never desktop
 pictures.
 
@@ -124,7 +125,8 @@ be overwritten.
 The JM/OS Projects app, the pages at `/projects/<slug>/`, the sitemap and
 `llms.txt` all update automatically.
 
-Put a client-side tool that needs no backend under `src/pages/tools/`
-and hydrate its React component only on that page. Deploy a tool that
+Put a client-side tool that needs no backend in a page of its own under
+`src/pages/` (a new `tools/` folder there; there's none yet) and
+hydrate its React component only on that page. Deploy a tool that
 needs a server or API keys as its own project on a subdomain, and link
 to it from `demo`.

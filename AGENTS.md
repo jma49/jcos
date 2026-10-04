@@ -102,12 +102,13 @@ in docs/decisions/) and take it out.
 
 | Changed | Run |
 | --- | --- |
-| any code | `npm run check` (types), `npm run lint` (hooks, the app boundaries, storage), `npm test` |
+| any code | `npm run check` (types), `npm run lint` (hooks, the app boundaries, storage, the scripts), `npm test` |
 | an app, the shell or anything a visitor sees | `npm run build`, then `npm run test:smoke`; open it in a browser too (`npm run serve`) |
 | the first load, a dependency, or anything per frame | `npm run build`, then `npm run perf`: every line within budget |
 | the schema, a migration, a policy or a limit | `npm run test:db`, with a check (and a race for a limit) for the new rule; once merged, put it live as jmos-ops's HANDOFF.md (§1) says |
 | an Edge Function | `npm test` (its `*.test.mjs`) and `deno check supabase/functions/*/index.ts` (its types) |
 | a project's cover or the home page's look | `npm run preview:capture` |
+| a doc | `npm test` (every path cited in backticks exists: `scripts/check-doc-paths.mjs`) |
 
 CI (`.github/workflows/ci.yml`) runs `node scripts/audit.mjs`
 (`npm audit` for what ships, but for the listed exceptions), the type check (the Edge Functions' with `deno check`), the lint, the unit tests, the
@@ -176,8 +177,10 @@ later delete does not undo a commit.
 - No personal tool files: `.claude/settings.local.json`,
   `.claude/worktrees/`, `CLAUDE.local.md`, `.cursor/`, editor settings.
 - Images are most of the repository's weight. Add one at the format
-  and size [docs/agents/adding.md](docs/agents/adding.md) gives, don't
-  commit a second copy of a picture already in the repo, and don't
+  and size [docs/agents/adding.md](docs/agents/adding.md) gives
+  (`npm test` holds each file in `public/` to a budget:
+  `scripts/check-public-sizes.mjs`), don't commit a second copy of a
+  picture already in the repo, and don't
   commit recaptured covers or `public/og.jpg` unless the page they show
   actually changed.
 - When a new tool or script writes files into the repo, add its output

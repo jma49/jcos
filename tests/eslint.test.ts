@@ -110,3 +110,15 @@ describe('the browser’s memory goes through core/storage.ts', () => {
     expect(await lint('src/os/apps/probe/probe.test.ts', "localStorage.clear();")).toBe('');
   });
 });
+
+describe('the scripts get ESLint’s recommended rules, under Node', () => {
+  test('an undefined name or an unused variable', async () => {
+    expect(await lint('scripts/probe.mjs', 'console.log(missing);')).toContain("'missing' is not defined.");
+    expect(await lint('scripts/probe.mjs', 'const unused = 1;')).toContain("'unused' is assigned a value but never used.");
+  });
+  test('Node’s globals, and the browser’s only where Playwright runs code in a page', async () => {
+    expect(await lint('scripts/probe.mjs', 'process.exitCode = 1;\nconsole.log(new URL(import.meta.url));')).toBe('');
+    expect(await lint('scripts/probe.mjs', 'console.log(document.title);')).toContain("'document' is not defined.");
+    expect(await lint('scripts/smoke.mjs', 'console.log(document.title);')).toBe('');
+  });
+});

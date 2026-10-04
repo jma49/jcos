@@ -2,10 +2,13 @@
 // effect that should run on one trigger but read the latest values reads
 // them through useEffectEvent, rather than leaving them out), the
 // boundaries between the OS, apps and applets (docs/agents/desktop.md),
-// and that anything remembered in the browser goes through
-// core/storage.ts. Formatting and style are left to the surrounding code
-// (see AGENTS.md). tests/eslint.test.ts probes each rule.
+// that anything remembered in the browser goes through core/storage.ts,
+// and, in scripts/, ESLint's recommended rules. Formatting and style are
+// left to the surrounding code (see AGENTS.md). tests/eslint.test.ts
+// probes each rule.
+import js from '@eslint/js';
 import reactHooks from 'eslint-plugin-react-hooks';
+import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
 // import() is how the desktop loads almost everything, and ESLint's
@@ -131,6 +134,20 @@ export default [
   {
     files: ['src/os/apps/*/manifest.ts'],
     rules: { 'no-restricted-imports': ['error', { patterns: manifestImports }] }
+  },
+  // The scripts in scripts/ run under Node, some against production (the
+  // photo refresh, the songs snapshot, the job-hunt import): ESLint's
+  // recommended rules catch an undefined name or an unused variable before
+  // they run. The scripts that drive a browser through Playwright pass it
+  // functions to run in the page, so they know the browser's globals too.
+  {
+    files: ['scripts/**/*.{js,mjs,ts}'],
+    languageOptions: { parser: tseslint.parser, globals: globals.node },
+    rules: js.configs.recommended.rules
+  },
+  {
+    files: ['scripts/{smoke,perf-audit,capture-previews}.mjs'],
+    languageOptions: { globals: globals.browser }
   },
   // Storage can be missing, blocked or full, and every tab of a visitor
   // shares it: core/storage.ts handles both (AGENTS.md), so nothing else

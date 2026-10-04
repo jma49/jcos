@@ -51,6 +51,7 @@ const STAGES = ['applied', 'assessment', 'interviewing', 'offer', 'closed'];
 const REACHED = ['applied', 'assessment', 'interviewing', 'offer'];
 const OUTCOMES = ['rejected', 'withdrew', 'no_reply', 'declined'];
 const KINDS = ['applied', 'assessment', 'interview', 'offer', 'rejection', 'withdrawal', 'reminder', 'other'];
+// eslint-disable-next-line no-control-regex -- control characters are what it finds
 const CONTROL = /[\u0000-\u001f\u007f]/;
 const GMAIL_ID = /^[0-9a-f]{8,32}$/;
 
@@ -111,6 +112,7 @@ function checked(found) {
           if (messages.has(e.message)) throw new Error(`${at}: message ${e.message} is listed twice`);
           messages.add(e.message);
         }
+        // eslint-disable-next-line no-control-regex -- control characters become spaces
         const subject = typeof e.subject === 'string' ? e.subject.replace(/[\u0000-\u001f\u007f]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 300) : '';
         return { kind: e.kind, at: new Date(e.at).toISOString(), subject, thread: e.thread ?? null, message: e.message ?? null };
       });
@@ -182,7 +184,9 @@ try {
   let message = said.trim() || String(error.stderr ?? error.message).trim();
   try {
     message = JSON.parse(said).error?.message ?? message;
-  } catch {}
+  } catch {
+    // Not JSON: keep what it said.
+  }
   console.error(`Nothing was written: ${message}`);
   process.exitCode = 1;
 } finally {

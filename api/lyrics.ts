@@ -5,11 +5,13 @@
 // return its LRC. NetEase writes Simplified Chinese; the lyrics come back in
 // Traditional to match the songs' own titles.
 //
-// Responds 404 when nothing matches and 502 when NetEase doesn't answer in
-// time (each request gets five seconds). Answers are cached at the edge for
-// a day, misses for an hour, so NetEase sees each song about once a day.
+// Responds 404 when nothing matches, and 502 when NetEase doesn't answer in
+// time (each request gets five seconds) or answers in a shape it doesn't
+// expect (checked with valibot). Answers are cached at the edge for a day,
+// misses for an hour, so NetEase sees each song about once a day.
 
 import { Converter } from 'opencc-js';
+import * as v from 'valibot';
 
 const toTraditional = Converter({ from: 'cn', to: 'tw' });
 
@@ -18,21 +20,37 @@ const HEADERS = {
   referer: 'https://music.163.com/'
 };
 
-interface SearchResult {
-  result?: { songs?: { id: number; name: string; duration: number; artists: { name: string }[] }[] };
-}
+// What this reads of NetEase's answers, checked as they arrive: an answer
+// of another shape is NetEase failing (502), not a song without lyrics.
+// A search or song with nothing to give may leave its part out or null.
+const SearchResult = v.object({
+  result: v.nullish(
+    v.object({
+      songs: v.nullish(
+        v.array(v.object({ id: v.number(), name: v.string(), duration: v.number(), artists: v.array(v.object({ name: v.string() })) }))
+      )
+    })
+  )
+});
 
-interface LyricResult {
-  lrc?: { lyric?: string };
-}
+const LyricResult = v.object({ lrc: v.nullish(v.object({ lyric: v.nullish(v.string()) })) });
 
 /** Credits NetEase puts in the first lines ("作词 : …"), which aren't sung. */
 const CREDIT = /^\[[\d:.]+\]\s*(作词|作曲|编曲|制作人|作詞|編曲|製作人|词|曲)\s*[:：]/;
 
-/** A NetEase request that gives up after five seconds rather than holding the visitor's lyrics up. */
-async function netease<T>(path: string): Promise<T | null> {
+/**
+ * A NetEase request that gives up after five seconds rather than holding the
+ * visitor's lyrics up: its answer as `schema` describes it, null when NetEase
+ * says no, and an error when the answer isn't of that shape.
+ */
+async function netease<S extends v.GenericSchema>(path: string, schema: S): Promise<v.InferOutput<S> | null> {
   const res = await fetch(`https://music.163.com${path}`, { headers: HEADERS, signal: AbortSignal.timeout(5000) });
-  return res.ok ? ((await res.json()) as T) : null;
+  if (!res.ok) return null;
+  const answer = v.safeParse(schema, await res.json());
+  if (answer.success) return answer.output;
+  // The endpoint and what didn't fit, not the query (a visitor's search).
+  const [issue] = answer.issues;
+  throw new Error(`unexpected answer from ${path.split('?')[0]} at ${v.getDotPath(issue) ?? 'the top'}: ${issue.message}`);
 }
 
 export async function GET(request: Request) {
@@ -59,7 +77,7 @@ export async function GET(request: Request) {
 }
 
 async function lookUp(title: string, artist: string, duration: number) {
-  const search = await netease<SearchResult>(`/api/search/get?${new URLSearchParams({ s: `${title} ${artist}`, type: '1', limit: '10' })}`);
+  const search = await netease(`/api/search/get?${new URLSearchParams({ s: `${title} ${artist}`, type: '1', limit: '10' })}`, SearchResult);
   const songs = search?.result?.songs ?? [];
   // The same song (title, then artist), then the closest length. Titles are
   // compared without brackets, spaces or case, in Traditional characters.
@@ -71,7 +89,7 @@ async function lookUp(title: string, artist: string, duration: number) {
     .sort((a, b) => (duration ? Math.abs(a.duration / 1000 - duration) - Math.abs(b.duration / 1000 - duration) : 0));
 
   for (const song of pool.slice(0, 3)) {
-    const lrc = (await netease<LyricResult>(`/api/song/lyric?id=${song.id}&lv=1`))?.lrc?.lyric;
+    const lrc = (await netease(`/api/song/lyric?id=${song.id}&lv=1`, LyricResult))?.lrc?.lyric;
     if (!lrc || !/\[\d+:\d+/.test(lrc)) continue;
     const lines = lrc.split('\n').filter((line) => !CREDIT.test(line));
     return Response.json(
