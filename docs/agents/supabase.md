@@ -235,7 +235,11 @@ rollback;` first (`supabase db query --linked -f`). A migration must run
 twice without harm ([pitfalls.md](pitfalls.md)): `npm run test:db` reruns
 every one from `20260926071227` on over the full schema
 (`supabase/tests/run.sh` loops over the folder, so a new file is covered
-without being listed).
+without being listed). It dumps the structure (`pg_dump --schema-only`)
+before and after, and fails on any difference, so a change made in a
+migration and not in `schema.sql` (a function's body, a policy, a
+grant) is caught; a column only one side adds isn't, since `create
+table if not exists` hides it.
 
 Without those variables, production hides these features, and `astro dev`
 falls back to `src/os/social/local.ts`, which keeps accounts, notes and

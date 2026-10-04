@@ -1209,13 +1209,15 @@ $$;
 revoke execute on function public.music_play(text) from public, anon, authenticated;
 grant execute on function public.music_play(text) to service_role;
 
+-- With a WHERE: Supabase's API refuses a DELETE without one
+-- (pg_safeupdate). The comment sits outside the body, as in
+-- 20260927093000_music_stop_where.sql, so both define the same function.
 create or replace function public.music_stop()
 returns void
 language sql
 security definer
 set search_path = public
 as $$
-  -- With a WHERE: Supabase's API refuses a DELETE without one (pg_safeupdate).
   delete from public.now_playing where id;
 $$;
 revoke execute on function public.music_stop() from public, anon, authenticated;
