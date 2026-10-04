@@ -114,6 +114,7 @@ Function secrets:
 ```
 src/os/            the desktop, one React island (its folders: docs/agents/desktop.md)
 src/lib/           what the pages, the desktop and api/ share: the media library's shape, photos, projects
+src/config/        where the site lives (site.ts): its domain and addresses, for astro.config.mjs, the desktop and api/
 src/pages/         the home page, project pages, robots.txt, llms.txt
 src/content/       the site's copy (site.ts), the projects (Markdown) and their covers
 src/data/          songs, desktop pictures, the photo snapshot

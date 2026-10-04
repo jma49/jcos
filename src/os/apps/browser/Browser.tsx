@@ -1,4 +1,5 @@
 import { useEffect, useEffectEvent, useMemo, useState } from 'react';
+import { ARCHIVE_URL } from '../../../config/site';
 import { BackGlyph, ForwardGlyph } from '../../core/glyphs';
 import { useOSData } from '../../core/context';
 import type { AppProps } from '../../core/registry';
@@ -6,7 +7,7 @@ import { useWindows } from '../../core/store';
 import { CLASSICS, type Bookmark } from './bookmarks';
 import { addressToUrl, back, forward, hostOf, pastYears, start, visit, waybackUrl, type History, type Visit } from './navigation';
 
-const HOME: Visit = { url: 'https://ocra.majincheng.com/', year: null };
+const HOME: Visit = { url: ARCHIVE_URL, year: null };
 
 /** Whether a page may be shown in a frame here: unknown until /api/framing answers, and not asked for the archive or this site. */
 type Framing = 'unknown' | 'yes' | 'no';

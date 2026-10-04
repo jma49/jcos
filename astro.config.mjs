@@ -1,10 +1,11 @@
 import { defineConfig } from 'astro/config';
 import react from '@astrojs/react';
 import sitemap from '@astrojs/sitemap';
+import { SITE_URL } from './src/config/site';
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://www.majincheng.com',
+  site: SITE_URL,
   // The dev toolbar sits where the JM/OS Dock is. It never ships to production.
   devToolbar: { enabled: false },
   integrations: [

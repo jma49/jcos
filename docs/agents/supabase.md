@@ -109,7 +109,9 @@ since it plays the database.
 - **Accounts** (`src/os/social/`, `apps/account/`): a username and a
   password, with an optional recovery address. They're Supabase Auth users
   whose address is made from the username
-  (`<username>@users.majincheng.com`), so Authentication › Providers ›
+  (`<username>@users.majincheng.com`, `MEMBER_EMAIL_DOMAIN` in
+  `src/config/site.ts`, which never changes: existing accounts and the
+  database's check depend on it), so Authentication › Providers ›
   Email › "Confirm email" must be off. `public.profiles` holds usernames;
   recovery addresses sit in `private.recovery_emails`, out of the API's
   reach. `social/account.ts` tells the interface who's signed in. A
