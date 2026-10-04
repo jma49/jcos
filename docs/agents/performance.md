@@ -2,7 +2,11 @@
 
 - **Budgets** (checked by `npm run perf`; see [self-audit.md](self-audit.md)) for a first visit,
   meaning what's requested in the first seven seconds, before the
-  desktop settles and fetches ahead:
+  desktop settles and fetches ahead. It's measured on a build with
+  Supabase's settings, as production has them (placeholders, the
+  backend's requests refused): before 2026-10-04 (#255) the build had
+  none, and missed the 58 KB supabase-js chunk a visitor was sent
+  0.2 s in (212 KB in all).
   - at most 160 KB of JavaScript, gzipped (152 today; react-dom alone
     is 67), and 20 KB of CSS (12 today);
   - at most 1.1 MB of images and 250 KB of fonts;
@@ -22,7 +26,15 @@
 - **Load only what the first screen needs.**
   - Apps are lazy, code and styles (`registry.tsx`, `core/appStyles.ts`):
     `perf` fails if an applet's chunk is in the first load.
-  - The Supabase client arrives by dynamic import (`social.ts`).
+  - The Supabase client arrives by dynamic import (`social.ts`), and
+    not on a first visit: without a stored session no one is signed
+    in, which `social/account.ts` knows without the client (and offers
+    Sign In at once). The client loads when something asks for it (an
+    app, signing in, a deep link such as a password reset) or once the
+    desktop has settled, with Presence. A member's stored session loads
+    it at the start, since their desktop (their name in the menu bar,
+    their stickies) waits on it. Another tab signing in loads it to
+    follow.
   - Moving apps in and out of the Dock (`shell/dockDrag.tsx`) loads on
     the first press, or once the desktop has settled.
   - The Dashboard, Spotlight and the screen saver's views load on first

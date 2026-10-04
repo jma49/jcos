@@ -1,6 +1,6 @@
 # 0009. What waits for the desktop to settle
 
-- Date: 2026-09-27 (amended 2026-09-29)
+- Date: 2026-09-27 (amended 2026-09-29 and 2026-10-04)
 - Status: accepted
 
 ## Context
@@ -20,6 +20,14 @@ the first screen.
   chat's alerts start once the desktop has settled (eight seconds in and
   idle), not with it, and Spotlight opened in those first seconds waits
   for its code (1 KB).
+- The Supabase client (58 KB) waits too, for a visitor (#255). Without a
+  stored session no one is signed in, which is known without it; it
+  loads with Presence once the desktop has settled, or as soon as
+  something needs it (an app, signing in, a password reset link). A
+  stored session still loads it at the start: a member's name and
+  stickies are on their first screen. `npm run perf` builds with
+  placeholder Supabase settings since, so it measures what production
+  sends; without them it had missed the client (212 KB, not 152).
 
 ## Consequences
 
