@@ -75,7 +75,8 @@ library, and two requests at once from one member make one.
 
 - **An ocra review-replay app**, once ocra's redesign is done (don't
   change ocra before then).
-- **The Chinese site**, on hold.
+- **The Chinese site**, on hold: removed from the code on 2026-10-03,
+  kept at the `zh-archive` tag to come back from.
 - **"Ask me", the AI assistant**, on hold. When it's picked up it needs a
   per-visitor and a daily spending cap before anything else.
 

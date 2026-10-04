@@ -7,7 +7,7 @@ order: 2
 stack: [Next.js, TypeScript, PostgreSQL, MongoDB, Redis, Clerk]
 repo: https://github.com/jma49/Assay
 demo: https://assay.majincheng.com/
-cover: ../covers/assay.jpg
+cover: ./covers/assay.jpg
 capture: https://assay.majincheng.com/
 ---
 

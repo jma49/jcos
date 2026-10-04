@@ -6,7 +6,7 @@ status: live
 order: 3
 stack: [Astro, React, TypeScript, Supabase, Vercel]
 repo: https://github.com/jma49/jmos
-cover: ../covers/majincheng-com.jpg
+cover: ./covers/majincheng-com.jpg
 capture: /
 demo: https://www.majincheng.com
 ---

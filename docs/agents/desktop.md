@@ -86,7 +86,7 @@ guarded from its first file; `tests/eslint.test.ts` probes each rule.
   Projects) short, and nothing is added to them, not even a disc in DVD
   Player's drive (Jincheng's rule, 2026-09-29); a phone's home screen lists every app.
 - `src/os/apps/`: one folder per built-in app. Content comes from `OSData`,
-  assembled at build time in `index.astro` from `src/i18n/content.ts`, the
+  assembled at build time in `index.astro` from `src/content/site.ts`, the
   projects collection and `src/lib/photos.ts` (Unsplash, fetched at build).
 - Applets are self-contained: each is a folder under `applets/` that
   imports only `src/os/kit` and its own files, never the rest of the OS or
@@ -600,7 +600,7 @@ guarded from its first file; `tests/eslint.test.ts` probes each rule.
   ([decision 0001](../decisions/0001-keep-the-retro-assets.md)); icons
   for apps ryOS doesn't have are drawn in `core/icons.tsx` to match.
 
-## Links, the tab title and the Chinese site
+## Links and the tab title
 
 - Deep links: `/?open=<app|project-slug|dashboard|screensaver>` opens that
   window over the saved session, once; the address loses `open` (and a
@@ -609,6 +609,7 @@ guarded from its first file; `tests/eslint.test.ts` probes each rule.
   Time Machine takes the screen, as from anywhere else (`launch()`).
 - The home page's browser tab says "Jincheng" (`tabTitle` in
   `Layout.astro`); link previews keep the full title.
-- The Chinese site is offline for now: `/zh/*` redirects to the English
-  paths (`vercel.json`). Keep the `zh` content in `content.ts` and the
-  Chinese project files; they will be used again.
+- There's no Chinese site any more: `/zh/*` redirects to the English
+  paths (`vercel.json`), so old links still land. The last version with
+  it is the `zh-archive` tag
+  ([decision 0010](../decisions/0010-chinese-on-hold.md)).

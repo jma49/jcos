@@ -5,9 +5,9 @@ import { readFile, writeFile } from 'node:fs/promises';
 import { fetchPhotos } from '../src/lib/photos.ts';
 
 const SNAPSHOT = new URL('../src/data/photos.json', import.meta.url);
-const content = await readFile(new URL('../src/i18n/content.ts', import.meta.url), 'utf8');
+const content = await readFile(new URL('../src/content/site.ts', import.meta.url), 'utf8');
 const profileUrl = content.match(/photography: '([^']+)'/)?.[1];
-if (!profileUrl) throw new Error('No photography URL in src/i18n/content.ts');
+if (!profileUrl) throw new Error('No photography URL in src/content/site.ts');
 
 const photos = await fetchPhotos(profileUrl);
 if (photos.length === 0) {
