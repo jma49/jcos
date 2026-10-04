@@ -57,6 +57,8 @@ export function makeSender(dsn: string) {
     beforeSend: scrub
   });
   const scope = new Scope();
+  // The Sentry project is shared with Assay: this tells jmos's events apart.
+  scope.setTag('site', 'jmos');
   scope.setClient(client);
   client.init();
   return (error: Error, where: string) => {
