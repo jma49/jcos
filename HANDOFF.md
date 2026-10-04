@@ -57,7 +57,14 @@ Conventions and a map of the code are in [AGENTS.md](AGENTS.md) and
 - The "Update project previews" workflow runs on macOS once a day and by
   hand (not on every push, to save deployments): it refreshes the Photos snapshot
   (`npm run photos:update`) and recaptures the project covers and
-  `public/og.jpg` (`npm run preview:capture`), committing what changed.
+  `public/og.jpg` (`npm run preview:capture`). It never pushes to
+  `main`: what changed goes to the branch `chore/update-previews` and
+  one pull request, "chore: update project previews", updated each day
+  until someone merges it (each merge is a deployment, so they batch).
+  A pull request opened with the job's token starts no workflows, so
+  the job starts CI and the PR title check on the branch itself
+  (`workflow_dispatch`). It needs "Allow GitHub Actions to create and
+  approve pull requests" on (Settings > Actions > General).
 - The "ocra review" workflow (2026-09-29) has ocra, the owner's code
   reviewer (github.com/jma49/Open-CR-Agent), review each pull request
   from this repository on Vertex AI: inline comments and one summary
