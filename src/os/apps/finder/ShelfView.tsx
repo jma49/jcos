@@ -1,5 +1,5 @@
 import { useLayoutEffect, useRef, useState } from 'react';
-import type { FileNode } from '../../core/files';
+import type { FileNode } from '../../files/disk';
 import { Thumb } from '../../files/parts';
 
 // The wooden shelf, for the Movies folder: the discs' cases standing face

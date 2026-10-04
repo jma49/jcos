@@ -2,7 +2,7 @@
 // Finder. Nothing here is real storage; every file opens an app.
 
 import type { ComponentType } from 'react';
-import { applicationApps, apps, launch, rectOf } from './registry';
+import { applicationApps, apps, launch, rectOf } from '../core/registry';
 import {
   ApplicationsFolderIcon,
   AppletsFolderIcon,
@@ -12,8 +12,8 @@ import {
   IPodIcon,
   MusicFolderIcon,
   PhotosIcon
-} from './icons';
-import type { AppId, OSData } from './types';
+} from '../core/icons';
+import type { AppId, OSData } from '../core/types';
 import { ALBUMS, SONGS, coverOf, tracksIn, type Album, type Song } from '../media/library';
 import { useMusic } from '../media/music';
 

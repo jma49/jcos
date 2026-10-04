@@ -1,4 +1,4 @@
-import type { FileNode } from '../../core/files';
+import type { FileNode } from '../../files/disk';
 import type { AppId } from '../../core/types';
 
 // What the base had on a day, for Time Machine: each thing from the day

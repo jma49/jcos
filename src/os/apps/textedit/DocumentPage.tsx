@@ -16,7 +16,7 @@ import {
   useHomeRefresh,
   type HomeDocument,
   type HomeFolder
-} from '../../home/home';
+} from '../../files/documents';
 import { Alert } from '../../shell/Alert';
 import { SocialError } from '../../social/types';
 import { SaveAsSheet } from './SaveAsSheet';

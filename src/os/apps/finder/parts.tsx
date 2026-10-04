@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { find, type FileNode } from '../../core/files';
+import { find, type FileNode } from '../../files/disk';
 import { formatDate, parentOf, Thumb } from '../../files/parts';
 import type { ContextMenuItem } from '../../shell/ContextMenu';
 

@@ -14,7 +14,7 @@
 import { createElement } from 'react';
 import { create } from 'zustand';
 import { apps, launch } from '../core/registry';
-import { buildDisk, find, type FileNode } from '../core/files';
+import { buildDisk, find, type FileNode } from '../files/disk';
 import { findSong } from '../media/library';
 import { notify, dismiss } from '../core/notices';
 import { play } from '../core/sound';
@@ -108,7 +108,7 @@ export function startAirDrop(data: OSData) {
     if (useAirDrop.getState().discoverable === 'none' || !useAccount.getState().account) return;
     if (pending.has(from) || pending.size >= MAX_PENDING) return;
     // A song is on the disk once the library is here, even one added since
-    // this visit read it (a song's path ends in its id, core/files.ts).
+    // this visit read it (a song's path ends in its id, files/disk.ts).
     if (path.startsWith('/Music/')) await findSong(path.split('/').pop() ?? '');
     if (pending.has(from) || pending.size >= MAX_PENDING) return;
     const sender = useWindows.getState().visitors?.find((v) => v.id === from);

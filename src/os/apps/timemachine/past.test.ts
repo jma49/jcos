@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import { apps } from '../../core/registry';
 import { APPLETS } from '../../core/applets';
-import type { FileNode } from '../../core/files';
+import type { FileNode } from '../../files/disk';
 import type { AppId } from '../../core/types';
 import { backupDays, cameBy, dayName, dayOf, diskOn, folderCame, namedTicks, notBefore, tickName } from './past';
 

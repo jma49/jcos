@@ -19,18 +19,17 @@ flowchart TD
   desktop --> shell["shell/<br/>menu bar, Dock, windows, Exposé, Spotlight"]
   desktop --> look["look/ and ambient/<br/>desktop picture, accent, sky"]
   desktop --> social["social/ and media/<br/>accounts, presence, AirDrop, music"]
-  shell --> core["core/<br/>store, storage, sound, files"]
+  shell --> core["core/<br/>store, storage, sound, registry"]
   shell -. "loaded once someone signs in" .-> stickies["stickies/<br/>a member's own notes, on the desktop"]
   shell -- "launch()" --> registry["core/registry.tsx"]
   registry --> catalog["catalog.ts<br/>every manifest"]
   catalog -. "loaded on first open" .-> apps["apps/id/"]
   catalog -. "loaded when got in the store" .-> applets["applets/id/"]
-  apps --> files["files/<br/>Macintosh HD's views, shared by Finder and Time Machine"]
-  files --> home["home/<br/>Jincheng's home folder: documents, diary"]
+  apps --> files["files/<br/>Macintosh HD: the disk, its views, Jincheng's documents"]
   applets --> kit["kit/<br/>the only OS they see"]
   social --> supabase[("Supabase")]
   stickies --> supabase
-  home --> supabase
+  files --> supabase
   social --> api["/api/songs, /api/lyrics"]
   look --> geo["/api/geo, Open-Meteo"]
 ```
@@ -40,20 +39,40 @@ them through the catalog, apps don't import each other, and applets see
 only `kit/`. The lint enforces all three, on `import()` as well as import
 declarations (a local rule in `eslint.config.js`), and over every folder
 of `src/os/` but `apps/`, `applets/` and the catalog, so a new folder is
-guarded from its first file; `tests/eslint.test.ts` probes each rule.
+guarded from its first file. `core/` is the base layer, so it may import
+types from the domain folders but no values (the catalog and
+`kit/manifest` aside): nothing of a domain reaches the first load by way
+of `core/`. `tests/eslint.test.ts` probes each rule.
+
+## Where new code goes
+
+The folders of `src/os/` are layers or domains. The layers are `core/`
+(the store, storage, sound, the registry: what every part uses),
+`shell/` (the chrome round the windows), `kit/` (what applets see) and
+`styles/`; the domains are what the desktop is about: `files/`
+(Macintosh HD), `media/`, `social/`, `stickies/`, `look/` and
+`ambient/`.
+
+- Code two apps share goes into its domain, never into `core/` because
+  it's shared: Macintosh HD's model is `files/disk.ts`, which Finder,
+  Time Machine, the Terminal and AirDrop use.
+- A domain may use the layers and other domains; `core/` imports values
+  from no domain (the lint refuses it).
+- A new top-level folder is only for a new domain. Anything else goes
+  into the folder of the domain it belongs to, or into the app's own
+  folder while only that app uses it.
 
 ## Where things are
 
 | Folder in `src/os/` | Holds | Start from |
 | --- | --- | --- |
-| `core/` | the store, types, registry, icons, sounds, storage, Macintosh HD | `store.ts`, `registry.tsx`, `storage.ts` |
+| `core/` | the store, types, registry, icons, sounds, storage | `store.ts`, `registry.tsx`, `storage.ts` |
 | `shell/` | the menu bar, Dock, windows and the rest of the chrome | `Window.tsx`, `MenuBar.tsx`, `Dock.tsx` |
 | `look/` | desktop pictures and the accent colour | `wallpapers.ts`, `accent.ts` |
 | `ambient/` | the visitor's place, weather and sky | `place.ts`, `Sky.tsx` |
 | `media/` | music, lyrics, listening along | see [media.md](media.md) |
 | `social/` | Supabase: accounts, presence, chat, AirDrop | see [supabase.md](supabase.md) |
-| `files/` | Macintosh HD's views and folders that Finder and Time Machine share | `parts.tsx`, `home.tsx`, `movies.tsx` |
-| `home/` | Jincheng's home folder: the documents and the diary, from the database | `home.ts` |
+| `files/` | Macintosh HD: the disk, the views and folders Finder and Time Machine share, and Jincheng's home folder (the documents and the diary, from the database) | `disk.ts`, `parts.tsx`, `home.tsx`, `documents.ts` |
 | `stickies/` | a member's own stickies, on their desktop and in Stickies › Yours | `mine.ts`, `DesktopStickies.tsx` |
 | `apps/` | the built-in apps, one folder each | `<id>/manifest.ts` |
 | `applets/` | the Applet Store's games and tools | `<id>/manifest.ts` |
@@ -336,7 +355,7 @@ guarded from its first file; `tests/eslint.test.ts` probes each rule.
 
 ## Files and sharing
 
-- `src/os/core/files.ts`: Macintosh HD, a read-only file system built
+- `src/os/files/disk.ts`: Macintosh HD, a read-only file system built
   from the content (Applications, Applets, Documents, Movies, Music,
   Pictures, Projects), which Finder (`apps/finder/`), Time Machine and
   the Terminal browse. A file's `look` is what Quick Look shows (a
@@ -365,7 +384,7 @@ guarded from its first file; `tests/eslint.test.ts` probes each rule.
   hold Jincheng's documents, and Documents holds the diary, a year to a
   document ("Diary 2026.rtf"). Public holds what Jincheng lets everyone
   read; Sites, the projects' live sites as Internet locations that open
-  in the Browser. The documents come from the database (`home/home.ts`,
+  in the Browser. The documents come from the database (`files/documents.ts`,
   [supabase.md](supabase.md)), which gives anyone else only Public's,
   read when a folder under Users shows (at most every 30 s, again when
   the tab comes back, and at once when another tab of the owner's saves

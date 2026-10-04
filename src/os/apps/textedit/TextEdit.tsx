@@ -4,7 +4,7 @@ import { useOwnerAnswer } from '../../social/owner';
 import { DiaryPage } from './DiaryPage';
 import { DocumentPage } from './DocumentPage';
 
-// TextEdit, as in Tiger, for Jincheng's home folder (home/home.ts): a
+// TextEdit, as in Tiger, for Jincheng's home folder (files/documents.ts): a
 // plain page for one of Jincheng's documents, or a year of the diary.
 // What's typed is saved as it's typed; only the owner writes, and anyone
 // else may only read a document in Public. File › New (⌥N) starts a new
@@ -24,7 +24,7 @@ import { DocumentPage } from './DocumentPage';
 // was typed over, so one from an older copy, a restored draft's included,
 // is refused and the alert offers Revert or Save Anyway. A save or a delete
 // in one of the owner's tabs reaches the pages open in the others at once
-// (the os-home channel, home/home.ts); a page with unsaved typing keeps it,
+// (the os-home channel, files/documents.ts); a page with unsaved typing keeps it,
 // and its next save meets the conflict alert.
 //
 // File › New is ⌥N (the browser keeps ⌘N); the new document goes into

@@ -1,9 +1,9 @@
-import type { FileNode } from '../core/files';
+import type { FileNode } from './disk';
 import { DocumentIcon, DocumentsFolderIcon, FolderIcon, MusicFolderIcon, PhotosIcon, pngIcon, type IconComponent } from '../core/icons';
 import { launch, rectOf } from '../core/registry';
 import type { OSProject } from '../core/types';
 import { MoviesFolderIcon } from '../media/discArt';
-import { diaryYears, HOME_FOLDERS, type DiaryEntry, type HomeDocument } from '../home/home';
+import { diaryYears, HOME_FOLDERS, type DiaryEntry, type HomeDocument } from './documents';
 
 // Users › jincheng: Jincheng's home folder, with the folders a Mac's home
 // has. To anyone else every folder but Public and Sites is locked, with

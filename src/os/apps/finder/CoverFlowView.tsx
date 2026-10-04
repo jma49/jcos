@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { animate, m, useMotionValue, useMotionValueEvent, useTransform, type MotionValue } from 'motion/react';
-import type { FileNode } from '../../core/files';
+import type { FileNode } from '../../files/disk';
 import { useReduceMotion } from '../../core/system';
 import { Thumb } from '../../files/parts';
 

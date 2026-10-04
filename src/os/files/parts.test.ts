@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import type { FileNode } from '../core/files';
+import type { FileNode } from './disk';
 import { usersFolder } from './home';
 import { lockedOn, parentOf } from './parts';
 

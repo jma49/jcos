@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { HOME_FOLDERS, type HomeDocument, type HomeFolder } from '../../home/home';
+import { HOME_FOLDERS, type HomeDocument, type HomeFolder } from '../../files/documents';
 
 // TextEdit's Save As sheet, hanging from the top of the window as Tiger's
 // did: the name (its extension left unselected) and Where, one of the

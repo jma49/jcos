@@ -16,7 +16,7 @@ import {
   useHome,
   useHomeRefresh,
   type DiaryEntry
-} from '../../home/home';
+} from '../../files/documents';
 import { Alert } from '../../shell/Alert';
 import { SocialError } from '../../social/types';
 import { useAutosave } from '../../core/useAutosave';

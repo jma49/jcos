@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { BackGlyph, ForwardGlyph } from '../../core/glyphs';
-import { find, type FileNode } from '../../core/files';
+import { find, type FileNode } from '../../files/disk';
 import { DiskIcon, FinderIcon } from '../../core/icons';
 import { ancestry, formatDate, parentOf, Thumb } from '../../files/parts';
 import { ownsKey } from '../../core/useKeys';
