@@ -1,9 +1,9 @@
 # Checks every pull request and every push to main: known advisories in
-# the production dependencies, the types, the lint (hooks, the app
-# boundaries, storage), the unit tests, a production build with every
-# app opened in a browser and
-# measured against the performance budgets, and the database's rules
-# against a real Postgres.
+# the production dependencies, the types (the Edge Functions' with Deno),
+# the lint (hooks, the app boundaries, storage), the unit tests, a
+# production build with every app opened in a browser and measured
+# against the performance budgets, and the database's rules against a
+# real Postgres.
 name: CI
 
 on:
@@ -39,6 +39,12 @@ jobs:
       # and a date to look again.
       - run: node scripts/audit.mjs
       - run: npm run check
+      # The Edge Functions run on Deno, outside tsconfig.json, and Vitest
+      # strips their types: Deno checks them as Supabase will run them.
+      - uses: denoland/setup-deno@22d081ff2d3a40755e97629de92e3bcbfa7cf2ed # v2.0.5
+        with:
+          deno-version: v2.x
+      - run: deno check supabase/functions/*/index.ts
       - run: npm run lint
       - run: npm test
       - run: npm run build

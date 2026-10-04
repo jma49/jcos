@@ -1,0 +1,18 @@
+# The Supabase CLI's settings for this project, kept to what the live
+# project needs from it: how its Edge Functions are deployed. Anything
+# left out takes the CLI's default, as it did before this file existed,
+# so `supabase db push`, `db advisors` and `migration list` behave as
+# they did (they connect by the linked project ref, never by project_id).
+
+# Names the local Docker stack only (`supabase start`); not the project ref.
+project_id = "jmos"
+
+# Telegram calls the bot, and the reset page calls account-recovery,
+# without a Supabase login, so the gateway mustn't ask for a JWT. Each
+# function checks its callers itself: the bot Telegram's secret token,
+# account-recovery its input and its own limits.
+[functions.soapbox-bot]
+verify_jwt = false
+
+[functions.account-recovery]
+verify_jwt = false

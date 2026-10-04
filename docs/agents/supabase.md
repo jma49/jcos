@@ -71,7 +71,10 @@ The code that isn't in the browser (each endpoint's parameters, answers and conv
   stand-in treats a member named `jincheng` as the owner.
 - **Stickies**: members only, three notes in any 24 hours, signed with the
   username; members can take their own down. Hide a note by setting
-  `approved` to false in the Table editor.
+  `approved` to false in the Table editor. A hidden note still counts
+  toward the three; `notes_left()` (security definer, since the member
+  can't read hidden notes) tells Stickies what's left the way the limit
+  counts it.
 - **Stickies of one's own** (`public.stickies`; migration
   `20260929194437_stickies_of_their_own.sql`): each member's own notes,
   on their own desktop, which row-level security gives that member alone,
@@ -92,9 +95,15 @@ The code that isn't in the browser (each endpoint's parameters, answers and conv
   that day where the member is, and notes. A to-do has a title, a
   calendar, a priority from 0 (none) to 3 (high), perhaps a day it's due,
   and whether it's done; when it was done is the database's (a trigger
-  sets and clears `done_at`). The limits are counted under an advisory
-  lock per member. iCal uses them through `apps/ical/calendar.ts`, which
-  reads events a few weeks at a time.
+  sets and clears `done_at`). Every save names the `version` it was made
+  from, as documents' do (migration `20261004014420_ical_versions.sql`):
+  the trigger counts saves, so one from an older copy (another device or
+  tab) reaches no row and iCal says so and reads the item again
+  (`race.sh`: four saves of an event from one copy at once, one lands).
+  The limits are counted under an advisory lock per member. iCal uses
+  them through `apps/ical/calendar.ts`, which reads events a few weeks at
+  a time and saves each item's changes one after another, each naming
+  the version the one before it made.
 - **Job Hunt** (`public.job_applications`, `public.job_events`; migration
   `20260930062024_job_hunt.sql`): every company Jincheng has applied to,
   one row to a company and role whatever their case, with its stage,
@@ -201,7 +210,10 @@ The code that isn't in the browser (each endpoint's parameters, answers and conv
   open chat room, whether AirDrop can reach them), their cursors, and
   signals: short-lived messages such as typing, nudges and AirDrop
   offers. Anyone can send anything there, so receivers check what
-  arrives (`cleanInfo()` for presence). Pointers are drawn only for a
+  arrives (`cleanInfo()` for presence; `cleanCursor()` keeps a pointer
+  only from someone in the channel's presence, inside their viewport, in
+  one of `CURSOR_COLORS`, and `Presence.tsx` keeps at most
+  `MAX_CURSORS`, 50). Pointers are drawn only for a
   visitor who has turned on "Show other people's pointers" (off by
   default, `showOthersPointers`), who says so in their presence
   (`watching`); a pointer is sent only while someone else watches
@@ -232,7 +244,11 @@ rollback;` first (`supabase db query --linked -f`). A migration must run
 twice without harm ([pitfalls.md](pitfalls.md)): `npm run test:db` reruns
 every one from `20260926071227` on over the full schema
 (`supabase/tests/run.sh` loops over the folder, so a new file is covered
-without being listed).
+without being listed). It dumps the structure (`pg_dump --schema-only`)
+before and after, and fails on any difference, so a change made in a
+migration and not in `schema.sql` (a function's body, a policy, a
+grant) is caught; a column only one side adds isn't, since `create
+table if not exists` hides it.
 
 Without those variables, production hides these features, and `astro dev`
 falls back to `src/os/social/local.ts`, which keeps accounts, notes and
@@ -260,7 +276,10 @@ browser.
   Security Advisor after each migration (`supabase db advisors --linked
   --type security`); the findings left on purpose
   are listed in `supabase/migrations/20260926100511_advisor.sql`,
-  `20260929100000_owner.sql` and `20260929140000_playlists.sql`.
+  `20260929100000_owner.sql`, `20260929140000_playlists.sql`,
+  `20260930062024_job_hunt.sql` and `20261004015011_notes_left.sql`
+  (`rules.sql` checks that the definer functions visitors and members
+  may call are exactly those).
 - A limit that counts rows before inserting ("three a day") takes a
   transaction-scoped advisory lock for whoever it limits first
   (`pg_advisory_xact_lock`), or concurrent requests all get through.

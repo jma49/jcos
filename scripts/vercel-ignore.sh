@@ -38,6 +38,7 @@ changed=$(git diff --name-only "$base" "$head" -- . \
   ':(exclude)supabase/migrations' \
   ':(exclude)supabase/tests' \
   ':(exclude)supabase/schema.sql' \
+  ':(exclude)supabase/config.toml' \
   ':(exclude)supabase/functions/account-recovery' \
   ':(exclude)supabase/functions/soapbox-bot' \
   ':(exclude)scripts' \

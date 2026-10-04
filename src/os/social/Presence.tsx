@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { CURSOR_COLORS, CURSOR_INTERVAL, getSocial, type Presence as Channel, type Visitor, type VisitorInfo } from './social';
+import { CURSOR_COLORS, CURSOR_INTERVAL, getSocial, type CursorMove, type Presence as Channel, type Visitor, type VisitorInfo } from './social';
 import { isPhone, useWindows } from '../core/store';
 import type { Place } from '../ambient/place';
 import { useAccount } from './account';
@@ -29,6 +29,20 @@ interface Cursor {
   y: number;
   color: string;
   at: number;
+}
+
+/** At most this many pointers are kept, whatever arrives (they're dropped past CROWD anyway). */
+export const MAX_CURSORS = 50;
+
+/** The pointers with one moved, added (while there's room) or taken away (leaving the page). */
+export function placeCursor(all: Record<string, Cursor>, { id, x, y, color }: CursorMove, at: number): Record<string, Cursor> {
+  if (x < 0) {
+    if (!(id in all)) return all;
+    const { [id]: _gone, ...rest } = all;
+    return rest;
+  }
+  if (!(id in all) && Object.keys(all).length >= MAX_CURSORS) return all;
+  return { ...all, [id]: { x, y, color, at } };
 }
 
 /**
@@ -122,15 +136,11 @@ export function Presence() {
             setCursors({});
           }
         },
-        onCursor: (id, x, y, c) =>
+        onCursor: (cursor) =>
           setCursors((all) => {
             // Not asked for: not drawn, and not kept (so no re-render either).
             if (useWindows.getState().crowded || !useSystem.getState().showOthersPointers) return all;
-            if (x < 0) {
-              const { [id]: _gone, ...rest } = all;
-              return rest;
-            }
-            return { ...all, [id]: { x, y, color: c, at: Date.now() } };
+            return placeCursor(all, cursor, Date.now());
           }),
         onLeave: (id) =>
           setCursors((all) => {

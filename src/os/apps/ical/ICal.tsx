@@ -8,7 +8,7 @@ import { ownsKey } from '../../core/useKeys';
 import { Alert } from '../../shell/Alert';
 import { Drawer } from '../../shell/drawer';
 import { useAccount } from '../../social/account';
-import { CALENDARS, type CalendarName } from '../../social/types';
+import { CALENDARS, SocialError, type CalendarName } from '../../social/types';
 import {
   addDays,
   addEvent,
@@ -92,6 +92,8 @@ function Calendar({ win, account }: AppProps & { account: string }) {
   const [editingTodo, setEditingTodo] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<CalendarEvent | null>(null);
   const [note, setNote] = useState<string | null>(null);
+  /** What a save from an older copy was of: it was saved (or deleted) in another tab or on another device since. */
+  const [conflict, setConflict] = useState<'event' | 'to-do' | null>(null);
   const front = useFocusedId() === win.id;
 
   const grid = monthGrid(month);
@@ -137,8 +139,10 @@ function Calendar({ win, account }: AppProps & { account: string }) {
     }
   };
 
-  const change = (e: CalendarEvent) => void changeEvent(e).catch(say);
-  const changeT = (t: Todo) => void changeTodo(t).catch(say);
+  const refused = (what: 'event' | 'to-do') => (error: unknown) =>
+    error instanceof SocialError && error.reason === 'conflict' ? setConflict(what) : say(error);
+  const change = (e: CalendarEvent) => void changeEvent(e).catch(refused('event'));
+  const changeT = (t: Todo) => void changeTodo(t).catch(refused('to-do'));
   const deleteEvent = (e: CalendarEvent) => {
     setDeleting(null);
     if (chosen === e.id) setChosen(null);
@@ -399,6 +403,14 @@ function Calendar({ win, account }: AppProps & { account: string }) {
           confirm="Delete"
           onCancel={() => setDeleting(null)}
           onConfirm={() => deleteEvent(deleting)}
+        />
+      )}
+      {conflict && (
+        <Alert
+          Icon={ICalIcon}
+          message={`This ${conflict} was changed somewhere else.`}
+          detail="iCal now shows it as it was saved there. Make your change again if you still want it."
+          onConfirm={() => setConflict(null)}
         />
       )}
     </div>

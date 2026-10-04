@@ -26,6 +26,7 @@ and two Supabase Edge Functions.
   | `song_played(song)` | members (only the owner's are counted) | counts a play of a song Jincheng listened to the end, at the database's clock |
   | `save_playlist(name, songs)` | members (only the owner may) | saves songs into the playlist of that name, making it if there's none; returns its id |
   | `my_reactions()` | members | the member's own Soapbox reactions |
+  | `notes_left()` | members | how many Stickies notes the member may still put up today, counted as the limit counts them (hidden notes too) |
   | `my_recovery_email()`, `set_recovery_email(address)` | members | the member's recovery address |
   | `chat_can_read(room)`, `chat_can_write(room)` | everyone / members | used by chat's row-level security, not called by the site |
 

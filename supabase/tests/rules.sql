@@ -82,6 +82,19 @@ select pg_temp.act_as('authenticated', '11111111-1111-1111-1111-111111111111');
 insert into public.notes (body) values ('one'), ('two'), ('three');
 select pg_temp.check((select bool_and(name = 'alice') from public.notes), 'notes are signed with the username');
 select pg_temp.check(pg_temp.refused($$insert into public.notes (body) values ('four')$$), 'three notes a day');
+select pg_temp.check(public.notes_left() = 0, 'none left today after three');
+-- What's left counts every note of the day, as the limit does, hidden ones too.
+select pg_temp.act_as('authenticated', '33333333-3333-3333-3333-333333333333');
+select pg_temp.check(public.notes_left() = 3, 'three left before any');
+insert into public.notes (body) values ('carol one'), ('carol two');
+reset role;
+update public.notes set approved = false where body = 'carol two';
+select pg_temp.act_as('authenticated', '33333333-3333-3333-3333-333333333333');
+select pg_temp.check(public.notes_left() = 1, 'a hidden note still counts toward what''s left');
+insert into public.notes (body) values ('carol three');
+select pg_temp.check(public.notes_left() = 0 and pg_temp.refused($$insert into public.notes (body) values ('carol four')$$), 'and what''s left is what the limit lets through');
+select pg_temp.act_as('anon');
+select pg_temp.check(pg_temp.refused($$select public.notes_left()$$), 'visitors don''t ask how many notes they have left');
 reset role;
 
 -- Chat ------------------------------------------------------------------
@@ -253,6 +266,17 @@ update public.todos set title = 'Called the bank' where title = 'Call the bank';
 update public.todos set done = false where title = 'Called the bank';
 select pg_temp.check((select done_at is null from public.todos where title = 'Called the bank'), 'and forgets when it''s not done any more');
 select pg_temp.check(pg_temp.refused($$update public.todos set done_at = now() - interval '1 year'$$), 'when a to-do was done is the database''s');
+-- Every save counts, as documents' do: a save names the version it was made from, so one from an older copy (another device) reaches no row.
+select pg_temp.check((select bool_and(version = 1) from public.events) and (select version = 1 from public.todos where title = 'Book the tent'), 'an event or a to-do starts at version 1');
+update public.events set title = 'Mum''s 60th' where title = 'Mum''s birthday' and version = 1;
+update public.events set title = 'From an older copy' where title like 'Mum''s%' and version = 1;
+select pg_temp.check((select title = 'Mum''s 60th' and version = 2 and updated_at >= created_at from public.events where title like 'Mum''s%'), 'an event saved from an older copy changes nothing');
+select pg_temp.check((select version = 4 from public.todos where title = 'Called the bank'), 'every save of a to-do counts, ticking it included');
+update public.todos set priority = 1 where title = 'Called the bank' and version = 3;
+select pg_temp.check((select priority = 0 and version = 4 from public.todos where title = 'Called the bank'), 'a to-do saved from an older copy changes nothing');
+select pg_temp.check(pg_temp.refused($$update public.events set version = 9 where title = 'Standup'$$)
+  and pg_temp.refused($$update public.todos set version = 9 where title = 'Book the tent'$$)
+  and pg_temp.refused($$insert into public.todos (title, version) values ('x', 9)$$), 'no one sets a version');
 select pg_temp.check(pg_temp.refused($$select user_id from public.events$$), 'whose an event is isn''t asked for');
 select pg_temp.check(pg_temp.refused($$insert into public.events (title, day, starts) values ('x', '2026-10-01', 600)$$)
   and pg_temp.refused($$insert into public.events (title, day, starts, ends) values ('x', '2026-10-01', 600, 540)$$)
@@ -317,7 +341,7 @@ select pg_temp.check((
   select coalesce(string_agg(p.oid::regprocedure::text, ' ' order by p.oid::regprocedure::text), '')
   from pg_proc p join pg_namespace n on n.oid = p.pronamespace
   where n.nspname = 'public' and p.prosecdef and has_function_privilege('authenticated', p.oid, 'execute')
-) = 'chat_can_write(text) is_owner() job_hunt_totals() my_reactions() my_recovery_email() set_recovery_email(text) song_limit() song_played(text)', 'members may call only the security definer functions kept on purpose');
+) = 'chat_can_write(text) is_owner() job_hunt_totals() my_reactions() my_recovery_email() notes_left() set_recovery_email(text) song_limit() song_played(text)', 'members may call only the security definer functions kept on purpose');
 select pg_temp.check(not has_function_privilege('anon', 'public.my_reactions()', 'execute'), 'visitors can''t ask for members'' reactions');
 select pg_temp.act_as('anon');
 select pg_temp.check(public.username_available('someone_new') and not public.username_available('alice'), 'visitors can still check a username');

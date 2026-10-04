@@ -160,3 +160,11 @@ added=$(psql -tA -d "$DB" -c "select count(*) from public.events where user_id =
 echo "ok: five events at once, room for two, two made"
 psql -q -v ON_ERROR_STOP=1 -d "$DB" -c "update public.music_settings set value = '5000' where name = 'event_limit'" >/dev/null
 
+# The same event saved from one copy on four devices at once: one lands.
+first=$(psql -tA -d "$DB" -c "select id from public.events where user_id = '$DAVE' order by title limit 1")
+for i in 1 2 3 4; do as_dave "update public.events set title = 'save $i' where id = '$first' and version = 1" & done
+wait
+saved=$(psql -tA -d "$DB" -c "select version || ' ' || (title ~ '^save [1-4]\$') from public.events where id = '$first'")
+[ "$saved" = "2 true" ] || { echo "FAILED: four saves of an event from one copy at once gave (version, saved) $saved, not 2 true"; exit 1; }
+echo "ok: four saves of an event from one copy at once, one lands"
+

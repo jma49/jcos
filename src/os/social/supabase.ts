@@ -3,13 +3,14 @@
 // security, presence and live chat through Realtime.
 
 import { createClient, type PostgrestError, type User } from '@supabase/supabase-js';
-import { CURSOR_COLORS } from './social';
 import { discOf, SONG_COLUMNS, songOf, type Disc } from '../../lib/library';
 import { playlistNameProblem } from './playlistNames';
 import { supabaseJobs } from './jobs';
 import {
   LOBBY,
   NOTES_PER_DAY,
+  CURSOR_COLORS,
+  cleanCursor,
   cleanInfo,
   isDM,
   PASSWORD_MIN,
@@ -145,8 +146,8 @@ const stickyOf = (row: StickyRow): Sticky => ({
 });
 
 /** The columns of a member's events and to-dos, as they read them. */
-const EVENT_COLUMNS = 'id,title,calendar,day,starts,ends,notes';
-const TODO_COLUMNS = 'id,title,calendar,priority,due,done,done_at,created_at';
+const EVENT_COLUMNS = 'id,title,calendar,day,starts,ends,notes,version';
+const TODO_COLUMNS = 'id,title,calendar,priority,due,done,done_at,created_at,version';
 
 type EventRow = CalendarEvent;
 interface TodoRow extends Omit<Todo, 'doneAt' | 'created'> {
@@ -161,7 +162,8 @@ const eventOf = (row: EventRow): CalendarEvent => ({
   day: row.day,
   starts: row.starts,
   ends: row.ends,
-  notes: row.notes
+  notes: row.notes,
+  version: row.version
 });
 
 const todoOf = (row: TodoRow): Todo => ({
@@ -172,7 +174,8 @@ const todoOf = (row: TodoRow): Todo => ({
   due: row.due,
   done: row.done,
   doneAt: row.done_at,
-  created: row.created_at
+  created: row.created_at,
+  version: row.version
 });
 
 /** An event or a to-do the database's checks refuse. */
@@ -204,8 +207,6 @@ function refusal(error: PostgrestError): SocialError {
   if (error.code === '23505') return new SocialError('already', 'You’ve already done that.');
   return new SocialError('failed', error.message);
 }
-
-const since = (hours: number) => new Date(Date.now() - hours * 3_600_000).toISOString();
 
 export function supabaseSocial(url: string, key: string): Social {
   const client = createClient(url, key, {
@@ -405,15 +406,13 @@ export function supabaseSocial(url: string, key: string): Social {
       if (error) throw refusal(error);
     },
 
+    // Counted by the database as its limit counts, hidden notes too, which
+    // row-level security doesn't show the member.
     async notesLeft() {
       if (!current) return 0;
-      const { count, error } = await client
-        .from('notes')
-        .select('id', { count: 'exact', head: true })
-        .eq('user_id', current.id)
-        .gt('created_at', since(24));
+      const { data, error } = await client.rpc('notes_left');
       if (error) throw refusal(error);
-      return Math.max(0, NOTES_PER_DAY - (count ?? 0));
+      return typeof data === 'number' ? Math.max(0, Math.min(NOTES_PER_DAY, data)) : 0;
     },
 
     async listPosts() {
@@ -765,10 +764,11 @@ export function supabaseSocial(url: string, key: string): Social {
       return (data ?? []).map(todoOf);
     },
 
-    async saveEvent({ id, ...fields }) {
+    // A change names the version it was made from, as a document's does.
+    async saveEvent({ id, version, ...fields }) {
       member();
       const request = id
-        ? client.from('events').update(fields).eq('id', id).select(EVENT_COLUMNS).maybeSingle()
+        ? client.from('events').update(fields).eq('id', id).eq('version', version ?? 0).select(EVENT_COLUMNS).maybeSingle()
         : client.from('events').insert(fields).select(EVENT_COLUMNS).single();
       const { data, error } = await request;
       if (error) throw error.code === '23514' ? badEntry() : refusal(error);
@@ -782,10 +782,10 @@ export function supabaseSocial(url: string, key: string): Social {
       if (error) throw refusal(error);
     },
 
-    async saveTodo({ id, ...fields }) {
+    async saveTodo({ id, version, ...fields }) {
       member();
       const request = id
-        ? client.from('todos').update(fields).eq('id', id).select(TODO_COLUMNS).maybeSingle()
+        ? client.from('todos').update(fields).eq('id', id).eq('version', version ?? 0).select(TODO_COLUMNS).maybeSingle()
         : client.from('todos').insert(fields).select(TODO_COLUMNS).single();
       const { data, error } = await request;
       if (error) throw error.code === '23514' ? badEntry() : refusal(error);
@@ -843,7 +843,10 @@ export function supabaseSocial(url: string, key: string): Social {
       channel
         .on('presence', { event: 'sync' }, () => onVisitors(visitors()))
         .on('presence', { event: 'leave' }, ({ key }) => onLeave(key))
-        .on('broadcast', { event: 'cursor' }, ({ payload }) => onCursor(payload.id, payload.x, payload.y, payload.color))
+        .on('broadcast', { event: 'cursor' }, ({ payload }) => {
+          const cursor = cleanCursor(payload, (key) => key !== id && Object.hasOwn(channel.presenceState(), key));
+          if (cursor) onCursor(cursor);
+        })
         .on('broadcast', { event: 'signal' }, ({ payload }) => {
           if (typeof payload?.event !== 'string' || typeof payload?.from !== 'string') return;
           onSignal({ event: payload.event, from: payload.from, payload: payload.payload ?? {} });

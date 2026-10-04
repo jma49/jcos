@@ -74,6 +74,33 @@ export function cleanInfo(raw: unknown, fallbackColor: string): VisitorInfo {
   };
 }
 
+/** Colours for visitors' cursors; a pointer in any other is refused. */
+export const CURSOR_COLORS = ['#e5484d', '#f76b15', '#ffc53d', '#30a46c', '#0090ff', '#8e4ec6', '#d6409f'];
+
+/** Another visitor's pointer, as fractions of their viewport; (-1, -1) means it left the page. */
+export interface CursorMove {
+  id: string;
+  x: number;
+  y: number;
+  color: string;
+}
+
+const fraction = (n: unknown): n is number => typeof n === 'number' && n >= 0 && n <= 1;
+
+/**
+ * A pointer someone sent, or null unless it's from someone on the desktop
+ * now (`present`), within their viewport or leaving it, in one of our
+ * colours. Anyone with the public key can send one.
+ */
+export function cleanCursor(raw: unknown, present: (id: string) => boolean): CursorMove | null {
+  const { id, x, y, color } = (raw && typeof raw === 'object' ? raw : {}) as Record<string, unknown>;
+  if (typeof id !== 'string' || !present(id)) return null;
+  if (typeof color !== 'string' || !CURSOR_COLORS.includes(color)) return null;
+  const leaving = x === -1 && y === -1;
+  if (!leaving && !(fraction(x) && fraction(y))) return null;
+  return { id, x: x as number, y: y as number, color };
+}
+
 /** Someone on the desktop. */
 export interface Visitor extends VisitorInfo {
   id: string;
@@ -96,8 +123,8 @@ export interface Signal {
 interface PresenceHandlers {
   /** Everyone on the desktop, this visitor included. */
   onVisitors: (visitors: Visitor[]) => void;
-  /** Another visitor's pointer, as fractions of their viewport; x < 0 means it left the page. */
-  onCursor: (id: string, x: number, y: number, color: string) => void;
+  /** Another visitor's pointer, checked with cleanCursor. */
+  onCursor: (cursor: CursorMove) => void;
   onLeave: (id: string) => void;
   onSignal: (signal: Signal) => void;
 }
@@ -355,7 +382,11 @@ export interface Social extends JobsSocial {
   myEvents: (from: string, to: string) => Promise<CalendarEvent[]>;
   /** The signed-in member's own to-dos; none signed out. */
   myTodos: () => Promise<Todo[]>;
-  /** Adds one of the member's events (no `id`), or changes it; refused ('conflict') if it was deleted elsewhere. */
+  /**
+   * Adds one of the member's events (no `id`), or changes it from
+   * `version`; refused ('conflict') if it was saved or deleted elsewhere
+   * since.
+   */
   saveEvent: (event: EventDraft) => Promise<CalendarEvent>;
   removeEvent: (id: string) => Promise<void>;
   /** Adds one of the member's to-dos (no `id`), or changes it, as saveEvent does an event. */
@@ -379,9 +410,12 @@ export interface CalendarEvent {
   starts: number | null;
   ends: number | null;
   notes: string;
+  /** Counts saves (the database's): a change names the version it was made from. */
+  version: number;
 }
 
-export type EventDraft = Omit<CalendarEvent, 'id'> & { id?: string };
+/** A new event (no `id`), or a change to one made from `version`. */
+export type EventDraft = Omit<CalendarEvent, 'id' | 'version'> & { id?: string; version?: number };
 
 /** One of a member's own to-dos. */
 export interface Todo {
@@ -396,9 +430,12 @@ export interface Todo {
   /** When it was done (the database's), or null. */
   doneAt: string | null;
   created: string;
+  /** Counts saves (the database's), as an event's does. */
+  version: number;
 }
 
-export type TodoDraft = Pick<Todo, 'title' | 'calendar' | 'priority' | 'due' | 'done'> & { id?: string };
+/** A new to-do (no `id`), or a change to one made from `version`. */
+export type TodoDraft = Pick<Todo, 'title' | 'calendar' | 'priority' | 'due' | 'done'> & { id?: string; version?: number };
 
 /** How many events and to-dos a member may keep (the database's event_limit and todo_limit). */
 export const EVENT_MOST = 5000;
