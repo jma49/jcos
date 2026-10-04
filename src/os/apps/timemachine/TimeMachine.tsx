@@ -12,7 +12,7 @@ import { useHome, useHomeRefresh } from '../../home/home';
 import { useShelf, useShelfRefresh } from '../../media/discs';
 import { ALBUMS, SONGS, useLibraryVersion } from '../../media/library';
 import { useIsOwner } from '../../social/owner';
-import { Browser, folderOn, type Place } from './Browser';
+import { DayFinder, folderOn, type Place } from './DayFinder';
 import { backupDays, cameBy, dayName, diskOn, folderCame, localDay, namedTicks, notBefore, type Arrivals } from './past';
 
 // Time Machine, as Leopard had it: the desktop gives way to space, and a
@@ -190,7 +190,7 @@ export default function TimeMachine({ win }: AppProps) {
               </header>
               <div className="os-body">
                 {Math.abs(depth) <= 1 && (
-                  <Browser
+                  <DayFinder
                     disk={disk}
                     place={place}
                     front={depth === 0}

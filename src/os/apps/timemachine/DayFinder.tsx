@@ -34,7 +34,7 @@ export function folderOn(disk: FileNode, path: string): FileNode {
   );
 }
 
-export function Browser({
+export function DayFinder({
   disk,
   place,
   front,

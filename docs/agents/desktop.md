@@ -58,6 +58,30 @@ guarded from its first file; `tests/eslint.test.ts` probes each rule.
 | `kit/` | everything applets may use | `index.ts` |
 | `styles/` | the Aqua theme, by part of the desktop | `os.css` imports them |
 
+## Naming
+
+- A file that exports one React component is named after it, in
+  PascalCase: `Window.tsx`, `DayFinder.tsx`. Its name says what it is
+  across the whole desktop, not only in its folder: Time Machine's
+  read-only Finder is `DayFinder.tsx`, not `Browser.tsx`, since the
+  Browser is an app.
+- Logic, hooks and a set of small components are camelCase: `store.ts`,
+  `useKeys.ts`, `dockDrag.tsx`, `parts.tsx`. A test sits beside what it
+  tests as `<name>.test.ts` (or `.tsx`), a Web Worker as
+  `<name>.worker.ts`.
+- Folders are lowercase; an app's or applet's is its id
+  (`apps/timemachine/`, `applets/tilegame/`).
+- Stylesheets are kebab-case (`source-list.css`, `own-stickies.css`),
+  except one that belongs to a single module, which takes its name
+  (`media/discArt.css`). A new app's stylesheet is `<id>.css`; some older
+  ones use the display name (`about-mac.css`, `applet-store.css`,
+  `photo-booth.css`, `tile-game.css`, the iPod's `styles.css`) and stay.
+- Every class is prefixed `os-` and then the part or app it belongs to
+  (`os-dock-label`, `os-finder-cf-item`), so nothing collides with the
+  rest of the site, another app or a third party. Keys remembered in the
+  browser start with `os-` too (`core/storage.ts`), but for `theme`,
+  which the classic site shared.
+
 ## Apps and applets
 
 - `src/os/catalog.ts` lists every app's manifest (`apps/<id>/manifest.ts`
@@ -172,7 +196,7 @@ guarded from its first file; `tests/eslint.test.ts` probes each rule.
   as far back as each thing goes;
   Pictures and Projects have no dates and aren't shown. Days are where
   this device is. The front window is a read-only Finder
-  (`Browser.tsx`): the places, back and forward, icons or a list, and
+  (`DayFinder.tsx`): the places, back and forward, icons or a list, and
   Quick Look; the folder, the selection and the view stay as the days
   change, and a day without the folder shows the nearest one it had.
   Restore brings what's chosen (or the folder shown) back to now: an
@@ -253,7 +277,7 @@ guarded from its first file; `tests/eslint.test.ts` probes each rule.
 - `src/os/shell/AppSwitcher.tsx`: ⌥Tab steps through open windows, most
   recent first; releasing ⌥ focuses the chosen one.
 - `src/os/core/useKeys.ts`: whose a key is. A handler on `window`
-  (`useKeys`; Finder's, the iPod's centre key, Time Machine's browser,
+  (`useKeys`; Finder's, the iPod's centre key, Time Machine's Finder,
   Job Hunt's, iCal's, TextEdit's, Stickies', an alert's, the Burn
   sheet's) listens only while its window is in front
   (`useFocusedId() === win.id`) and takes a key only when `ownsKey(e)`
