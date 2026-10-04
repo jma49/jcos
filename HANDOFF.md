@@ -534,8 +534,8 @@ architecture (#210, #217).
 6. **Upkeep on Supabase:** the agent runs `supabase db advisors` after
    each migration; in the dashboard, keep Settings › API › Exposed
    schemas to `public` (plus `graphql_public` only if GraphQL is used).
-7. **What CI checks** on every pull request: `npm audit --omit=dev
-   --audit-level=high`, the type check, the lint (hooks, the app
+7. **What CI checks** on every pull request: `node scripts/audit.mjs`
+   (`npm audit` for what ships, with dated exceptions), the type check, the lint (hooks, the app
    boundaries, storage), the unit tests
    (Vitest), the build, a smoke test that opens every app in a browser,
    the download budgets of `npm run perf`, and `npm run test:db` (the
