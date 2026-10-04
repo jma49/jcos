@@ -392,7 +392,10 @@ guarded from its first file; `tests/eslint.test.ts` probes each rule.
 - `src/os/look/accent.ts`: the accent colour. By default it's sampled from
   the desktop picture (the most prominent colourful hue, at a readable
   lightness); System Preferences can fix it instead. Everything blue in
-  `os.css` derives from `--os-accent` via `color-mix()`.
+  `os.css` derives from `--os-accent` via `color-mix()`. The sampled
+  accent and the top's brightness (the menu bar's text) are cached for
+  the last dozen pictures (`os-accent-cache`, `os-brightness-cache`), a
+  Photo Booth picture's data URL by its hash rather than as itself.
 - `src/os/ambient/place.ts`: where the visitor is. `api/geo.ts` (a Vercel
   Function) returns the city, coordinates and time zone Vercel derives
   from their IP address; the Weather widget's flip side lets them pick a
