@@ -2,11 +2,13 @@
 // reactions and the chat room.
 //
 // Production talks to Supabase with the public anon (or publishable) key;
-// see supabase/schema.sql and supabase.ts. The URL and key are read from
-// PUBLIC_SUPABASE_* or, as the Supabase integration for Vercel names them,
-// from NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY.
-// Without them the features stay hidden, except in `astro dev`, which falls
-// back to a stand-in that works across tabs of one browser (local.ts).
+// see supabase/schema.sql and this folder's supabase/index.ts. The URL and
+// key are read from PUBLIC_SUPABASE_* or, as the Supabase integration for
+// Vercel names them, from NEXT_PUBLIC_SUPABASE_URL and
+// NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY. Without them the features stay
+// hidden, except in `astro dev`, which falls back to a stand-in that works
+// across tabs of one browser (local/index.ts). How the folder is laid out,
+// a file per domain and a slice of each backend per domain: types.ts.
 
 import type { Social } from './types';
 
@@ -33,7 +35,7 @@ async function load(): Promise<Social | null> {
     import.meta.env.PUBLIC_SUPABASE_ANON_KEY ??
     import.meta.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ??
     import.meta.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (url && key) return (await import('./supabase')).supabaseSocial(url, key);
-  if (import.meta.env.DEV) return (await import('./local')).localSocial();
+  if (url && key) return (await import('./supabase/index')).supabaseSocial(url, key);
+  if (import.meta.env.DEV) return (await import('./local/index')).localSocial();
   return null;
 }

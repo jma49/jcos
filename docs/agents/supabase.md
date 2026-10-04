@@ -47,6 +47,36 @@ The code that isn't in the browser (each endpoint's parameters, answers and conv
 | `account-recovery` | Supabase Edge Function | emails a one-time reset link through Resend | |
 | `soapbox-bot` | Supabase Edge Function | Jincheng's Telegram bot: Soapbox posts, the music commands, moderation buttons | |
 
+## The site's side
+
+`getSocial()` (`src/os/social/social.ts`) gives the site one `Social`
+object, loaded on first use: the Supabase backend, or in `astro dev`
+without settings, the stand-in. Both are made of one slice per domain:
+
+- `social/<domain>.ts` holds the domain's part of `Social` (an
+  interface), its types and constants: `accounts.ts`, `notes.ts` (the
+  guestbook), `visitors.ts` (presence), `soapbox.ts`, `chat.ts`,
+  `music.ts`, `discs.ts`, `documents.ts` (Jincheng's home folder),
+  `stickies.ts` (a member's own), `calendar.ts` (iCal), `jobs.ts` (Job
+  Hunt). `errors.ts` is the `SocialError` every slice throws, and
+  `types.ts` re-exports them all and joins the interfaces into `Social`.
+- `social/supabase/<domain>.ts` is the domain's slice over Supabase, and
+  `social/supabase/context.ts` what the slices share: the one client,
+  the session (who's signed in, and the listeners told when that
+  changes), the username cache and how a database error reads.
+  `social/supabase/index.ts` makes the client and the context once and joins
+  the slices.
+- `social/local/<domain>.ts` is the stand-in's slice, with
+  `social/local/context.ts` and `social/local/index.ts` the same way. Only the
+  `import.meta.env.DEV` branch in `social.ts` imports it, so a
+  production build has none of it.
+
+The domain files hold no backend code: they're in the first load (the
+menu bar and Chat's alerts use their constants), and anything a slice
+put there would load with them. A new feature is a domain file, a slice
+in each backend, a line in each composer and its interface in `Social`
+(`types.ts`).
+
 ## In detail
 
 - **Accounts** (`src/os/social/`, `apps/account/`): a username and a
@@ -272,7 +302,7 @@ fails on any change. It loops over the folder, so a new file is covered
 without being listed.
 
 Without those variables, production hides these features, and `astro dev`
-falls back to `src/os/social/local.ts`, which keeps accounts, notes and
+falls back to `src/os/social/local/`, which keeps accounts, notes and
 chat in `localStorage` and shares chat and presence between tabs of one
 browser.
 

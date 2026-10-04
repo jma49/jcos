@@ -30,7 +30,7 @@ and two Supabase Edge Functions.
   | `my_recovery_email()`, `set_recovery_email(address)` | members | the member's recovery address |
   | `chat_can_read(room)`, `chat_can_write(room)` | everyone / members | used by chat's row-level security, not called by the site |
 
-- **Realtime** (`src/os/social/supabase.ts`): `desktop` (presence,
+- **Realtime** (`src/os/social/supabase/`): `desktop` (presence,
   pointers and short signals such as nudges and AirDrop offers, which
   anyone with the public key can send, so receivers check them),
   `chat-room` (new and removed chat messages, `postgres_changes`),

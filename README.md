@@ -63,7 +63,7 @@ npm run perf       # load, drag and idle budgets (after a build)
 ```
 
 It runs without any setup. Without Supabase settings, `astro dev` uses an
-in-browser stand-in (`src/os/social/local.ts`). That stand-in keeps
+in-browser stand-in (`src/os/social/local/`). That stand-in keeps
 accounts, notes and chat in `localStorage` and shares chat and presence
 between tabs. A production build without them hides the social features.
 
