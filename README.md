@@ -172,7 +172,7 @@ significant change goes through.
 | `npm run check` | Type-checks the site (`astro check`). |
 | `npm run preview:capture` | Screenshots project pages into their covers, and the home page into `public/og.jpg`. A workflow runs it once a day. |
 | `bash scripts/vercel-ignore.sh <base>` | Vercel's ignored build step: says whether a deployment would be skipped (nothing the site is built from changed since `<base>`: only docs, tests, CI, the database, the Edge Functions' own folders or tooling). |
-| `npm run lint` | Checks the rules of React hooks and effects' dependencies, the boundaries between the OS, apps and applets (`import()` included), and that anything remembered in the browser goes through `src/os/core/storage.ts` (ESLint; `tests/eslint.test.ts` probes each rule). |
+| `npm run lint` | Checks the rules of React hooks and effects' dependencies, the boundaries between the OS, apps and applets (`import()` included), that anything remembered in the browser goes through `src/os/core/storage.ts`, and ESLint's recommended rules in `scripts/` (ESLint; `tests/eslint.test.ts` probes each rule). |
 | `npm run perf` | Measures a production build against the performance budgets (see `docs/agents/performance.md`). |
 | `node scripts/check-doc-paths.mjs` | Lists every repository path the docs cite in backticks that doesn't exist (`npm test` runs it too). |
 | `npm run photos:update` | Refreshes `src/data/photos.json` from Unsplash. |
