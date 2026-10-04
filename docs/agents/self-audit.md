@@ -24,7 +24,9 @@ vulnerability or bottleneck. Significant means any of these:
   `git diff` for keys and tokens, and keep `.env.example` current.
 - What visitors write renders as text. Answers about accounts don't
   reveal whether one exists, in their content or their timing.
-- `npm audit --omit=dev` reports nothing new. A new dependency is
+- `node scripts/audit.mjs` (`npm audit --omit=dev`) reports nothing new. An
+  advisory that can't apply here goes in its exceptions, with the reason
+  and a date to look again, never by loosening the gate. A new dependency is
   worth its weight.
 
 **Performance:**
