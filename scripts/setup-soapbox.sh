@@ -5,13 +5,31 @@
 #
 # Needs: the Supabase CLI, logged in (`supabase login`), and the
 # migration supabase/migrations/20260925123319_soapbox.sql applied.
+# The project is SUPABASE_PROJECT_REF, from the environment or .env, or
+# else the one `supabase link` linked.
 # Usage: bash scripts/setup-soapbox.sh
 # The bot token is read without echoing and never written to the repo.
 set -euo pipefail
 
-PROJECT_REF="${SUPABASE_PROJECT_REF:-hszogpoyyqgwjuznbegd}"
-FUNCTION_URL="https://${PROJECT_REF}.supabase.co/functions/v1/soapbox-bot"
 cd "$(dirname "$0")/.."
+
+PROJECT_REF="${SUPABASE_PROJECT_REF:-}"
+if [[ -z "$PROJECT_REF" && -f .env ]]; then
+  PROJECT_REF=$(sed -n 's/^[[:space:]]*SUPABASE_PROJECT_REF=//p' .env | tail -n 1 | tr -d "\"' \r")
+fi
+if [[ -z "$PROJECT_REF" && -f supabase/.temp/project-ref ]]; then
+  PROJECT_REF=$(tr -d '[:space:]' < supabase/.temp/project-ref)
+fi
+if [[ -z "$PROJECT_REF" && -f supabase/.temp/linked-project.json ]]; then
+  PROJECT_REF=$(sed -n 's/.*"ref"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' supabase/.temp/linked-project.json)
+fi
+if [[ -z "$PROJECT_REF" ]]; then
+  echo "No Supabase project to set up. Set SUPABASE_PROJECT_REF (in the environment or .env), or run \`supabase link --project-ref <ref>\` once." >&2
+  exit 1
+fi
+[[ "$PROJECT_REF" =~ ^[a-z0-9]{20}$ ]] || { echo "\"$PROJECT_REF\" isn't a Supabase project ref." >&2; exit 1; }
+echo "Setting up the Soapbox bot on Supabase project ${PROJECT_REF}."
+FUNCTION_URL="https://${PROJECT_REF}.supabase.co/functions/v1/soapbox-bot"
 
 read -rsp "Telegram bot token (from @BotFather): " TOKEN; echo
 read -rp "Your Telegram user ID (from @userinfobot): " OWNER_ID

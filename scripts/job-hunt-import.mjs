@@ -13,16 +13,39 @@
 // anything is wrong. It goes through the Supabase CLI as this machine is
 // logged in to it, so it can only be run here, by whoever has that login.
 // --db-url sends it to another database instead (a local one, to try it).
+// The project is SUPABASE_PROJECT_REF, from the environment or .env, or
+// else the one `supabase link` linked; none is written in here.
 // The file is Jincheng's job hunt: keep it out of the repository.
 
 import { execFileSync } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { parseEnv } from 'node:util';
 
-const PROJECT = 'hszogpoyyqgwjuznbegd';
 const ROOT = new URL('..', import.meta.url).pathname;
+
+/** The Supabase project to send to: SUPABASE_PROJECT_REF, else the linked one. */
+function projectRef() {
+  const read = (path) => (existsSync(join(ROOT, path)) ? readFileSync(join(ROOT, path), 'utf8') : '');
+  const candidates = [
+    ['SUPABASE_PROJECT_REF', process.env.SUPABASE_PROJECT_REF],
+    ['SUPABASE_PROJECT_REF in .env', parseEnv(read('.env')).SUPABASE_PROJECT_REF],
+    ['supabase/.temp/project-ref', read('supabase/.temp/project-ref')],
+    ['supabase/.temp/linked-project.json', read('supabase/.temp/linked-project.json') && JSON.parse(read('supabase/.temp/linked-project.json')).ref]
+  ];
+  for (const [where, value] of candidates) {
+    const ref = (value ?? '').trim();
+    if (!ref) continue;
+    if (!/^[a-z0-9]{20}$/.test(ref)) throw new Error(`${where} isn't a Supabase project ref: ${ref}`);
+    return ref;
+  }
+  throw new Error(
+    'No Supabase project to send to. Set SUPABASE_PROJECT_REF (in the environment or .env), ' +
+      'or run `supabase link --project-ref <ref>` once; --db-url sends to another database instead.'
+  );
+}
 
 const STAGES = ['applied', 'assessment', 'interviewing', 'offer', 'closed'];
 const REACHED = ['applied', 'assessment', 'interviewing', 'offer'];
@@ -38,7 +61,13 @@ if (!file) {
 }
 const dryRun = flags.includes('--dry-run');
 const dbUrl = flags.includes('--db-url') ? flags[flags.indexOf('--db-url') + 1] : null;
-const target = dbUrl ? ['--db-url', dbUrl] : ['--linked', '--project-ref', PROJECT];
+let target;
+try {
+  target = dbUrl ? ['--db-url', dbUrl] : ['--linked', '--project-ref', projectRef()];
+} catch (error) {
+  console.error(`Not sent: ${error.message}`);
+  process.exit(2);
+}
 
 /** A one-line text of at most `most` characters, trimmed; '' when missing. */
 function line(value, most, what) {
@@ -129,7 +158,7 @@ console.log(
     `${batch.applications.reduce((n, a) => n + a.events.length, 0)} messages`
 );
 if (dryRun) {
-  console.log('Dry run: nothing sent.');
+  console.log(`Dry run: nothing sent (it would go to ${dbUrl ? 'the --db-url database' : `project ${target.at(-1)}`}).`);
   process.exit(0);
 }
 
