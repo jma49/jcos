@@ -68,7 +68,10 @@ NetEase gives up after five seconds.
   of range (`public, s-maxage=86400`).
 - **404** `{ error }` when no match has synced lyrics, `public,
   s-maxage=3600`.
-- **502** `{ error }` when NetEase doesn't answer, `no-store`; logged.
+- **502** `{ error }` when NetEase doesn't answer, or answers in a shape
+  it doesn't expect (its answers are checked with valibot, and a field it
+  reads that's missing or of another type is a failure, not a miss),
+  `no-store`; logged with the endpoint and the field, not the query.
 
 ### `GET /api/songs`
 
@@ -170,6 +173,11 @@ nothing. See its README.
 - **Any URL fetched on a visitor's behalf** goes through `publicUrl` in
   `api/framing.ts` (public addresses only, checked again at every
   redirect). The other functions fetch fixed hosts.
+- **A third party's JSON is checked before it's read**, with a valibot
+  schema of the fields used (`v.safeParse`), not cast with `as`: an
+  answer of another shape is that service failing (502, logged with
+  where it didn't fit), not data. Fields left out or null by design are
+  `v.nullish`; fields not read aren't described, and are let through.
 - **Caching** is said on each answer (`cache-control`): public data is
   kept at the edge for as long as it may be stale, anything about the
   visitor (`/api/geo`) not at all, and an error only when asking again

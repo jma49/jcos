@@ -44,7 +44,8 @@ page at `/projects/<slug>/`.
   security, Realtime, Storage and Edge Functions (Deno).
 - [Vercel](https://vercel.com): hosting and four small functions in
   `api/` (the visitor's location, a lyrics relay, the music library,
-  cached at the edge, and whether a page can be framed in the Browser).
+  cached at the edge, and whether a page can be framed in the Browser);
+  what they read from other services is checked with valibot.
 - Vitest, Playwright for preview images, and GitHub Actions.
 
 ## Running it

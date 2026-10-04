@@ -97,3 +97,52 @@ describe('what it returns', () => {
     log.mockRestore();
   });
 });
+
+describe('an answer of another shape', () => {
+  /** Answers NetEase's search with `search`, and its lyric endpoint with `lyric`, as they are. */
+  function oddNetEase(search: unknown, lyric: unknown = { lrc: { lyric: LYRICS } }) {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url: string) => Response.json(new URL(url).pathname === '/api/search/get' ? search : lyric))
+    );
+  }
+  const song = { id: 3, name: '宁夏', duration: 241_000, artists: [{ name: '梁静茹' }] };
+
+  test.each([
+    ['songs that aren’t a list', { result: { songs: 'none' } }, undefined, '/api/search/get at result.songs'],
+    ['a song without a name', { result: { songs: [{ ...song, name: undefined }] } }, undefined, '/api/search/get at result.songs.0.name'],
+    ['a length that isn’t a number', { result: { songs: [{ ...song, duration: '241' }] } }, undefined, '/api/search/get at result.songs.0.duration'],
+    ['an artist without a name', { result: { songs: [{ ...song, artists: [{}] }] } }, undefined, '/api/search/get at result.songs.0.artists.0.name'],
+    ['a search answer that isn’t an object', 'busy', undefined, '/api/search/get at the top'],
+    ['lyrics that aren’t text', { result: { songs: [song] } }, { lrc: { lyric: 42 } }, '/api/song/lyric at lrc.lyric']
+  ])('%s is the 502 NetEase failing gives, logged without the query', async (_, search, lyric, where) => {
+    oddNetEase(search, lyric);
+    const log = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const res = await ask({ title: '寧夏', artist: '梁靜茹' });
+    expect(res.status).toBe(502);
+    expect(res.headers.get('cache-control')).toBe('no-store');
+    expect(await res.json()).toEqual({ error: 'NetEase didn’t answer.' });
+    expect(log).toHaveBeenCalledWith('/api/lyrics: NetEase failed:', expect.stringContaining(`unexpected answer from ${where}:`));
+    expect(log.mock.calls[0][1]).not.toContain('寧夏');
+    log.mockRestore();
+  });
+
+  test('a search or song with nothing to give, as NetEase leaves it out or null, is a 404', async () => {
+    for (const [search, lyric] of [
+      [{}, undefined],
+      [{ result: null }, undefined],
+      [{ result: { songs: null } }, undefined],
+      [{ result: { songs: [song] } }, { nolyric: true }],
+      [{ result: { songs: [song] } }, { lrc: null }],
+      [{ result: { songs: [song] } }, { lrc: { lyric: null } }]
+    ]) {
+      oddNetEase(search, lyric);
+      expect((await ask({ title: '寧夏', artist: '梁靜茹' })).status).toBe(404);
+    }
+  });
+
+  test('fields it doesn’t read are let through', async () => {
+    oddNetEase({ result: { songs: [{ ...song, album: { id: 1 }, fee: 8 }], songCount: 1 }, code: 200 }, { lrc: { lyric: LYRICS, version: 3 }, code: 200 });
+    expect((await ask({ title: '寧夏', artist: '梁靜茹' })).status).toBe(200);
+  });
+});
