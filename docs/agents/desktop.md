@@ -146,9 +146,12 @@ guarded from its first file; `tests/eslint.test.ts` probes each rule.
 - `src/os/apps/timemachine/`: Leopard's Time Machine, in the Dock and
   Applications. It's a full-screen app (the manifest's `fullScreen`,
   drawn by `shell/FullScreenLayer.tsx`): no window; it covers the
-  windows, the menu bar and the Dock, which are `inert` under it, and
+  windows, the menu bar and the Dock, which are `inert` under it (the
+  page around the desktop too: `inertAround` in `core/focus.ts`), and
   the desktop's shortcuts, the ⌥Tab switcher and Exposé's corner stay
   quiet (`useFocusedId()` is null meanwhile, so no window has the keys).
+  Leaving gives focus back to what had it, as noted by `openFullScreen`
+  (below, focus).
   Space is a canvas of seeded stars over a CSS nebula, with a Finder
   window for each day going back into it (300px apart, seen from 50%
   6%, as the prototype had them); the timeline down the right, the
@@ -262,6 +265,22 @@ guarded from its first file; `tests/eslint.test.ts` probes each rule.
   keys (Time Machine's Escape and Page Up/Down) hold theirs wherever
   focus is, and an Escape closes Quick Look before it leaves Time
   Machine.
+- `src/os/core/focus.ts`: where focus goes back to when something that
+  took it closes. Spotlight, the Dashboard and a full-screen app note
+  what had focus in the store's action that opens them (`setSpotlight`,
+  `setDashboard`, `openFullScreen`), before anything of theirs mounts,
+  and their layers call `releaseFocus()` as they close; an alert notes
+  it as it renders. It comes back a frame later
+  (after the key that closed it has been handled everywhere, so no app
+  takes that key too), and only if focus is on the page itself or still
+  in what closed: focus put somewhere else meanwhile stays. When what
+  had it is gone or hidden, or a window came to the front meanwhile (a
+  Spotlight result, a menu command, Time Machine's Restore opened one),
+  it goes to the window in front: a window takes focus itself
+  (`tabIndex={-1}`, found by its `data-id`). A window closed or
+  minimized with focus in it (its close box, ⌥W, File › Close Window)
+  hands focus to the next one in front the same way (`close` and
+  `minimize` in the store).
 - `src/os/shell/drawer.tsx`: Tiger-style drawers. Each window has a slot
   along its edge (right, left if there's no room, or over the content
   when neither side fits); an app renders `<Drawer open>` anywhere and it

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState, type ComponentType } from 'react'
 import { AnimatePresence, m } from 'motion/react';
 import { apps, launch, launcherApps, openableApps } from '../core/registry';
 import { APPLETS, useInstalledApplets } from '../core/applets';
-import { useWindows } from '../core/store';
+import { releaseFocus, useWindows } from '../core/store';
 import { useOSData } from '../core/context';
 
 interface Result {
@@ -22,6 +22,7 @@ export function Spotlight() {
   const [query, setQuery] = useState('');
   const [active, setActive] = useState(0);
   const input = useRef<HTMLInputElement>(null);
+  const backdrop = useRef<HTMLDivElement>(null);
 
   const all = useMemo<Result[]>(
     () => [
@@ -69,11 +70,13 @@ export function Spotlight() {
   const results = q ? all.filter((r) => `${r.label} ${r.hint}`.toLowerCase().includes(q)) : all.slice(0, 6);
 
   useEffect(() => {
-    if (open) {
-      setQuery('');
-      setActive(0);
-      requestAnimationFrame(() => input.current?.focus());
-    }
+    if (!open) return;
+    setQuery('');
+    setActive(0);
+    requestAnimationFrame(() => input.current?.focus());
+    // Closed, focus goes back where it was (or to the app a result opened).
+    const layer = backdrop.current;
+    return () => releaseFocus('spotlight', layer);
   }, [open]);
 
   useEffect(() => setActive(0), [query]);
@@ -88,6 +91,7 @@ export function Spotlight() {
     <AnimatePresence>
       {open && (
         <m.div
+          ref={backdrop}
           className="os-spotlight-backdrop"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
