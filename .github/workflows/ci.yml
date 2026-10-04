@@ -63,6 +63,8 @@ jobs:
       - run: npx playwright install --with-deps --only-shell chromium
       - run: npm run test:smoke
       # Download budgets fail the build; script times are only reported here.
+      # It builds the site again, with placeholder Supabase settings, as
+      # production is built (scripts/perf-audit.mjs).
       - run: npm run perf
 
   database:

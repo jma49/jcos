@@ -104,7 +104,7 @@ in docs/decisions/) and take it out.
 | --- | --- |
 | any code | `npm run check` (types), `npm run lint` (hooks, the app boundaries, storage, the scripts), `npm test` |
 | an app, the shell or anything a visitor sees | `npm run build`, then `npm run test:smoke`; open it in a browser too (`npm run serve`) |
-| the first load, a dependency, or anything per frame | `npm run build`, then `npm run perf`: every line within budget |
+| the first load, a dependency, or anything per frame | `npm run perf` (it builds the site itself): every line within budget |
 | the schema, a migration, a policy or a limit | `npm run test:db`, with a check (and a race for a limit) for the new rule; once merged, put it live as jmos-ops's HANDOFF.md (§1) says |
 | an Edge Function | `npm test` (its `*.test.mjs`) and `deno check supabase/functions/*/index.ts` (its types) |
 | a project's cover or the home page's look | `npm run preview:capture` |

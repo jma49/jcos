@@ -1,9 +1,14 @@
 // Measures the desktop the way a visitor meets it, for the self-audit
-// after a significant change (docs/agents/self-audit.md). Run it against a
-// production build:
+// after a significant change (docs/agents/self-audit.md):
 //
-//   npm run build && npm run perf     # serves dist/ itself
+//   npm run perf                      # builds the site itself, and serves it
 //   node scripts/perf-audit.mjs <url> # or measures a running site
+//
+// Production is built with Supabase's settings, and what the desktop loads
+// depends on them, so the build here has placeholder ones (BACKEND below:
+// not a real project, and nothing secret). It goes to a temporary folder,
+// not dist/. Every request to the placeholder, or to any Supabase project,
+// is refused before it leaves the browser, and counted.
 //
 // It reports three things, each compared with its budget:
 //   load  what a first visit downloads before the desktop settles
@@ -18,12 +23,39 @@
 // are reported but only the download budgets can fail it.
 
 import { chromium } from 'playwright';
-import { readFile } from 'node:fs/promises';
+import { build } from 'astro';
+import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { gzipSync } from 'node:zlib';
 import { serveDist } from './serve-dist.mjs';
 
-const server = process.argv[2] ? null : await serveDist();
+/** The placeholder backend the build is given: `.invalid` never resolves, and it's refused anyway. */
+const BACKEND = 'https://perf-placeholder.supabase.invalid';
+const isBackend = (url) => {
+  const { hostname } = new URL(url);
+  return hostname === new URL(BACKEND).hostname || hostname.endsWith('.supabase.co');
+};
+
+/** Builds the site as production is built, with the placeholder backend's settings. */
+async function buildAsProduction() {
+  const outDir = await mkdtemp(join(tmpdir(), 'jmos-perf-'));
+  // These win over any .env file, whose values are never used here.
+  Object.assign(process.env, {
+    PUBLIC_SUPABASE_URL: BACKEND,
+    PUBLIC_SUPABASE_ANON_KEY: 'perf-placeholder-key',
+    NEXT_PUBLIC_SUPABASE_URL: BACKEND,
+    NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: 'perf-placeholder-key'
+  });
+  await build({ root: new URL('..', import.meta.url).pathname, outDir, logLevel: 'warn' });
+  return outDir;
+}
+
+const built = process.argv[2] ? null : await buildAsProduction();
+const server = built ? await serveDist({ dir: built }) : null;
 const URL_ = process.argv[2] ?? server.url;
+/** Requests to a backend, refused (see above). */
+const backendRequests = [];
 /** Budgets that measure time, not bytes: too noisy to fail CI on. */
 const TIMED = new Set(['dragScriptMs', 'idleScriptMs']);
 const strict = (key) => !(process.env.CI && TIMED.has(key));
@@ -53,6 +85,20 @@ async function appletChunks() {
 const APPLET_CHUNKS = await appletChunks();
 
 const browser = await chromium.launch(process.env.PLAYWRIGHT_CHROMIUM ? { executablePath: process.env.PLAYWRIGHT_CHROMIUM } : {});
+
+/** A page in a browser of its own, which never reaches a backend (see the top). */
+async function newPage(viewport) {
+  const page = await browser.newPage({ viewport });
+  await page.route(isBackend, (route) => {
+    backendRequests.push(route.request().url());
+    return route.abort('blockedbyclient');
+  });
+  await page.routeWebSocket(isBackend, (ws) => {
+    backendRequests.push(ws.url());
+    ws.close();
+  });
+  return page;
+}
 
 /** Six windows, restored from a saved session, as a busy visitor would have them. */
 const sixWindows = () => {
@@ -85,7 +131,7 @@ async function settle(page) {
 const FIRST_LOAD_MS = 7000;
 
 async function load() {
-  const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+  const page = await newPage({ width: 1440, height: 900 });
   const seen = [];
   const start = Date.now();
   page.on('response', async (res) => {
@@ -117,7 +163,7 @@ async function load() {
 }
 
 async function withSixWindows(run) {
-  const page = await browser.newPage({ viewport: { width: 1400, height: 900 } });
+  const page = await newPage({ width: 1400, height: 900 });
   await page.addInitScript(sixWindows);
   await settle(page);
   await page.waitForTimeout(2500);
@@ -146,6 +192,7 @@ const idle = () => withSixWindows((page) => page.waitForTimeout(5000));
 const result = { ...(await load()), dragScriptMs: await drag(), idleScriptMs: await idle() };
 await browser.close();
 server?.close();
+if (built) await rm(built, { recursive: true, force: true });
 
 let over = false;
 for (const [key, budget] of Object.entries(BUDGET)) {
@@ -160,4 +207,6 @@ console.log(`${lean ? 'ok  ' : 'OVER'} appletsInFirstLoad ${lean ? 'none' : resu
 const twice = result.fetchedTwice.length === 0;
 over ||= !twice;
 console.log(`${twice ? 'ok  ' : 'OVER'} fetchedTwice     ${twice ? 'none' : result.fetchedTwice.join(', ')}`);
+// Reported, not judged: the desktop asks for the backend once it has settled.
+console.log(`     backend          ${backendRequests.length} request(s) refused${built ? ' (placeholder settings)' : ''}`);
 process.exit(over ? 1 : 0);

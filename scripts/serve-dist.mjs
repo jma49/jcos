@@ -40,10 +40,11 @@ const TYPES = {
 /**
  * Starts a server; resolves to its address and a way to stop it. By
  * default it takes a free port on 127.0.0.1 and serves dist/ alone.
- * `port` picks the port, `host: null` listens on every interface, and
- * `api` answers /api/<name> with api/<name>.ts.
+ * `port` picks the port, `host: null` listens on every interface, `api`
+ * answers /api/<name> with api/<name>.ts, and `dir` serves another build
+ * than dist/ (an absolute path).
  */
-export function serveDist({ port = 0, host = '127.0.0.1', api = false } = {}) {
+export function serveDist({ port = 0, host = '127.0.0.1', api = false, dir = DIST } = {}) {
   const server = createServer(async (req, res) => {
     const url = new URL(req.url, `http://${req.headers.host ?? 'localhost'}`);
     try {
@@ -56,7 +57,7 @@ export function serveDist({ port = 0, host = '127.0.0.1', api = false } = {}) {
         console.log(`${answer.status} ${url.pathname}${url.search}`);
         return;
       }
-      let file = join(DIST, normalize(decodeURIComponent(url.pathname)));
+      let file = join(dir, normalize(decodeURIComponent(url.pathname)));
       if ((await stat(file)).isDirectory()) file = join(file, 'index.html');
       const body = await readFile(file);
       res.writeHead(200, { ...HEADERS, 'Content-Type': TYPES[extname(file)] ?? 'application/octet-stream' });

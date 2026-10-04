@@ -20,9 +20,10 @@ import { lookup } from 'node:dns/promises';
 import { request as httpRequest } from 'node:http';
 import { request as httpsRequest } from 'node:https';
 import { isIP, type LookupFunction } from 'node:net';
+import { DOMAIN, SITE_URL } from '../src/config/site.js';
 
 /** Where the Browser runs (majincheng.com redirects here), which a page's frame-ancestors has to allow. */
-const OURS = new URL('https://www.majincheng.com');
+const OURS = new URL(SITE_URL);
 const MAX_REDIRECTS = 5;
 
 /** Whether an IP address is private, loopback, link-local or otherwise not on the public internet. */
@@ -104,7 +105,7 @@ export const askHeaders: Ask = ({ url, addresses }) =>
         hostname: url.hostname.replace(/^\[|\]$/g, ''),
         port: url.port || undefined,
         path: `${url.pathname}${url.search}`,
-        headers: { 'user-agent': 'Mozilla/5.0 (compatible; majincheng.com frame check)', accept: 'text/html' },
+        headers: { 'user-agent': `Mozilla/5.0 (compatible; ${DOMAIN} frame check)`, accept: 'text/html' },
         lookup: pinnedLookup(addresses),
         agent: false,
         signal: AbortSignal.timeout(5000)

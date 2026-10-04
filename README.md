@@ -60,7 +60,7 @@ npm run db:generate # supabase/schema.sql and src/lib/database.types.ts from the
 npm run build      # -> dist/
 npm run serve      # the build and the api/ functions on http://localhost:4321 (after a build)
 npm run test:smoke # opens every app in the build, fails on any error (after a build)
-npm run perf       # load, drag and idle budgets (after a build)
+npm run perf       # load, drag and idle budgets (builds the site itself)
 ```
 
 It runs without any setup. Without Supabase settings, `astro dev` uses an
@@ -114,6 +114,7 @@ Function secrets:
 ```
 src/os/            the desktop, one React island (its folders: docs/agents/desktop.md)
 src/lib/           what the pages, the desktop and api/ share: the media library's shape, photos, projects
+src/config/        where the site lives (site.ts): its domain and addresses, for astro.config.mjs, the desktop and api/
 src/pages/         the home page, project pages, robots.txt, llms.txt
 src/content/       the site's copy (site.ts), the projects (Markdown) and their covers
 src/data/          songs, desktop pictures, the photo snapshot
@@ -183,7 +184,7 @@ significant change goes through.
 | `npm run preview:capture` | Screenshots project pages into their covers, and the home page into `public/og.jpg`. A workflow runs it once a day. |
 | `bash scripts/vercel-ignore.sh <base>` | Vercel's ignored build step: says whether a deployment would be skipped (nothing the site is built from changed since `<base>`: only docs, tests, CI, the database, the Edge Functions' own folders or tooling). |
 | `npm run lint` | Checks the rules of React hooks and effects' dependencies, the boundaries between the OS, apps and applets (`import()` included), that anything remembered in the browser goes through `src/os/core/storage.ts`, and ESLint's recommended rules in `scripts/` (ESLint; `tests/eslint.test.ts` probes each rule). |
-| `npm run perf` | Measures a production build against the performance budgets (see `docs/agents/performance.md`). |
+| `npm run perf` | Builds the site as production is built (placeholder Supabase settings) and measures it against the performance budgets (see `docs/agents/performance.md`). |
 | `npm run coverage` | Runs the unit tests with V8 coverage over everything that ships: a summary in the terminal, the full report in `coverage/` (not committed). CI prints the summary; there's no threshold yet. |
 | `node scripts/check-doc-paths.mjs` | Lists every repository path the docs cite in backticks that doesn't exist (`npm test` runs it too). |
 | `node scripts/check-public-sizes.mjs` | Lists every file in `public/` over its size budget: 1 MB for a desktop picture, 200 KB for anything else, each exception listed with its reason (`npm test` runs it too). |

@@ -3,15 +3,17 @@
 // Function's (supabase/functions/account-recovery), and whether the member
 // is the owner is the database's is_owner().
 
+import { MEMBER_EMAIL_DOMAIN } from '../../../config/site';
 import { PASSWORD_MIN, USERNAME, type AccountsSocial } from '../accounts';
 import { SocialError } from '../errors';
 import { accountOf, refusal, type SupabaseContext } from './context';
 
 /**
  * Supabase Auth wants an email address; an account is a username, so it
- * gets one made from it. The database only accepts accounts made this way.
+ * gets one made from it. The database only accepts accounts made this way,
+ * and existing members signed up under it: MEMBER_EMAIL_DOMAIN never changes.
  */
-const addressOf = (username: string) => `${username}@users.majincheng.com`;
+const addressOf = (username: string) => `${username}@${MEMBER_EMAIL_DOMAIN}`;
 
 export function supabaseAccounts(ctx: SupabaseContext): AccountsSocial {
   const { client, listeners, member } = ctx;

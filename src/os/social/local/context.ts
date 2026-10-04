@@ -6,9 +6,10 @@
 import { loadJSON, saveJSON } from '../../core/storage';
 import type { Account } from '../accounts';
 import { SocialError } from '../errors';
+import { DEV_SESSION_KEY } from '../social';
 
 const USERS_KEY = 'os-dev-users';
-const SESSION_KEY = 'os-dev-session';
+const SESSION_KEY = DEV_SESSION_KEY;
 /** The member the stand-in treats as the owner: sign up as this to see the owner's rooms. */
 export const DEV_OWNER = 'jincheng';
 

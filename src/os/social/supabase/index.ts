@@ -6,6 +6,7 @@
 
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '../../../lib/database.types';
+import { SUPABASE_SESSION_KEY } from '../social';
 import type { Social } from '../types';
 import { supabaseAccounts } from './accounts';
 import { supabaseCalendar } from './calendar';
@@ -25,7 +26,7 @@ export function supabaseSocial(url: string, key: string): Social {
   return socialOver(
     createClient<Database>(url, key, {
       // The session stays in this browser, so members stay signed in.
-      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false, storageKey: 'os-auth' }
+      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false, storageKey: SUPABASE_SESSION_KEY }
     })
   );
 }
