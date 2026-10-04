@@ -118,7 +118,10 @@ guarded from its first file; `tests/eslint.test.ts` probes each rule.
   AudioContext (`audio()` from the kit); it follows the sound switch
   and volume, and a note turns sound on. Settings in `os-synth`.
 - The Terminal (`apps/terminal/`) has a working folder on Macintosh
-  HD (`cd`, `pwd`, `ls`, `cat`, `open <path>`).
+  HD (`cd`, `pwd`, `ls`, `cat`, `open <path>`): the disk Finder shows,
+  Movies and Users included, whose locked folders answer "Permission
+  denied". It splits a line as zsh does, with quotes and backslash
+  escapes (`paths.ts`, with tests).
 - `src/os/apps/photobooth/`: the camera with CSS-filter effects, a
   countdown and one or four pictures, kept in `os-photobooth` (the last
   eight, as small JPEGs). The camera is only on while the window is open.

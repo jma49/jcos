@@ -11,6 +11,13 @@ import { getSocial } from '../../social/social';
 import { play } from '../../core/sound';
 import { useInstalledApplets } from '../../core/applets';
 import { buildDisk, type FileNode } from '../../core/files';
+import { usersFolder } from '../../files/home';
+import { moviesFolder } from '../../files/movies';
+import { useHome, useHomeRefresh } from '../../home/home';
+import { useShelf, useShelfRefresh } from '../../media/discs';
+import { ALBUMS, SONGS, useLibraryVersion } from '../../media/library';
+import { useIsOwner } from '../../social/owner';
+import { resolve, words } from './paths';
 
 interface Line {
   id: number;
@@ -22,28 +29,6 @@ interface Line {
 
 /** The prompt, with the working folder's name as zsh shows it ("~" for the disk). */
 const promptFor = (cwd: string) => `jincheng@os ${cwd === '/' ? '~' : cwd.split('/').pop()} %`;
-
-/** A path typed in the Terminal, made absolute against the working folder. */
-function absolute(cwd: string, typed: string) {
-  const parts = typed.startsWith('/') || typed.startsWith('~') ? [] : cwd.split('/').filter(Boolean);
-  for (const part of typed.replace(/^~\/?/, '').split('/')) {
-    if (!part || part === '.') continue;
-    if (part === '..') parts.pop();
-    else parts.push(part);
-  }
-  return parts;
-}
-
-/** The node at a typed path, matching names without regard to case. */
-function resolve(disk: FileNode, cwd: string, typed: string): FileNode | null {
-  let node: FileNode | undefined = disk;
-  for (const part of absolute(cwd, typed)) {
-    const want = part.toLowerCase();
-    node = node?.children?.find((c) => c.name.toLowerCase() === want || c.path.split('/').pop()?.toLowerCase() === want);
-    if (!node) return null;
-  }
-  return node ?? null;
-}
 
 /** How `ls` shows a name: folders with a slash, names with spaces quoted. */
 const listed = (n: FileNode) => {
@@ -181,7 +166,20 @@ export default function Terminal({ win }: AppProps) {
   const nextId = useRef(2);
   const [cwd, setCwd] = useState('/');
   const applets = useInstalledApplets();
-  const disk = useMemo(() => buildDisk(data, applets), [data, applets]);
+  // The disk Finder shows: the library as it is now, the Movies shelf, and
+  // Jincheng's home with its locked folders, each read fresh while this is open.
+  useLibraryVersion();
+  const songs = SONGS;
+  const albums = ALBUMS;
+  const owner = useIsOwner();
+  const shelf = useShelf();
+  const home = useHome();
+  useShelfRefresh();
+  useHomeRefresh(true, owner);
+  const disk = useMemo(
+    () => buildDisk(data, applets, { songs, albums }, moviesFolder(shelf, owner), usersFolder(home, owner, data.projects, () => {})),
+    [data, applets, songs, albums, shelf, home, owner]
+  );
   const prompt = promptFor(cwd);
   const field = useRef<HTMLInputElement>(null);
   const screen = useRef<HTMLDivElement>(null);
@@ -196,7 +194,7 @@ export default function Terminal({ win }: AppProps) {
     setLines((ls) => [...ls, ...items.map((it) => ({ id: nextId.current++, kind: it.kind ?? 'output', content: it.content, prompt: it.prompt }))]);
 
   const run = (raw: string) => {
-    const [cmd = '', ...args] = raw.trim().split(/\s+/);
+    const [cmd = '', ...args] = words(raw);
     const arg = args.join(' ');
     switch (cmd) {
       case '':
@@ -221,29 +219,35 @@ export default function Terminal({ win }: AppProps) {
       case 'ls': {
         const long = args[0] === '-l';
         const target = (long ? args.slice(1) : args).join(' ');
-        const node = resolve(disk, cwd, target);
-        if (!node) return print({ kind: 'error', content: `ls: ${target}: No such file or directory` });
+        const found = resolve(disk, cwd, target);
+        if (!found) return print({ kind: 'error', content: `ls: ${target}: No such file or directory` });
+        if ('denied' in found) return print({ kind: 'error', content: `ls: ${target}: Permission denied` });
+        const node = found.node;
         const items = node.children ?? [node];
         if (!items.length) return;
         if (!long) return print({ content: items.map(listed).join('   ') });
         return print(
           ...items.map((n) => ({
-            content: `${n.children ? 'drwxr-xr-x' : '-rw-r--r--'}  jincheng  ${(n.date ? new Date(n.date).toDateString().slice(4) : '            ').padEnd(12)}  ${listed(n)}`
+            content: `${n.locked ? 'drwx------' : n.children ? 'drwxr-xr-x' : '-rw-r--r--'}  jincheng  ${(n.date ? new Date(n.date).toDateString().slice(4) : '            ').padEnd(12)}  ${listed(n)}`
           }))
         );
       }
       case 'cd': {
-        const node = resolve(disk, cwd, arg || '/');
-        if (!node) return print({ kind: 'error', content: `cd: no such file or directory: ${arg}` });
+        const found = resolve(disk, cwd, arg || '/');
+        if (!found) return print({ kind: 'error', content: `cd: no such file or directory: ${arg}` });
+        if ('denied' in found) return print({ kind: 'error', content: `cd: permission denied: ${arg}` });
+        const node = found.node;
         if (!node.children) return print({ kind: 'error', content: `cd: not a directory: ${arg}` });
         return setCwd(node.path);
       }
       case 'pwd':
         return print({ content: cwd === '/' ? '/Volumes/Macintosh HD' : `/Volumes/Macintosh HD${cwd}` });
       case 'cat': {
-        const node = resolve(disk, cwd, arg);
         if (!arg) return print({ kind: 'error', content: 'usage: cat <file>' });
-        if (!node) return print({ kind: 'error', content: `cat: ${arg}: No such file or directory` });
+        const found = resolve(disk, cwd, arg);
+        if (!found) return print({ kind: 'error', content: `cat: ${arg}: No such file or directory` });
+        if ('denied' in found) return print({ kind: 'error', content: `cat: ${arg}: Permission denied` });
+        const node = found.node;
         if (node.children) return print({ kind: 'error', content: `cat: ${arg}: Is a directory` });
         if (node.path === '/Documents/About Me') return print(...data.bio.short.map((p) => ({ content: plain(p) })));
         const lines = node.look?.lines?.filter(Boolean);
@@ -273,7 +277,9 @@ export default function Terminal({ win }: AppProps) {
           openProject(project);
           return print({ content: `Opening ${project.title}…` });
         }
-        const file = resolve(disk, cwd, arg);
+        const found = resolve(disk, cwd, arg);
+        if (found && 'denied' in found) return print({ kind: 'error', content: `open: permission denied: ${arg}` });
+        const file = found?.node;
         if (file && file.path !== '/') {
           if (file.children) launch('finder', { props: { path: file.path } });
           else file.open?.(null);
@@ -386,7 +392,7 @@ export default function Terminal({ win }: AppProps) {
     const slash = typed.lastIndexOf('/');
     const [dir, stem] = slash >= 0 ? [typed.slice(0, slash + 1), typed.slice(slash + 1)] : ['', typed];
     const folder = resolve(disk, cwd, dir || '.');
-    const names = (folder?.children ?? [])
+    const names = (folder && 'node' in folder ? (folder.node.children ?? []) : [])
       .filter((c) => (parts[0] === 'cd' ? c.children : true))
       .map((c) => `${c.name}${c.children ? '/' : ''}`);
     const pool = parts[0] === 'open' && !dir ? [...APP_TARGETS, ...slugs, ...names] : names;
