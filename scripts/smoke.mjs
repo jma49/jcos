@@ -34,7 +34,7 @@ async function targets() {
     if (/^\s*applet: \{/m.test(manifest)) applets.push(id);
     if (!/^\s*internal: true/m.test(manifest)) apps.push(id);
   }
-  const projects = await readdir(join(ROOT, 'src/content/projects/en'));
+  const projects = await readdir(join(ROOT, 'src/content/projects'));
   const project = projects.find((f) => f.endsWith('.md'))?.replace(/\.md$/, '');
   return [...apps, project, 'dashboard', 'screensaver'].filter(Boolean);
 }

@@ -1,12 +1,7 @@
 ---
-import { content, type Lang } from '../i18n/content';
+import { content } from '../content/site';
 
-interface Props {
-  lang: Lang;
-}
-
-const { lang } = Astro.props;
-const t = content[lang];
+const t = content;
 ---
 
   <button

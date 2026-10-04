@@ -4,38 +4,36 @@ import { render } from 'astro:content';
 import Layout from '../layouts/Layout.astro';
 import Footer from './Footer.astro';
 import ThemeToggle from './ThemeToggle.astro';
-import { content, profile, type Lang } from '../i18n/content';
+import { content, profile } from '../content/site';
 import { formatMonth, type Project } from '../lib/projects';
 
 interface Props {
-  lang: Lang;
   project: Project;
 }
 
-const { lang, project } = Astro.props;
-const t = content[lang];
+const { project } = Astro.props;
+const t = content;
 const { Content } = await render(project);
 const { title, description, date, status, stack, repo, demo, cover } = project.data;
 
 const home = '/';
 
-const meta = [formatMonth(lang, date), t.projects.status[status], stack.join(', ')].filter(Boolean);
+const meta = [formatMonth(date), t.projects.status[status], stack.join(', ')].filter(Boolean);
 ---
 
 <Layout
-  lang={lang}
   path={`/projects/${project.slug}/`}
-  title={`${title} — ${profile.name[lang]}`}
+  title={`${title} — ${profile.name}`}
   description={description}
 >
   <article class="mx-auto w-full max-w-[600px] min-w-0">
     <header class="meta mb-10 flex items-baseline justify-between gap-4">
       <a href={home} aria-label={t.projects.back} class="transition-colors hover:text-ink">
-        ← {profile.name[lang]}
+        ← {profile.name}
       </a>
       <div class="flex items-center gap-4">
         <a href={`/?open=${project.slug}`} class="transition-colors hover:text-ink">Open in JM/OS</a>
-        <ThemeToggle lang={lang} />
+        <ThemeToggle />
       </div>
     </header>
 
@@ -81,6 +79,6 @@ const meta = [formatMonth(lang, date), t.projects.status[status], stack.join(', 
       <Content />
     </div>
 
-    <Footer lang={lang} />
+    <Footer />
   </article>
 </Layout>

@@ -30,6 +30,6 @@ Evaluation Function", as published on the Chess Programming Wiki.
 
 Personal content is not covered by that license, and all rights are
 reserved (c) Jincheng Ma: the bio, experience and other copy
-(src/i18n/content.ts), the project write-ups (src/content/projects/),
+(src/content/site.ts), the project write-ups (src/content/projects/),
 the photos (public/portrait.jpg and those listed in src/data/photos.json)
 and the Soapbox posts.

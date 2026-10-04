@@ -1,18 +1,18 @@
 import type { APIRoute } from 'astro';
-import { content, profile } from '../i18n/content';
+import { content, profile } from '../content/site';
 import { getProjects, projectHref } from '../lib/projects';
 
 // A plain-text summary of the site for LLM crawlers (https://llmstxt.org).
 // The site itself is a desktop that needs JavaScript, so this carries the
 // résumé in full rather than linking to it.
 export const GET: APIRoute = async ({ site }) => {
-  const t = content.en;
+  const t = content;
   const url = (path: string) => new URL(path, site).href;
-  const projects = await getProjects('en');
+  const projects = await getProjects();
   const strip = (text: string) => text.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1');
 
   const lines = [
-    `# ${profile.name.en}`,
+    `# ${profile.name}`,
     '',
     `> ${t.meta.description}`,
     '',
@@ -21,7 +21,7 @@ export const GET: APIRoute = async ({ site }) => {
     '',
     '## Projects',
     '',
-    ...projects.map((p) => `- [${p.data.title}](${url(projectHref('en', p.slug))}): ${p.data.description}`),
+    ...projects.map((p) => `- [${p.data.title}](${url(projectHref(p.slug))}): ${p.data.description}`),
     '',
     '## Experience',
     '',

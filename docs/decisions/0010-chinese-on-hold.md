@@ -1,6 +1,6 @@
 # 0010. Chinese on hold, and no Chinese retro web
 
-- Date: 2026-09-28
+- Date: 2026-09-28, amended 2026-10-03
 - Status: accepted
 
 ## Context
@@ -20,6 +20,10 @@ a QQ2006 skin for Chat, with Tencent's own art.
 
 ## Consequences
 
-- The `zh` copy stays in the repository, unused for now.
+- The `zh` copy stayed in the repository, unused, until 2026-10-03, when
+  Jincheng had it removed (#230): the last commit with it is tagged
+  `zh-archive`, to bring it back from if the site gets a Chinese copy
+  again. `/zh` and `/zh/*` still redirect to the English pages
+  (`vercel.json`), so old links land.
 - AI-made pages in the Browser wait on the AI assistant, which is on hold
   until its spending can be capped.

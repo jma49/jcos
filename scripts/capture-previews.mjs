@@ -66,7 +66,6 @@ async function findTargets() {
     const cover = field('cover');
     const capture = field('capture');
     if (!cover || !capture) continue;
-    // Languages share one cover, so capture each image once.
     const out = resolve(dirname(file), cover);
     targets.set(out, { url: capture, ...COVER });
   }
