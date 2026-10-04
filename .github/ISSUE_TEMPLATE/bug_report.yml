@@ -1,0 +1,39 @@
+name: Bug report
+description: Something on the site is broken, slow or wrong.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting it. A security problem goes through the
+        [security policy](https://github.com/jma49/jmos/security/policy)
+        instead, never in a public issue.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you saw, and what you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: How to make it happen
+      description: The steps from opening the site, such as the app or window involved.
+      placeholder: |
+        1. Open iPod from the Dock
+        2. ...
+    validations:
+      required: true
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and device
+      placeholder: Safari 19 on an iPhone 16, Chrome 141 on macOS
+    validations:
+      required: true
+  - type: textarea
+    id: more
+    attributes:
+      label: Anything else
+      description: Screenshots, console errors, whether it happens every time.

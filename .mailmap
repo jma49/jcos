@@ -1,0 +1,9 @@
+# Maps every identity Jincheng has committed under to one, so that
+# `git shortlog -sne` and `git log --use-mailmap` count one author.
+# Commits written with Claude are Jincheng's, with Claude credited by a
+# Co-Authored-By trailer; older ones carried Claude as the author. Bots
+# (github-actions, Dependabot) keep their own identities.
+Jincheng Ma <majincheng990128@gmail.com> Jincheng <83278146+jma49@users.noreply.github.com>
+Jincheng Ma <majincheng990128@gmail.com> jma49 <majincheng990128@gmail.com>
+Jincheng Ma <majincheng990128@gmail.com> jincheng_m <majincheng990128@gmail.com>
+Jincheng Ma <majincheng990128@gmail.com> Claude <noreply@anthropic.com>

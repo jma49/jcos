@@ -57,7 +57,14 @@ Conventions and a map of the code are in [AGENTS.md](AGENTS.md) and
 - The "Update project previews" workflow runs on macOS once a day and by
   hand (not on every push, to save deployments): it refreshes the Photos snapshot
   (`npm run photos:update`) and recaptures the project covers and
-  `public/og.png` (`npm run preview:capture`), committing what changed.
+  `public/og.jpg` (`npm run preview:capture`). It never pushes to
+  `main`: what changed goes to the branch `chore/update-previews` and
+  one pull request, "chore: update project previews", updated each day
+  until someone merges it (each merge is a deployment, so they batch).
+  A pull request opened with the job's token starts no workflows, so
+  the job starts CI and the PR title check on the branch itself
+  (`workflow_dispatch`). It needs "Allow GitHub Actions to create and
+  approve pull requests" on (Settings > Actions > General).
 - The "ocra review" workflow (2026-09-29) has ocra, the owner's code
   reviewer (github.com/jma49/Open-CR-Agent), review each pull request
   from this repository on Vertex AI: inline comments and one summary
@@ -94,8 +101,14 @@ ryOS (AGPL-3.0).
 - Conventional Commits, one logical change per commit.
 - Branch → PR → merge after CI passes. The owner sometimes merges PRs
   directly on GitHub, so fetch `main` before assuming a PR is still open.
-- Merge with merge commits. When PRs are stacked, merge from the bottom
-  up. Delete a branch once it's merged; only `main` should be left.
+- Squash merges only (decided 2026-10-03; merge commits were 28% of the
+  history before): the PR title becomes the commit subject, so it's a
+  Conventional Commit (the "PR title" check), and the branch's commit
+  messages its body, with the `Co-Authored-By` trailers that credit AI
+  help.
+  When PRs are stacked, merge from the bottom up, rebasing each on
+  `main` after the one below lands. Delete a branch once it's merged;
+  only `main` should be left.
 - Try UI changes in a real browser before calling them done. The owner's
   Chrome has reduced motion on, so animation work needs a temporary
   bypass to see (and the reduced-motion fallback checked separately).

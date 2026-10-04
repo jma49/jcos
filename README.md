@@ -1,8 +1,11 @@
 # JM/OS: majincheng.com
 
+**Live at [www.majincheng.com](https://www.majincheng.com).**
+
+[![The JM/OS desktop: a Mac OS X menu bar, Dock and desktop icons over a wallpaper of river stones, with the Welcome window open.](public/og.jpg)](https://www.majincheng.com)
+
 Jincheng Ma's own place on the web, a Mac OS X Aqua desktop in the
-browser: a hideout rather than a portfolio (HANDOFF.md, decisions). It's
-live at **[www.majincheng.com](https://www.majincheng.com)**.
+browser: a hideout rather than a portfolio (HANDOFF.md, decisions).
 
 Projects, the résumé, photos and posts open as windows on the desktop.
 Around them sits a small working system:
@@ -134,8 +137,9 @@ issues; [ROADMAP.md](ROADMAP.md) is what comes next, in order.
   the owner's review workflow in Open-CR-Agent at `main`: Google Cloud
   issues its keyless login to that ref only (HANDOFF.md).
 
-To report a security problem, please email the address on the résumé
-rather than opening an issue.
+To report a security problem, use GitHub's private vulnerability
+reporting rather than an issue; [SECURITY.md](SECURITY.md) has how,
+what's in scope and what to expect.
 
 ## Performance
 
@@ -158,7 +162,7 @@ significant change goes through.
 | Command | Does |
 | --- | --- |
 | `npm run check` | Type-checks the site (`astro check`). CI runs it on every pull request. |
-| `npm run preview:capture` | Screenshots project pages into their covers, and the home page into `public/og.png`. A workflow runs it once a day. |
+| `npm run preview:capture` | Screenshots project pages into their covers, and the home page into `public/og.jpg`. A workflow runs it once a day. |
 | `bash scripts/vercel-ignore.sh <base>` | Vercel's ignored build step: says whether a deployment would be skipped (nothing the site is built from changed since `<base>`: only docs, tests, CI, the database, the Edge Functions' own folders or tooling). |
 | `npm run lint` | Checks the rules of React hooks and effects' dependencies, the boundaries between the OS, apps and applets (`import()` included), and that anything remembered in the browser goes through `src/os/core/storage.ts` (ESLint; `tests/eslint.test.ts` probes each rule). CI runs it on every pull request. |
 | `npm run perf` | Measures a production build against the performance budgets (see `docs/agents/performance.md`). |
@@ -167,6 +171,13 @@ significant change goes through.
 | `node scripts/build-favicon.mjs` | Regenerates the favicons from one vector mark. |
 | `node scripts/build-portrait.mjs <photo>` | Crops `public/portrait.jpg` from the source photo. |
 | `bash scripts/setup-soapbox.sh` | Sets up the Soapbox bot's secrets, deploy and webhook. |
+
+## Contributing
+
+It's a personal site, but bug reports and small fixes are welcome:
+[CONTRIBUTING.md](CONTRIBUTING.md) says how, and everyone follows the
+[Code of Conduct](CODE_OF_CONDUCT.md). Pull requests are squash-merged,
+so their titles are Conventional Commits.
 
 ## License
 

@@ -95,11 +95,15 @@ needs. Projects without a cover show their title on a plain tile.
 Set `capture` (in one language's file) to have the cover generated: a
 site path like `/` is captured from the local build, a full URL from the
 live site. Run `npm run preview:capture` to update covers locally; it
-also captures the home page into `public/og.png`. Captures use a frozen
-clock and reduced motion, and pages that answer with an HTTP error are
-skipped. The `Update project previews` workflow runs it once a day (and
-by hand from the Actions tab), on macOS so the fonts match, and commits
-images whose pixels changed by more than 0.1%. Don't edit a captured image by hand; it will
+also captures the home page into `public/og.jpg` (1200×630, JPEG, under
+150 KB: the script warns past that). Covers are 1440×900 JPEGs. Captures
+use a frozen clock and time zone (9:41 in San Jose), a fixed forecast in
+place of the live weather, and reduced motion, so an unchanged page
+captures the same every time; pages that answer with an HTTP error are
+skipped. An image is only rewritten when more than 0.1% of its pixels
+changed, since every version stays in git for good. The `Update project
+previews` workflow runs it once a day (and by hand from the Actions tab),
+on macOS so the fonts match. Don't edit a captured image by hand; it will
 be overwritten.
 
 The JM/OS Projects app, the pages at `/projects/<slug>/`, the sitemap and

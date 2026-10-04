@@ -1,12 +1,22 @@
 # Re-captures project preview images and refreshes the Unsplash photo
-# snapshot once a day, and commits them back when they differ. See
-# scripts/capture-previews.mjs and update-photos.mjs.
+# snapshot once a day, and proposes them in a pull request when they
+# differ. See scripts/capture-previews.mjs and update-photos.mjs.
 #
 # It used to run after every push to main. The covers of live sites (ocra,
 # Assay) differ on nearly every capture, so each merge was followed by an
 # image commit and a second production deployment, against the Hobby
 # plan's daily cap. Run it by hand (Actions > Run workflow) to update the
 # images right after a change to how the site looks.
+#
+# It never pushes to main, which only takes reviewed, checked pull
+# requests. The images go to one branch, chore/update-previews, rebuilt
+# from main on each run, with one pull request that stays open until it's
+# merged by hand (each merge is a production deployment, so they batch).
+# A pull request opened with the job's token starts no workflows, so the
+# job starts CI and the title check on the branch itself
+# (workflow_dispatch is the one event that token may trigger): their
+# checks land on the branch's head commit, where the ruleset looks for
+# them.
 name: Update project previews
 
 on:
@@ -20,7 +30,7 @@ permissions:
 concurrency:
   group: previews
   # A scheduled run finishes; a new one waits for it rather than cutting
-  # off a capture partway through its commit.
+  # off a capture partway through its push.
   cancel-in-progress: false
 
 jobs:
@@ -29,11 +39,20 @@ jobs:
     # screenshot matches what Mac visitors see. Linux would fall back to
     # DejaVu Serif.
     runs-on: macos-latest
-    # Commits the refreshed images back to the branch.
     permissions:
+      # Pushes the branch,
       contents: write
+      # opens, updates or closes its pull request,
+      pull-requests: write
+      # and starts CI and the title check on it.
+      actions: write
+    env:
+      BRANCH: chore/update-previews
+      GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
 
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
@@ -50,14 +69,31 @@ jobs:
 
       - run: npm run preview:capture
 
-      - name: Commit changed previews
+      - name: Propose changed previews
         run: |
-          if [ -z "$(git status --porcelain -- src/content/projects/covers public/og.png src/data/photos.json)" ]; then
-            echo "Previews are up to date."
+          paths=(src/content/projects/covers public/og.jpg src/data/photos.json)
+          open_pr=$(gh pr list --head "$BRANCH" --base main --state open --json number --jq '.[0].number // empty')
+          if [ -z "$(git status --porcelain -- "${paths[@]}")" ]; then
+            echo "Previews match main."
+            # What an open pull request proposes is out of date now.
+            if [ -n "$open_pr" ]; then
+              gh pr close "$open_pr" --delete-branch --comment "The previews on main are current again."
+            fi
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
-          git add src/content/projects/covers public/og.png src/data/photos.json
+          git switch -C "$BRANCH"
+          git add -- "${paths[@]}"
           git commit -m "chore: update project previews"
-          git push
+          # The branch is the bot's alone, rebuilt from main on each run.
+          git push --force origin "$BRANCH"
+          if [ -z "$open_pr" ]; then
+            gh pr create --base main --head "$BRANCH" \
+              --title "chore: update project previews" \
+              --body "Recaptured by the [Update project previews](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}) workflow, which updates this pull request each day until it's merged. Only images whose pixels changed by more than 0.1% are in it. Each merge is a production deployment."
+          fi
+          # A push with this token starts no workflows: run the required
+          # checks on the new head commit.
+          gh workflow run ci.yml --ref "$BRANCH"
+          gh workflow run pr-title.yml --ref "$BRANCH"

@@ -1,0 +1,27 @@
+name: Idea
+description: Suggest something for the desktop, an app or the site.
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        JM/OS is a personal site with a deliberate look and scope, so not
+        every idea will fit, but every one is read.
+  - type: textarea
+    id: idea
+    attributes:
+      label: The idea
+      description: What it would do, and for whom.
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why
+      description: The problem it solves, or what it adds. A reference to how Mac OS X did it is welcome.
+  - type: checkboxes
+    id: help
+    attributes:
+      label: Contributing
+      options:
+        - label: I'd like to send a pull request for it (see CONTRIBUTING.md).
