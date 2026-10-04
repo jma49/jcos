@@ -64,4 +64,7 @@ it's called done:
 
 **Record it.** The pull request says what was checked, with the numbers
 from `npm run perf`. Findings are fixed in the same pull request.
-Anything deliberately left goes to HANDOFF.md with the reason.
+Anything deliberately left is written down with the reason: a choice
+that holds beyond today as a record in
+[docs/decisions/](../decisions/), a known limit or a follow-up in the
+private operating notes (`../jmos-ops/HANDOFF.md`, AGENTS.md).

@@ -540,8 +540,8 @@ guarded from its first file; `tests/eslint.test.ts` probes each rule.
   own. Anyone else sees only the numbers (Jincheng decided on
   2026-09-29): how many at each stage on blank cards, how far they got
   and the capacity bar, from `job_hunt_totals()`. What Mail said comes in
-  through Claude and `scripts/job-hunt-import.mjs` (HANDOFF.md, Job
-  Hunt). Narrow (a phone), one stage at a time, picked at the top, and the
+  through Claude and `scripts/job-hunt-import.mjs`
+  ([decision 0018](../decisions/0018-job-hunt-public-only-as-totals.md)). Narrow (a phone), one stage at a time, picked at the top, and the
   drawer's contents in the window.
 - `src/os/stickies/`: a member's own stickies (`mine.ts`, the table in
   [supabase.md](supabase.md)). Signed in, a member's notes sit on their
@@ -583,7 +583,8 @@ guarded from its first file; `tests/eslint.test.ts` probes each rule.
   Finder-style sidebar). Each app's own stylesheet lives in its folder and
   arrives with its code (see [adding.md](adding.md)), after all of these.
 - Icons, fonts and the wallpaper under `public/os/` and `src/assets/os/`
-  come from ryOS; see `NOTICE`. They stay (HANDOFF.md, decisions); icons
+  come from ryOS; see `NOTICE`. They stay
+  ([decision 0001](../decisions/0001-keep-the-retro-assets.md)); icons
   for apps ryOS doesn't have are drawn in `core/icons.tsx` to match.
 
 ## Links, the tab title and the Chinese site

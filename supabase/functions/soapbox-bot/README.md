@@ -31,14 +31,14 @@ asks for the token (without echoing it) and your user ID, and does steps
    verification off; the webhook secret does that job instead:
 
    ```sh
-   supabase functions deploy soapbox-bot --no-verify-jwt --project-ref hszogpoyyqgwjuznbegd
+   supabase functions deploy soapbox-bot --no-verify-jwt --project-ref <project-ref>
    ```
 
 6. **Point Telegram at it.**
 
    ```sh
    curl "https://api.telegram.org/bot<TOKEN>/setWebhook" \
-     -d url=https://hszogpoyyqgwjuznbegd.supabase.co/functions/v1/soapbox-bot \
+     -d url=https://<project-ref>.supabase.co/functions/v1/soapbox-bot \
      -d secret_token=<WEBHOOK_SECRET> \
      -d 'allowed_updates=["message","edited_message","callback_query"]'
    ```
