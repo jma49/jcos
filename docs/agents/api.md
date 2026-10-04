@@ -92,8 +92,16 @@ nothing of the page (the body is cancelled unread).
 - `url` is at most 2,000 characters, `http` or `https`, on port 80 or
   443, without credentials, and every address its name resolves to must
   be public (`publicUrl` refuses private, loopback, link-local and
-  multicast ranges). Redirects are followed by hand, at most five, each
-  checked the same way; each request gives up after five seconds.
+  multicast ranges). The request then connects to those checked
+  addresses (`askHeaders`, `node:http`/`node:https` with a lookup that
+  answers only them, and a fresh connection each time), not to a second
+  lookup of the name, which could answer differently (DNS rebinding);
+  the name still goes in the Host header and TLS's SNI, and the
+  certificate is checked against it. Redirects are followed by hand, at
+  most five, each checked and pinned the same way; each request gives up
+  after five seconds. `GET` passes on only the request; the tests call
+  `checkFraming` with a stub lookup and requester, and `askHeaders`
+  against a server on 127.0.0.1, so nothing goes out to the network.
 - **200** `{ embeddable, url }` (`url` after redirects), `public,
   s-maxage=86400, stale-while-revalidate=604800`.
 - **400** `{ error }` for an address it won't ask (`public,
