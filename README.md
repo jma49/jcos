@@ -1,8 +1,11 @@
 # JM/OS: majincheng.com
 
+**Live at [www.majincheng.com](https://www.majincheng.com).**
+
+[![The JM/OS desktop: a Mac OS X menu bar, Dock and desktop icons over a wallpaper of river stones, with the Welcome window open.](public/og.jpg)](https://www.majincheng.com)
+
 Jincheng Ma's own place on the web, a Mac OS X Aqua desktop in the
-browser: a hideout rather than a portfolio (HANDOFF.md, decisions). It's
-live at **[www.majincheng.com](https://www.majincheng.com)**.
+browser: a hideout rather than a portfolio (HANDOFF.md, decisions).
 
 Projects, the résumé, photos and posts open as windows on the desktop.
 Around them sits a small working system:
@@ -168,6 +171,13 @@ significant change goes through.
 | `node scripts/build-favicon.mjs` | Regenerates the favicons from one vector mark. |
 | `node scripts/build-portrait.mjs <photo>` | Crops `public/portrait.jpg` from the source photo. |
 | `bash scripts/setup-soapbox.sh` | Sets up the Soapbox bot's secrets, deploy and webhook. |
+
+## Contributing
+
+It's a personal site, but bug reports and small fixes are welcome:
+[CONTRIBUTING.md](CONTRIBUTING.md) says how, and everyone follows the
+[Code of Conduct](CODE_OF_CONDUCT.md). Pull requests are squash-merged,
+so their titles are Conventional Commits.
 
 ## License
 
