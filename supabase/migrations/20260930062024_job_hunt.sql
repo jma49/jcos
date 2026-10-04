@@ -3,9 +3,9 @@
 -- it found, and scripts/job-hunt-import.mjs writes it here
 -- (private.import_job_hunt). In the app Jincheng moves them along, adds
 -- one by hand, renames, notes or deletes. Only Jincheng reads or writes
--- the rows (public.is_owner()). Jincheng decided on 2026-09-29 that
--- visitors see only the numbers, how many are at each stage and how far
--- they got (public.job_hunt_totals()), never a company.
+-- the rows (public.is_owner()). Visitors see only the numbers, how many
+-- are at each stage and how far they got (public.job_hunt_totals()),
+-- never a company (docs/decisions/0018).
 --
 -- - job_applications: the company and the role (one row to a pair,
 --   whatever their case); the stage (applied, assessment, interviewing,

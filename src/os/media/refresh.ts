@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { report } from '../core/report';
 import { ALBUMS, applyLibrary, fromApi, libraryChecked, libraryLoaded, libraryReadAt, SONG_LIMIT, SONGS } from './library';
 import type { Library } from '../../lib/library';
 
@@ -25,7 +26,7 @@ export function refreshLibrary(): Promise<void> {
       if (next) applyLibrary(next);
       else libraryChecked();
     })
-    .catch(() => {})
+    .catch((error) => report(error, 'library.refresh'))
     .finally(() => {
       refreshing = null;
     });

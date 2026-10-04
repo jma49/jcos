@@ -2,7 +2,7 @@
 // Play DVD in Quick Look) and DVD Player plays it; ejecting takes it out.
 // A disc slides into the slot on the screen's right edge on its way in
 // and back out on its way out (insertion.ts). It never goes on the
-// desktop: Jincheng wants no icons added there (2026-09-29). Per tab, as
+// desktop, where nothing is added (docs/decisions/0021). Per tab, as
 // the playing song is: a disc in one tab's drive isn't in another's.
 
 import { create } from 'zustand';

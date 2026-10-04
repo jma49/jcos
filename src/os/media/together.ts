@@ -9,6 +9,7 @@ import { createElement } from 'react';
 import { IPodIcon } from '../core/icons';
 import { dismiss, notify } from '../core/notices';
 import { launch } from '../core/registry';
+import { report } from '../core/report';
 import { getSocial } from '../social/social';
 import type { NowPlaying, Social } from '../social/types';
 import { findSong, SONGS } from './library';
@@ -18,7 +19,10 @@ const NOTICE = 'listen-along';
 
 /** Plays the song from where Jincheng is in it, on the iPod. */
 export async function listenAlong(social: Pick<Social, 'nowPlaying'>) {
-  const now = await social.nowPlaying().catch(() => null);
+  const now = await social.nowPlaying().catch((error) => {
+    report(error, 'together.nowPlaying');
+    return null;
+  });
   const index = now ? await findSong(now.songId) : -1;
   if (!now || index < 0) {
     notify({ id: NOTICE, title: 'That song has finished', body: 'Jincheng isn’t playing anything right now.' });
@@ -77,7 +81,10 @@ export function startListeningAlong() {
       const changes = stop.changes;
       social
         .nowPlaying()
-        .catch(() => null)
+        .catch((error) => {
+          report(error, 'together.nowPlaying');
+          return null;
+        })
         .then((now) => {
           if (!cancelled && changes === stop.changes) return show(social, now, stop);
         });

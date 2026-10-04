@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { PlaceSearch } from '../ambient/PlaceSearch';
 import { adoptStyles } from '../core/appStyles';
+import { report } from '../core/report';
 import styles from './dashboard.css?inline';
 import { getSocial, type Post } from '../social/social';
 import { flag } from '../social/online';
@@ -355,7 +356,7 @@ function SoapboxWidget() {
     getSocial()
       .then((social) => social?.listPosts())
       .then((posts) => live && setPost(posts?.[0] ?? null))
-      .catch(() => {});
+      .catch((error) => report(error, 'dashboard.soapbox'));
     return () => {
       live = false;
     };

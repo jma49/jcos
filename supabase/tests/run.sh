@@ -39,7 +39,7 @@ dump() {
   pg_dump --schema-only -d "$1" | grep -v -e '^\\restrict ' -e '^\\unrestrict ' -e '^-- Dumped ' > "$2"
 }
 
-# Runs psql quietly; an error fails the test (it used to be printed and let through).
+# Runs psql quietly; an error fails the test rather than being printed and let through.
 run() {
   local out status=0
   out=$(psql -q -v ON_ERROR_STOP=1 "$@" 2>&1) || status=$?

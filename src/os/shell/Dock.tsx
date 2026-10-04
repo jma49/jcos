@@ -3,6 +3,7 @@ import { m, useMotionValue, useSpring, useTransform, type MotionValue } from 'mo
 import { apps, dockApps, launch, mobileDockApps, rectOf } from '../core/registry';
 import { APP_MIME, canRemoveFromDock, dockable, keepInDock, removeFromDock, useDock } from '../core/dock';
 import { DashboardIcon, TrashIcon } from '../core/icons';
+import { report } from '../core/report';
 import { isPhone, useWindowList, useWindows } from '../core/store';
 import { DOCK_MAGNIFY, DOCK_SIZES, useReduceMotion, useSystem } from '../core/system';
 import { play } from '../core/sound';
@@ -237,7 +238,7 @@ export function Dock() {
     loadDrag().then((mod) => {
       setDrag(mod);
       run(mod);
-    }, () => {});
+    }, (error) => report(error, 'dock.drag'));
   };
   useEffect(() => {
     if (phone || dragModule) return;

@@ -58,7 +58,7 @@ import { useDiscPlayer } from './useDiscPlayer';
 // A disc slides into the slot in the screen's right edge on its way in and
 // out (media/insertion.ts, Web Animations, skipped with motion reduced),
 // and DVD Player's icon bounces in the Dock as it opens. The disc never
-// goes on the desktop: Jincheng wants no icons added there (2026-09-29), so
+// goes on the desktop, where nothing is added (docs/decisions/0021), so
 // the Controller and ⌘E are the ways to eject it.
 
 type Screen = 'menu' | 'scenes' | 'movie';
@@ -161,6 +161,7 @@ export default function DVDPlayer({ win }: AppProps) {
     document.addEventListener('fullscreenchange', onChange);
     return () => document.removeEventListener('fullscreenchange', onChange);
   }, []);
+  // Full screen can be refused (not allowed in a frame, no click): the window stays as it is.
   const toggleFull = () => {
     if (document.fullscreenElement) void document.exitFullscreen().catch(() => {});
     else if (canFullScreen && disc) void screenEl.current?.requestFullscreen().catch(() => {});
@@ -266,6 +267,7 @@ export default function DVDPlayer({ win }: AppProps) {
 
   const eject = () => {
     player.pause();
+    // Leaving can be refused (the page in the background): the disc ejects all the same.
     if (document.fullscreenElement) void document.exitFullscreen().catch(() => {});
     ejectDisc();
   };

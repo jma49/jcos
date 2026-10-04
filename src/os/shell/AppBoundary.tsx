@@ -1,4 +1,5 @@
 import { Component, type ReactNode } from 'react';
+import { report } from '../core/report';
 
 // Keeps one app's failure inside its own window. Without it, an error
 // thrown while rendering an app, or an app's code failing to download,
@@ -34,6 +35,8 @@ export class AppBoundary extends Component<Props, { error: unknown }> {
 
   componentDidCatch(error: unknown) {
     console.error(`[JM/OS] ${this.props.name} quit unexpectedly`, error);
+    // A download that failed is a deploy since or the connection; the window says so.
+    if (!isChunkError(error)) report(error, `crash.${this.props.name}`);
   }
 
   render() {

@@ -108,6 +108,7 @@ export default function Karaoke({ win }: AppProps) {
     Escape: () => setPicking(false)
   });
 
+  // Full screen can be refused (not allowed in a frame, no click): the window stays as it is.
   const fullScreen = () => {
     if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
     else root.current?.requestFullscreen?.().catch(() => {});

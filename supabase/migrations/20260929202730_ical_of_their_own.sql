@@ -1,6 +1,6 @@
 -- iCal of one's own: each member's own events and to-dos, which only they
--- read and write, as with their stickies (Jincheng decided on 2026-09-29
--- that every account keeps its own). iCal shows them as Tiger's did: the
+-- read and write, as with their stickies (every account keeps its own,
+-- docs/decisions/0015). iCal shows them as Tiger's did: the
 -- calendars on the left, the month in the middle, To Do on the right.
 --
 -- - events: a title, a calendar (Home or Work, the two Tiger's iCal

@@ -129,7 +129,7 @@ The folders of `src/os/` are layers or domains. The layers are `core/`
   its place until the slot shows. With motion reduced, slots jump. Keep the Dock and the
   desktop (`shell/DesktopIcons.tsx`: Macintosh HD, About Me, Résumé,
   Projects) short, and nothing is added to them, not even a disc in DVD
-  Player's drive (Jincheng's rule, 2026-09-29); a phone's home screen lists every app.
+  Player's drive ([0021](../decisions/0021-nothing-is-added-to-the-desktop.md)); a phone's home screen lists every app.
 - `src/os/apps/`: one folder per built-in app. Content comes from `OSData`,
   assembled at build time in `index.astro` from `src/content/site.ts`, the
   projects collection and `src/lib/photos.ts` (Unsplash, fetched at build).

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import { adoptStyles } from '../core/appStyles';
+import { report } from '../core/report';
 import { useWindows } from '../core/store';
 import { useAutosave } from '../core/useAutosave';
 import { ContextMenu, type ContextMenuItem } from '../shell/ContextMenu';
@@ -106,12 +107,12 @@ export function StickyNote({
     saver.soon();
   };
 
-  const place = (change: Parameters<typeof placeSticky>[1]) => void placeSticky(sticky.id, change).catch(() => {});
+  const place = (change: Parameters<typeof placeSticky>[1]) => void placeSticky(sticky.id, change).catch((error) => report(error, 'stickies.place'));
   const rollUp = () => place({ collapsed: !sticky.collapsed });
   const close = () => {
     if (typed.current.trim()) return setAsk({ kind: 'remove' });
     saver.cancel();
-    void removeSticky(sticky.id).catch(() => {});
+    void removeSticky(sticky.id).catch((error) => report(error, 'stickies.remove'));
   };
 
   // On the desktop it's kept within reach as the browser's size changes (a card in Stickies › Yours isn't placed at all).

@@ -8,8 +8,8 @@
 // minute. The edge is there for bursts of visitors, not to keep the
 // library for long: it once served stale for a day, and on a quiet site
 // the first visitor after any pause got whatever the edge had last, so a
-// new song took a reload or two to show (added 05:13, first served 05:31,
-// 2026-09-29). A miss costs about 0.2 s; the library is 7 KB (2.4 gzipped).
+// new song took a reload or two to show (one added at 05:13 was first
+// served at 05:31). A miss costs about 0.2 s; the library is 7 KB (2.4 gzipped).
 //
 // When Supabase can't be read (paused after a quiet week, not set up, or
 // slow), the snapshot in the repository is served instead, cached for a

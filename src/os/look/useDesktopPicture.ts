@@ -94,10 +94,11 @@ export function useDesktopPicture(data: OSData, sky: SkyState, root: RefObject<H
         next = nextPicture(useWindows.getState().wallpaper);
         if (next && isPicture(next)) {
           new Image().src = next;
+          // A head start only: what fails here is worked out again once it shows.
           accentFromPicture(next).catch(() => {});
           topBrightness(next).catch(() => {});
         }
-      }, () => {});
+      }, () => {}); // The picture sets didn't load: the picture stays, and the next return tries again.
     };
     document.addEventListener('visibilitychange', onVisibility);
     return () => {

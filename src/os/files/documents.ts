@@ -9,6 +9,7 @@
 // owner signs out. Loaded with Finder and TextEdit, not with the desktop.
 
 import { useEffect, useSyncExternalStore } from 'react';
+import { report } from '../core/report';
 import { loadJSON, updateJSON } from '../core/storage';
 import { getSocial } from '../social/social';
 import type { DiaryEntry, DocumentDraft, EntryDraft, Home, HomeDocument, HomeFolder } from '../social/types';
@@ -70,7 +71,7 @@ export function readHome(owner: boolean, { now = false } = {}): Promise<void> {
       home = { ...read, owner };
       changed();
     })
-    .catch(() => {})
+    .catch((error) => report(error, 'documents.read'))
     .finally(() => {
       if (reading?.done === done) reading = null;
     });

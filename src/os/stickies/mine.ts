@@ -8,6 +8,7 @@
 // Loaded once someone is signed in, not with the desktop.
 
 import { useEffect, useSyncExternalStore } from 'react';
+import { report } from '../core/report';
 import { loadJSON, saveJSON } from '../core/storage';
 import { MENU_BAR_HEIGHT, type Viewport } from '../core/store';
 import { getSocial } from '../social/social';
@@ -71,7 +72,7 @@ export function readMine(account: string | null, { now = false } = {}): Promise<
       mine = { account, stickies: read };
       changed();
     })
-    .catch(() => {})
+    .catch((error) => report(error, 'stickies.read'))
     .finally(() => {
       if (reading?.done === done) reading = null;
     });

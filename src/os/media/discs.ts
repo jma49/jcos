@@ -15,6 +15,7 @@
 import { useEffect, useSyncExternalStore } from 'react';
 import { clip, guessFromVideo, VIDEO_ID, videoIdOf } from '../../../supabase/functions/_shared/youtube.ts';
 import type { Disc } from '../../lib/library';
+import { report } from '../core/report';
 import { loadJSON, onStored, updateJSON } from '../core/storage';
 import { getSocial } from '../social/social';
 import { applyDiscs, DISCS, useLibraryVersion } from './library';
@@ -221,7 +222,7 @@ export function readShelf(): Promise<void> {
       freshAt = Date.now();
       if (!same(discs, DISCS)) applyDiscs(discs);
     })
-    .catch(() => {})
+    .catch((error) => report(error, 'discs.read'))
     .finally(() => {
       reading = null;
     });
@@ -304,5 +305,5 @@ export function noteLength(disc: ShelfDisc, duration: number, owner: boolean) {
   void getSocial()
     .then((social) => social?.relabelDisc(disc.id, { duration: ms }))
     .then(() => changeShelf(DISCS.map((d) => (d.id === disc.id ? { ...d, duration: ms } : d))))
-    .catch(() => {});
+    .catch((error) => report(error, 'discs.duration'));
 }

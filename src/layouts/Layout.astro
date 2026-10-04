@@ -66,7 +66,9 @@ const personLd = {
     <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#1b1a19" media="(prefers-color-scheme: dark)" />
 
-    <!-- Apply the saved theme before first paint so there is no flash. -->
+    <!-- Apply the saved theme before first paint so there is no flash. With
+         storage blocked, the default theme shows. (The script's hash is in
+         vercel.json's CSP: a change to it needs the hash changed there.) -->
     <script is:inline>
       try {
         const saved = localStorage.getItem('theme');

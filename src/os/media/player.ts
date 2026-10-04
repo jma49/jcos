@@ -92,7 +92,7 @@ export type PlayerStatus = 'loading' | 'ready' | 'offline';
  * How long YouTube's own play/pause button stays in the middle of the
  * picture after a video starts, seeks or resumes: its embed shows one for
  * about 4.3 s whatever the player's settings (`controls: 0` included) and
- * whoever the browser says it is (measured 2026-09-29; `middleControls`
+ * whoever the browser says it is (as measured; `middleControls`
  * has the rest). For the iPod and Karaoke the picture counts as live only
  * once it has played this long since, so their artwork hides the button.
  */
@@ -133,7 +133,7 @@ export function revealAfterButton(setLive: (live: boolean) => void) {
 /**
  * Whether YouTube's middle controls may be up, for a player whose picture
  * stays on screen (DVD Player), which masks just the middle of it instead
- * of covering it all. Measured 2026-09-29: a start, a resume or a seek
+ * of covering it all. As measured: a start, a resume or a seek
  * while playing brings them up at once (a 56px circle in the middle of the
  * player, whatever its size), and so does buffering (the spinner is in the
  * same circle); they go YOUTUBE_BUTTON_MS later if it's still playing, and
@@ -141,8 +141,7 @@ export function revealAfterButton(setLive: (live: boolean) => void) {
  * nothing up, and neither the player's settings nor a play asked for
  * without a click keep them away. They come with a darkening of the whole
  * picture, strongest at the top, which no mask can take away without
- * hiding the picture: Jincheng chose a moving picture over that
- * (2026-09-29).
+ * hiding the picture: a moving picture is worth that (docs/decisions/0017).
  */
 export function middleControls(setUp: (up: boolean) => void) {
   let timer = 0;

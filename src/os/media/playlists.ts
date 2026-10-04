@@ -10,6 +10,7 @@
 // play); not with the desktop.
 
 import { useEffect, useSyncExternalStore } from 'react';
+import { report } from '../core/report';
 import { loadJSON, onStored, updateJSON } from '../core/storage';
 import { useAccount } from '../social/account';
 import { ownerAnswer } from '../social/owner';
@@ -70,7 +71,7 @@ export function readListening(): Promise<void> {
         changed();
       }
     })
-    .catch(() => {})
+    .catch((error) => report(error, 'playlists.read'))
     .finally(() => {
       reading = null;
     });
@@ -148,7 +149,9 @@ async function saveRating(id: string, rating: number, turn: number) {
   try {
     await writing(async () => (await database()).rateSong(id, rating));
     saved = true;
-  } catch {}
+  } catch (error) {
+    report(error, 'playlists.rate');
+  }
   const now = unsaved.get(id);
   if (!now) return;
   if (now.turn !== turn) {

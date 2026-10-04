@@ -16,6 +16,7 @@ let context: AudioContext | null = null;
 export function audio() {
   if (typeof window === 'undefined' || !('AudioContext' in window)) return null;
   context ??= new AudioContext();
+  // Refused until the page has had a click or a key: the next sound tries again.
   if (context.state === 'suspended') context.resume().catch(() => {});
   return context;
 }

@@ -84,6 +84,10 @@ in docs/decisions/) and take it out.
 - Anything remembered in the browser goes through
   `src/os/core/storage.ts` (the lint refuses `localStorage` and
   `sessionStorage` anywhere else under `src/os/`).
+- An error caught and carried on from goes to `report(error, where)`
+  (`src/os/core/report.ts`), or its `catch` says in a comment why it's
+  expected; never an empty `catch` or `.catch(() => {})` alone
+  (docs/decisions/0022).
 - Before deciding, check that it's the best practice, and that fixing
   the problem in front of you doesn't bring in more. Find the cause
   before changing anything: when it isn't known, first make it
@@ -97,12 +101,17 @@ in docs/decisions/) and take it out.
   uninvited (docs/agents/self-audit.md, Concurrency).
 - Don't reformat whole files (there's no Prettier config); match the
   surrounding code.
+- Comments say what the code is for and why, not when or who: no dates
+  ("measured 2026-09-29") and no decision stories ("Jincheng decided…").
+  A rule is stated plainly ("only the owner sees companies"); the story
+  goes in the commit, and a decision that holds goes in
+  [docs/decisions/](docs/decisions/), which a comment may point to.
 
 ## Checking a change
 
 | Changed | Run |
 | --- | --- |
-| any code | `npm run check` (types), `npm run lint` (hooks, the app boundaries, storage, the scripts), `npm test` |
+| any code | `npm run check` (types), `npm run lint` (hooks, the app boundaries, storage, empty catches, the scripts), `npm test` |
 | an app, the shell or anything a visitor sees | `npm run build`, then `npm run test:smoke`; open it in a browser too (`npm run serve`) |
 | the first load, a dependency, or anything per frame | `npm run perf` (it builds the site itself): every line within budget |
 | the schema, a migration, a policy or a limit | `npm run test:db`, with a check (and a race for a limit) for the new rule; once merged, put it live as jmos-ops's HANDOFF.md (§1) says |

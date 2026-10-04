@@ -3,6 +3,7 @@
 // them through useEffectEvent, rather than leaving them out), the
 // boundaries between the OS, apps and applets (docs/agents/desktop.md),
 // that anything remembered in the browser goes through core/storage.ts,
+// that no block (a catch above all) is empty without a comment saying why,
 // and, in scripts/, ESLint's recommended rules. Formatting and style are
 // left to the surrounding code (see AGENTS.md). tests/eslint.test.ts
 // probes each rule.
@@ -94,7 +95,11 @@ export default [
     plugins: { 'react-hooks': reactHooks, local: { rules: { 'no-restricted-dynamic-imports': noRestrictedDynamicImports } } },
     rules: {
       'react-hooks/rules-of-hooks': 'error',
-      'react-hooks/exhaustive-deps': 'error'
+      'react-hooks/exhaustive-deps': 'error',
+      // An error caught and carried on from is reported, or its catch says
+      // why it's expected (docs/decisions/0022): a block holding only a
+      // comment passes.
+      'no-empty': 'error'
     }
   },
   // Vercel's builder compiles each file in api/ to .js without rewriting
@@ -104,6 +109,7 @@ export default [
     files: ['api/**/*.ts'],
     languageOptions: { parser: tseslint.parser },
     rules: {
+      'no-empty': 'error',
       'no-restricted-imports': [
         'error',
         { patterns: [{ regex: '^\\.{1,2}/.*\\.tsx?$', message: 'Import local TypeScript by its .js name: Vercel deploys the compiled file.' }] }

@@ -10,6 +10,7 @@
 // another, each naming the version the one before it made.
 
 import { useEffect, useSyncExternalStore } from 'react';
+import { report } from '../../core/report';
 import { getSocial } from '../../social/social';
 import { SocialError, type CalendarEvent, type EventDraft, type Todo, type TodoDraft } from '../../social/types';
 
@@ -156,7 +157,7 @@ function read(account: string | null, key: string, fetch: () => Promise<(current
       mine = apply(mine);
       changed();
     })
-    .catch(() => {})
+    .catch((error) => report(error, 'ical.read'))
     .finally(() => {
       if (reading.get(key) === done) reading.delete(key);
     });
@@ -252,6 +253,7 @@ function baseOf(id: string, version: number) {
 /** Saves an item after its saves already going, naming the version it was made from. */
 function inTurn<T extends { version: number }>(id: string, version: number, save: (version: number) => Promise<T>): Promise<T> {
   const turn = (turns.get(id) ?? Promise.resolve())
+    // The save before failed for its own caller, who was told; this one goes on.
     .catch(() => {})
     .then(async () => {
       const base = baseOf(id, version);
@@ -260,6 +262,7 @@ function inTurn<T extends { version: number }>(id: string, version: number, save
       return saved;
     });
   turns.set(id, turn);
+  // Its failure is the caller's, through the turn returned.
   void turn.catch(() => {}).finally(() => turns.get(id) === turn && turns.delete(id));
   return turn;
 }

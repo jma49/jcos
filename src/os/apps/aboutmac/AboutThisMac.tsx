@@ -22,7 +22,9 @@ function machine() {
     const gl = document.createElement('canvas').getContext('webgl');
     const info = gl?.getExtension('WEBGL_debug_renderer_info');
     gpu = (info && gl ? String(gl.getParameter(info.UNMASKED_RENDERER_WEBGL)) : '').replace(/^ANGLE \((.*)\)$/, '$1').replace(/\s*\(0x[0-9a-f]+\)/gi, '').split(',').slice(0, 2).join(',');
-  } catch {}
+  } catch {
+    // WebGL off or blocked: no graphics line.
+  }
   return {
     processor: cores ? `${cores}-core ${platform ? `${platform} ` : ''}processor` : 'One very patient processor',
     memory: nav.deviceMemory ? `${nav.deviceMemory} GB${nav.deviceMemory >= 8 ? ' or more' : ''}` : 'Enough',

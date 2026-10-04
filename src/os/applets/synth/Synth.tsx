@@ -93,6 +93,7 @@ class Engine {
 
   on(midi: number, patch: Patch) {
     if (this.voices.has(midi)) return;
+    // Refused until the page has had a click or a key: the next note tries again.
     if (this.ctx.state === 'suspended') this.ctx.resume().catch(() => {});
     const t = this.ctx.currentTime;
     const env = this.ctx.createGain();

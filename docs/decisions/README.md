@@ -33,3 +33,5 @@ replaces; don't delete the old one.
 | [0018](0018-job-hunt-public-only-as-totals.md) | Job Hunt is read from Gmail by hand and public only as totals | 2026-09-29 |
 | [0019](0019-sized-to-a-personal-site.md) | Sized to a personal site | 2026-09-27 |
 | [0020](0020-the-migrations-are-the-schema.md) | The migrations are the schema | 2026-10-03 |
+| [0021](0021-nothing-is-added-to-the-desktop.md) | Nothing is added to the desktop | 2026-09-29 |
+| [0022](0022-handled-errors-are-reported.md) | Handled errors are reported | 2026-10-03 |

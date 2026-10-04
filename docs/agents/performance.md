@@ -37,6 +37,10 @@
     follow.
   - Moving apps in and out of the Dock (`shell/dockDrag.tsx`) loads on
     the first press, or once the desktop has settled.
+  - The Sentry SDK (`core/sentry.ts`, about 20 KB gzipped) loads with
+    the first error `core/report.ts` sends, and is in no build without
+    `PUBLIC_SENTRY_DSN`: `report()` is then empty, and the first load
+    carries only its 0.1 KB chunk.
   - The Dashboard, Spotlight and the screen saver's views load on first
     use, or once the desktop has settled (`afterSettled()` in
     `core/warmUp.ts`, eight seconds in and idle), so they're instant by
