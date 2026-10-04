@@ -146,9 +146,12 @@ guarded from its first file; `tests/eslint.test.ts` probes each rule.
 - `src/os/apps/timemachine/`: Leopard's Time Machine, in the Dock and
   Applications. It's a full-screen app (the manifest's `fullScreen`,
   drawn by `shell/FullScreenLayer.tsx`): no window; it covers the
-  windows, the menu bar and the Dock, which are `inert` under it, and
+  windows, the menu bar and the Dock, which are `inert` under it (the
+  page around the desktop too: `inertAround` in `core/focus.ts`), and
   the desktop's shortcuts, the ⌥Tab switcher and Exposé's corner stay
   quiet (`useFocusedId()` is null meanwhile, so no window has the keys).
+  Leaving gives focus back to what had it, as noted by `openFullScreen`
+  (below, focus).
   Space is a canvas of seeded stars over a CSS nebula, with a Finder
   window for each day going back into it (300px apart, seen from 50%
   6%, as the prototype had them); the timeline down the right, the
@@ -262,6 +265,27 @@ guarded from its first file; `tests/eslint.test.ts` probes each rule.
   keys (Time Machine's Escape and Page Up/Down) hold theirs wherever
   focus is, and an Escape closes Quick Look before it leaves Time
   Machine.
+- `src/os/core/focus.ts`: where focus goes back to when something that
+  took it closes. Spotlight, the Dashboard and a full-screen app note
+  what had focus in the store's action that opens them (`setSpotlight`,
+  `setDashboard`, `openFullScreen`), before anything of theirs mounts,
+  and their layers call `releaseFocus()` as they close; an alert and a
+  context menu note it as they render. It comes back a frame later
+  (after the key that closed it has been handled everywhere, so no app
+  takes that key too), and only if focus is on the page itself or still
+  in what closed: focus put somewhere else meanwhile stays. When what
+  had it is gone or hidden, or a window came to the front meanwhile (a
+  Spotlight result, a menu command, Time Machine's Restore opened one),
+  it goes to the window in front: a window takes focus itself
+  (`tabIndex={-1}`, found by its `data-id`). A window closed or
+  minimized with focus in it (its close box, ⌥W, File › Close Window)
+  hands focus to the next one in front the same way (`close` and
+  `minimize` in the store).
+- `src/os/shell/Dashboard.tsx`: the Dashboard covers the desktop, so
+  unlike a window it's modal (`aria-modal`): what's under it, and the
+  page around the desktop, is `inert` while it's up, focus moves onto it
+  as it opens (Tab goes on to its widgets) and comes back as it closes
+  (`core/focus.ts`). Escape or a click on the dimmed desktop closes it.
 - `src/os/shell/drawer.tsx`: Tiger-style drawers. Each window has a slot
   along its edge (right, left if there's no room, or over the content
   when neither side fits); an app renders `<Drawer open>` anywhere and it
@@ -270,7 +294,19 @@ guarded from its first file; `tests/eslint.test.ts` probes each rule.
   in `Window.tsx`.
 - `src/os/core/notices.ts` and `shell/Notices.tsx`: Growl-style
   notifications (chat mentions, AirDrop offers). `shell/ContextMenu.tsx`
-  is the right-click menu the desktop, the Dock and Finder share.
+  is the right-click menu the desktop, the Dock, Finder, Stickies and
+  iCal share. Shift+F10 or the context-menu key opens the focused
+  thing's (`openContextMenu` in `shell/menuKeys.ts`, from
+  `useShortcuts`: the same `contextmenu` event a right-click sends, from
+  the middle of what has focus, so every place with a menu has it; on
+  the page itself with no window in front, the desktop's; a text field
+  keeps the browser's). Focus goes into the menu as it opens: its first
+  item when the keyboard opened it, the menu itself when the pointer
+  did, so ↓ starts at the top. ↑ ↓ Home and End move through what can
+  be chosen (`menuStep`, as the menu bar's arrows go round); Escape and
+  Tab close it and give focus back to what opened it, as a command does
+  unless it put focus somewhere itself. The desktop icons have no menu
+  of their own.
 - The menu bar's menus after File come from the front window: the iPod
   and Karaoke's Controls, and any app's own, which it sets with
   `setMenus(win.id, menus)` in the store while it's open (Chess's Game
