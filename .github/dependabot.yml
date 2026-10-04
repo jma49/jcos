@@ -1,7 +1,8 @@
 # Weekly pull requests for outdated dependencies and GitHub Actions, and
 # security fixes as soon as they're published. Minor and patch updates
 # come grouped in one pull request; majors come one by one, since they
-# can need code changes (CI checks each).
+# can need code changes (CI checks each). The prefixes make the titles
+# Conventional Commits, which the PR title check requires.
 version: 2
 updates:
   - package-ecosystem: npm
@@ -9,6 +10,9 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
+    commit-message:
+      prefix: chore
+      include: scope
     groups:
       minor-and-patch:
         update-types: [minor, patch]
@@ -17,6 +21,9 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
+    commit-message:
+      prefix: ci
+      include: scope
     groups:
       minor-and-patch:
         update-types: [minor, patch]

@@ -1,0 +1,55 @@
+# Checks that a pull request's title is a Conventional Commit subject.
+# Merges are squash merges, and the squash commit takes the title as its
+# subject, so the title is what lands in main's history (AGENTS.md,
+# Commits). No action and no checkout: the title is read from the event,
+# never interpolated into the script.
+name: PR title
+
+on:
+  pull_request:
+    types: [opened, edited, reopened, synchronize]
+  # The previews workflow starts it on its branch, since a pull request
+  # opened with a job's token starts no workflows.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  title:
+    name: Conventional Commits title
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check the title
+        env:
+          TITLE: ${{ github.event.pull_request.title }}
+          BRANCH: ${{ github.ref_name }}
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          if [ "$GITHUB_EVENT_NAME" = workflow_dispatch ]; then
+            TITLE=$(gh pr list --head "$BRANCH" --state open --json title --jq '.[0].title // empty')
+            if [ -z "$TITLE" ]; then
+              echo "::error::No open pull request from $BRANCH."
+              exit 1
+            fi
+          fi
+          printf 'Title: %s\n' "$TITLE"
+          # <type>(<optional scope>)!: <summary>, with no trailing period.
+          # The case isn't checked, since a summary may start with a name
+          # ("feat: Time Machine").
+          types='feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert'
+          if ! [[ "$TITLE" =~ ^($types)(\([a-z0-9._/-]+\))?!?:\ [^[:space:]] ]] || [[ "$TITLE" =~ [.[:space:]]$ ]]; then
+            echo "::error::The title must read \"<type>: <summary>\" or \"<type>(<scope>): <summary>\", with a type from $types and no trailing period. See AGENTS.md, Commits."
+            exit 1
+          fi
+          # Only a warning: GitHub adds " (#<number>)" to the squash commit
+          # anyway, and Dependabot's grouped titles run long.
+          if [ "${#TITLE}" -gt 72 ]; then
+            echo "::warning::The title is ${#TITLE} characters; aim for 72 at most."
+          fi
