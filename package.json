@@ -27,14 +27,12 @@
     "@astrojs/react": "^7.0.0",
     "@astrojs/sitemap": "^3.7.4",
     "@supabase/supabase-js": "^2.117.2",
-    "@tailwindcss/vite": "^4.3.3",
     "astro": "^7.3.5",
     "chess.js": "^1.4.0",
     "motion": "^13.4.6",
     "opencc-js": "^1.4.2",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "tailwindcss": "^4.3.3",
     "zustand": "^5.0.15"
   },
   "devDependencies": {

@@ -87,12 +87,8 @@ const personLd = {
   </head>
 
   <body>
-    <a
-      href="#main"
-      class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-100 focus:rounded-md focus:bg-surface focus:px-4 focus:py-2 focus:text-sm"
-      >Skip to content</a
-    >
-    <main id="main" class="min-h-svh p-5 pt-10 sm:p-[clamp(1.25rem,3.4vw,3.25rem)]">
+    <a href="#main" class="sr-only skip-link">Skip to content</a>
+    <main id="main" class="page">
       <slot />
     </main>
   </body>
