@@ -45,8 +45,8 @@ and the backend, and [AGENTS.md](AGENTS.md) with
    npm run build && npm run test:smoke   # anything a visitor sees
    ```
 
-   CI runs these, the performance budgets and the database tests on
-   every pull request.
+   CI runs these on every pull request, with more (AGENTS.md says
+   what).
 3. Write everything in English, and follow the code around you; there
    is no formatter to do it for you.
 4. Open a pull request with the template filled in.

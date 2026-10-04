@@ -5,6 +5,8 @@ import { audio, saved, soundSetting, turnSoundOn, useGameLoop, useIsFront, useSo
 // or the computer's keys, a few waveforms and presets, a filter, an echo
 // and an oscilloscope. Everything is Web Audio, through the one sound
 // switch and volume (turning a note on turns sound on, as Play does).
+// It plays on the shared AudioContext (`audio()` from the kit), and its
+// settings are kept in os-synth.
 
 interface Patch {
   wave: OscillatorType;

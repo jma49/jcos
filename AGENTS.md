@@ -28,11 +28,11 @@ characters over `git ls-files`.
 
 | Changing… | Read |
 | --- | --- |
-| anything under `src/os/`: windows, the Dock, menus, apps, desktop pictures, the sky | [docs/agents/desktop.md](docs/agents/desktop.md) |
+| anything under `src/os/`: windows, the Dock, menus, apps, desktop pictures, the sky | [docs/agents/desktop.md](docs/agents/desktop.md) (the map, boundaries, naming and the shared shell), then the header comment of the component you change (each app's own behaviour) |
 | the iPod, Karaoke, songs, lyrics, anything that makes a sound | [docs/agents/media.md](docs/agents/media.md) |
 | accounts, Stickies, Chat, presence, AirDrop, Soapbox, the schema, migrations, Edge Functions | [docs/agents/supabase.md](docs/agents/supabase.md) (with its Security section) |
 | the Vercel Functions in `api/`, the Edge Functions, or what the site calls | [docs/agents/api.md](docs/agents/api.md) |
-| anything on the first load, or that runs per frame | [docs/agents/performance.md](docs/agents/performance.md) |
+| anything on the first load, or that runs per frame | [docs/agents/performance.md](docs/agents/performance.md) (the budgets and today's readings) |
 | adding an app, applet, song, desktop picture or project | [docs/agents/adding.md](docs/agents/adding.md) |
 | why something is the way it is, before proposing to change it | [docs/decisions/](docs/decisions/) |
 | anything at all | [docs/agents/pitfalls.md](docs/agents/pitfalls.md): mistakes already made once |
@@ -105,7 +105,7 @@ in docs/decisions/) and take it out.
 | any code | `npm run check` (types), `npm run lint` (hooks, the app boundaries, storage), `npm test` |
 | an app, the shell or anything a visitor sees | `npm run build`, then `npm run test:smoke`; open it in a browser too (`npm run serve`) |
 | the first load, a dependency, or anything per frame | `npm run build`, then `npm run perf`: every line within budget |
-| the schema, a migration, a policy or a limit | `npm run test:db`, with a check (and a race for a limit) for the new rule; once merged, `supabase db push` and `supabase db advisors` (jmos-ops's HANDOFF.md, §1) |
+| the schema, a migration, a policy or a limit | `npm run test:db`, with a check (and a race for a limit) for the new rule; once merged, put it live as jmos-ops's HANDOFF.md (§1) says |
 | an Edge Function | `npm test` (its `*.test.mjs`) and `deno check supabase/functions/*/index.ts` (its types) |
 | a project's cover or the home page's look | `npm run preview:capture` |
 

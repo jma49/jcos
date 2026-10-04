@@ -12,6 +12,19 @@ import { paneInfo, paneOf, PANES, searchPanes, SECTIONS, type PaneId } from './p
 // back and forward through the panes visited, and a search field that
 // lights up the panes it finds. It opens from the Apple menu rather than
 // being an app of its own. Everything here is remembered in this browser.
+//
+// The Show All grid has three rows (panes.ts, which also gives the words
+// its search field and Spotlight find panes by), and the window is titled
+// after the pane. It opens from the Apple menu only (`menuOnly` in the
+// manifest): no Dock icon, not in Applications or on a phone's home screen.
+// The panes: Appearance (light, dark, automatic, or follow the sun where
+// the visitor is), Desktop & Screen Saver, Dock (size, magnification), Date
+// & Time (place, 24-hour clock), Displays (Night Shift, motion), Sound,
+// Accounts, Sharing (city, pointer, AirDrop), Software Update (compares the
+// build with main on GitHub) and Backup & Restore (backup.ts: every os-*
+// setting to a file and back, and a reset). The choices are kept as
+// os-wallpaper, os-wallpaper-rotate, os-screensaver, theme, os-place, and
+// os-system for the rest (core/system.ts).
 
 const VIEWS: Record<PaneId, ComponentType> = {
   appearance: AppearancePane,

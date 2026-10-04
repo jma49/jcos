@@ -33,6 +33,11 @@ const sameOrigin = (url: string) => {
  *
  * Sites that forbid framing would show a blank page; /api/framing reads
  * their headers so the Browser can say so and offer a real tab instead.
+ *
+ * Home is ocra; the Bookmarks Bar has the projects' demos, then classic
+ * sites in their early years (bookmarks.ts). A year shows the page at
+ * web.archive.org/web/<year>0701if_/<address>, which the archive redirects
+ * to its nearest copy, with no server of ours in between (decision 0012).
  */
 export default function Browser({ win }: AppProps) {
   const data = useOSData();

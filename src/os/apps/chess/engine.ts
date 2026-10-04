@@ -5,6 +5,13 @@ import type { Chess, PieceSymbol } from 'chess.js';
 // until the position is quiet, scored by material and where each piece
 // stands. It runs in a worker (engine.worker.ts), so the window never
 // waits on it; its moves come from chess.js, so they're always legal.
+//
+// It deepens one move at a time up to three, for 1.5 s at most (a slow
+// device may stop at two), in the worker or, if the worker can't start, on
+// the page. Below its own move it plays through
+// chess.js's internal move list (`_moves`, `_makeMove`, `_undoMove`, as
+// chess.js's `perft` does), since the public `move()` writes out notation
+// and positions and makes a search about ten times slower.
 
 const VALUE: Record<PieceSymbol, number> = { p: 100, n: 320, b: 330, r: 500, q: 900, k: 0 };
 

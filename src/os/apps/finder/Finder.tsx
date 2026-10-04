@@ -40,6 +40,21 @@ import { notify } from '../../core/notices';
 // with Burn in the toolbar to make a disc from a YouTube link. Users ›
 // jincheng is Jincheng's home (home.tsx): locked to anyone else but for
 // Public and Sites, and opening a locked folder brings up Finder's alert.
+//
+// The views are icons, a list, columns and Cover Flow (⌥1–⌥4). Cover Flow
+// (CoverFlowView.tsx) is Leopard's, drawn only near the middle; its classes
+// are os-finder-cf-*, apart from the iPod's os-cf-*. Movies has a fifth,
+// the wooden shelf (ShelfView.tsx, ⌥5), the one thing on the desktop that
+// isn't Apple's look, kept on purpose; its button shows only in Movies, and
+// anywhere else that choice shows icons. In Movies the list shows Date
+// Added, Length and Kind.
+//
+// The Burn sheet (BurnSheet.tsx) and Finder's alerts are modal: while one
+// is up, Finder's own keys are off, and the sheet takes Escape (stop, or
+// close) and Return (Burn) wherever in the window the focus is (a control
+// outside it, a Dock icon, keeps its own: `ownsKey`). On a phone the
+// toolbar's buttons keep their size and what doesn't fit goes to a second
+// row, where the search field takes the rest of the width.
 
 interface Prefs {
   view: View;

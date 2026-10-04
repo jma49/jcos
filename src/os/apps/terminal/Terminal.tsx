@@ -19,6 +19,12 @@ import { ALBUMS, SONGS, useLibraryVersion } from '../../media/library';
 import { useIsOwner } from '../../social/owner';
 import { resolve, words } from './paths';
 
+// The Terminal: a zsh-like prompt over Macintosh HD. It has a working
+// folder (`cd`, `pwd`, `ls`, `cat`, `open <path>`) on the disk Finder
+// shows, Movies and Users included, whose locked folders answer "Permission
+// denied". It splits a line as zsh does, with quotes and backslash escapes
+// (paths.ts, with tests).
+
 interface Line {
   id: number;
   kind: 'input' | 'output' | 'error';

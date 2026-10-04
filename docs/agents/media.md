@@ -126,8 +126,8 @@ own chrome never shows.
   with `supabase/functions/_shared/youtube.ts`, as the bot does, and
   YouTube's oEmbed from the browser; the four pictures are asked for with
   HEAD, nothing downloaded. Opening a disc slides it into the drive and
-  opens DVD Player (desktop.md); Eject (the Controller or ⌘E) slides it
-  out. Opening the disc already in the drive only brings DVD Player
+  opens DVD Player (`apps/dvdplayer/DVDPlayer.tsx`); Eject (the
+  Controller or ⌘E) slides it out. Opening the disc already in the drive only brings DVD Player
   forward, and what's playing plays on (Jincheng's disc and a visitor's
   DVD-R of the same video are two discs); a different disc opened while
   one slides in goes in after it. DVD Player shows the disc as the shelf

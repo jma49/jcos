@@ -21,6 +21,42 @@ import { backupDays, cameBy, dayName, diskOn, folderCame, localDay, namedTicks, 
 // the windows behind move through the days; Cancel goes back to the
 // desktop, and Restore brings what's chosen back to now: an app opens, a
 // song plays, a folder opens in Finder. What each day held is past.ts's.
+//
+// It's in the Dock and Applications, and a full-screen app (the manifest's
+// `fullScreen`, drawn by shell/FullScreenLayer.tsx): no window; it covers
+// the windows, the menu bar and the Dock, which are `inert` under it (the
+// page around the desktop too: `inertAround` in core/focus.ts), and the
+// desktop's shortcuts, the ⌥Tab switcher and Exposé's corner stay quiet
+// (`useFocusedId()` is null meanwhile, so no window has the keys). Leaving
+// gives focus back to what had it, as noted by `openFullScreen`.
+//
+// Space is a canvas of seeded stars over a CSS nebula, with a Finder window
+// for each day going back into it (300px apart, seen from 50% 6%, as the
+// prototype had them). The timeline, the arrows (Page Up and Down) and a
+// click on a window behind go through the days; Cancel or Escape leaves,
+// and an Escape closes Quick Look first. Its own keys hold wherever focus
+// is.
+//
+// What a day held: each thing from the day it came, an app from its
+// manifest's `added` (an applet from its listing's), a song or an album
+// from its Date Added, a disc from when it was burned, Jincheng's documents
+// and diary entries from when they were first written, and the Applets,
+// Movies and Users folders from the days the Applet Store, DVD Player and
+// TextEdit came. What's inside Movies and Users counts from its folder's
+// day at the earliest (`notBefore`), so a document dated before /Users
+// existed adds no day on which nothing shows. Nothing keeps how a thing was
+// changed or what was thrown away, so a past day shows what's here now, as
+// far back as each thing goes; Pictures and Projects have no dates and
+// aren't shown. Days are where this device is.
+//
+// The front window is a read-only Finder (DayFinder.tsx): the places, back
+// and forward, icons or a list, and Quick Look. The folder, the selection
+// and the view stay as the days change, and a day without the folder shows
+// the nearest one it had. Restore brings what's chosen (or the folder
+// shown) back to now: an app opens, a song plays, a disc goes into the
+// drive, a document opens in TextEdit, a folder opens in Finder. The home
+// folder is read as Finder reads it, so anyone else sees only Public and
+// Sites.
 
 /** How many windows stand behind the front one. */
 const DEPTH = 6;

@@ -27,6 +27,39 @@ import { useDiscPlayer } from './useDiscPlayer';
 // Keys: Space plays or pauses, ←/→ go to the previous or next chapter
 // (in a menu they move the choice, with ↑/↓ and Return), Escape goes
 // back a menu (or out of full screen), ⌘F is full screen and ⌘E ejects.
+//
+// It's in Applications (not kept in the Dock), for the discs on Finder's
+// Movies shelf (docs/agents/media.md); the disc in the drive is
+// media/drive.ts's. The picture is always 16:9 with black around it. Its
+// own YouTube player (useDiscPlayer.ts) takes no pointer, so YouTube's
+// hover controls never come up (its middle button after a play or a seek
+// does, and DVD Player masks it: media.md).
+//
+// The Controller (Controller.tsx) is a floating panel, as on a Mac: drawn
+// by the app into `.os-root` just above the windows, shown only while DVD
+// Player is the window in front (not in Exposé or minimized), dragged by
+// its metal and left where it was put (os-dvd). Its buttons leave the keys
+// to DVD Player, as a panel of its own (`data-panel`, `ownsKey` in
+// core/useKeys.ts).
+//
+// Full screen (FullScreen.tsx, also in the Controls menu) is the browser's
+// full screen on the picture itself, since the player can't move without
+// reloading; its controls rest out of sight (and the pointer with them) 2.5
+// s after the pointer stops while the disc plays. Its position slider
+// (core/useScrub.ts) stays where it's put: dragged, it seeks within what's
+// loaded as it goes and properly where it's let go, and the clock doesn't
+// move it back meanwhile. What DVD Player says for a moment ("Chapter 2",
+// "▶ Play") shows in the corner once the chapters have gone, not under
+// them. A slider used with the pointer (volume, position) gives the keys
+// back when it's let go (`releaseAfterPointer` in core/useKeys.ts), so
+// Space and the arrows stay DVD Player's; tabbed to, it keeps them. The
+// Controls menu does what the buttons and keys do.
+//
+// A disc slides into the slot in the screen's right edge on its way in and
+// out (media/insertion.ts, Web Animations, skipped with motion reduced),
+// and DVD Player's icon bounces in the Dock as it opens. The disc never
+// goes on the desktop: Jincheng wants no icons added there (2026-09-29), so
+// the Controller and ⌘E are the ways to eject it.
 
 type Screen = 'menu' | 'scenes' | 'movie';
 
