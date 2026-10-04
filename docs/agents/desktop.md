@@ -574,7 +574,8 @@ guarded from its first file; `tests/eslint.test.ts` probes each rule.
   moment. New Sticky Note on the desktop's right-click menu puts one
   where it was clicked; Stickies › Yours lists them as cards, with File ›
   New Sticky (⌥N), and is where they live on a phone, which has no
-  desktop for them. Font: Marker Felt, where the device has it.
+  desktop for them. From either, the new note takes the caret once it's
+  on screen. Font: Marker Felt, where the device has it.
 - `src/os/social/social.ts`: Stickies (a guestbook) and presence (who's
   online and from which city, and, for a visitor who turns them on in
   System Preferences › Sharing, other visitors' pointers labelled with
