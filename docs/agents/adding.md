@@ -14,7 +14,8 @@ Store. In it:
   where it appears: `dock` (its position), `phoneDock`, `inApplications`,
   `menuOnly`, `internal`, `noDock`; `applet` is its page in the Applet
   Store (category, tagline, description, date added); `shortcuts` are
-  places inside it that Spotlight finds, as Preferences' panes;
+  places inside it that Spotlight finds by name or `keywords`, as
+  Preferences' panes;
   `fullScreen` makes it take the whole screen rather than a window, as
   Time Machine does (it leaves by `closeFullScreen()`). The manifest is
   part of the first load: it imports only `kit/manifest`, `core/icons`
