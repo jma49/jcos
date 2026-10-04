@@ -101,8 +101,14 @@ ryOS (AGPL-3.0).
 - Conventional Commits, one logical change per commit.
 - Branch → PR → merge after CI passes. The owner sometimes merges PRs
   directly on GitHub, so fetch `main` before assuming a PR is still open.
-- Merge with merge commits. When PRs are stacked, merge from the bottom
-  up. Delete a branch once it's merged; only `main` should be left.
+- Squash merges only (decided 2026-10-03; merge commits were 28% of the
+  history before): the PR title becomes the commit subject, so it's a
+  Conventional Commit (the "PR title" check), and the branch's commit
+  messages its body, with the `Co-Authored-By` trailers that credit AI
+  help.
+  When PRs are stacked, merge from the bottom up, rebasing each on
+  `main` after the one below lands. Delete a branch once it's merged;
+  only `main` should be left.
 - Try UI changes in a real browser before calling them done. The owner's
   Chrome has reduced motion on, so animation work needs a temporary
   bypass to see (and the reduced-motion fallback checked separately).
