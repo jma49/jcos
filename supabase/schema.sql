@@ -954,6 +954,25 @@ begin
 end;
 $$;
 
+-- How many notes the caller has left today, counted as notes_by_member()
+-- counts them, hidden ones too (the same as
+-- supabase/migrations/20261004015011_notes_left.sql, whose header explains
+-- why it's security definer and callable by members).
+create or replace function public.notes_left()
+returns int
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select case when (select auth.uid()) is null then 0 else greatest(0, 3 - (
+    select count(*)::int from public.notes
+    where user_id = (select auth.uid()) and created_at > now() - interval '24 hours'
+  )) end;
+$$;
+revoke all on function public.notes_left() from public, anon, authenticated;
+grant execute on function public.notes_left() to authenticated;
+
 -- Chat: eight messages in 30 seconds per member, 120 a minute in all.
 create or replace function public.chat_flood_guard()
 returns trigger

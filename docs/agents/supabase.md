@@ -71,7 +71,10 @@ The code that isn't in the browser (each endpoint's parameters, answers and conv
   stand-in treats a member named `jincheng` as the owner.
 - **Stickies**: members only, three notes in any 24 hours, signed with the
   username; members can take their own down. Hide a note by setting
-  `approved` to false in the Table editor.
+  `approved` to false in the Table editor. A hidden note still counts
+  toward the three; `notes_left()` (security definer, since the member
+  can't read hidden notes) tells Stickies what's left the way the limit
+  counts it.
 - **Stickies of one's own** (`public.stickies`; migration
   `20260929194437_stickies_of_their_own.sql`): each member's own notes,
   on their own desktop, which row-level security gives that member alone,
@@ -273,7 +276,10 @@ browser.
   Security Advisor after each migration (`supabase db advisors --linked
   --type security`); the findings left on purpose
   are listed in `supabase/migrations/20260926100511_advisor.sql`,
-  `20260929100000_owner.sql` and `20260929140000_playlists.sql`.
+  `20260929100000_owner.sql`, `20260929140000_playlists.sql`,
+  `20260930062024_job_hunt.sql` and `20261004015011_notes_left.sql`
+  (`rules.sql` checks that the definer functions visitors and members
+  may call are exactly those).
 - A limit that counts rows before inserting ("three a day") takes a
   transaction-scoped advisory lock for whoever it limits first
   (`pg_advisory_xact_lock`), or concurrent requests all get through.

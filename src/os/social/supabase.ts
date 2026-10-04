@@ -208,8 +208,6 @@ function refusal(error: PostgrestError): SocialError {
   return new SocialError('failed', error.message);
 }
 
-const since = (hours: number) => new Date(Date.now() - hours * 3_600_000).toISOString();
-
 export function supabaseSocial(url: string, key: string): Social {
   const client = createClient(url, key, {
     // The session stays in this browser, so members stay signed in.
@@ -408,15 +406,13 @@ export function supabaseSocial(url: string, key: string): Social {
       if (error) throw refusal(error);
     },
 
+    // Counted by the database as its limit counts, hidden notes too, which
+    // row-level security doesn't show the member.
     async notesLeft() {
       if (!current) return 0;
-      const { count, error } = await client
-        .from('notes')
-        .select('id', { count: 'exact', head: true })
-        .eq('user_id', current.id)
-        .gt('created_at', since(24));
+      const { data, error } = await client.rpc('notes_left');
       if (error) throw refusal(error);
-      return Math.max(0, NOTES_PER_DAY - (count ?? 0));
+      return typeof data === 'number' ? Math.max(0, Math.min(NOTES_PER_DAY, data)) : 0;
     },
 
     async listPosts() {
