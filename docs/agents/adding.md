@@ -78,8 +78,9 @@ cover, and tuning its lyrics' offset. At most 200 songs.
 ## A desktop picture
 
 Photos go in `public/os/wallpapers/` as WebP, at most 2560px wide and
-quality about 75, listed in `src/data/wallpapers.json`. Solid colours
-and patterns are `SOLID_COLORS` and `PATTERNS` in
+quality about 75, at most 1 MB (anything else in `public/` at most
+200 KB; `npm test` checks both, `scripts/check-public-sizes.mjs`),
+listed in `src/data/wallpapers.json`. Solid colours and patterns are `SOLID_COLORS` and `PATTERNS` in
 `src/os/look/wallpapers.ts`. Jincheng's own photos are never desktop
 pictures.
 

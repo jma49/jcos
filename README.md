@@ -175,6 +175,7 @@ significant change goes through.
 | `npm run lint` | Checks the rules of React hooks and effects' dependencies, the boundaries between the OS, apps and applets (`import()` included), that anything remembered in the browser goes through `src/os/core/storage.ts`, and ESLint's recommended rules in `scripts/` (ESLint; `tests/eslint.test.ts` probes each rule). |
 | `npm run perf` | Measures a production build against the performance budgets (see `docs/agents/performance.md`). |
 | `node scripts/check-doc-paths.mjs` | Lists every repository path the docs cite in backticks that doesn't exist (`npm test` runs it too). |
+| `node scripts/check-public-sizes.mjs` | Lists every file in `public/` over its size budget: 1 MB for a desktop picture, 200 KB for anything else, each exception listed with its reason (`npm test` runs it too). |
 | `npm run photos:update` | Refreshes `src/data/photos.json` from Unsplash. |
 | `npm run songs:snapshot` | Saves the music library from Supabase to `src/data/songs.json`, the fallback. |
 | `node scripts/build-favicon.mjs` | Regenerates the favicons from one vector mark. |
